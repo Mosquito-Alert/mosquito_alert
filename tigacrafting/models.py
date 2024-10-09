@@ -597,3 +597,12 @@ class Alert(models.Model):
 #     species = models.ForeignKey(Species, related_name='validations', blank=True, null=True)
 #     #species = models.ManyToManyField(Species)
 #     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure')
+
+class BookMark(models.Model):
+    user = models.ForeignKey(help_text='User which established the bookmark', to='auth.User', related_name='user_bookmarks', on_delete=models.CASCADE, )
+    report = models.ForeignKey(help_text='Report to which the bookmark was applied', to='tigaserver_app.Report', related_name='report_bookmarks', on_delete=models.CASCADE, )
+    label = models.CharField(help_text='Label for the bookmark. It allows the user to quickly identify why a bookmark was put', max_length=150)
+    module = models.CharField(help_text='Label which designates the module for which the bookmark is applied', max_length=150)
+
+    class Meta:
+        unique_together = ('user','label')

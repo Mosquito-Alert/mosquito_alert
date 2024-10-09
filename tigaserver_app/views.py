@@ -16,9 +16,9 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer, BookMarkSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse
-from tigacrafting.models import FavoritedReports
+from tigacrafting.models import FavoritedReports, BookMark
 from tigacrafting.report_queues import assign_crisis_report
 from tigacrafting.views import auto_annotate, issue_notification, get_current_domain
 from math import ceil
@@ -326,6 +326,10 @@ class PhotoViewSet(ReadWriteOnlyModelViewSet):
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
 
+class BookMarkViewSet(ReadWriteOnlyModelViewSet):
+    queryset = BookMark.objects.all()
+    serializer_class = BookMarkSerializer
+    filter_fields = ('module','user')
 
 # For production version, substitute WriteOnlyModelViewSet
 class FixViewSet(ReadWriteOnlyModelViewSet):
@@ -2244,6 +2248,34 @@ def hide_report(request):
         report.hide = hide
         report.save()
         return Response(data={'message': 'hide set to {0}'.format( hide ), 'opcode': 0}, status=status.HTTP_200_OK)
+
+@api_view(['POST', 'DELETE'])
+def bookmark_report(request):
+    if request.method == 'POST':
+        report_id = request.data.get('report_id', '')
+        user_id = request.data.get('user_id', '')
+        label = request.data.get('label', None)
+        module = request.data.get('module', None)
+        user = get_object_or_404(User, pk=user_id)
+        report = get_object_or_404(Report, pk=report_id)
+        if label is None:
+            raise ParseError(detail='Label parameter is mandatory')
+        if module is None:
+            raise ParseError(detail='Module parameter is mandatory')
+        b = BookMark( user=user, report=report, label=label, module=module )
+        try:
+            b.save()
+            serializer = BookMarkSerializer(b, many=False)
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        except IntegrityError:
+            return Response(data={'message': "You have already a bookmark with the label '{0}', please use another".format(label), 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'DELETE':
+        id = request.data.get('id', '')
+        report = get_object_or_404(BookMark, pk=id)
+        report.delete()
+        return Response(data={}, status=status.HTTP_204_NO_CONTENT)
+
+
 
 @api_view(['PATCH'])
 def flip_report(request):

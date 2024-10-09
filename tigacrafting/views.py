@@ -35,7 +35,7 @@ from django.contrib.auth.models import User, Group
 import urllib
 import django.utils.html
 from django.db import connection
-from tigaserver_app.serializers import custom_render_notification, DataTableNotificationSerializer, DataTableAimalertSerializer
+from tigaserver_app.serializers import custom_render_notification, DataTableNotificationSerializer, DataTableAimalertSerializer, BookMarkSerializer
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
 from tigacrafting.forms import LicenseAgreementForm
@@ -1583,10 +1583,13 @@ def auto_annotate_other_species(report, request):
 def coarse_filter(request):
     this_user = request.user
     if this_user.groups.filter(name='coarse_filter').exists():
+        bookmarks = BookMark.objects.filter(user=this_user)
+        bookmarks_data = BookMarkSerializer(bookmarks, many=True)
         range_list = [n for n in range(10, 101, 10)]
         context = {
             'tasks_per_page_choices': range_list + [200, 300],
-            'countries': EuropeCountry.objects.all().order_by('name_engl')
+            'countries': EuropeCountry.objects.all().order_by('name_engl'),
+            'bookmarks': json.dumps(bookmarks_data.data)
         }
         return render(request, 'tigacrafting/coarse_filter.html', context)
     else:

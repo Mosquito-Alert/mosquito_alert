@@ -81,6 +81,7 @@ urlpatterns = [
     url('annotate_coarse/$', views.annotate_coarse),
     url('hide_report/$', views.hide_report),
     url('flip_report/$', views.flip_report),
+    url('bookmark_report/$', views.bookmark_report),
     url('quick_upload_report/$', views.quick_upload_report),
     url('', include(router.urls)),
 ]

@@ -1,7 +1,7 @@
 {% load staticfiles %}
 {% load leaflet_tags %}
 <!DOCTYPE html>
-<html lang="{% block language %}'en'{% endblock %}">
+<div lang="{% block language %}'en'{% endblock %}">
 <head>
     <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'tigacrafting/font-awesome-4.7.0/css/font-awesome.min.css' %}">
@@ -166,6 +166,9 @@
             align-self: center;
             margin: auto;
         }
+        .bookmarked{
+            outline: 0.5rem solid red;
+        }
     </style>
     <script src="{% static 'tigacrafting/jquery/1.11.1/jquery.min.js' %}"></script>
     <script src="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
@@ -182,8 +185,11 @@
     <script>
         const csrf_token = '{{ csrf_token }}';
         const iconurl = '{% static "tigamap/yellow_icon.png" %}';
+        const _user_id = '{{ user.id }}';
+        const bookmarks = JSON.parse('{{ bookmarks | escapejs }}');
     </script>
 </head>
+<html>
 <body>
 
 <div class="navbar-wrapper">
@@ -355,6 +361,30 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalBookmark" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="modalBkLabel">Add label to bookmark</h4>
+                </div>
+                <div class="modal-body">
+                    <form role="form" class="form-horizontal">
+                        <div class="form-group">
+                            <label for="bookmark_label">Label</label>
+                            <input class="form-control" id="bookmark_label" maxlength="100" placeholder="Enter label for the bookmark">
+                        </div>
+                        <input id="bookmark_report_id" type="hidden">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="bookmark_submit_button" class="btn btn-warning">Bookmark</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -444,9 +474,12 @@
         </div>
     </div>
     <div class="photo_container">
-        <div id="photo_grid" class="photo_grid">
-        </div>
-    <div class="container">
+        <div id="photo_grid" class="photo_grid"></div>
+    </div>
+    <div class="container"></div>
     <input id="n_per_page" type="hidden">
     <input id="filter_options" type="hidden">
+
+
 </body>
+</html>

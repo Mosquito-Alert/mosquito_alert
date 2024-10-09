@@ -387,6 +387,7 @@ function load_data(limit=300, offset=1, q=''){
             init_maps();
             load_previews();
             set_visibility_icons();
+            set_bookmarks();
         },
         error: function(jqXHR, textStatus, errorThrown){
             unlockui();
@@ -434,6 +435,7 @@ function single_report_template(report){
     }
     return `
         <div id="${ report.version_UUID }" data-type="${ report.type }" class="photo ${ report.type } ${ site_cat }">
+            <button id="bookmark_${ report.version_UUID }" type="button" data-id="${ report.version_UUID }" class="btn btn-danger btn-xs btn-bookmark"><span class="glyphicon glyphicon-bookmark"></span></button>
             <div class="photo_internal_wrapper">
                 <div class="header_internal_wrapper">
                     <div class="header_left">
@@ -566,6 +568,80 @@ $('#filters_clear').click( function(e){
     $('#filter_options').val(filter);
     $('#myModal').modal('hide');
     load_data(page_size,1,filter);
+});
+
+function do_delete(id, report_id){
+    $.ajax({
+        url: '/api/bookmark_report/',
+        data: { "id": id},
+        type: "DELETE",
+        headers: { "X-CSRFToken": csrf_token },
+        dataType: "json",
+        success: function(data) {
+            //apply_bookmark(report_id, label);
+            $('#' + report_id).removeClass('bookmarked');
+            $('#bookmark_' + report_id).html('<span class="glyphicon glyphicon-bookmark"></span>');
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            //alert(jqXHR.responseJSON.message);
+        },
+        cache: false
+    });
+}
+
+function do_create_bookmark(user_id, report_id, label){
+    $.ajax({
+        url: '/api/bookmark_report/',
+        data: { "report_id": report_id, "user_id": user_id, "label": label, "module": "coarse"},
+        type: "POST",
+        headers: { "X-CSRFToken": csrf_token },
+        dataType: "json",
+        success: function(data) {
+            /*
+            $('#' + report_id).unblock();
+            remove_report(report_id);
+            */
+            apply_bookmark(data.id, report_id, label);
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            alert(jqXHR.responseJSON.message);
+        },
+        cache: false
+    });
+}
+
+function set_bookmarks(){
+    for(var i=0; i < bookmarks.length; i++){
+        apply_bookmark( bookmarks[i].id, bookmarks[i].report, bookmarks[i].label );
+    }
+}
+
+$('div#photo_grid').on('click', 'button.btn.btn-danger.btn-xs.btn-bookmark', function(){
+    const report_id = $(this).data('id');
+    if( $('#' + report_id).hasClass('bookmarked') ){
+        if(confirm("Remove bookmark?")){
+            do_delete( $('#bookmark_' + report_id).data('bookmark'), report_id );
+        }
+    }else{
+        $('#bookmark_report_id').val(report_id);
+        $('#bookmark_label').val('');
+        $('#modalBookmark').modal('show');
+        //$('#' + report_id).addClass('bookmarked');
+    }
+});
+
+function apply_bookmark(bookmark_id, report_id, label){
+    $('#' + report_id).addClass('bookmarked');
+    $('#bookmark_' + report_id).data('bookmark', bookmark_id);
+    $('#bookmark_' + report_id).html('<span class="glyphicon glyphicon-bookmark"></span>'+label);
+    $('#modalBookmark').modal('hide');
+}
+
+$('#bookmark_submit_button').on('click',function(){
+    const report_id = $('#bookmark_report_id').val();
+    const label = $('#bookmark_label').val();
+    //apply_bookmark(report_id, '<span class="glyphicon glyphicon-bookmark"></span> ' + label);
+    do_create_bookmark(_user_id, report_id, label);
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_hide_report', function(){
