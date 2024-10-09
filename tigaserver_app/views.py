@@ -2264,6 +2264,10 @@ def flip_report(request):
             else:
                 if flip_to_subtype not in ['storm_drain_water','storm_drain_dry', 'other_water', 'other_dry']:
                     raise ParseError(detail='value not allowed, possible values are \'storm_drain_water\',\'storm_drain_dry\', \'other_water\', \'other_dry\' ')
+
+        if report.type == 'adult' and flip_to_type == 'adult':
+            return Response(
+                data={'message': 'Type is already adult, doing nothing', 'opcode': -2}, status=status.HTTP_400_BAD_REQUEST)
         # delete questions and answers ?
 
         # set new questions and answers
