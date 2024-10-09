@@ -1095,6 +1095,37 @@ class AnnotateCoarseTestCase(APITestCase):
         Notification.objects.filter(report=r).delete()
         ExpertReportAnnotation.objects.filter(report=r).delete()
 
+    def test_flip_adult_to_adult(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r_adult = Report.objects.get(pk="004D5A85-1D88-4170-A253-DABF30669EBE")
+        self.assertEqual(r_adult.type, 'adult', "Report type should be adult, is {0}".format(r_adult.type))
+        data = {
+            'report_id': r_adult.version_UUID,
+            'flip_to_type': 'adult'
+        }
+        response = self.client.patch('/api/flip_report/', data=data)
+        self.assertEqual(response.status_code, 400, "Response should be 400, is {0}".format(response.status_code))
+        self.assertEqual(response.data['opcode'], -2, "Opcode should be -2, is {0}".format(response.data['opcode']))
+
+    def test_flip_site_to_site(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r_site = Report.objects.get(pk='007106f1-6003-4cf5-b049-8f6533a90813')
+        self.assertEqual(r_site.type, 'site', "Report type should be site, is {0}".format(r_site.type))
+        data = {
+            'report_id': r_site.version_UUID,
+            'flip_to_type': 'site',
+            'flip_to_subtype': 'storm_drain_water'
+        }
+        response = self.client.patch('/api/flip_report/', data=data)
+        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        r_site_reloaded = Report.objects.get(pk='007106f1-6003-4cf5-b049-8f6533a90813')
+        n_responses = ReportResponse.objects.filter(report=r_site_reloaded).count()
+        self.assertTrue(n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses))
+        self.assertTrue(r_site_reloaded.flipped, "Report should be marked as flipped")
+        self.assertTrue(r_site_reloaded.flipped_to == 'site#site',"Report should be marked as flipped from site to site, field has value of {0}".format(r_site_reloaded.flipped_to))
+
     def test_flip(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)

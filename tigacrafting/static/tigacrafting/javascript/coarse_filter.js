@@ -15,6 +15,7 @@ function make_site(report_id, type){
     }else{
         $('#label_' + report_id ).html('Breeding site - storm drain');
     }
+    $('#quick_upload_' + report_id).removeClass('hide_button');
 }
 
 function make_adult(report_id){
@@ -29,7 +30,7 @@ function make_adult(report_id){
     const ia_value = $('#ia' + report_id ).data('ia-value');
     const ia_f_value = Math.round(parseFloat(ia_value) * 100) / 100
     $('#ia_label_' + report_id ).html('IA Value ' + ia_f_value );
-
+    $('#label_' + report_id ).html('Adult');
 }
 
 function set_report_visible_to(report_id, hide_value){
@@ -55,6 +56,7 @@ function show_adult_buttons(report_id){
     $(`#palbo_${ report_id }`).removeClass('hide_button');
     $(`#dalbo_${ report_id }`).removeClass('hide_button');
     $(`#ns_${ report_id }`).removeClass('hide_button');
+    $(`#quick_upload_${ report_id }`).addClass('hide_button');
 }
 
 function hide_adult_buttons(report_id){
@@ -63,6 +65,7 @@ function hide_adult_buttons(report_id){
     $(`#palbo_${ report_id }`).addClass('hide_button');
     $(`#dalbo_${ report_id }`).addClass('hide_button');
     $(`#ns_${ report_id }`).addClass('hide_button');
+    $(`#quick_upload_${ report_id }`).removeClass('hide_button');
 }
 
 $(document).ready(function() {
@@ -647,7 +650,15 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-warnin
 });
 
 $("input[name='radio_report_type']").on('click', function(){
-    $('#flip_to_type').val($(this).val());
+    const selected_value = $(this).val();
+    $('#flip_to_type').val(selected_value);
+    if(selected_value == 'adult'){
+        $('input[name=radio_site_type]').attr("disabled",true);
+        $('input[name=radio_water]').attr("disabled",true);
+    }else{
+        $('input[name=radio_site_type]').attr("disabled",false);
+        $('input[name=radio_water]').attr("disabled",false);
+    }
 });
 
 $("input[name='radio_site_type']").on('click', function(){
@@ -665,6 +676,8 @@ function set_modal_defaults(){
     $('#flip_to_type').val('adult');
     $('#flip_to_subtype').val('storm_drain');
     $('#flip_water').val('water');
+    $('input[name=radio_site_type]').attr("disabled",true);
+    $('input[name=radio_water]').attr("disabled",true);
 }
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger.foot_btn.btn_flip', function(){
