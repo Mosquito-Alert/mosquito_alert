@@ -2410,11 +2410,13 @@ def coarse_filter_reports(request):
 
         seek = request.query_params.get("seek", '')
         bookmark_report = None
+        current_text_filter = None
 
         if seek != '':
             bookmark = get_object_or_404(BookMark, pk=seek)
             bookmark_report = bookmark.report
             filter_params = get_filter_params_from_q(bookmark.json_filter)
+            current_text_filter = bookmark.json_filter
         else:
             q = request.query_params.get("q", '')
             filter_params = get_filter_params_from_q(q)
@@ -2498,6 +2500,9 @@ def coarse_filter_reports(request):
             'previous': api_previous,
             'results': serializer.data
         }
+
+        if current_text_filter is not None:
+            data['filter'] = current_text_filter
 
         return Response(data, status=status.HTTP_200_OK)
 

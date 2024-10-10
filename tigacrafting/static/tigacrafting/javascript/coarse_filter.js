@@ -103,9 +103,14 @@ function reset_filter(){
     $('#usernote_filter').val('');
 }
 
-function filter_to_ui(){
-    const filter = ui_to_filter();
-    const filter_json = JSON.parse(filter);
+function filter_to_ui(_filter){
+    var filter_json;
+    if(_filter==null){
+        const filter = ui_to_filter();
+        filter_json = JSON.parse(filter);
+    }else{
+        filter_json = JSON.parse(_filter);
+    }
     $('#visibility_filter').html(filter_json.visibility_readable);
     $('#text_filter').html(filter_json.note);
     $('#rtype_filter').html(filter_json.report_type_readable);
@@ -391,11 +396,14 @@ function load_data(limit=300, offset=1, q='', seek=''){
             if(seek!=''){
                 const report_bkm = $('#bkm_' + seek).data('report');
                 $("#" + report_bkm).get(0).scrollIntoView();
+                const filter = data.filter;
+                filter_to_ui(filter);
                 //$('body').scrollTo("#" + report_bkm);
                 /*$([document.documentElement, document.body]).animate({
                     scrollTop: $("#" + report_bkm).offset().top
                 }, 2000);*/
             }
+            init_bookmarks();
         },
         error: function(jqXHR, textStatus, errorThrown){
             unlockui();
@@ -876,6 +884,5 @@ $( "#slider" ).slider("value", 1.0);
 
 reset_filter();
 load_data();
-init_bookmarks();
 
 });
