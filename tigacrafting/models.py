@@ -603,6 +603,7 @@ class BookMark(models.Model):
     report = models.ForeignKey(help_text='Report to which the bookmark was applied', to='tigaserver_app.Report', related_name='report_bookmarks', on_delete=models.CASCADE, )
     label = models.CharField(help_text='Label for the bookmark. It allows the user to quickly identify why a bookmark was put', max_length=150)
     module = models.CharField(help_text='Label which designates the module for which the bookmark is applied', max_length=150)
+    json_filter = models.CharField(help_text='filter conditions when bookmark was set', max_length=500, null=True)
 
     class Meta:
         unique_together = ('user','label')

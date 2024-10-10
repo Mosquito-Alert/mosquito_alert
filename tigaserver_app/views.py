@@ -2256,13 +2256,14 @@ def bookmark_report(request):
         user_id = request.data.get('user_id', '')
         label = request.data.get('label', None)
         module = request.data.get('module', None)
+        json_filter = request.data.get('json_filter', None)
         user = get_object_or_404(User, pk=user_id)
         report = get_object_or_404(Report, pk=report_id)
         if label is None:
             raise ParseError(detail='Label parameter is mandatory')
         if module is None:
             raise ParseError(detail='Module parameter is mandatory')
-        b = BookMark( user=user, report=report, label=label, module=module )
+        b = BookMark( user=user, report=report, label=label, module=module, json_filter=json_filter )
         try:
             b.save()
             serializer = BookMarkSerializer(b, many=False)
@@ -2407,8 +2408,17 @@ def coarse_filter_reports(request):
                                         )
                                         .filter(n_annotations=0).order_by('-creation_time').all())
 
-        q = request.query_params.get("q", '')
-        filter_params = get_filter_params_from_q(q)
+        seek = request.query_params.get("seek", '')
+        bookmark_report = None
+
+        if seek != '':
+            bookmark = get_object_or_404(BookMark, pk=seek)
+            bookmark_report = bookmark.report
+            filter_params = get_filter_params_from_q(bookmark.json_filter)
+        else:
+            q = request.query_params.get("q", '')
+            filter_params = get_filter_params_from_q(q)
+
         aithr = filter_params['aithr']
         type = filter_params['type']
         visibility = filter_params['visibility']
@@ -2460,12 +2470,17 @@ def coarse_filter_reports(request):
         except:
             paginator = Paginator(results, limit)
 
+        if bookmark_report is not None:
+            index = results.filter(creation_time__gt=bookmark_report.creation_time).count()
+            offset = int(index / int(limit)) + (index % int(limit) > 0)
+
         try:
             results = paginator.page(offset)
         except PageNotAnInteger:
             results = paginator.page(offset)
         except EmptyPage:
             results = []
+
 
         api_count = paginator.count
         api_next = None if not results.has_next() else results.next_page_number()

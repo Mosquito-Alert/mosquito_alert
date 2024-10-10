@@ -359,10 +359,10 @@ function flip_report(report_id, flip_to_type, flip_to_subtype){
     });
 }
 
-function load_data(limit=300, offset=1, q=''){
+function load_data(limit=300, offset=1, q='', seek=''){
     lockui();
     $.ajax({
-        url: `/api/coarse_filter_reports/?limit=${limit}&offset=${offset}&q=${q}`,
+        url: `/api/coarse_filter_reports/?limit=${limit}&offset=${offset}&q=${q}&seek=${seek}`,
         type: "GET",
         dataType: "json",
         success: function(data) {
@@ -388,6 +388,14 @@ function load_data(limit=300, offset=1, q=''){
             load_previews();
             set_visibility_icons();
             set_bookmarks();
+            if(seek!=''){
+                const report_bkm = $('#bkm_' + seek).data('report');
+                $("#" + report_bkm).get(0).scrollIntoView();
+                //$('body').scrollTo("#" + report_bkm);
+                /*$([document.documentElement, document.body]).animate({
+                    scrollTop: $("#" + report_bkm).offset().top
+                }, 2000);*/
+            }
         },
         error: function(jqXHR, textStatus, errorThrown){
             unlockui();
@@ -412,6 +420,22 @@ function single_picture_template(picture){
 function pictures_template(pictures){
     const elements = pictures.reduce((acc, picture) => acc + single_picture_template(picture), "");
     return elements;
+}
+
+function single_bookmark_template(bookmark){
+    return `
+        <button id="bkm_${bookmark.id}" data-report="${bookmark.report}" data-id="${bookmark.id}" type="button" class="btn btn-danger go_bookmark"><span class="glyphicon glyphicon-bookmark"></span> ${bookmark.label}</button>
+    `
+}
+
+function add_ui_bookmark(bookmark){
+    const root = $('#bookmark_drawer');
+    const single_bookmark = single_bookmark_template(bookmark);
+    root.append(single_bookmark);
+}
+
+function remove_ui_bookmark(id){
+    $('#bkm_' + id).remove();
 }
 
 function single_report_template(report){
@@ -570,7 +594,7 @@ $('#filters_clear').click( function(e){
     load_data(page_size,1,filter);
 });
 
-function do_delete(id, report_id){
+function do_delete_bookmark(id, report_id){
     $.ajax({
         url: '/api/bookmark_report/',
         data: { "id": id},
@@ -581,6 +605,7 @@ function do_delete(id, report_id){
             //apply_bookmark(report_id, label);
             $('#' + report_id).removeClass('bookmarked');
             $('#bookmark_' + report_id).html('<span class="glyphicon glyphicon-bookmark"></span>');
+            remove_ui_bookmark(id);
         },
         error: function(jqXHR, textStatus, errorThrown){
             //alert(jqXHR.responseJSON.message);
@@ -590,18 +615,16 @@ function do_delete(id, report_id){
 }
 
 function do_create_bookmark(user_id, report_id, label){
+    const filter = ui_to_filter();
     $.ajax({
         url: '/api/bookmark_report/',
-        data: { "report_id": report_id, "user_id": user_id, "label": label, "module": "coarse"},
+        data: { "report_id": report_id, "user_id": user_id, "label": label, "module": "coarse", "json_filter": filter},
         type: "POST",
         headers: { "X-CSRFToken": csrf_token },
         dataType: "json",
         success: function(data) {
-            /*
-            $('#' + report_id).unblock();
-            remove_report(report_id);
-            */
             apply_bookmark(data.id, report_id, label);
+            add_ui_bookmark(data);
         },
         error: function(jqXHR, textStatus, errorThrown){
             alert(jqXHR.responseJSON.message);
@@ -620,7 +643,7 @@ $('div#photo_grid').on('click', 'button.btn.btn-danger.btn-xs.btn-bookmark', fun
     const report_id = $(this).data('id');
     if( $('#' + report_id).hasClass('bookmarked') ){
         if(confirm("Remove bookmark?")){
-            do_delete( $('#bookmark_' + report_id).data('bookmark'), report_id );
+            do_delete_bookmark( $('#bookmark_' + report_id).data('bookmark'), report_id );
         }
     }else{
         $('#bookmark_report_id').val(report_id);
@@ -763,18 +786,11 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger
     $('#flip_report_id').val( $(this).data("report-id") );
     set_modal_defaults();
     $('#modal_flip_to_site').modal('show');
-    /*
-    if( type=='adult' ){
-        $('#flip_to_type').val( "site" );
-        $('#modal_flip_to_site').modal('show');
-    }else{
-        $('#flip_to_type').val( "adult" );
-        const report_id = $(this).data("report-id");
-        if(confirm("Site report will be flipped to adult report. Proceed?")){
-            flip_report(report_id, 'adult', null);
-        }
-    }
-    */
+});
+
+$('div#bookmark_drawer').on('click', 'button.btn.btn-danger.go_bookmark', function(){
+    const page_size = get_page_size();
+    load_data(page_size, 1, '', seek=$(this).data('id'));
 });
 
 function map_init_basic(map, lat, lon) {
@@ -816,6 +832,16 @@ function init_maps(){
     });
 }
 
+function init_bookmarks(){
+    $('#bookmark_drawer').empty();
+    const root = $('#bookmark_drawer');
+    for(var i = 0; i < bookmarks.length; i++){
+        const bookmark = bookmarks[i];
+        const single_bookmark = single_bookmark_template(bookmark);
+        root.append(single_bookmark);
+    }
+}
+
 function get_flip_to_subtype(){
     const type = $('input[name="radio_site_type"]:checked').val();
     const water = $('input[name="radio_water"]:checked').val();
@@ -826,8 +852,6 @@ $('#go_flip').on('click', function(){
     const report_id = $('#flip_report_id').val();
     const flip_to_type = $('#flip_to_type').val();
     const flip_to_subtype = get_flip_to_subtype();
-    //console.log(`${ flip_to_type } ${ site_cat }`);
-    //console.log(`${ flip_to_subtype }`);
     flip_report(report_id, flip_to_type, flip_to_subtype);
 });
 
@@ -852,5 +876,6 @@ $( "#slider" ).slider("value", 1.0);
 
 reset_filter();
 load_data();
+init_bookmarks();
 
 });
