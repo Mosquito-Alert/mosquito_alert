@@ -2475,13 +2475,15 @@ def coarse_filter_reports(request):
         if bookmark_report is not None:
             index = results.filter(creation_time__gt=bookmark_report.creation_time).count()
             offset = int(index / int(limit)) + (index % int(limit) > 0)
+            if offset == 0:
+                offset = 1
 
         try:
             results = paginator.page(offset)
         except PageNotAnInteger:
-            results = paginator.page(offset)
+            results = paginator.page(1)
         except EmptyPage:
-            results = []
+            results = paginator.page(1)
 
 
         api_count = paginator.count

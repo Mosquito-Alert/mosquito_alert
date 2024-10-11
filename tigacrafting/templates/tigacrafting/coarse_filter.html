@@ -186,7 +186,7 @@
         const csrf_token = '{{ csrf_token }}';
         const iconurl = '{% static "tigamap/yellow_icon.png" %}';
         const _user_id = '{{ user.id }}';
-        const bookmarks = JSON.parse('{{ bookmarks | escapejs }}');
+        var bookmarks = JSON.parse('{{ bookmarks | escapejs }}');
     </script>
 </head>
 <html>

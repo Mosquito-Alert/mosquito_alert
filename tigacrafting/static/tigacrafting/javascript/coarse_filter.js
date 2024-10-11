@@ -112,12 +112,34 @@ function filter_to_ui(_filter){
         filter_json = JSON.parse(_filter);
     }
     $('#visibility_filter').html(filter_json.visibility_readable);
+    if( filter_json.visibility!= null && filter_json.visibility != '' ){
+        $('#visibility_select option[value=' + filter_json.visibility + ']').prop('selected', true);
+    }
+
     $('#text_filter').html(filter_json.note);
+    $('#usernote_filter').val(filter_json.note);
+
     $('#rtype_filter').html(filter_json.report_type_readable);
+    if( filter_json.report_type!= null && filter_json.report_type != '' ){
+        $('#type_select option[value=' + filter_json.report_type + ']').prop('selected', true);
+    }
+
     $('#country_filter').html(filter_json.country_readable);
+    if( filter_json.country!= null && filter_json.country != '' ){
+        $('#country_select option[value=' + filter_json.country + ']').prop('selected', true);
+    }
+
     $('#country_filter_exclude').html(filter_json.country_exclude_readable);
+    if( filter_json.country_exclude!= null && filter_json.country_exclude != '' ){
+        $('#country_select_exclude option[value=' + filter_json.country_exclude + ']').prop('selected', true);
+    }
+
     $('#ia_filter').html(filter_json.ia_threshold);
+    $("#slider").slider('value',filter_json.ia_threshold);
+    $( "#slider_value" ).html( filter_json.ia_threshold );
+
     $('#usernote_filter').html(decodeURI(filter_json.note));
+    $('#usernote_filter').val(filter_json.note);
 }
 
 function ui_to_filter(){
@@ -440,10 +462,18 @@ function add_ui_bookmark(bookmark){
     const root = $('#bookmark_drawer');
     const single_bookmark = single_bookmark_template(bookmark);
     root.append(single_bookmark);
+    bookmarks.push(bookmark);
 }
 
 function remove_ui_bookmark(id){
     $('#bkm_' + id).remove();
+    var new_bookmarks = [];
+    for(var i = 0; i < bookmarks.length; i++){
+        if(bookmarks[i].id != id){
+            new_bookmarks.push(bookmarks[i])
+        }
+    }
+    bookmarks = new_bookmarks;
 }
 
 function single_report_template(report){
