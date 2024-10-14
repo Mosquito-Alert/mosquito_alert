@@ -1,4 +1,4 @@
-const ask_confirmation = true;
+const ask_confirmation = false;
 
 function escapeHtml(unsafe) {
     return unsafe
