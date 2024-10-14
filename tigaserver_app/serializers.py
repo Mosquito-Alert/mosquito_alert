@@ -3,7 +3,7 @@ from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns, OrganizationPin, AcknowledgedNotification, UserSubscription
-from tigacrafting.models import Alert
+from tigacrafting.models import Alert, BookMark
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
 from django.urls import reverse
@@ -672,3 +672,9 @@ class CoarseReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ('photos', 'version_UUID', 'report_id', 'creation_time', 'type', 'note', 'point', 'country', 'site_cat', 'ia_filter_1', 'hide', 'user_id', 'lat', 'lon')
+
+
+class BookMarkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookMark
+        fields = '__all__'

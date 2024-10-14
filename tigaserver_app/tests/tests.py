@@ -5,6 +5,7 @@ import uuid
 # Create your tests here.
 from django.test import TestCase
 from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse
+from tigacrafting.models import BookMark
 from django.core.management import call_command
 import PIL.Image
 from PIL.ExifTags import TAGS, GPSTAGS
@@ -1030,6 +1031,21 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertEqual(response.status_code, 400, "Response should be 400, is {0}".format(response.status_code))
         # opcode should be -1
         self.assertEqual(response.data['opcode'], -1, "Opcode should be -1, is {0}".format(response.data['opcode']))
+
+    def test_bookmark(self):
+        u = User.objects.get(pk=25)
+        self.client.force_authenticate(user=u)
+        r = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        data= { "report_id": r.version_UUID, "user_id": u.id, "label": "bookmark label", "module": "coarse", "json_filter": ""}
+        response = self.client.post('/api/bookmark_report/', data=data)
+        self.assertEqual(response.status_code, 201, "Response should be 201, is {0}".format(response.status_code))
+        response = self.client.get('/api/bookmarks/', data=data)
+        self.assertTrue(len(response.data) == 1, "There should be a single bookmark, is not")
+        bookmark_id = response.data[0]['id']
+        data = { "id":bookmark_id }
+        response = self.client.delete('/api/bookmark_report/', data=data)
+        self.assertEqual(response.status_code, 204, "Response should be 204, is {0}".format(response.status_code))
+
 
     def test_annotate_coarse(self):
         u = User.objects.get(pk=25)
