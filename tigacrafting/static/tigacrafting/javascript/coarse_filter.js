@@ -1,5 +1,14 @@
 const ask_confirmation = true;
 
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 function make_site(report_id, type){
     hide_adult_buttons(report_id);
     $('#' + report_id).removeClass('adult');
@@ -719,7 +728,7 @@ $('div#photo_grid').on('click', 'button.btn.btn-danger.btn-xs.btn-bookmark', fun
 function apply_bookmark(bookmark_id, report_id, label){
     $('#' + report_id).addClass('bookmarked');
     $('#bookmark_' + report_id).data('bookmark', bookmark_id);
-    $('#bookmark_' + report_id).html('<span class="glyphicon glyphicon-bookmark"></span>'+label);
+    $('#bookmark_' + report_id).html('<span class="glyphicon glyphicon-bookmark"></span>' + escapeHtml(label));
     $('#modalBookmark').modal('hide');
 }
 
