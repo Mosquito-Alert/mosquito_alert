@@ -1,12 +1,11 @@
 const ask_confirmation = false;
 
-function escapeHtml(unsafe) {
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+function escapeHtml(original_string) {
+    if(original_string == null){
+        return null;
+    }else{
+        return original_string.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
 }
 
 function make_site(report_id, type){
