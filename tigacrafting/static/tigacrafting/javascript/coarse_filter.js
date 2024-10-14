@@ -147,34 +147,34 @@ function filter_to_ui(_filter){
     }else{
         filter_json = JSON.parse(_filter);
     }
-    $('#visibility_filter').html(filter_json.visibility_readable);
+    $('#visibility_filter').html(escapeHtml(filter_json.visibility_readable));
     if( filter_json.visibility!= null && filter_json.visibility != '' ){
         $('#visibility_select option[value=' + filter_json.visibility + ']').prop('selected', true);
     }
 
-    $('#text_filter').html(filter_json.note);
+    $('#text_filter').html(escapeHtml(filter_json.note));
     $('#usernote_filter').val(filter_json.note);
 
-    $('#rtype_filter').html(filter_json.report_type_readable);
+    $('#rtype_filter').html(escapeHtml(filter_json.report_type_readable));
     if( filter_json.report_type!= null && filter_json.report_type != '' ){
         $('#type_select option[value=' + filter_json.report_type + ']').prop('selected', true);
     }
 
-    $('#country_filter').html(filter_json.country_readable);
+    $('#country_filter').html(escapeHtml(filter_json.country_readable));
     if( filter_json.country!= null && filter_json.country != '' ){
         $('#country_select option[value=' + filter_json.country + ']').prop('selected', true);
     }
 
-    $('#country_filter_exclude').html(filter_json.country_exclude_readable);
+    $('#country_filter_exclude').html(escapeHtml(filter_json.country_exclude_readable));
     if( filter_json.country_exclude!= null && filter_json.country_exclude != '' ){
         $('#country_select_exclude option[value=' + filter_json.country_exclude + ']').prop('selected', true);
     }
 
-    $('#ia_filter').html(filter_json.ia_threshold);
+    $('#ia_filter').html(escapeHtml(filter_json.ia_threshold));
     $("#slider").slider('value',filter_json.ia_threshold);
-    $( "#slider_value" ).html( filter_json.ia_threshold );
+    $( "#slider_value" ).html(escapeHtml(filter_json.ia_threshold));
 
-    $('#usernote_filter').html(decodeURI(filter_json.note));
+    $('#usernote_filter').html(escapeHtml(decodeURI(filter_json.note)));
     $('#usernote_filter').val(filter_json.note);
 }
 
