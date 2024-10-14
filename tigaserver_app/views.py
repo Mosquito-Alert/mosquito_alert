@@ -2249,6 +2249,15 @@ def hide_report(request):
         report.save()
         return Response(data={'message': 'hide set to {0}'.format( hide ), 'opcode': 0}, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def bookmarks(request):
+    if request.method == 'GET':
+        bookmarks = BookMark.objects.all()
+        serializer = BookMarkSerializer(bookmarks, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+
 @api_view(['POST', 'DELETE'])
 def bookmark_report(request):
     if request.method == 'POST':
@@ -2365,6 +2374,7 @@ def quick_upload_report(request):
             new_annotation.validation_complete = True
             new_annotation.revise = True
             new_annotation.save()
+            BookMark.objects.filter(report=report).delete()
             return Response(data={'message': 'success', 'opcode': 0}, status=status.HTTP_200_OK)
         else:
             return Response(data={'message': 'success', 'opcode': 1}, status=status.HTTP_200_OK)
@@ -2390,6 +2400,7 @@ def annotate_coarse(request):
         annotation = auto_annotate(report, category, validation_value)
         current_domain = get_current_domain(request)
         issue_notification(annotation, current_domain)
+        BookMark.objects.filter(report=report).delete()
         return Response(data={'message':'success', 'opcode': 0}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])

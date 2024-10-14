@@ -70,6 +70,33 @@ function hide_adult_buttons(report_id){
 
 $(document).ready(function() {
 
+function load_bookmarks(){
+    $.ajax({
+        url: '/api/bookmarks/',
+        type: "GET",
+        headers: { "X-CSRFToken": csrf_token },
+        dataType: "json",
+        success: function(data) {
+            bookmarks = data;
+            init_bookmarks();
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            //alert(jqXHR.responseJSON.message);
+        },
+        cache: false
+    });
+}
+
+function init_bookmarks(){
+    $('#bookmark_drawer').empty();
+    const root = $('#bookmark_drawer');
+    for(var i = 0; i < bookmarks.length; i++){
+        const bookmark = bookmarks[i];
+        const single_bookmark = single_bookmark_template(bookmark);
+        root.append(single_bookmark);
+    }
+}
+
 function type_shows_with_current_filter(type){
     const filtered_type = $('#type_select').val();
     if(filtered_type=='all'){
@@ -314,6 +341,7 @@ function classify_picture(report_id, category_id, validation_value){
         success: function(data) {
             $('#' + report_id).unblock();
             remove_report(report_id);
+            load_bookmarks();
         },
         error: function(jqXHR, textStatus, errorThrown){
             if( jqXHR.responseJSON.opcode == -1 ){
@@ -337,6 +365,7 @@ function quick_upload_report(report_id){
         success: function(data) {
             $('#' + report_id).unblock();
             remove_report(report_id);
+            load_bookmarks();
         },
         error: function(jqXHR, textStatus, errorThrown){
             if( jqXHR.responseJSON.opcode == -1 ){
@@ -414,17 +443,13 @@ function load_data(limit=300, offset=1, q='', seek=''){
             init_maps();
             load_previews();
             set_visibility_icons();
-            set_bookmarks();
             if(seek!=''){
                 const report_bkm = $('#bkm_' + seek).data('report');
                 $("#" + report_bkm).get(0).scrollIntoView();
                 const filter = data.filter;
                 filter_to_ui(filter);
-                //$('body').scrollTo("#" + report_bkm);
-                /*$([document.documentElement, document.body]).animate({
-                    scrollTop: $("#" + report_bkm).offset().top
-                }, 2000);*/
             }
+            set_bookmarks();
             init_bookmarks();
         },
         error: function(jqXHR, textStatus, errorThrown){
@@ -868,16 +893,6 @@ function init_maps(){
             console.log(map_id);
         };
     });
-}
-
-function init_bookmarks(){
-    $('#bookmark_drawer').empty();
-    const root = $('#bookmark_drawer');
-    for(var i = 0; i < bookmarks.length; i++){
-        const bookmark = bookmarks[i];
-        const single_bookmark = single_bookmark_template(bookmark);
-        root.append(single_bookmark);
-    }
 }
 
 function get_flip_to_subtype(){

@@ -82,6 +82,7 @@ urlpatterns = [
     url('hide_report/$', views.hide_report),
     url('flip_report/$', views.flip_report),
     url('bookmark_report/$', views.bookmark_report),
+    url('bookmarks/$', views.bookmarks),
     url('quick_upload_report/$', views.quick_upload_report),
     url('', include(router.urls)),
 ]
