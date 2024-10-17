@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.db.models.functions import Now
 from django.db.models.signals import ModelSignal
 from django.utils import timezone
@@ -10,6 +10,14 @@ from treebeard.mp_tree import MP_Node
 from treebeard.ns_tree import NS_Node
 
 parent_has_changed = ModelSignal(use_caching=True)
+
+
+def update_object_counter(obj, fieldname: str, inc_value: int):
+    with transaction.atomic():
+        # See: https://docs.djangoproject.com/en/dev/ref/models/expressions/#avoiding-race-conditions-using-f
+        setattr(obj, fieldname, models.F(fieldname) + inc_value)
+        obj.save(update_fields=[fieldname])
+        obj.refresh_from_db(fields=[fieldname])
 
 
 class ParentManageableNodeMixin(Node):

@@ -4,11 +4,11 @@ from unittest.mock import patch
 
 import pytest
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, models, transaction
-from django.db.utils import DEFAULT_DB_ALIAS, ConnectionHandler, OperationalError
+from django.db import IntegrityError, models
 
 from mosquito_alert.utils.tests.test_models import AbstractDjangoModelTestMixin, BaseTestTimeStampedModel
 
+from ...utils.tests.utils import func_in_race_condition_test
 from ..models import BasePhotoAnnotationTask, BaseShape
 from ..shapes import Rectangle
 
@@ -86,34 +86,12 @@ class BaseTestBaseAnnotationTask(BaseTestBaseTask, ABC):
     def _test_counter_func_in_race_condition(self, func_name, field_name, inital_value, inc_value):
         # IMPORTANT: all functions calling this must have the decorator @pytest.mark.django_db(transaction=True)
         obj = self.factory_cls(**{field_name: inital_value})
-        with transaction.atomic():
-            getattr(obj, func_name)()
 
-            # Mock a new connection (e.g. from another server)
-            new_connection = ConnectionHandler().create_connection(alias=DEFAULT_DB_ALIAS)
-            with patch("django.db.utils.ConnectionHandler.__getitem__") as mock:
-                mock.return_value = new_connection
-
-                # The first transaction has NOT been committed
-                # before we begin the second, so the lock is still in effect.
-                # Using nowait = True, to raise if row is blocked.
-                with transaction.atomic():
-                    # Checking that the row is locked. Nobody can update.
-                    with pytest.raises(OperationalError):
-                        _ = obj.__class__.objects.select_for_update(nowait=True).get(pk=obj.pk)
-
-        assert getattr(obj, field_name) == inital_value + inc_value
-
-        # Mock a new connection (e.g. from another server)
-        new_connection = ConnectionHandler().create_connection(alias=DEFAULT_DB_ALIAS)
-        with patch("django.db.utils.ConnectionHandler.__getitem__") as mock:
-            mock.return_value = new_connection
-            # The first transaction has been committed
-            # before we begin the second, so the lock has been released.
-            with transaction.atomic():
-                getattr(obj, func_name)()
-
-        assert getattr(obj, field_name) == inital_value + 2 * inc_value
+        func_in_race_condition_test(
+            obj=obj,
+            func=lambda: getattr(obj, func_name)(),
+            validation_func=lambda: getattr(obj, field_name) == inital_value + inc_value,
+        )
 
     # fields
     @pytest.mark.parametrize("field_name", _COUNTER_FIELDS)

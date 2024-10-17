@@ -3,12 +3,12 @@ from abc import abstractmethod
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models, transaction
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_lifecycle import AFTER_UPDATE, LifecycleModelMixin, hook
 
 from mosquito_alert.images.models import Photo
-from mosquito_alert.utils.models import TimeStampedModel
+from mosquito_alert.utils.models import TimeStampedModel, update_object_counter
 
 ####################
 # NOTE: Until generic annotations is not needed, only abstractions will be defined.
@@ -84,30 +84,23 @@ class BaseAnnotationTask(BaseTask):
     # Custom Properties
 
     # Methods
-    def _update_counter(self, fieldname: str, inc_value: int):
-        with transaction.atomic():
-            # See: https://docs.djangoproject.com/en/dev/ref/models/expressions/#avoiding-race-conditions-using-f
-            setattr(self, fieldname, models.F(fieldname) + inc_value)
-            self.save(update_fields=[fieldname])
-            self.refresh_from_db(fields=[fieldname])
-
     def increase_annotation_counter(self):
-        self._update_counter(fieldname="total_annotations", inc_value=1)
+        update_object_counter(obj=self, fieldname="total_annotations", inc_value=1)
 
     def decrease_annotation_counter(self):
-        self._update_counter(fieldname="total_annotations", inc_value=-1)
+        update_object_counter(obj=self, fieldname="total_annotations", inc_value=-1)
 
     def increase_skipped_annotation_counter(self):
-        self._update_counter(fieldname="skipped_annotations", inc_value=1)
+        update_object_counter(obj=self, fieldname="skipped_annotations", inc_value=1)
 
     def decrease_skipped_annotation_counter(self):
-        self._update_counter(fieldname="skipped_annotations", inc_value=-1)
+        update_object_counter(obj=self, fieldname="skipped_annotations", inc_value=-1)
 
     def increase_prediction_counter(self):
-        self._update_counter(fieldname="total_predictions", inc_value=1)
+        update_object_counter(obj=self, fieldname="total_predictions", inc_value=1)
 
     def decrease_prediction_counter(self):
-        self._update_counter(fieldname="total_predictions", inc_value=-1)
+        update_object_counter(obj=self, fieldname="total_predictions", inc_value=-1)
 
     # Meta and String
     class Meta(BaseTask.Meta):

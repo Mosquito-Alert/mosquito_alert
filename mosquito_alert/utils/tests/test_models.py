@@ -8,9 +8,11 @@ from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.utils.timesince import timesince
 
+from ..models import update_object_counter
 from .factories import DummyObservableModelFactory, DummyTimeStampedModelFactory
 from .models import (
     DummyAL_NodeParentManageableModel,
+    DummyCounterModel,
     DummyMP_NodeExpandedQueriesModel,
     DummyMP_NodeParentManageableModel,
     DummyNonNodeParentManageableModel,
@@ -18,6 +20,19 @@ from .models import (
     DummyObservableModel,
     DummyTimeStampedModel,
 )
+from .utils import func_in_race_condition_test
+
+
+@pytest.mark.django_db(transaction=True)
+def test_update_object_counter_race_condition_old():
+    initial_value = 10
+    inc_value = 1
+    obj = DummyCounterModel.objects.create(counter=initial_value)
+    func_in_race_condition_test(
+        obj=obj,
+        func=lambda: update_object_counter(obj=obj, fieldname="counter", inc_value=inc_value),
+        validation_func=lambda: obj.counter == initial_value + inc_value,
+    )
 
 
 class AbstractDjangoModelTestMixin(ABC):

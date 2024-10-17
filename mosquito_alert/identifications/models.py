@@ -21,7 +21,7 @@ from mosquito_alert.annotations.shapes import Rectangle, avg_rectangles, group_r
 from mosquito_alert.images.models import Photo
 from mosquito_alert.individuals.models import Individual
 from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.utils.models import ObservableMixin, TimeStampedModel
+from mosquito_alert.utils.models import ObservableMixin, TimeStampedModel, update_object_counter
 
 from .managers import (
     BasePhotoIdentificationManager,
@@ -495,10 +495,10 @@ class PhotoIdentificationTask(BaseTaskWithResults, BaseTaskChild, BasePhotoAnnot
         self.task.update_results()
 
     def increase_external_counter(self):
-        self._update_counter(fieldname="total_external", inc_value=1)
+        update_object_counter(obj=self, fieldname="total_external", inc_value=1)
 
     def decrease_external_counter(self):
-        self._update_counter(fieldname="total_external", inc_value=-1)
+        update_object_counter(obj=self, fieldname="total_external", inc_value=-1)
 
     # Meta and String
     class Meta(BaseTaskWithResults.Meta, BasePhotoAnnotationTask.Meta):
