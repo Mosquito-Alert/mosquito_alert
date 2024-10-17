@@ -26,7 +26,7 @@ class m2mPhotoAdminInlineMixin:
     ]
 
     def preview(self, obj):
-        if obj.pk:
+        if not obj._state.adding:
             return format_html(f"<img src='{obj.photo.image.url}' height='150' />")
         return "Upload image for preview"
 
@@ -42,7 +42,7 @@ class PhotoAdmin(NestedModelAdmin):
     inlines = [FlaggedContentNestedInlineAdmin, PhotoIdentificationTaskAdminInline]
 
     def preview(self, obj):
-        if obj.pk:
+        if not obj._state.adding:
             return format_html(f"<img src='{obj.image.url}' height='150' />")
         return "Upload image for preview"
 
@@ -57,7 +57,7 @@ class PhotoAdmin(NestedModelAdmin):
         return format_html("<style>{}</style><br>{}", formatter.get_style_defs(), mark_safe(response))  # nosec
 
     def save_model(self, request, obj, form, change):
-        if not obj.pk:
+        if obj._state.adding:
             # Only set added_by during the first save.
             obj.user = request.user
         super().save_model(request, obj, form, change)

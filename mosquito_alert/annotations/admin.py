@@ -39,7 +39,7 @@ class BasePhotoAnnotationTaskAdminMixin(BaseAnnotationTaskAdminMixin):
 
     @admin.display(description=_("Photo preview"))
     def preview(self, obj):
-        if obj.pk:
+        if not obj._state.adding:
             return format_html(f"<img src='{obj.photo.image.url}' height='150' />")
         return "Upload image for preview"
 
