@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 from django.db import models
 
@@ -13,6 +15,15 @@ def test_user_get_absolute_url(user: User):
 
 @pytest.mark.django_db
 class TestUser:
+    def test_id_is_primary_key(self):
+        assert User._meta.get_field("id").primary_key
+
+    def test_id_default_is_uuid4(self):
+        assert User._meta.get_field("id").default == uuid.uuid4
+
+    def test_id_is_not_editable(self):
+        assert not User._meta.get_field("id").editable
+
     def test_user_profile_is_created_on_new_user(self):
         obj = UserFactory()
 

@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -14,6 +16,8 @@ class User(AbstractUser):
     If adding fields that need to be filled at user signup,
     check forms.SignupForm and forms.SocialSignupForms accordingly.
     """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     # First and last name do not cover name patterns around the globe
     name = CharField(_("Name of User"), blank=True, max_length=255)

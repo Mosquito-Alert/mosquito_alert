@@ -1,3 +1,5 @@
+import uuid
+
 import django.contrib.auth.models
 import django.contrib.auth.validators
 from django.db import migrations, models
@@ -7,7 +9,6 @@ import mosquito_alert.users.models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -20,19 +21,12 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
+                    models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False),
                 ),
                 ("password", models.CharField(max_length=128, verbose_name="password")),
                 (
                     "last_login",
-                    models.DateTimeField(
-                        blank=True, null=True, verbose_name="last login"
-                    ),
+                    models.DateTimeField(blank=True, null=True, verbose_name="last login"),
                 ),
                 (
                     "is_superuser",
@@ -41,26 +35,21 @@ class Migration(migrations.Migration):
                         help_text="Designates that this user has all permissions without explicitly assigning them.",
                         verbose_name="superuser status",
                     ),
-                ),(
+                ),
+                (
                     "username",
                     models.CharField(
-                        error_messages={
-                            "unique": "A user with that username already exists."
-                        },
+                        error_messages={"unique": "A user with that username already exists."},
                         help_text="Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
                         max_length=150,
                         unique=True,
-                        validators=[
-                            django.contrib.auth.validators.UnicodeUsernameValidator()
-                        ],
+                        validators=[django.contrib.auth.validators.UnicodeUsernameValidator()],
                         verbose_name="username",
                     ),
                 ),
                 (
                     "email",
-                    models.EmailField(
-                        blank=True, max_length=254, verbose_name="email address"
-                    ),
+                    models.EmailField(blank=True, max_length=254, verbose_name="email address"),
                 ),
                 (
                     "is_staff",
@@ -80,15 +69,11 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "date_joined",
-                    models.DateTimeField(
-                        default=django.utils.timezone.now, verbose_name="date joined"
-                    ),
+                    models.DateTimeField(default=django.utils.timezone.now, verbose_name="date joined"),
                 ),
                 (
                     "name",
-                    models.CharField(
-                        blank=True, max_length=255, verbose_name="Name of User"
-                    ),
+                    models.CharField(blank=True, max_length=255, verbose_name="Name of User"),
                 ),
                 (
                     "groups",
