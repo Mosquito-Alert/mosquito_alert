@@ -4,6 +4,7 @@ from django.contrib.auth.models import Permission
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+from imagekit.admin import AdminThumbnail
 
 from mosquito_alert.users.tests.factories import UserFactory
 
@@ -81,15 +82,11 @@ class TestPhotoAdmin:
     def test_created_at_field_is_readonly(self):
         assert "created_at" in PhotoAdmin.readonly_fields
 
-    def test_preview_is_readonly(self):
-        assert "preview" in PhotoAdmin.readonly_fields
+    def test_image_thumbnail_is_readonly(self):
+        assert "image_thumbnail" in PhotoAdmin.readonly_fields
 
-    def test_preview_html(self):
-        p = PhotoFactory()
-
-        photo_admin = PhotoAdmin(model=Photo, admin_site=AdminSite())
-
-        assert photo_admin.preview(p) == f"<img src='{p.image.url}' height='150' />"
+    def test_image_thumbnail_is_AdminThumbnail(self):
+        assert isinstance(PhotoAdmin.image_thumbnail, AdminThumbnail)
 
     def test_view(self, admin_client):
         p = PhotoFactory()

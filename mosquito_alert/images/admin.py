@@ -3,6 +3,7 @@ import json
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from imagekit.admin import AdminThumbnail
 from nested_admin.nested import NestedModelAdmin
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
@@ -19,32 +20,26 @@ class m2mPhotoAdminInlineMixin:
     can_delete = False
     fields = [
         "photo",
-        "preview",
+        "image_thumbnail",
     ]
     readonly_fields = [
-        "preview",
+        "image_thumbnail",
     ]
 
-    def preview(self, obj):
-        if not obj._state.adding:
-            return format_html(f"<img src='{obj.photo.image.url}' height='150' />")
-        return "Upload image for preview"
+    image_thumbnail = AdminThumbnail(image_field=lambda obj: obj.photo.thumbnail)
 
 
 @admin.register(Photo)
 class PhotoAdmin(NestedModelAdmin):
-    list_display = ("__str__", "user", "created_at", "preview")
+    list_display = ("__str__", "user", "created_at", "image_thumbnail")
     list_filter = ("user", "created_at")
-    fields = ("created_at", ("image", "preview"))
-    readonly_fields = ("preview", "created_at")
+    fields = ("created_at", ("image", "image_thumbnail"))
+    readonly_fields = ("image_thumbnail", "created_at")
     list_per_page = 10
 
-    inlines = [FlaggedContentNestedInlineAdmin, PhotoIdentificationTaskAdminInline]
+    image_thumbnail = AdminThumbnail(image_field="thumbnail")
 
-    def preview(self, obj):
-        if not obj._state.adding:
-            return format_html(f"<img src='{obj.image.url}' height='150' />")
-        return "Upload image for preview"
+    inlines = [FlaggedContentNestedInlineAdmin, PhotoIdentificationTaskAdminInline]
 
     @admin.display(description="EXIF")
     def exif_dict(self, obj):

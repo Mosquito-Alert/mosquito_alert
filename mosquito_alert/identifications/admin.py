@@ -328,7 +328,7 @@ class PhotoIdentificationTaskAdmin(BaseTaskWithResultsAdminMixin, BasePhotoAnnot
             {
                 "fields": (
                     "task",
-                    ("photo", "preview"),
+                    ("photo", "image_thumbnail"),
                     ("created_at", "updated_at"),
                     "is_completed",
                 )
@@ -379,12 +379,6 @@ class PhotoIdentificationTaskAdmin(BaseTaskWithResultsAdminMixin, BasePhotoAnnot
         PredictionAdminInline,
         ExternalIdentificationAdminInline,
     ]
-
-    @admin.display(description=_("Photo preview"))
-    def preview(self, obj):
-        if not obj._state.adding:
-            return format_html(f"<img src='{obj.photo.image.url}' height='150' />")
-        return "Upload image for preview"
 
     class Media(NumericFilterModelAdmin.Media):
         pass

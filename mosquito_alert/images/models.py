@@ -5,13 +5,14 @@ from django.conf import settings
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
-from imagekit.processors import ResizeToFit
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFit, Thumbnail
 from PIL import ExifTags, Image
 
 from mosquito_alert.moderation.models import FlagModeratedModel
 from mosquito_alert.utils.models import TimeStampedModel
 
-from .fields import ProcessedImageField
+from .fields import ProcessedImageField as ProcessedImageWithExifField
 
 
 def image_upload_to(instance, filename):
@@ -39,11 +40,23 @@ class Photo(FlagModeratedModel, TimeStampedModel):
     # NOTE: If a processor to autorotate is used, check that
     #       EXIF orientation is modified accordingly.
     #       Check PIL.ImageOps.exif_transpose()
-    image = ProcessedImageField(
+    image = ProcessedImageWithExifField(
         upload_to=image_upload_to,
         processors=[ResizeToFit(height=1080, upscale=False)],
         format="JPEG",
         options={"quality": 95},
+    )
+    image_large = ImageSpecField(
+        source="image", processors=[ResizeToFit(height=720, upscale=False)], format="WEBP", options={"quality": 80}
+    )
+    image_medium = ImageSpecField(
+        source="image", processors=[ResizeToFit(height=360, upscale=False)], format="WEBP", options={"quality": 70}
+    )
+    thumbnail = ImageSpecField(
+        source="image",
+        processors=[Thumbnail(height=150, width=150, crop=True)],
+        format="WEBP",
+        options={"quality": 40},
     )
     # TODO: license + attributions
 

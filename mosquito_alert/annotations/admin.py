@@ -1,8 +1,7 @@
 from django import forms
-from django.contrib import admin
 from django.contrib.postgres.forms import SimpleArrayField
-from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
+from imagekit.admin import AdminThumbnail
 
 from mosquito_alert.utils.admin import TimeStampedModelAdminMixin
 
@@ -31,17 +30,13 @@ class BasePhotoAnnotationTaskAdminMixin(BaseAnnotationTaskAdminMixin):
     _photo_annotation_task_fields = ("photo",)
 
     fields = BaseAnnotationTaskAdminMixin.fields + _photo_annotation_task_fields
-    readonly_fields = ("preview",) + BaseAnnotationTaskAdminMixin.readonly_fields
+    readonly_fields = ("image_thumbnail",) + BaseAnnotationTaskAdminMixin.readonly_fields
 
     search_fields = ("photo__image",)
     list_display = _photo_annotation_task_fields + TimeStampedModelAdminMixin.list_display
     list_filter = TimeStampedModelAdminMixin.list_filter
 
-    @admin.display(description=_("Photo preview"))
-    def preview(self, obj):
-        if not obj._state.adding:
-            return format_html(f"<img src='{obj.photo.image.url}' height='150' />")
-        return "Upload image for preview"
+    image_thumbnail = AdminThumbnail(image_field=lambda obj: obj.photo.thumbnail)
 
 
 class BaseAnnotationAdminMixin:

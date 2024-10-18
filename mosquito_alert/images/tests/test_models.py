@@ -32,6 +32,9 @@ class TestPhoto(BaseTestFlagModeratedModel, BaseTestTimeStampedModel):
     def test_user_related_name(self):
         assert self.model._meta.get_field("user").remote_field.related_name == "photos"
 
+    def test_image_can_not_be_null(self):
+        assert not self.model._meta.get_field("image").null
+
     def test_image_is_uploaded_in_images_path(self):
         p = self.factory_cls()
         assert os.path.dirname(p.image.name) == "images"
@@ -68,6 +71,27 @@ class TestPhoto(BaseTestFlagModeratedModel, BaseTestTimeStampedModel):
 
         assert p.image.width == 1080
         assert p.image.height == 600
+
+    def test_image_large(self):
+        p = self.factory_cls(image__width=2160, image__height=1080)
+
+        assert p.image_large is not None
+        assert p.image_large.width == 1440
+        assert p.image_large.height == 720
+
+    def test_image_medium(self):
+        p = self.factory_cls(image__width=2160, image__height=1080)
+
+        assert p.image_medium is not None
+        assert p.image_medium.width == 720
+        assert p.image_medium.height == 360
+
+    def test_thumbnail(self):
+        p = self.factory_cls(image__width=2160, image__height=1080)
+
+        assert p.thumbnail is not None
+        assert p.thumbnail.width == 150
+        assert p.thumbnail.height == 150
 
     def test_exif_is_preserved_from_original_image(self):
         p = self.factory_cls(image__from_path=testdata.TESTEXIFIMAGE_PATH)
