@@ -102,6 +102,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "mosquito_alert.annotations",
+    "mosquito_alert.authorization",
     "mosquito_alert.bites",
     "mosquito_alert.breeding_sites",
     "mosquito_alert.epidemiology",

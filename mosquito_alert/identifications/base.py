@@ -1,9 +1,12 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from mosquito_alert.geo.models import Boundary
+
 
 class BaseIdentifierProfile(models.Model):
     # Relations
+    preferred_identification_boundary = models.ForeignKey(Boundary, on_delete=models.SET_NULL, null=True, blank=True)
 
     # Attributes - Mandatory
     is_identifier = models.BooleanField(

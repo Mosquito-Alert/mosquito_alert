@@ -13,7 +13,7 @@ class BaseIdentifierProfileAdmin(admin.options.BaseModelAdmin):
         (
             _("Identifier information"),
             {
-                "fields": _identifier_profile_fields,
+                "fields": (_identifier_profile_fields, "preferred_identification_boundary"),
             },
         ),
     )
