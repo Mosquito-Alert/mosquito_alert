@@ -42,28 +42,28 @@ class TestPhoto(BaseTestFlagModeratedModel, BaseTestTimeStampedModel):
         filename, _ = os.path.splitext(os.path.basename(p.image.name))
         assert filename == str(new_uuid)
 
-    def test_image_is_converted_to_webp(self):
-        assert self.model._meta.get_field("image")._original_spec.format == "WEBP"
+    def test_image_is_converted_to_jpeg(self):
+        assert self.model._meta.get_field("image")._original_spec.format == "JPEG"
 
         # Check filename extension
         p = self.factory_cls(image__filename="example.png", image__format="PNG")
         _, ext = os.path.splitext(os.path.basename(p.image.name))
-        assert ext == ".webp"
+        assert ext == ".jpg"
 
-        # Check format is WEBP
-        assert Image.open(p.image).format == "WEBP"
+        # Check format is JPEG
+        assert Image.open(p.image).format == "JPEG"
 
-    def test_image_is_resized_to_720p(self):
-        p = self.factory_cls(image__width=2049, image__height=1080)
+    def test_image_is_resized_to_1080p(self):
+        p = self.factory_cls(image__width=3840, image__height=1620)
 
-        target_sizing_factor = 1080 / 720
+        target_sizing_factor = 1620 / 1080
         # It should perform a downsizing for factor 1.5
 
         # Metatada in the field
-        assert p.image.width == 2049 / target_sizing_factor
-        assert p.image.height == 720
+        assert p.image.width == 3840 / target_sizing_factor
+        assert p.image.height == 1080
 
-    def test_image_is_not_resized_if_smaller_than_720p(self):
+    def test_image_is_not_resized_if_smaller_than_1080p(self):
         p = self.factory_cls(image__width=1080, image__height=600)
 
         assert p.image.width == 1080

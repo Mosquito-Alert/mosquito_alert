@@ -41,9 +41,9 @@ class Photo(FlagModeratedModel, TimeStampedModel):
     #       Check PIL.ImageOps.exif_transpose()
     image = ProcessedImageField(
         upload_to=image_upload_to,
-        processors=[ResizeToFit(height=720, upscale=False)],
-        format="WEBP",
-        options={"quality": 85},
+        processors=[ResizeToFit(height=1080, upscale=False)],
+        format="JPEG",
+        options={"quality": 95},
     )
     # TODO: license + attributions
 
