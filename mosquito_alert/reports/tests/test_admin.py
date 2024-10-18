@@ -8,7 +8,7 @@ from .factories import BiteReportFactory, BreedingSiteReportFactory, IndividualR
 
 class BaseRecoverableReportMixin:
     def test_recoverlist(self, admin_client):
-        url = reverse(f"admin:{self.prefix}_recoverlist")
+        url = reverse(f"admin:{self.prefix}_recoverlist")  # noqa: E231
         response = admin_client.get(url)
         assert response.status_code == 200
 
@@ -18,7 +18,7 @@ class TestReportParentAdmin(BaseRecoverableReportMixin):
     prefix = "reports_report"
 
     def test_changelist(self, admin_client):
-        url = reverse(f"admin:{self.prefix}_changelist")
+        url = reverse(f"admin:{self.prefix}_changelist")  # noqa: E231
         response = admin_client.get(url)
         assert response.status_code == 200
 
@@ -27,7 +27,7 @@ class TestReportParentAdmin(BaseRecoverableReportMixin):
         assert fieldname in ReportParentAdmin.list_filter
 
     def test_add(self, admin_client):
-        url = reverse(f"admin:{self.prefix}_add")
+        url = reverse(f"admin:{self.prefix}_add")  # noqa: E231
         response = admin_client.get(url)
         assert response.status_code == 200
 
@@ -38,7 +38,7 @@ class TestReportParentAdmin(BaseRecoverableReportMixin):
     def test_child_view(self, admin_client, factory_cls):
         report = factory_cls()
         url = reverse(
-            f"admin:{self.prefix}_change",
+            f"admin:{self.prefix}_change",  # noqa: E231
             kwargs={"object_id": report.pk},
         )
         response = admin_client.get(url)
@@ -61,14 +61,14 @@ class BaseReportChildAdmin(BaseRecoverableReportMixin):
         "location_point": '{"type": "Point", "coordinates": [557144.124692098470405, 5943107.339493401348591],}',
         "Report_photos-TOTAL_FORMS": "0",
         "Report_photos-INITIAL_FORMS": "0",
-        "flag-flag-content_type-object_id-TOTAL_FORMS": "0",
-        "flag-flag-content_type-object_id-INITIAL_FORMS": "0",
-        "flag-flag-content_type-object_id-empty-flags-TOTAL_FORMS": "0",
-        "flag-flag-content_type-object_id-empty-flags-INITIAL_FORMS": "0",
+        "moderation-flag-content_type-object_id-TOTAL_FORMS": "0",
+        "moderation-flag-content_type-object_id-INITIAL_FORMS": "0",
+        "moderation-flag-content_type-object_id-empty-flags-TOTAL_FORMS": "0",
+        "moderation-flag-content_type-object_id-empty-flags-INITIAL_FORMS": "0",
     }
 
     def test_changelist(self, admin_client):
-        url = reverse(f"admin:{self.prefix}_changelist")
+        url = reverse(f"admin:{self.prefix}_changelist")  # noqa: E231
         response = admin_client.get(url)
         assert response.status_code == 200
 
@@ -79,7 +79,7 @@ class BaseReportChildAdmin(BaseRecoverableReportMixin):
     def test_child_view(self, admin_client, factory_cls):
         report = factory_cls()
         url = reverse(
-            f"admin:{self.prefix}_change",
+            f"admin:{self.prefix}_change",  # noqa: E231
             kwargs={"object_id": report.pk},
         )
         response = admin_client.get(url)
@@ -95,7 +95,7 @@ class TestBiteReportChildAdmin(BaseReportChildAdmin):
         return BiteReportFactory
 
     def test_add(self, admin_client):
-        url = reverse(f"admin:{self.prefix}_add")
+        url = reverse(f"admin:{self.prefix}_add")  # noqa: E231
         response = admin_client.get(url)
         assert response.status_code == 200
 
@@ -123,7 +123,7 @@ class TestBreedingSiteReportChildAdmin(BaseReportChildAdmin):
         return BreedingSiteReportFactory
 
     def test_add(self, admin_client):
-        url = reverse(f"admin:{self.prefix}_add")
+        url = reverse(f"admin:{self.prefix}_add")  # noqa: E231
         response = admin_client.get(url)
         assert response.status_code == 200
 
@@ -151,7 +151,7 @@ class TestIndividualReportAdmin(BaseReportChildAdmin):
         return IndividualReportFactory
 
     def test_add(self, admin_client):
-        url = reverse(f"admin:{self.prefix}_add")
+        url = reverse(f"admin:{self.prefix}_add")  # noqa: E231
         response = admin_client.get(url)
         assert response.status_code == 200
 

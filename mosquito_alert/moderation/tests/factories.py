@@ -1,55 +1,58 @@
 import factory
 from django.contrib.contenttypes.models import ContentType
 from factory.django import DjangoModelFactory
-from flag.models import Flag, FlagInstance
 
-from mosquito_alert.users.tests.factories import UserFactory
+from ..models import Flag, FlagInstance
+from .testapp.models import DummyFlagModeratedModel, DummyModel
 
-from ..models import FlagModeratedModel
-from .testapp.models import DummyFlagModeratedModel
+
+class DummyModelFactory(DjangoModelFactory):
+    class Meta:
+        model = DummyModel
 
 
 class FlagFactory(DjangoModelFactory):
     object_id = factory.SelfAttribute("content_object.id")
     content_type = factory.LazyAttribute(lambda o: ContentType.objects.get_for_model(o.content_object))
 
-    creator = factory.SubFactory(UserFactory)
-    state = factory.Faker("random_element", elements=[x[0] for x in Flag.STATE_CHOICES])
-    moderator = factory.SubFactory(UserFactory)
+    content_object = factory.SubFactory(DummyModelFactory)
 
     class Meta:
-        exclude = ["content_object"]
         model = Flag
-
-    class Params:
-        is_banned = factory.Trait(state=factory.Faker("random_element", elements=FlagModeratedModel.IS_BANNED_STATES))
-
-        is_permitted = factory.Trait(
-            state=factory.Faker(
-                "random_element", elements=list(set(Flag.State) - set(FlagModeratedModel.IS_BANNED_STATES))
-            )
-        )
 
 
 class FlagInstanceFactory(DjangoModelFactory):
     flag = factory.SubFactory(FlagFactory)
-    user = factory.SubFactory(UserFactory)
-    reason = factory.Faker("random_element", elements=FlagInstance.REASON)
-    info = factory.Faker("paragraph")
+    reason = factory.Faker("random_element", elements=FlagInstance.Reason.values)
+    notes = factory.Faker("paragraph")
 
     class Meta:
         model = FlagInstance
 
 
+class BaseFlagModeratedModelFactory(DjangoModelFactory):
+    @factory.post_generation
+    def flags(obj, create, extracted, **kwargs):
+        if not create or not extracted:
+            # Simple build, do nothing
+            return
+
+        obj.flags.set(extracted)
+
+    @classmethod
+    def _after_postgeneration(cls, instance, create, results=None):
+        # flags is already set. Do not call obj.save againg
+        if results:
+            _ = results.pop("flags", None)
+        super()._after_postgeneration(instance=instance, create=create, results=results)
+
+    class Meta:
+        abstract = True
+
+
 ##########################################################
 
 
-class DummyFlagModeratedModelFactory(DjangoModelFactory):
-    flags = factory.RelatedFactory(FlagFactory, factory_related_name="content_object")
-
+class DummyFlagModeratedModelFactory(BaseFlagModeratedModelFactory):
     class Meta:
         model = DummyFlagModeratedModel
-
-    class Params:
-        is_banned = factory.Trait(flags__is_banned=True)
-        is_permitted = factory.Trait(flags__is_permitted=True)

@@ -518,10 +518,10 @@ class BaseTestGeoLocatedModel(AbstractDjangoModelTestMixin, ABC):
         loc = LocationFactory()
         geo_loc = self.factory_cls(location=loc)
 
-        assert Location.objects.all().count() == 1
-
         geo_loc.delete()
-        assert Location.objects.all().count() == 0
+
+        with pytest.raises(Location.DoesNotExist):
+            Location.objects.get(pk=loc.pk)
 
 
 @pytest.mark.django_db

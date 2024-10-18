@@ -17,9 +17,10 @@ from reversion.models import Version
 from mosquito_alert.breeding_sites.models import BreedingSite
 from mosquito_alert.breeding_sites.tests.factories import BreedingSiteFactory
 from mosquito_alert.geo.tests.fuzzy import FuzzyPoint
+from mosquito_alert.geo.tests.test_models import BaseTestGeoLocatedModel
 from mosquito_alert.individuals.tests.factories import IndividualFactory
-from mosquito_alert.moderation.models import Flag
 from mosquito_alert.moderation.tests.factories import FlagFactory
+from mosquito_alert.moderation.tests.test_models import BaseTestFlagModeratedModel
 from mosquito_alert.utils.tests.test_models import BaseTestTimeStampedModel
 
 from ..models import BiteReport, BreedingSiteReport, IndividualReport, Report
@@ -50,11 +51,27 @@ def test_create_random_point_at_distance():
 
 
 @pytest.mark.django_db
-class TestReport(BaseTestTimeStampedModel):
+class TestReport(BaseTestGeoLocatedModel, BaseTestFlagModeratedModel, BaseTestTimeStampedModel):
     model = Report
     factory_cls = ReportFactory
 
     # fields
+    def test_id_is_primary_key(self):
+        assert self.model._meta.get_field("id").primary_key
+
+    def test_id_raise_if_set_and_not_uuid(self):
+        with pytest.raises(ValidationError, match=r"is not a valid UUID"):
+            self.factory_cls(id="random_string")
+
+    def test_id_default_is_uuid4(self):
+        assert self.model._meta.get_field("id").default == uuid.uuid4
+
+    def test_id_is_not_editable(self):
+        assert not self.model._meta.get_field("id").editable
+
+    def test_id_must_be_unique(self):
+        assert self.model._meta.get_field("id").unique
+
     def test_user_can_be_null(self):
         assert self.model._meta.get_field("user").null
 
@@ -76,19 +93,6 @@ class TestReport(BaseTestTimeStampedModel):
 
     def test_photos_can_be_sorted(self):
         assert self.model._meta.get_field("photos").sorted
-
-    def test_uuid_raise_if_set_and_not_uuid(self):
-        with pytest.raises(ValidationError, match=r"is not a valid UUID"):
-            self.factory_cls(uuid="random_string")
-
-    def test_uuid_default_is_uuid4(self):
-        assert self.model._meta.get_field("uuid").default == uuid.uuid4
-
-    def test_uuid_is_not_editable(self):
-        assert not self.model._meta.get_field("uuid").editable
-
-    def test_uuid_must_be_unique(self):
-        assert self.model._meta.get_field("uuid").unique
 
     def test_observed_at_can_not_be_null(self):
         assert not self.model._meta.get_field("observed_at").null
@@ -140,13 +144,13 @@ class TestReport(BaseTestTimeStampedModel):
 
         assert list(self.model.objects.browsable().all()) == [obj]
 
-        # Apply banned flag
-        flag = FlagFactory(content_object=obj, is_banned=True)
+        # Apply flag
+        flag = FlagFactory(content_object=obj, is_active=True)
 
         assert not self.model.objects.browsable().exists()
 
-        # Keep banned but change it status to allowed state.
-        flag.state = Flag.State.REJECTED
+        # Disable flag.
+        flag.is_active = False
         flag.save()
 
         assert list(self.model.objects.browsable().all()) == [obj]
@@ -157,7 +161,7 @@ class TestReport(BaseTestTimeStampedModel):
 
     def test__str__(self):
         obj = self.factory_cls()
-        assert obj.__str__() == f"{obj.__class__.__name__} ({obj.uuid})"
+        assert obj.__str__() == f"{obj.__class__.__name__} ({obj.id})"
 
     @pytest.mark.freeze_time
     def test_observed_at_must_be_before_created_at(self):
@@ -165,6 +169,13 @@ class TestReport(BaseTestTimeStampedModel):
             self.factory_cls(
                 observed_at=timezone.now() + timedelta(seconds=10),
             )
+
+    def test_tags_can_be_added_using_manager(self):
+        obj = self.factory_cls()
+        obj.tags.add("tag1", "tag2")
+
+    def test_tags_can_be_added_on_create(self):
+        _ = self.factory_cls(tags=("tag1", "tag2"))
 
 
 class BaseTestReversionedReport:

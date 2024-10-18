@@ -31,7 +31,7 @@ class ReportChildAdmin(NestedPolymorphicModelAdmin, PolymorphicChildModelAdmin):
     show_in_index = True
     inlines = [ReadOnlyPhotoAdminInline, FlaggedContentNestedInlineAdmin]
     list_filter = ["observed_at", "created_at"]
-    list_display = ["uuid", "user", "observed_at", "created_at", "updated_at"]
+    list_display = ["id", "user", "observed_at", "created_at", "updated_at"]
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj=obj, **kwargs)
@@ -87,4 +87,4 @@ class ReportParentAdmin(VersionAdmin, PolymorphicParentModelAdmin):
     base_model = Report
     child_models = (BiteReport, BreedingSiteReport, IndividualReport)
     list_filter = (PolymorphicChildModelFilter, "observed_at", "created_at")
-    list_display = ["uuid", "user", "observed_at", "created_at", "updated_at"]
+    list_display = ["id", "user", "observed_at", "created_at", "updated_at"]

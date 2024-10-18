@@ -110,9 +110,9 @@ LOCAL_APPS = [
     "mosquito_alert.images",
     "mosquito_alert.individuals",
     "mosquito_alert.moderation",
-    "mosquito_alert.moderation.apps.FlagConfig",
     "mosquito_alert.notifications",
     "mosquito_alert.reports",
+    "mosquito_alert.tags",
     "mosquito_alert.taxa",
     "mosquito_alert.users",
 ]

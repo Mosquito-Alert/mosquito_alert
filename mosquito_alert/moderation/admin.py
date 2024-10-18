@@ -1,7 +1,8 @@
 from django.contrib.admin.options import InlineModelAdmin
 from django.contrib.contenttypes.admin import GenericInlineModelAdmin
-from flag.models import Flag, FlagInstance
 from nested_admin.nested import NestedGenericTabularInlineMixin, NestedTabularInlineMixin
+
+from .models import Flag, FlagInstance
 
 
 class FlagInstanceInlineAdmin(InlineModelAdmin):

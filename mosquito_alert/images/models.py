@@ -1,6 +1,5 @@
 import os
 import uuid
-from pathlib import Path
 
 from django.conf import settings
 from django.db import models
@@ -20,17 +19,13 @@ def image_upload_to(instance, filename):
     # a recommended extension is already found in the filename
     _, ext = os.path.splitext(filename)
 
-    # Checking if filename is already a valid UUID.
-    # Using it if it is valid.
-    try:
-        uuid_str = uuid.UUID(hex=Path(filename).stem, version=4)
-    except ValueError:
-        # Creating a new uuid
-        uuid_str = uuid.uuid4()
-    return os.path.join("images", f"{uuid_str}{ext}")
+    return os.path.join("images", f"{instance.id}{ext}")
 
 
+# NOTE: FlagModeratedModel uses UUID as pk
 class Photo(FlagModeratedModel, TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     # Relations
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -90,4 +85,4 @@ class Photo(FlagModeratedModel, TimeStampedModel):
         ]
 
     def __str__(self):
-        return os.path.basename(self.image.name)
+        return str(self.id)

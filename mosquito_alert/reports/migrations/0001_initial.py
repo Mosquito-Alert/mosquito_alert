@@ -29,38 +29,21 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "uuid",
-                    models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
+                    models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False),
                 ),
                 (
                     "observed_at",
                     models.DateTimeField(
                         blank=True,
                         default=django.utils.timezone.now,
-                        validators=[
-                            django.core.validators.MaxValueValidator(
-                                limit_value=django.utils.timezone.now
-                            )
-                        ],
+                        validators=[django.core.validators.MaxValueValidator(limit_value=django.utils.timezone.now)],
                     ),
                 ),
                 (
                     "created_at",
                     models.DateTimeField(
                         auto_now_add=True,
-                        validators=[
-                            django.core.validators.MaxValueValidator(
-                                limit_value=django.utils.timezone.now
-                            )
-                        ],
+                        validators=[django.core.validators.MaxValueValidator(limit_value=django.utils.timezone.now)],
                     ),
                 ),
                 ("updated_at", models.DateTimeField(auto_now=True)),
@@ -76,9 +59,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "photos",
-                    sortedm2m.fields.SortedManyToManyField(
-                        blank=True, help_text=None, to="images.photo"
-                    ),
+                    sortedm2m.fields.SortedManyToManyField(blank=True, help_text=None, to="images.photo"),
                 ),
                 (
                     "polymorphic_ctype",
@@ -184,9 +165,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="report",
             constraint=models.CheckConstraint(
-                check=models.Q(
-                    ("created_at__lte", django.db.models.functions.datetime.Now())
-                ),
+                check=models.Q(("created_at__lte", django.db.models.functions.datetime.Now())),
                 name="created_at_cannot_be_future_dated",
             ),
         ),

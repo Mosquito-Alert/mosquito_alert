@@ -1,9 +1,11 @@
 import os
+import uuid
 
 import pytest
 from django.db import models
 from PIL import Image
 
+from mosquito_alert.moderation.tests.test_models import BaseTestFlagModeratedModel
 from mosquito_alert.utils.tests.test_models import BaseTestTimeStampedModel
 
 from ..models import Photo
@@ -12,7 +14,7 @@ from .factories import PhotoFactory
 
 
 @pytest.mark.django_db
-class TestPhoto(BaseTestTimeStampedModel):
+class TestPhoto(BaseTestFlagModeratedModel, BaseTestTimeStampedModel):
     model = Photo
     factory_cls = PhotoFactory
 
@@ -34,17 +36,11 @@ class TestPhoto(BaseTestTimeStampedModel):
         p = self.factory_cls()
         assert os.path.dirname(p.image.name) == "images"
 
-    def test_image_filaname_is_replaced_to_uuid(self, mocker):
-        mocker.patch("uuid.uuid4", return_value="mocked_uuid")
-
-        p = self.factory_cls(image__filename="example.jpg")
+    def test_image_filaname_is_replaced_to_uuid_from_id(self):
+        new_uuid = uuid.uuid4()
+        p = self.factory_cls(id=new_uuid, image__filename="example.jpg")
         filename, _ = os.path.splitext(os.path.basename(p.image.name))
-        assert filename == "mocked_uuid"
-
-    def test_image_filename_is_kept_if_already_uuid(self):
-        p = self.factory_cls(image__filename="5c240771-4f46-4d0b-972e-a2c0edd31451.png")
-        filename, _ = os.path.splitext(os.path.basename(p.image.name))
-        assert filename == "5c240771-4f46-4d0b-972e-a2c0edd31451"
+        assert filename == str(new_uuid)
 
     def test_image_is_converted_to_webp(self):
         assert self.model._meta.get_field("image")._original_spec.format == "WEBP"
@@ -145,5 +141,7 @@ class TestPhoto(BaseTestTimeStampedModel):
         assert self.model._meta.ordering == ["-created_at"]
 
     def test__str__(self):
-        p = self.factory_cls(image__filename="5c240771-4f46-4d0b-972e-a2c0edd31451.webp")
-        assert p.__str__() == "5c240771-4f46-4d0b-972e-a2c0edd31451.webp"
+        new_uuid = uuid.uuid4()
+
+        p = self.factory_cls(id=new_uuid)
+        assert p.__str__() == str(new_uuid)

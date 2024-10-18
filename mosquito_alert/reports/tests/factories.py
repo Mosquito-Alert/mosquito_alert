@@ -2,15 +2,15 @@ import factory
 import factory.fuzzy
 from django.db.models.signals import m2m_changed
 
-from mosquito_alert.breeding_sites.tests.factories import BreedingSiteFactory
 from mosquito_alert.geo.tests.factories import GeoLocatedModelFactory
 from mosquito_alert.identifications.signals import create_dummy_prediction
+from mosquito_alert.moderation.tests.factories import BaseFlagModeratedModelFactory
 from mosquito_alert.users.tests.factories import UserFactory
 
 from ..models import BiteReport, BreedingSiteReport, IndividualReport, Report
 
 
-class ReportFactory(GeoLocatedModelFactory):
+class ReportFactory(GeoLocatedModelFactory, BaseFlagModeratedModelFactory):
     user = factory.SubFactory(UserFactory)
 
     notes = factory.Faker("paragraph")
@@ -30,11 +30,22 @@ class ReportFactory(GeoLocatedModelFactory):
             if deleted:
                 m2m_changed.connect(create_dummy_prediction, sender=self._meta.model.photos.through)
 
+    @factory.post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.tags.add(*extracted)
+
     @classmethod
     def _after_postgeneration(cls, instance, create, results=None):
         # candidates is already set. Do not call obj.save againg
         if results:
             _ = results.pop("photos", None)
+            _ = results.pop("tags", None)
+            # NOTE: added for BaseFlagModeratedModelFactory
+            _ = results.pop("flags", None)
         super()._after_postgeneration(instance=instance, create=create, results=results)
 
     class Meta:
@@ -65,7 +76,7 @@ class BiteReportFactory(ReportFactory):
 
 
 class BreedingSiteReportFactory(ReportFactory):
-    breeding_site = factory.SubFactory(BreedingSiteFactory)
+    # breeding_site = factory.SubFactory(BreedingSiteFactory)
 
     has_water = False
 

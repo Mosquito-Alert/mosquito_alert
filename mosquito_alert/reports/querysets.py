@@ -7,7 +7,7 @@ from mosquito_alert.moderation.querysets import FlagModeratedPolymorphicModelQue
 
 class ReportQueryset(GeoLocatedPolymorphicModelQuerySet, FlagModeratedPolymorphicModelQuerySet):
     def browsable(self):
-        return self.filter(published=True).with_permitted_state()
+        return self.filter(published=True).flagged(False)
 
 
 class IndividualReportQueryset(ReportQueryset):

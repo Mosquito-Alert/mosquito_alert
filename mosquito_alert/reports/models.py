@@ -10,22 +10,26 @@ from taggit.managers import TaggableManager
 
 from mosquito_alert.bites.models import Bite
 from mosquito_alert.breeding_sites.models import BreedingSite
-from mosquito_alert.geo.models import GeoLocatedModel
+from mosquito_alert.geo.models import GeoLocatedModel, Location
 from mosquito_alert.images.models import Photo
 from mosquito_alert.individuals.models import Individual
 from mosquito_alert.moderation.models import FlagModeratedModel
+from mosquito_alert.tags.models import UUIDTaggedItem
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.utils.models import TimeStampedModel
 
 from .managers import IndividualReportManager, ReportManager
 
 
+# NOTE: FlagModeratedModel uses UUID as pk
 class Report(GeoLocatedModel, FlagModeratedModel, TimeStampedModel, PolymorphicModel):
     """A detailed account of an event, based on what one has observed or asked questions about.
 
     Args:
         models (_type_): _description_
     """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     # Relations
     user = models.ForeignKey(
@@ -39,12 +43,11 @@ class Report(GeoLocatedModel, FlagModeratedModel, TimeStampedModel, PolymorphicM
     photos = SortedManyToManyField(Photo, blank=True)
 
     # Attributes - Mandatory
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     # NOTE: in case licensing is needed, get inspiration from django-licensing (it does not work)
     # license = models.ForeignKey(License, on_delete=models.PROTECT)
     # TODO: add location_is_modified or another location for the event_location.
-    observed_at = models.DateTimeField(blank=True)
-    published = models.BooleanField(default=False)
+    observed_at = models.DateTimeField(blank=True)  # TODO: rename to event_datetime
+    published = models.BooleanField(default=False)  # TODO: make it published_at
     # TODO: app_version, os
 
     # Attributes - Optional
@@ -53,6 +56,7 @@ class Report(GeoLocatedModel, FlagModeratedModel, TimeStampedModel, PolymorphicM
     # Object Manager
     objects = ReportManager()
     tags = TaggableManager(
+        through=UUIDTaggedItem,
         blank=True,
         help_text=_("A comma-separated list of tags you can add to a report to make them easier to find."),
     )
@@ -77,7 +81,7 @@ class Report(GeoLocatedModel, FlagModeratedModel, TimeStampedModel, PolymorphicM
         ]
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__} ({self.uuid})"
+        return f"{self.__class__.__name__} ({self.id})"
 
 
 @reversion.register(follow=("report_ptr",))
@@ -126,8 +130,14 @@ class BreedingSiteReport(Report):
                 if nearest_breeding_site:
                     self.breeding_site = nearest_breeding_site
                 else:
+                    # Duplicate the location object without saving it yet
+                    # This is because it's a OneToOneRelation
+                    new_location = Location.objects.get(pk=self.location.pk)
+                    new_location.pk = None  # Set primary key to None to create a new object
+                    new_location.save()  # Save the duplicated location
+
                     self.breeding_site = BreedingSite.objects.create(
-                        location=self.location,
+                        location=new_location,
                         # TODO: missing breeding_site type
                     )
 
