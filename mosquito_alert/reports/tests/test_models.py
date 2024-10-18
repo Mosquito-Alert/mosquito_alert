@@ -94,6 +94,15 @@ class TestReport(BaseTestGeoLocatedModel, BaseTestFlagModeratedModel, BaseTestTi
     def test_photos_can_be_sorted(self):
         assert self.model._meta.get_field("photos").sorted
 
+    def test_short_id_can_not_be_null(self):
+        assert not self.model._meta.get_field("short_id").null
+
+    def test_short_id_size(self):
+        assert self.model._meta.get_field("short_id").size == 10
+
+    def test_short_id_is_not_editable(self):
+        assert not self.model._meta.get_field("short_id").editable
+
     def test_observed_at_can_not_be_null(self):
         assert not self.model._meta.get_field("observed_at").null
 

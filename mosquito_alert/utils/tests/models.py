@@ -3,6 +3,7 @@ from treebeard.al_tree import AL_Node
 from treebeard.mp_tree import MP_Node
 from treebeard.ns_tree import NS_Node
 
+from ..fields import ShortIDField
 from ..models import NodeExpandedQueriesMixin, ObservableMixin, ParentManageableNodeMixin, TimeStampedModel
 
 
@@ -44,3 +45,7 @@ class DummyObservableModel(ObservableMixin, models.Model):
 
 class DummyCounterModel(models.Model):
     counter = models.IntegerField(default=0)
+
+
+class DummyShortIDModel(models.Model):
+    short_id = ShortIDField(size=11)

@@ -16,6 +16,7 @@ from mosquito_alert.individuals.models import Individual
 from mosquito_alert.moderation.models import FlagModeratedModel
 from mosquito_alert.tags.models import UUIDTaggedItem
 from mosquito_alert.taxa.models import Taxon
+from mosquito_alert.utils.fields import ShortIDField
 from mosquito_alert.utils.models import TimeStampedModel
 
 from .managers import IndividualReportManager, ReportManager
@@ -45,6 +46,7 @@ class Report(GeoLocatedModel, FlagModeratedModel, TimeStampedModel, PolymorphicM
     # Attributes - Mandatory
     # NOTE: in case licensing is needed, get inspiration from django-licensing (it does not work)
     # license = models.ForeignKey(License, on_delete=models.PROTECT)
+    short_id = ShortIDField(size=10, editable=False)
     # TODO: add location_is_modified or another location for the event_location.
     observed_at = models.DateTimeField(blank=True)  # TODO: rename to event_datetime
     published = models.BooleanField(default=False)  # TODO: make it published_at

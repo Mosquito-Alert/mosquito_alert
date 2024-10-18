@@ -1,4 +1,9 @@
+import math
+import secrets
+from typing import Any
+
 from django.apps import apps
+from django.db import models
 from simple_history.models import HistoricalRecords, registered_models
 
 
@@ -57,3 +62,29 @@ class ProxyAwareHistoricalRecords(HistoricalRecords):
         name = self.get_history_model_name(model)
         registered_models[opts.db_table] = model
         return type(str(name), (base_history,), attrs)
+
+
+class ShortIDField(models.CharField):
+    """
+    A custom model field that generates a short, URL-safe identifier.
+    """
+
+    def __init__(self, size: int, *args, **kwargs) -> None:
+        if not isinstance(size, int) or size <= 0:
+            raise ValueError("Size must be a positive integer.")
+        # See: https://zelark.github.io/nano-id-cc/
+        self.size = size
+        kwargs["max_length"] = size  # Assign max_length from size
+        kwargs["default"] = self.generate_short_id  # Use the method to generate the default value
+        super().__init__(*args, **kwargs)
+
+    def generate_short_id(self):
+        """Generates a URL-safe short ID of specified length."""
+        return secrets.token_urlsafe(nbytes=math.ceil(self.size / 1.3))[: self.size]
+
+    def deconstruct(self) -> Any:
+        name, path, args, kwargs = super().deconstruct()
+        kwargs["size"] = self.size
+        del kwargs["max_length"]
+        del kwargs["default"]
+        return name, path, args, kwargs
