@@ -22,7 +22,6 @@ from mosquito_alert.images.tests.factories import PhotoFactory
 from mosquito_alert.individuals.tests.factories import IndividualFactory
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.taxa.tests.factories import TaxonFactory
-from mosquito_alert.users.tests.factories import UserFactory
 from mosquito_alert.utils.tests.test_models import BaseTestObservableMixin, BaseTestTimeStampedModel
 
 from ..models import (
@@ -1115,9 +1114,8 @@ class TestUserIdentification(BaseTestBasePhotoIdentification):
         assert photo_task.total_external == 0
 
     # Meta
-    def test_constraint_unique_user_by_task(self):
+    def test_constraint_unique_user_by_task(self, user):
         task = PhotoIdentificationTaskFactory()
-        user = UserFactory()
         with pytest.raises(IntegrityError, match=r"unique constraint"):
             self.factory_cls.create_batch(size=2, user=user, task=task)
 

@@ -7,7 +7,6 @@ from django.db import models
 from django.db.utils import IntegrityError
 from django.utils import timezone
 
-from mosquito_alert.users.tests.factories import UserFactory
 from mosquito_alert.utils.tests.test_models import AbstractDjangoModelTestMixin, BaseTestTimeStampedModel
 
 from ..models import Flag, FlagInstance, FlagModeratedModel
@@ -245,14 +244,13 @@ class TestFlagInstance(BaseTestTimeStampedModel):
         assert obj.flag.count == 10
 
     # meta
-    def test_constraint_unique_flag_by_user_only_if_user_is_not_null(self):
+    def test_constraint_unique_flag_by_user_only_if_user_is_not_null(self, user):
         flag = FlagFactory()
 
         # Case user is null -> NOT RAISE
         _ = self.factory_cls.create_batch(size=2, flag=flag, user=None)
 
         # Case user is not null -> RAISE
-        user = UserFactory()
         with pytest.raises(IntegrityError, match=r"unique constraint"):
             self.factory_cls.create_batch(size=2, flag=flag, user=user)
 

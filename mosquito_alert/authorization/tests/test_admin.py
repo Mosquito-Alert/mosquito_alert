@@ -1,7 +1,6 @@
 from django.urls import reverse
 
 from mosquito_alert.geo.tests.factories import BoundaryFactory
-from mosquito_alert.users.tests.factories import UserFactory
 
 from ..models import BoundaryAuthorization, BoundaryMembership
 from .factories import BoundaryAuthorizationFactory
@@ -13,13 +12,12 @@ class TestBoundaryAuthorizationAdmin:
         response = admin_client.get(url)
         assert response.status_code == 200
 
-    def test_add(self, admin_client, freezer):
+    def test_add(self, admin_client, freezer, user):
         url = reverse("admin:authorization_boundaryauthorization_add")
         response = admin_client.get(url)
         assert response.status_code == 200
 
         boundary = BoundaryFactory()
-        user = UserFactory()
 
         response = admin_client.post(
             url,
