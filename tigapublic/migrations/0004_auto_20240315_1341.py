@@ -3,6 +3,14 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
+def delete_useless_map_aux_reports(apps, schema_editor):
+    MapAuxReports = apps.get_model("tigapublic", "MapAuxReports")
+    Report = apps.get_model("tigaserver_app", "Report")
+
+    MapAuxReports.objects.annotate(
+        report_exists=models.Exists(Report.objects.filter(pk=models.OuterRef('version_uuid')))
+    ).filter(report_exists=False).delete()
+
 
 class Migration(migrations.Migration):
 
@@ -21,8 +29,18 @@ class Migration(migrations.Migration):
             name='Userfixes',
         ),
         migrations.AlterModelOptions(
-            name='mapauxreports',
-            options={'managed': False},
+            name='stormdrain',
+            options={'managed': True},
+        ),
+        migrations.AlterModelOptions(
+            name='stormdrainuserversions',
+            options={'managed': True},
+        ),
+        migrations.RunPython(delete_useless_map_aux_reports, migrations.RunPython.noop),
+        migrations.AlterField(
+            model_name='mapauxreports',
+            name='version_uuid',
+            field=models.OneToOneField(db_column='version_uuid', on_delete=django.db.models.deletion.CASCADE, related_name='map_aux_report', to='tigaserver_app.Report'),
         ),
         migrations.AlterField(
             model_name='observationnotifications',

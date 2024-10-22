@@ -111,7 +111,7 @@ class ReportsMapData(models.Model):
 class MapAuxReports(models.Model):
     """All mosquito observations."""
 
-    id = models.AutoField(primary_key=True)
+    id = models.IntegerField(primary_key=True)
     version_uuid = models.OneToOneField(Report, db_column='version_uuid', related_name='map_aux_report',on_delete=models.CASCADE)
     user_id = models.CharField(max_length=36, blank=True)
     observation_date = models.DateTimeField(null=True, blank=True)
@@ -145,7 +145,7 @@ class MapAuxReports(models.Model):
     class Meta:
         """Meta."""
 
-        managed = False
+        managed = True
         db_table = 'map_aux_reports'
 
 
@@ -177,7 +177,7 @@ class StormDrain(models.Model):
         """Meta."""
 
         db_table = 'storm_drain'
-        managed = False
+        managed = True
 
 
 class PredefinedNotificationManager(models.Manager):
@@ -267,7 +267,7 @@ class StormDrainUserVersions(models.Model):
         """Meta."""
 
         db_table = 'tigapublic_storm_drain_user_version'
-        managed = False
+        managed = True
 
 
 class Epidemiology(models.Model):
