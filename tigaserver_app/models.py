@@ -2680,10 +2680,10 @@ class ReportResponse(models.Model):
             report_obj.save()
 
     def save(self, skip_report_update: bool = False, *args, **kwargs):
+        super().save(*args, **kwargs)
+
         if not skip_report_update:
             self._update_report_value()
-
-        super().save(*args, **kwargs)
 
     def __unicode__(self):
         return str(self.id)
