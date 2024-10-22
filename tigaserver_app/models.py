@@ -2680,6 +2680,14 @@ class ReportResponse(models.Model):
             report_obj.save()
 
     def save(self, skip_report_update: bool = False, *args, **kwargs):
+        # NOTE: this is needed to ensure question_id/answer_id are integers.
+        #       _update_report_value works as expected.
+        if self.question_id is not None:
+            self.question_id = int(self.question_id)
+
+        if self.answer_id is not None:
+            self.answer_id = int(self.answer_id)
+
         super().save(*args, **kwargs)
 
         if not skip_report_update:
