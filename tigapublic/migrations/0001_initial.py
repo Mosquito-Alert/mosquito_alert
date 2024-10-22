@@ -196,7 +196,7 @@ class Migration(migrations.Migration):
                 ('style_json', models.TextField()),
                 ('visible', models.BooleanField()),
                 ('title', models.CharField(blank=True, max_length=50)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tigapublic.AuthUser')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'db_table': 'tigapublic_storm_drain_user_version',
@@ -224,7 +224,7 @@ class Migration(migrations.Migration):
                 ('original_lat', models.FloatField(blank=True, null=True)),
                 ('size', models.CharField(blank=True, max_length=5, null=True)),
                 ('model', models.CharField(blank=True, max_length=5, null=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tigapublic.AuthUser')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'db_table': 'storm_drain',
@@ -240,7 +240,7 @@ class Migration(migrations.Migration):
                 ('title_es', models.TextField(help_text='Title of the comment, shown innon-detail view, in spanish')),
                 ('title_ca', models.TextField(blank=True, default=None, help_text='Title of the comment, shown innon-detail view, in catalan', null=True)),
                 ('title_en', models.TextField(blank=True, default=None, help_text='Title of the comment, shown innon-detail view, in english', null=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tigapublic.AuthUser')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'db_table': 'tigaserver_app_notificationpredefined',
@@ -255,7 +255,7 @@ class Migration(migrations.Migration):
                 ('expert_comment', models.TextField(help_text='Text message sent to user', verbose_name='Expert comment')),
                 ('expert_html', models.TextField(help_text='Expanded message informationgoes here. This field can contain HTML', verbose_name='Expert comment, expanded and allows html')),
                 ('public', models.BooleanField(default=False)),
-                ('expert', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tigapublic.AuthUser')),
+                ('expert', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
                 ('notification_content', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tigapublic.NotificationContent')),
                 ('preset_notification', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='tigapublic.PredefinedNotification')),
                 ('report', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tigapublic.MapAuxReports', to_field='version_uuid')),
@@ -301,7 +301,7 @@ class Migration(migrations.Migration):
                 ('date_notification', models.DateTimeField(blank=True, default=None, null=True)),
                 ('patient_state', models.CharField(blank=True, max_length=225, null=True)),
                 ('comments', models.TextField(blank=True, default=None, help_text='Extra comments for patients', null=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tigapublic.AuthUser')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'db_table': 'tigapublic_epidemiology',
