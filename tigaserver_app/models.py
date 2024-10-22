@@ -24,6 +24,7 @@ from django.contrib.gis.measure import Distance as DistanceMeasure
 from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.forms.models import model_to_dict
 from django.template.loader import render_to_string, TemplateDoesNotExist
 from django.urls import reverse
 from django.utils import translation
@@ -700,6 +701,142 @@ class Report(TimeZoneModelMixin, models.Model):
         '''
     )
 
+    # Attributes - user responses - Optional
+    EVENT_ENVIRONMENT_INDOORS = 'indoors'
+    EVENT_ENVIRONMENT_OUTDOORS = 'outdoors'
+    EVENT_ENVIRONMENT_VEHICLE = 'vehicle'
+
+    EVENT_ENVIRONMENT_CHOICES = (
+        (EVENT_ENVIRONMENT_INDOORS, _("Indoors")),
+        (EVENT_ENVIRONMENT_OUTDOORS, _("Outdoors")),
+        (EVENT_ENVIRONMENT_VEHICLE, _("Inside vehicle")),
+    )
+
+    event_environment = models.CharField(
+        max_length=16, choices=EVENT_ENVIRONMENT_CHOICES, null=True,
+        help_text=_("The environment where the event took place.")
+    )
+
+    EVENT_MOMENT_NOW = 'now'
+    EVENT_MOMENT_LAST_MORNING = 'last_morning'
+    EVENT_MOMENT_LAST_MIDDAY = 'last_midday'
+    EVENT_MOMENT_LAST_AFTERNOON = 'last_afternoon'
+    EVENT_MOMENT_LAST_NIGHT = 'last_night'
+    EVENT_MOMENT_CHOICES = (
+        (EVENT_MOMENT_NOW, _("Now")),
+        (EVENT_MOMENT_LAST_MORNING, _("Last morning")),
+        (EVENT_MOMENT_LAST_MIDDAY, _("Last midday")),
+        (EVENT_MOMENT_LAST_AFTERNOON, _("Last afternoon")),
+        (EVENT_MOMENT_LAST_NIGHT, _("Last night")),
+    )
+
+    event_moment = models.CharField(
+        max_length=32, choices=EVENT_MOMENT_CHOICES, null=True,
+        help_text=_("The moment of the day when the event took place.")
+    )
+
+    bite_count = models.PositiveSmallIntegerField(
+        null=True, editable=False,
+        help_text=_("Total number of bites reported.")
+    )
+
+    head_bite_count = models.PositiveSmallIntegerField(
+        null=True,
+        help_text=_("Number of bites reported in the head.")
+    )
+    left_arm_bite_count = models.PositiveSmallIntegerField(
+        null=True,
+        help_text=_("Number of bites reported in the left arm.")
+    )
+    right_arm_bite_count = models.PositiveSmallIntegerField(
+        null=True,
+        help_text=_("Number of bites reported in the right arm.")
+    )
+    chest_bite_count = models.PositiveSmallIntegerField(
+        null=True,
+        help_text=_("Number of bites reported in the chest.")
+    )
+    left_leg_bite_count = models.PositiveSmallIntegerField(
+        null=True,
+        help_text=_("Number of bites reported in the left leg.")
+    )
+    right_leg_bite_count = models.PositiveSmallIntegerField(
+        null=True,
+        help_text=_("Number of bites reported in the right leg.")
+    )
+
+    SPECIE_ALBOPICTUS = "albopictus"
+    SPECIE_AEGYPTI = "aegypti"
+    SPECIE_JAPONICUS = "japonicus"
+    SPECIE_KOREICUS = "koreicus"
+    SPECIE_CULEX = "culex"
+    SPECIE_OTHER = "other"
+
+    MOSQUITO_SPECIE_CHOICES = (
+        (SPECIE_ALBOPICTUS, "Aedes albopictus"),
+        (SPECIE_AEGYPTI, "Aedes aegypti"),
+        (SPECIE_JAPONICUS, "Aedes japonicus"),
+        (SPECIE_KOREICUS, "Aedes koreicus"),
+        (SPECIE_CULEX, "Culex pipiens"),
+        (SPECIE_OTHER, _("Other")),
+    )
+
+    user_perceived_mosquito_specie = models.CharField(
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        help_text=_("The mosquito specie perceived by the user.")
+    )
+
+    user_perceived_mosquito_thorax = models.CharField(
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        help_text=_("The species of mosquito that the thorax resembles, according to the user.")
+    )
+    user_perceived_mosquito_abdomen = models.CharField(
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        help_text=_("The species of mosquito that the abdomen resembles, according to the user.")
+    )
+    user_perceived_mosquito_legs = models.CharField(
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        help_text=_("The species of mosquito that the leg resembles, according to the user.")
+    )
+
+    BREEDING_SITE_TYPE_BASIN = 'basin'
+    BREEDING_SITE_TYPE_BUCKET = 'bucket'
+    BREEDING_SITE_TYPE_FOUNTAIN = 'fountain'
+    BREEDING_SITE_TYPE_SMALL_CONTAINER = 'small_container'
+    BREEDING_SITE_TYPE_STORM_DRAIN = 'storm_drain'
+    BREEDING_SITE_TYPE_WELL = 'well'
+    BREEDING_SITE_TYPE_OTHER = 'other'
+
+    BREEDING_SITE_TYPE_CHOICES = (
+        (BREEDING_SITE_TYPE_BASIN, _('Basin')),
+        (BREEDING_SITE_TYPE_BUCKET, _('Bucket')),
+        (BREEDING_SITE_TYPE_FOUNTAIN, _('Fountain')),
+        (BREEDING_SITE_TYPE_SMALL_CONTAINER, _('Small container')),
+        (BREEDING_SITE_TYPE_STORM_DRAIN, _('Storm Drain')),
+        (BREEDING_SITE_TYPE_WELL, _('Well')),
+        (BREEDING_SITE_TYPE_OTHER, _('Other'))
+    )
+
+    breeding_site_type = models.CharField(
+        max_length=32, choices=BREEDING_SITE_TYPE_CHOICES, null=True,
+        help_text=_("Breeding site type.")
+    )
+    breeding_site_has_water = models.BooleanField(
+        null=True,
+        help_text=_("Either if the user perceived water in the breeding site.")
+    )
+    breeding_site_in_public_area = models.BooleanField(
+        null=True,
+        help_text=_("Either if the breeding site is found in a public area.")
+    )
+    breeding_site_has_near_mosquitoes = models.BooleanField(
+        null=True,
+        help_text=_("Either if the user perceived mosquitoes near the breeding site (less than 10 meters).")
+    )
+    breeding_site_has_larvae = models.BooleanField(
+        null=True,
+        help_text=_("Either if the user perceived larvaes the breeding site.")
+    )
     # Object Manager
     objects = ReportManager()
 
@@ -1057,124 +1194,27 @@ class Report(TimeZoneModelMixin, models.Model):
     # Custom properties related to breeding sites
     @property
     def basins(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = (
-                    this_response.answer.startswith("Basin")
-                    or this_response.answer.startswith("Basses")
-                    or this_response.answer.startswith("Balsa")
-                    or this_response.answer.startswith("Bassa")
-                    or this_response.answer.startswith("Small basin")
-                    or "balsas" in this_response.answer
-                )
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_BASIN
 
     @property
     def buckets(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = (
-                    this_response.answer.startswith("Bucket")
-                    or this_response.answer.startswith("Small container")
-                    or this_response.answer.startswith("Bidones")
-                    or this_response.answer.startswith("Recipiente")
-                    or this_response.answer.startswith("Recipient")
-                    or this_response.answer.startswith("Bidons")
-                )
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_BUCKET
 
     @property
     def embornals(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if this_response.question_id == 12 and this_response.answer_id == 121:
-                return True
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-                or this_response.question.startswith("Is this a storm drain")
-                or this_response.question.startswith("\xc9s un embornal")
-                or this_response.question.startswith("\xbfEs un imbornal")
-            ):
-                result = (
-                    this_response.answer.startswith("Embornal")
-                    or this_response.answer.startswith("Sumidero")
-                    or this_response.answer.startswith("Storm")
-                    or this_response.answer.startswith("Yes")
-                    or this_response.answer.startswith("S\xed")
-                )
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_STORM_DRAIN
 
     @property
     def fonts(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = (
-                    this_response.answer.startswith("Font")
-                    or this_response.answer.startswith("Fountain")
-                    or this_response.answer.startswith("Fuente")
-                )
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_FOUNTAIN
 
     @property
     def other(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = (
-                    this_response.answer == "Other"
-                    or this_response.answer == "Altres"
-                    or this_response.answer == "Otros"
-                )
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_OTHER
 
     @property
     def wells(self) -> bool:
-        result = False
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = (
-                    this_response.answer == "Well"
-                    or this_response.answer == "Pozos"
-                    or this_response.answer == "Pous"
-                )
-        return result
-
-    @property
-    def site_type(self) -> str:
-        result = ""
-        for this_response in self.responses.all():
-            if (
-                this_response.question.startswith("Tipo")
-                or this_response.question.startswith("Selecciona")
-                or this_response.question.startswith("Type")
-            ):
-                result = this_response.answer
-        return result
+        return self.breeding_site_type == self.BREEDING_SITE_TYPE_WELL
 
     @property
     def site_cat(self) -> int:
@@ -1190,19 +1230,6 @@ class Report(TimeZoneModelMixin, models.Model):
             return 4
         else:
             return 5
-
-    @property
-    def site_type_trans(self) -> str:
-        if self.embornals:
-            return _("storm-drain")
-        if self.fonts:
-            return _("Fountain")
-        if self.basins:
-            return _("Basin")
-        if self.wells:
-            return _("Well")
-        if self.other:
-            return _("Other")
 
     # Other properties
     @property
@@ -1537,6 +1564,25 @@ class Report(TimeZoneModelMixin, models.Model):
         if self.app_language:
             self.user.language_iso2 = self.app_language
             self.user.save(update_fields=['language_iso2'])
+
+        bite_fieldnames = [
+            'head_bite_count',
+            'left_arm_bite_count',
+            'right_arm_bite_count',
+            'chest_bite_count',
+            'left_leg_bite_count',
+            'right_leg_bite_count'
+        ]
+
+        if self.type == self.TYPE_BITE:
+            # Make sure all bites are set to 0 if none.
+            for bite_fieldname in bite_fieldnames:
+                if getattr(self, bite_fieldname) is None:
+                    setattr(self, bite_fieldname, 0)
+
+            self.bite_count = sum(
+                getattr(self, fname) for fname in bite_fieldnames
+            )
 
         super(Report, self).save(*args, **kwargs)
 
@@ -2524,6 +2570,128 @@ class ReportResponse(models.Model):
     answer_id = models.IntegerField(blank=True, null=True, help_text='Numeric identifier of the answer.')
     answer = models.CharField(max_length=1000, help_text='Answer that user selected.')
     answer_value = models.CharField(max_length=1000, blank=True, null=True, help_text='The value right now can contain 2 things: an integer representing the number or bites, or either a WKT representation of a point for a location answer. In all other cases, it will be blank')
+
+    def _update_report_value(self, commit: bool = True):
+        report_obj = self.report
+
+        # Convert the original state of the object to a dictionary
+        original_report_state = model_to_dict(report_obj)
+
+        if self.question_id == 2:
+            if self.answer_id == 21:
+                report_obj.head_bite_count = int(self.answer_value)
+            elif self.answer_id == 22:
+                report_obj.left_arm_bite_count = int(self.answer_value)
+            elif self.answer_id == 23:
+                report_obj.right_arm_bite_count = int(self.answer_value)
+            elif self.answer_id == 24:
+                report_obj.chest_bite_count = int(self.answer_value)
+            elif self.answer_id == 25:
+                report_obj.left_leg_bite_count = int(self.answer_value)
+            elif self.answer_id == 26:
+                report_obj.right_leg_bite_count = int(self.answer_value)
+        elif self.question_id == 3:
+            if self.answer_id == 31:
+                report_obj.event_moment = Report.EVENT_MOMENT_LAST_MORNING
+            elif self.answer_id == 32:
+                report_obj.event_moment = Report.EVENT_MOMENT_LAST_MIDDAY
+            elif self.answer_id == 33:
+                report_obj.event_moment = Report.EVENT_MOMENT_LAST_AFTERNOON
+            elif self.answer_id == 34:
+                report_obj.event_moment = Report.EVENT_MOMENT_LAST_NIGHT
+        elif self.question_id == 4:
+            if self.answer_id == 41:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_VEHICLE
+            elif self.answer_id == 42:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_INDOORS
+            elif self.answer_id == 43:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_OUTDOORS
+            elif self.answer_id == 44:
+                report_obj.event_environment = None
+        elif self.question_id == 5:
+            if self.answer_id == 51:
+                report_obj.event_moment = Report.EVENT_MOMENT_NOW
+        elif self.question == 'question_6':
+            # NOTE: using question since question_id '6' not present in DB.
+            if self.answer_id == 61:
+                report_obj.user_perceived_mosquito_specie = Report.SPECIE_ALBOPICTUS
+            elif self.answer_id == 62:
+                report_obj.user_perceived_mosquito_specie = Report.SPECIE_CULEX
+            elif self.answer_id == 63:
+                report_obj.user_perceived_mosquito_specie = Report.SPECIE_OTHER
+            elif self.answer_id == 64:
+                report_obj.user_perceived_mosquito_specie = None
+        elif self.question_id == 7 or self.question == 'question_7':
+            # Thorax
+            if self.answer_id == 711:
+                report_obj.user_perceived_mosquito_thorax = Report.SPECIE_ALBOPICTUS
+            elif self.answer_id == 712:
+                report_obj.user_perceived_mosquito_thorax = Report.SPECIE_AEGYPTI
+            elif self.answer_id == 713:
+                report_obj.user_perceived_mosquito_thorax = Report.SPECIE_JAPONICUS
+            elif self.answer_id == 714:
+                report_obj.user_perceived_mosquito_thorax = Report.SPECIE_KOREICUS
+
+            # Abdomen
+            if self.answer_id == 721:
+                report_obj.user_perceived_mosquito_abdomen = Report.SPECIE_ALBOPICTUS
+            elif self.answer_id == 722:
+                report_obj.user_perceived_mosquito_abdomen = Report.SPECIE_AEGYPTI
+            elif self.answer_id == 723:
+                report_obj.user_perceived_mosquito_abdomen = Report.SPECIE_JAPONICUS
+            elif self.answer_id == 724:
+                report_obj.user_perceived_mosquito_abdomen = Report.SPECIE_KOREICUS
+
+            # Legs
+            if self.answer_id == 731:
+                report_obj.user_perceived_mosquito_legs = Report.SPECIE_ALBOPICTUS
+            elif self.answer_id == 732:
+                report_obj.user_perceived_mosquito_legs = Report.SPECIE_AEGYPTI
+            elif self.answer_id == 733:
+                report_obj.user_perceived_mosquito_legs = Report.SPECIE_JAPONICUS
+            elif self.answer_id == 734:
+                report_obj.user_perceived_mosquito_legs = Report.SPECIE_KOREICUS
+        elif self.question_id == 10:
+            if self.answer_id == 81 or self.answer_id == 102:
+                report_obj.breeding_site_has_water = False
+            elif self.answer_id == 101:
+                report_obj.breeding_site_has_water = True
+        elif self.question_id == 12:
+            if self.answer_id == 121:
+                report_obj.breeding_site_type = Report.BREEDING_SITE_TYPE_STORM_DRAIN
+            elif self.answer_id == 122:
+                report_obj.breeding_site_type = Report.BREEDING_SITE_TYPE_OTHER
+        elif self.question_id == 13:
+            if self.answer_id == 131:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_VEHICLE
+            elif self.answer_id == 132:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_INDOORS
+            elif self.answer_id == 133:
+                report_obj.event_environment = Report.EVENT_ENVIRONMENT_OUTDOORS
+        elif self.question_id == 17:
+            if self.answer_id == 81 or self.answer_id == 102:
+                self.breeding_site_has_water = False
+            elif self.answer_id == 101:
+                self.breeding_site_has_water = True
+
+        # Check if any field has changed
+        if commit and any(getattr(report_obj, field) != original_report_state[field] for field in original_report_state.keys()):
+            # Save the object only if there are changes, not to trigger auto_now fields.
+            report_obj.save()
+
+    def save(self, skip_report_update: bool = False, *args, **kwargs):
+        # NOTE: this is needed to ensure question_id/answer_id are integers.
+        #       _update_report_value works as expected.
+        if self.question_id is not None:
+            self.question_id = int(self.question_id)
+
+        if self.answer_id is not None:
+            self.answer_id = int(self.answer_id)
+
+        super().save(*args, **kwargs)
+
+        if not skip_report_update:
+            self._update_report_value()
 
     def __unicode__(self):
         return str(self.id)

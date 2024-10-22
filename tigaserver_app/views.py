@@ -2256,16 +2256,16 @@ def flip_report(request):
             return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
         if flip_to_type == '': # adult | site
             raise ParseError(detail='flip_to_type param is mandatory')
-        if flip_to_type not in ['adult', 'site']:
+        if flip_to_type not in [Report.TYPE_ADULT, Report.TYPE_SITE]:
             raise ParseError(detail='value not allowed, possible values are \'adult\', \'site\'')
-        if flip_to_type == 'site':
+        if flip_to_type == Report.TYPE_SITE:
             if flip_to_subtype == '':
                 raise ParseError(detail='flip_to_subtype param is mandatory if type is site')
             else:
                 if flip_to_subtype not in ['storm_drain_water','storm_drain_dry', 'other_water', 'other_dry']:
                     raise ParseError(detail='value not allowed, possible values are \'storm_drain_water\',\'storm_drain_dry\', \'other_water\', \'other_dry\' ')
 
-        if report.type == 'adult' and flip_to_type == 'adult':
+        if report.type == Report.TYPE_ADULT and flip_to_type == Report.TYPE_ADULT:
             return Response(
                 data={'message': 'Type is already adult, doing nothing', 'opcode': -2}, status=status.HTTP_400_BAD_REQUEST)
         # delete questions and answers ?
@@ -2278,15 +2278,15 @@ def flip_report(request):
         # id	4ada4a1b-c438-4fcc-87e7-eb4696c1466f	question_10	question_10_answer_101	101		10 -> Water
         with transaction.atomic():
             ReportResponse.objects.filter(report=report).delete()
-            rr_type_stormdrain = ReportResponse(report=report,question='question_12',answer='question_12_answer_121',question_id='12',answer_id='121')
-            rr_type_other = ReportResponse(report=report, question='question_12', answer='question_12_answer_122', question_id='12', answer_id='122')
-            rr_yes_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_101', question_id='10', answer_id='101')
-            rr_no_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_102', question_id='10', answer_id='102')
-            if flip_to_type == 'site':
-                report.flipped = True
-                report.flipped_on = timezone.now()
+            rr_type_stormdrain = ReportResponse(report=report,question='question_12',answer='question_12_answer_121',question_id=12,answer_id=121)
+            rr_type_other = ReportResponse(report=report, question='question_12', answer='question_12_answer_122', question_id=12, answer_id=122)
+            rr_yes_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_101', question_id=10, answer_id=101)
+            rr_no_water = ReportResponse(report=report, question='question_10', answer='question_10_answer_102', question_id=10, answer_id=102)
+            report.flipped = True
+            report.flipped_on = timezone.now()
+            if flip_to_type == Report.TYPE_SITE:
                 report.flipped_to = report.type + '#site'
-                report.type = 'site'
+                report.type = Report.TYPE_SITE
                 report.save()
                 if flip_to_subtype == 'storm_drain_water':
                     rr_type_stormdrain.save()
@@ -2304,11 +2304,9 @@ def flip_report(request):
                     rr_type_other.save()
                     rr_yes_water.save()
                     message = "Report changed to Site - Other, Water"
-            elif flip_to_type == 'adult':
-                report.flipped = True
-                report.flipped_on = timezone.now()
+            elif flip_to_type == Report.TYPE_ADULT:
                 report.flipped_to = report.type + '#adult'
-                report.type = 'adult'
+                report.type = Report.TYPE_ADULT
                 report.save()
                 message = "Report changed to Adult"
 
