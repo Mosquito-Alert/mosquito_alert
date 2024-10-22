@@ -630,7 +630,7 @@ def populate_bite_count(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0045_report_responses_to_column'),
+        ('tigaserver_app', '0048_report_responses_to_column'),
     ]
 
     operations = [
