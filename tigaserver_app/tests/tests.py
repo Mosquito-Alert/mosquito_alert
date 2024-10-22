@@ -1125,6 +1125,8 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertTrue(n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses))
         self.assertTrue(r_site_reloaded.flipped, "Report should be marked as flipped")
         self.assertTrue(r_site_reloaded.flipped_to == 'site#site',"Report should be marked as flipped from site to site, field has value of {0}".format(r_site_reloaded.flipped_to))
+        self.assertEqual(r_site_reloaded.breeding_site_type, Report.BREEDING_SITE_TYPE_STORM_DRAIN)
+        self.assertTrue(r_site_reloaded.breeding_site_has_water)
 
     def test_flip(self):
         u = User.objects.get(pk=25)
@@ -1143,7 +1145,10 @@ class AnnotateCoarseTestCase(APITestCase):
         response = self.client.patch('/api/flip_report/', data=data)
         self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
         adult_reloaded = Report.objects.get(pk=r_adult.version_UUID)
-        self.assertTrue(adult_reloaded.type=='site',"Report type should have changed to site, is {0}".format(adult_reloaded.type))
+        self.assertTrue(adult_reloaded.type==Report.TYPE_SITE,"Report type should have changed to site, is {0}".format(adult_reloaded.type))
+        self.assertEqual(adult_reloaded.breeding_site_type, Report.BREEDING_SITE_TYPE_STORM_DRAIN)
+        self.assertTrue(adult_reloaded.breeding_site_has_water)
+
         n_responses = ReportResponse.objects.filter(report=adult_reloaded).count()
         self.assertTrue( n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses) )
         self.assertTrue( adult_reloaded.flipped, "Report should be marked as flipped" )
@@ -1164,7 +1169,8 @@ class AnnotateCoarseTestCase(APITestCase):
         response = self.client.patch('/api/flip_report/', data=data)
         self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
         site_reloaded = Report.objects.get(pk=r_site.version_UUID)
-        self.assertTrue(site_reloaded.type == 'adult', "Report type should have changed to adult, is {0}".format(site_reloaded.type))
+        self.assertTrue(site_reloaded.type == Report.TYPE_ADULT, "Report type should have changed to adult, is {0}".format(site_reloaded.type))
+
         n_responses = ReportResponse.objects.filter(report=site_reloaded).count()
         self.assertTrue(n_responses == 0, "Number of responses should be 0, is {0}".format(n_responses))
         self.assertTrue(site_reloaded.flipped, "Report should be marked as flipped")
