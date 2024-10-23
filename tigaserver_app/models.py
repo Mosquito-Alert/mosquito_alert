@@ -2885,6 +2885,9 @@ class Fix(TimeZoneModelMixin, models.Model):
     """
     Location fix uploaded by user.
     """
+
+    GRID_SIZE = 0.025
+
     user_coverage_uuid = models.CharField(blank=True, null=True, max_length=36, help_text='UUID randomly generated on '
                                                                             'phone to identify each unique user, '
                                                                             'but only within the coverage data so '
@@ -2903,9 +2906,8 @@ class Fix(TimeZoneModelMixin, models.Model):
                                                        'as ECMA '
                                                        '262 date time string (e.g. "2014-05-17T12:34:56'
                                                        '.123+01:00".')
-    masked_lon = models.FloatField(help_text='Longitude rounded down to nearest 0.5 decimal degree (floor(lon/.5)*.5)'
-                                             '.')
-    masked_lat = models.FloatField(help_text='Latitude rounded down to nearest 0.5 decimal degree (floor(lat/.5)*.5).')
+    masked_lon = models.FloatField(help_text=f'Longitude rounded down to nearest {GRID_SIZE} decimal degree.')
+    masked_lat = models.FloatField(help_text=f'Latitude rounded down to nearest {GRID_SIZE} decimal degree.')
     mask_size = models.FloatField(null=True, blank=True, help_text='size of location mask used')
     power = models.FloatField(null=True, blank=True, help_text='Power level of phone at time fix recorded, '
                                                                'expressed as proportion of full charge. Range: 0-1.')
@@ -2923,6 +2925,12 @@ class Fix(TimeZoneModelMixin, models.Model):
     def _get_longitude_for_timezone(self):
         return self.masked_lon
 
+    def save(self, *args, **kwargs):
+        # Force masking of lat/lon
+        self.masked_lon = round(floor(self.masked_lon / self.GRID_SIZE) * self.GRID_SIZE, 5)
+        self.masked_lat = round(floor(self.masked_lat / self.GRID_SIZE) * self.GRID_SIZE, 5)
+
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "fix"
