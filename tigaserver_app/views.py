@@ -1879,49 +1879,6 @@ def nearby_reports(request):
                 keep_looping = False
         '''
 
-
-@api_view(['POST'])
-def profile_new(request):
-    if request.method == 'POST':
-        firebase_token = request.query_params.get('fbt', -1)
-        user_id = request.query_params.get('usr', -1)
-        if firebase_token == -1:
-            raise ParseError(detail='firebase token is mandatory')
-        if user_id == -1:
-            raise ParseError(detail='user is mandatory')
-        tigauser = get_object_or_404(TigaUser,pk=user_id)
-        if tigauser.profile is None:
-            #profile exists?
-            try:
-                p = TigaProfile.objects.get(firebase_token=firebase_token)
-            except TigaProfile.DoesNotExist:
-                p = TigaProfile(firebase_token=firebase_token,score=tigauser.score)
-                p.save()
-            tigauser.profile = p
-            tigauser.save()
-            serializer = TigaProfileSerializer(p)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            #profile exists?
-            try:
-                p = TigaProfile.objects.get(firebase_token=firebase_token)
-            except TigaProfile.DoesNotExist:
-                p = TigaProfile(firebase_token=firebase_token, score=tigauser.score)
-                p.save()
-            profile = p
-            devices = profile.profile_devices
-            # Get all devices for profile - if it existed there will already be devices registered
-            for device in devices.all():
-                if device.score > profile.score:
-                    profile.score = device.score
-                if device.user_UUID == user_id:
-                    raise ParseError(detail='this device is already associated with this profile')
-            profile.profile_devices.add(tigauser)
-            profile.save()
-            serializer = TigaProfileSerializer(profile)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 def send_unblock_email(name, email):
     lock_period = settings.ENTOLAB_LOCK_PERIOD
     send_to = copy.copy(settings.ADDITIONAL_EMAIL_RECIPIENTS)

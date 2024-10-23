@@ -2154,62 +2154,6 @@ paths:
             application/json:
               schema: {}
           description: ''
-  /api/profile/new/:
-    post:
-      operationId: Createprofile_new
-      summary: 'API endpoint for creating a new user profile.'
-      description: 'Associates a profile, identified by a firebase auth token, with a device identified by a user uuid'
-      tags:
-        - apps
-      parameters:
-        - name: fbt
-          required: true
-          in: query
-          description: The firebase auth token.
-          schema:
-            type: string
-        - name: usr
-          required: true
-          in: query
-          description: The user uuid.
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    description: The id of the recently created profile
-                    type: integer
-                  firebase_token:
-                    description: The firebase token associated with the current device
-                    type: string
-                  score:
-                    description: The user score (old value, deprecated)
-                    type: integer
-                  profile_devices:
-                    description: List of all devices (uuids) associated with this profile
-                    type: array
-                    items:
-                      properties:
-                        user_UUID:
-                          description: The user_uuid of the device
-                          type: string
-                          format: uuid
-                        registration_time:
-                          description: Timezone aware Datetime of when the device was registered
-                          type: string
-                          format: datetime
-                        device_token:
-                          description: Firebase token for the device, used in FCM messaging
-                          type: string
-                        score:
-                          description: The user score (old value, deprecated)
-                          type: integer
   /api/session_update/{id}/:
     put:
       operationId: UpdateSession
