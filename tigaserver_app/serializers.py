@@ -629,62 +629,6 @@ class AcknowledgedNotificationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class DetailedReportSerializer(serializers.ModelSerializer):
-
-    photos = DetailedPhotoSerializer(many=True)
-    user = UserListingField
-    version_UUID = serializers.ReadOnlyField()
-    version_number = serializers.ReadOnlyField()
-    report_id = serializers.ReadOnlyField()
-    phone_upload_time = serializers.ReadOnlyField()
-    creation_time = serializers.ReadOnlyField()
-    version_time = serializers.ReadOnlyField()
-    type = serializers.ReadOnlyField()
-    location_choice = serializers.ReadOnlyField()
-    current_location_lon = serializers.ReadOnlyField()
-    current_location_lat = serializers.ReadOnlyField()
-    selected_location_lon = serializers.ReadOnlyField()
-    selected_location_lat = serializers.ReadOnlyField()
-    note = serializers.ReadOnlyField()
-    package_name = serializers.ReadOnlyField()
-    package_version = serializers.ReadOnlyField()
-    device_manufacturer = serializers.ReadOnlyField()
-    device_model = serializers.ReadOnlyField()
-    os = serializers.ReadOnlyField()
-    os_version = serializers.ReadOnlyField()
-    os_language = serializers.ReadOnlyField()
-    app_language = serializers.ReadOnlyField()
-    responses = ReportResponseSerializer(many=True)
-    point = serializers.SerializerMethodField(method_name='get_point')
-
-    class Meta:
-        model = Report
-        fields = '__all__'
-
-    def get_point(self,obj):
-        if obj.point is not None:
-            return { "lat": obj.point.y, "long": obj.point.x}
-        else:
-            return None
-
-
-
-class DetailedTigaUserSerializer(serializers.ModelSerializer):
-    user_reports = DetailedReportSerializer(many=True)
-
-    class Meta:
-        model = TigaUser
-        fields = ('user_UUID','registration_time','device_token','score','user_reports')
-
-
-class DetailedTigaProfileSerializer(serializers.ModelSerializer):
-    profile_devices = DetailedTigaUserSerializer(many=True)
-
-    class Meta:
-        model = TigaProfile
-        fields = ('id', 'firebase_token', 'score', 'profile_devices')
-
-
 class EuropeCountrySimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = EuropeCountry

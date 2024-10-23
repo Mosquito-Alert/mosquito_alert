@@ -62,7 +62,6 @@ urlpatterns = [
     url('missions/$', views.get_new_missions),
     url('cfs_reports/$', views.force_refresh_cfs_reports),
     url('cfa_reports/$', views.force_refresh_cfa_reports),
-    url('profile/$', views.profile_detail),
     url('clear_blocked/(?P<username>[\w.@+-]+)/$', views.clear_blocked),
     url('clear_blocked_r/(?P<username>[\w.@+-]+)/(?P<report>[\w-]+)/$', views.clear_blocked),
     url('clear_blocked_all/$', views.clear_blocked_all),
