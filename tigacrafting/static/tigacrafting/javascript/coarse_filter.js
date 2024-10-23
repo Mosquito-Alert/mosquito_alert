@@ -1,4 +1,12 @@
-const ask_confirmation = true;
+const ask_confirmation = false;
+
+function escapeHtml(original_string) {
+    if(original_string == null){
+        return null;
+    }else{
+        return original_string.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+}
 
 function make_site(report_id, type){
     hide_adult_buttons(report_id);
@@ -70,6 +78,33 @@ function hide_adult_buttons(report_id){
 
 $(document).ready(function() {
 
+function load_bookmarks(){
+    $.ajax({
+        url: '/api/bookmarks/',
+        type: "GET",
+        headers: { "X-CSRFToken": csrf_token },
+        dataType: "json",
+        success: function(data) {
+            bookmarks = data;
+            init_bookmarks();
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            //alert(jqXHR.responseJSON.message);
+        },
+        cache: false
+    });
+}
+
+function init_bookmarks(){
+    $('#bookmark_drawer').empty();
+    const root = $('#bookmark_drawer');
+    for(var i = 0; i < bookmarks.length; i++){
+        const bookmark = bookmarks[i];
+        const single_bookmark = single_bookmark_template(bookmark);
+        root.append(single_bookmark);
+    }
+}
+
 function type_shows_with_current_filter(type){
     const filtered_type = $('#type_select').val();
     if(filtered_type=='all'){
@@ -103,16 +138,43 @@ function reset_filter(){
     $('#usernote_filter').val('');
 }
 
-function filter_to_ui(){
-    const filter = ui_to_filter();
-    const filter_json = JSON.parse(filter);
-    $('#visibility_filter').html(filter_json.visibility_readable);
-    $('#text_filter').html(filter_json.note);
-    $('#rtype_filter').html(filter_json.report_type_readable);
-    $('#country_filter').html(filter_json.country_readable);
-    $('#country_filter_exclude').html(filter_json.country_exclude_readable);
-    $('#ia_filter').html(filter_json.ia_threshold);
-    $('#usernote_filter').html(decodeURI(filter_json.note));
+function filter_to_ui(_filter){
+    var filter_json;
+    if(_filter==null){
+        const filter = ui_to_filter();
+        filter_json = JSON.parse(filter);
+    }else{
+        filter_json = JSON.parse(_filter);
+    }
+    $('#visibility_filter').html(escapeHtml(filter_json.visibility_readable));
+    if( filter_json.visibility!= null && filter_json.visibility != '' ){
+        $('#visibility_select option[value=' + filter_json.visibility + ']').prop('selected', true);
+    }
+
+    $('#text_filter').html(escapeHtml(filter_json.note));
+    $('#usernote_filter').val(filter_json.note);
+
+    $('#rtype_filter').html(escapeHtml(filter_json.report_type_readable));
+    if( filter_json.report_type!= null && filter_json.report_type != '' ){
+        $('#type_select option[value=' + filter_json.report_type + ']').prop('selected', true);
+    }
+
+    $('#country_filter').html(escapeHtml(filter_json.country_readable));
+    if( filter_json.country!= null && filter_json.country != '' ){
+        $('#country_select option[value=' + filter_json.country + ']').prop('selected', true);
+    }
+
+    $('#country_filter_exclude').html(escapeHtml(filter_json.country_exclude_readable));
+    if( filter_json.country_exclude!= null && filter_json.country_exclude != '' ){
+        $('#country_select_exclude option[value=' + filter_json.country_exclude + ']').prop('selected', true);
+    }
+
+    $('#ia_filter').html(escapeHtml(filter_json.ia_threshold));
+    $("#slider").slider('value',filter_json.ia_threshold);
+    $( "#slider_value" ).html(escapeHtml(filter_json.ia_threshold));
+
+    $('#usernote_filter').html(escapeHtml(decodeURI(filter_json.note)));
+    $('#usernote_filter').val(filter_json.note);
 }
 
 function ui_to_filter(){
@@ -287,6 +349,7 @@ function classify_picture(report_id, category_id, validation_value){
         success: function(data) {
             $('#' + report_id).unblock();
             remove_report(report_id);
+            load_bookmarks();
         },
         error: function(jqXHR, textStatus, errorThrown){
             if( jqXHR.responseJSON.opcode == -1 ){
@@ -310,6 +373,7 @@ function quick_upload_report(report_id){
         success: function(data) {
             $('#' + report_id).unblock();
             remove_report(report_id);
+            load_bookmarks();
         },
         error: function(jqXHR, textStatus, errorThrown){
             if( jqXHR.responseJSON.opcode == -1 ){
@@ -359,10 +423,10 @@ function flip_report(report_id, flip_to_type, flip_to_subtype){
     });
 }
 
-function load_data(limit=300, offset=1, q=''){
+function load_data(limit=300, offset=1, q='', seek=''){
     lockui();
     $.ajax({
-        url: `/api/coarse_filter_reports/?limit=${limit}&offset=${offset}&q=${q}`,
+        url: `/api/coarse_filter_reports/?limit=${limit}&offset=${offset}&q=${q}&seek=${seek}`,
         type: "GET",
         dataType: "json",
         success: function(data) {
@@ -387,6 +451,14 @@ function load_data(limit=300, offset=1, q=''){
             init_maps();
             load_previews();
             set_visibility_icons();
+            if(seek!=''){
+                const report_bkm = $('#bkm_' + seek).data('report');
+                $("#" + report_bkm).get(0).scrollIntoView();
+                const filter = data.filter;
+                filter_to_ui(filter);
+            }
+            set_bookmarks();
+            init_bookmarks();
         },
         error: function(jqXHR, textStatus, errorThrown){
             unlockui();
@@ -413,6 +485,30 @@ function pictures_template(pictures){
     return elements;
 }
 
+function single_bookmark_template(bookmark){
+    return `
+        <button id="bkm_${bookmark.id}" data-report="${bookmark.report}" data-id="${bookmark.id}" type="button" class="btn btn-danger go_bookmark"><span class="glyphicon glyphicon-bookmark"></span> ${bookmark.label}</button>
+    `
+}
+
+function add_ui_bookmark(bookmark){
+    const root = $('#bookmark_drawer');
+    const single_bookmark = single_bookmark_template(bookmark);
+    root.append(single_bookmark);
+    bookmarks.push(bookmark);
+}
+
+function remove_ui_bookmark(id){
+    $('#bkm_' + id).remove();
+    var new_bookmarks = [];
+    for(var i = 0; i < bookmarks.length; i++){
+        if(bookmarks[i].id != id){
+            new_bookmarks.push(bookmarks[i])
+        }
+    }
+    bookmarks = new_bookmarks;
+}
+
 function single_report_template(report){
     const pictures = pictures_template(report.photos);
     const report_country_name = report.country == null ? 'No country' : report.country.name_engl;
@@ -434,6 +530,7 @@ function single_report_template(report){
     }
     return `
         <div id="${ report.version_UUID }" data-type="${ report.type }" class="photo ${ report.type } ${ site_cat }">
+            <button id="bookmark_${ report.version_UUID }" type="button" data-id="${ report.version_UUID }" class="btn btn-danger btn-xs btn-bookmark"><span class="glyphicon glyphicon-bookmark"></span></button>
             <div class="photo_internal_wrapper">
                 <div class="header_internal_wrapper">
                     <div class="header_left">
@@ -568,6 +665,79 @@ $('#filters_clear').click( function(e){
     load_data(page_size,1,filter);
 });
 
+function do_delete_bookmark(id, report_id){
+    $.ajax({
+        url: '/api/bookmark_report/',
+        data: { "id": id},
+        type: "DELETE",
+        headers: { "X-CSRFToken": csrf_token },
+        dataType: "json",
+        success: function(data) {
+            //apply_bookmark(report_id, label);
+            $('#' + report_id).removeClass('bookmarked');
+            $('#bookmark_' + report_id).html('<span class="glyphicon glyphicon-bookmark"></span>');
+            remove_ui_bookmark(id);
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            //alert(jqXHR.responseJSON.message);
+        },
+        cache: false
+    });
+}
+
+function do_create_bookmark(user_id, report_id, label){
+    const filter = ui_to_filter();
+    $.ajax({
+        url: '/api/bookmark_report/',
+        data: { "report_id": report_id, "user_id": user_id, "label": label, "module": "coarse", "json_filter": filter},
+        type: "POST",
+        headers: { "X-CSRFToken": csrf_token },
+        dataType: "json",
+        success: function(data) {
+            apply_bookmark(data.id, report_id, label);
+            add_ui_bookmark(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            alert(jqXHR.responseJSON.message);
+        },
+        cache: false
+    });
+}
+
+function set_bookmarks(){
+    for(var i=0; i < bookmarks.length; i++){
+        apply_bookmark( bookmarks[i].id, bookmarks[i].report, bookmarks[i].label );
+    }
+}
+
+$('div#photo_grid').on('click', 'button.btn.btn-danger.btn-xs.btn-bookmark', function(){
+    const report_id = $(this).data('id');
+    if( $('#' + report_id).hasClass('bookmarked') ){
+        if(confirm("Remove bookmark?")){
+            do_delete_bookmark( $('#bookmark_' + report_id).data('bookmark'), report_id );
+        }
+    }else{
+        $('#bookmark_report_id').val(report_id);
+        $('#bookmark_label').val('');
+        $('#modalBookmark').modal('show');
+        //$('#' + report_id).addClass('bookmarked');
+    }
+});
+
+function apply_bookmark(bookmark_id, report_id, label){
+    $('#' + report_id).addClass('bookmarked');
+    $('#bookmark_' + report_id).data('bookmark', bookmark_id);
+    $('#bookmark_' + report_id).html('<span class="glyphicon glyphicon-bookmark"></span>' + escapeHtml(label));
+    $('#modalBookmark').modal('hide');
+}
+
+$('#bookmark_submit_button').on('click',function(){
+    const report_id = $('#bookmark_report_id').val();
+    const label = $('#bookmark_label').val();
+    //apply_bookmark(report_id, '<span class="glyphicon glyphicon-bookmark"></span> ' + label);
+    do_create_bookmark(_user_id, report_id, label);
+});
+
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_hide_report', function(){
     const report_id = $(this).data("report-id");
     hide_or_show_report(report_id, "true");
@@ -687,18 +857,11 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger
     $('#flip_report_id').val( $(this).data("report-id") );
     set_modal_defaults();
     $('#modal_flip_to_site').modal('show');
-    /*
-    if( type=='adult' ){
-        $('#flip_to_type').val( "site" );
-        $('#modal_flip_to_site').modal('show');
-    }else{
-        $('#flip_to_type').val( "adult" );
-        const report_id = $(this).data("report-id");
-        if(confirm("Site report will be flipped to adult report. Proceed?")){
-            flip_report(report_id, 'adult', null);
-        }
-    }
-    */
+});
+
+$('div#bookmark_drawer').on('click', 'button.btn.btn-danger.go_bookmark', function(){
+    const page_size = get_page_size();
+    load_data(page_size, 1, '', seek=$(this).data('id'));
 });
 
 function map_init_basic(map, lat, lon) {
@@ -750,8 +913,6 @@ $('#go_flip').on('click', function(){
     const report_id = $('#flip_report_id').val();
     const flip_to_type = $('#flip_to_type').val();
     const flip_to_subtype = get_flip_to_subtype();
-    //console.log(`${ flip_to_type } ${ site_cat }`);
-    //console.log(`${ flip_to_subtype }`);
     flip_report(report_id, flip_to_type, flip_to_subtype);
 });
 

@@ -16,9 +16,9 @@ import pytz
 import calendar
 import json
 from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, TigaProfileSerializer, DetailedTigaProfileSerializer, SessionSerializer, DetailedReportSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer, BookMarkSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse
-from tigacrafting.models import FavoritedReports
+from tigacrafting.models import FavoritedReports, BookMark
 from tigacrafting.report_queues import assign_crisis_report
 from tigacrafting.views import auto_annotate, issue_notification, get_current_domain
 from math import ceil
@@ -326,6 +326,10 @@ class PhotoViewSet(ReadWriteOnlyModelViewSet):
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
 
+class BookMarkViewSet(ReadWriteOnlyModelViewSet):
+    queryset = BookMark.objects.all()
+    serializer_class = BookMarkSerializer
+    filter_fields = ('module','user')
 
 # For production version, substitute WriteOnlyModelViewSet
 class FixViewSet(ReadWriteOnlyModelViewSet):
@@ -2245,6 +2249,44 @@ def hide_report(request):
         report.save()
         return Response(data={'message': 'hide set to {0}'.format( hide ), 'opcode': 0}, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def bookmarks(request):
+    if request.method == 'GET':
+        bookmarks = BookMark.objects.all()
+        serializer = BookMarkSerializer(bookmarks, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST', 'DELETE'])
+def bookmark_report(request):
+    if request.method == 'POST':
+        report_id = request.data.get('report_id', '')
+        user_id = request.data.get('user_id', '')
+        label = request.data.get('label', None)
+        module = request.data.get('module', None)
+        json_filter = request.data.get('json_filter', None)
+        user = get_object_or_404(User, pk=user_id)
+        report = get_object_or_404(Report, pk=report_id)
+        if label is None:
+            raise ParseError(detail='Label parameter is mandatory')
+        if module is None:
+            raise ParseError(detail='Module parameter is mandatory')
+        b = BookMark( user=user, report=report, label=label, module=module, json_filter=json_filter )
+        try:
+            b.save()
+            serializer = BookMarkSerializer(b, many=False)
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        except IntegrityError:
+            return Response(data={'message': "You have already a bookmark with the label '{0}', please use another".format(label), 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'DELETE':
+        id = request.data.get('id', '')
+        report = get_object_or_404(BookMark, pk=id)
+        report.delete()
+        return Response(data={}, status=status.HTTP_204_NO_CONTENT)
+
+
+
 @api_view(['PATCH'])
 def flip_report(request):
     if request.method == 'PATCH':
@@ -2330,6 +2372,7 @@ def quick_upload_report(request):
             new_annotation.validation_complete = True
             new_annotation.revise = True
             new_annotation.save()
+            BookMark.objects.filter(report=report).delete()
             return Response(data={'message': 'success', 'opcode': 0}, status=status.HTTP_200_OK)
         else:
             return Response(data={'message': 'success', 'opcode': 1}, status=status.HTTP_200_OK)
@@ -2355,6 +2398,7 @@ def annotate_coarse(request):
         annotation = auto_annotate(report, category, validation_value)
         current_domain = get_current_domain(request)
         issue_notification(annotation, current_domain)
+        BookMark.objects.filter(report=report).delete()
         return Response(data={'message':'success', 'opcode': 0}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -2373,8 +2417,19 @@ def coarse_filter_reports(request):
                                         )
                                         .filter(n_annotations=0).order_by('-creation_time').all())
 
-        q = request.query_params.get("q", '')
-        filter_params = get_filter_params_from_q(q)
+        seek = request.query_params.get("seek", '')
+        bookmark_report = None
+        current_text_filter = None
+
+        if seek != '':
+            bookmark = get_object_or_404(BookMark, pk=seek)
+            bookmark_report = bookmark.report
+            filter_params = get_filter_params_from_q(bookmark.json_filter)
+            current_text_filter = bookmark.json_filter
+        else:
+            q = request.query_params.get("q", '')
+            filter_params = get_filter_params_from_q(q)
+
         aithr = filter_params['aithr']
         type = filter_params['type']
         visibility = filter_params['visibility']
@@ -2426,12 +2481,19 @@ def coarse_filter_reports(request):
         except:
             paginator = Paginator(results, limit)
 
+        if bookmark_report is not None:
+            index = results.filter(creation_time__gt=bookmark_report.creation_time).count()
+            offset = int(index / int(limit)) + (index % int(limit) > 0)
+            if offset == 0:
+                offset = 1
+
         try:
             results = paginator.page(offset)
         except PageNotAnInteger:
-            results = paginator.page(offset)
+            results = paginator.page(1)
         except EmptyPage:
-            results = []
+            results = paginator.page(1)
+
 
         api_count = paginator.count
         api_next = None if not results.has_next() else results.next_page_number()
@@ -2449,6 +2511,9 @@ def coarse_filter_reports(request):
             'previous': api_previous,
             'results': serializer.data
         }
+
+        if current_text_filter is not None:
+            data['filter'] = current_text_filter
 
         return Response(data, status=status.HTTP_200_OK)
 
