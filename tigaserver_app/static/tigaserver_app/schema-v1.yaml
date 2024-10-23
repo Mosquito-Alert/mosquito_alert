@@ -640,8 +640,6 @@ paths:
       operationId: listnearby_reports_no_dwindows
       summary: 'Returns reports in a radius specified by coordinates supplied by the user'
       description: 'Returns the reports closer to a point specified by coordinates, within a radius of default size 5000 meters. If a user_uuid is supplied, the endpoint also returns all reports from the user'
-      tags:
-        - apps
       parameters:
         - name: page
           required: false
