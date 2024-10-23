@@ -395,6 +395,13 @@ class ReportEndpointTestCase(APITestCase):
         )
 
     def _test_datetime_field_is_kept_if_version_number_not_0(self, fieldname):
+        # Creating a Report that will be deleted using the API
+        _ = self.client.post(
+            "/api/reports/",
+            self.simple_payload,
+            format="json",
+        )
+
         response = self.client.post(
             "/api/reports/",
             {
@@ -412,15 +419,7 @@ class ReportEndpointTestCase(APITestCase):
 
         self.assertEqual(
             getattr(report, fieldname),
-            datetime(
-                year=2024,
-                month=1,
-                day=1,
-                hour=1,
-                minute=0,
-                second=0,
-                tzinfo=timezone.utc
-            )
+            datetime.fromisoformat(self.simple_payload.get(fieldname))
         )
 
     def test_version_time_is_corrected_if_not_POST_with_timezone(self):
@@ -486,7 +485,6 @@ class ReportEndpointTestCase(APITestCase):
                 **{
                     "version_time": "2024-01-05T01:00:00Z",
                     "phone_upload_time": "2024-01-01T00:00:00Z",
-                    "version_number": -1
                 }
             },
             format="json"

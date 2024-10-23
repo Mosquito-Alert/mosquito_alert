@@ -9,6 +9,8 @@ from django.http.response import HttpResponse
 from django.utils.html import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
+from simple_history.admin import SimpleHistoryAdmin
+from simple_history.utils import get_history_model_for_model
 
 def export_full_csv(modeladmin, request, queryset):
     response = HttpResponse(mimetype='text/csv')
@@ -116,7 +118,7 @@ class PhotoInline(admin.StackedInline):
     readonly_fields = ('photo', 'small_image_', 'report')
 
 
-class ReportAdmin(admin.ModelAdmin):
+class ReportAdmin(SimpleHistoryAdmin):
     list_display = (
         'version_UUID', 'report_id', 'deleted', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'mission',
         'package_version', 'os', 'n_photos'
@@ -129,6 +131,7 @@ class ReportAdmin(admin.ModelAdmin):
 
     readonly_fields = [
         "deleted",
+        "deleted_at",
         "report_id",
         "version_number",
         "type",
@@ -140,7 +143,6 @@ class ReportAdmin(admin.ModelAdmin):
         "version_time",
         "phone_upload_time",
         "creation_time",
-        "other_versions_of_this_report"
     ]
 
     fieldsets = [
@@ -149,11 +151,10 @@ class ReportAdmin(admin.ModelAdmin):
             {
                 "fields": [
                     ("report_id", "version_number"),
-                    ("hide", "deleted"),
+                    ("hide", "deleted", "deleted_at"),
                     "type",
                     "user",
                     ("mission","session"),
-                    "other_versions_of_this_report",
                     ("server_upload_time", "updated_at"),
                     ("version_time", "datetime_fix_offset"),
                     ("creation_time", "phone_upload_time")
@@ -258,21 +259,25 @@ class ReportAdmin(admin.ModelAdmin):
 
         return result + extra_fieldsets
 
+    def render_history_view(self, request, template, context, **kwargs):
+        user_model = get_history_model_for_model(Report)._meta.get_field('history_user').related_model
+        context['admin_user_view'] = "admin:%s_%s_change" % (
+            user_model._meta.app_label,
+            user_model._meta.model_name
+        )
+
+        return super().render_history_view(
+            request=request,
+            template=template,
+            context=context,
+            **kwargs
+        )
+
     def has_add_permission(self, request):
         return False
 
     def has_delete_permission(self, request, obj=None):
         return False
-
-    def other_versions_of_this_report(self, obj):
-        result = ""
-        for this_version in obj.other_versions:
-            result += '<a href="/admin/tigaserver_app/report/%s">Version %s</a> ' % (
-                this_version.version_UUID,
-                this_version.version_number,
-            )
-        return mark_safe(result)
-    other_versions_of_this_report.allow_tags = True
 
 def export_csv_photo(modeladmin, request, queryset):
     response = HttpResponse(mimetype='text/csv')
@@ -319,7 +324,7 @@ def export_csv_photo_crowdcrafting(modeladmin, request, queryset):
         smart_str(u"uuid"),
     ])
     for obj in queryset:
-        if not obj.report.deleted and not obj.report.hide and not obj.hide and obj.report.latest_version:
+        if not obj.report.deleted and not obj.report.hide and not obj.hide:
             writer.writerow([
                 smart_str(obj.id),
                 smart_str(obj.uuid),
@@ -345,8 +350,8 @@ show_photos.short_description = u"Unhide selected photos"
 class PhotoAdmin(admin.ModelAdmin):
     list_display = ('id', 'date', 'deleted', 'hide', 'small_image_', 'user', 'date', 'report_link', 'map_link')
     list_filter = ['hide', 'report__package_name', 'report__package_version']
-    readonly_fields = ('deleted', 'uuid', 'photo', 'small_image_', 'user', 'date', 'report_link', 'other_report_versions', 'map_link')
-    fields = ('hide', 'deleted', 'uuid', 'date', 'user', 'photo', 'report_link', 'other_report_versions', 'map_link', 'small_image_')
+    readonly_fields = ('deleted', 'uuid', 'photo', 'small_image_', 'user', 'date', 'report_link', 'map_link')
+    fields = ('hide', 'deleted', 'uuid', 'date', 'user', 'photo', 'report_link', 'map_link', 'small_image_')
     actions = [export_csv_photo, export_csv_photo_crowdcrafting, hide_photos, show_photos]
     list_max_show_all = 6000
     list_per_page = 400
@@ -360,16 +365,6 @@ class PhotoAdmin(admin.ModelAdmin):
     def report_link(self, obj):
         return mark_safe('<a href="/admin/tigaserver_app/report/%s" target="_blank">%s</a>' % (obj.report.version_UUID, obj.report.version_UUID))
     report_link.allow_tags = True
-
-    def other_report_versions(self, obj):
-        result = []
-        for this_version in obj.report.other_versions:
-            result += '<a href="/admin/tigaserver_app/report/%s">Version %s</a> ' % (
-                this_version.version_UUID,
-                this_version.version_number,
-            )
-        return mark_safe(result)
-    other_report_versions.allow_tags = True
 
     def map_link(self, obj):
         return mark_safe('<a href="/single_report_map/%s/" target="_blank">Show map</a>' % obj.report.version_UUID)
