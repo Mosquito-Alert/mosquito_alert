@@ -2,7 +2,7 @@ from collections import OrderedDict
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, CoverageAreaMonth, TigaProfile, Session, EuropeCountry, OWCampaigns, OrganizationPin, AcknowledgedNotification, UserSubscription
+    Fix, Configuration, CoverageArea, CoverageAreaMonth, Session, EuropeCountry, OWCampaigns, OrganizationPin, AcknowledgedNotification, UserSubscription
 from tigacrafting.models import Alert
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
@@ -613,14 +613,6 @@ class TigaUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = TigaUser
         fields = ('user_UUID','registration_time','device_token','score')
-
-
-class TigaProfileSerializer(serializers.ModelSerializer):
-    profile_devices = TigaUserSerializer(many=True)
-
-    class Meta:
-        model = TigaProfile
-        fields = ('id', 'firebase_token', 'score', 'profile_devices')
 
 
 class AcknowledgedNotificationSerializer(serializers.ModelSerializer):
