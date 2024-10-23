@@ -713,7 +713,7 @@ class Report(TimeZoneModelMixin, models.Model):
     )
 
     event_environment = models.CharField(
-        max_length=16, choices=EVENT_ENVIRONMENT_CHOICES, null=True,
+        max_length=16, choices=EVENT_ENVIRONMENT_CHOICES, null=True, blank=True,
         help_text=_("The environment where the event took place.")
     )
 
@@ -731,37 +731,37 @@ class Report(TimeZoneModelMixin, models.Model):
     )
 
     event_moment = models.CharField(
-        max_length=32, choices=EVENT_MOMENT_CHOICES, null=True,
+        max_length=32, choices=EVENT_MOMENT_CHOICES, null=True, blank=True,
         help_text=_("The moment of the day when the event took place.")
     )
 
     bite_count = models.PositiveSmallIntegerField(
-        null=True, editable=False,
+        null=True, blank=True, editable=False,
         help_text=_("Total number of bites reported.")
     )
 
     head_bite_count = models.PositiveSmallIntegerField(
-        null=True,
+        null=True, blank=True,
         help_text=_("Number of bites reported in the head.")
     )
     left_arm_bite_count = models.PositiveSmallIntegerField(
-        null=True,
+        null=True, blank=True,
         help_text=_("Number of bites reported in the left arm.")
     )
     right_arm_bite_count = models.PositiveSmallIntegerField(
-        null=True,
+        null=True, blank=True,
         help_text=_("Number of bites reported in the right arm.")
     )
     chest_bite_count = models.PositiveSmallIntegerField(
-        null=True,
+        null=True, blank=True,
         help_text=_("Number of bites reported in the chest.")
     )
     left_leg_bite_count = models.PositiveSmallIntegerField(
-        null=True,
+        null=True, blank=True,
         help_text=_("Number of bites reported in the left leg.")
     )
     right_leg_bite_count = models.PositiveSmallIntegerField(
-        null=True,
+        null=True, blank=True,
         help_text=_("Number of bites reported in the right leg.")
     )
 
@@ -782,20 +782,20 @@ class Report(TimeZoneModelMixin, models.Model):
     )
 
     user_perceived_mosquito_specie = models.CharField(
-        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True, blank=True,
         help_text=_("The mosquito specie perceived by the user.")
     )
 
     user_perceived_mosquito_thorax = models.CharField(
-        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True, blank=True,
         help_text=_("The species of mosquito that the thorax resembles, according to the user.")
     )
     user_perceived_mosquito_abdomen = models.CharField(
-        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True, blank=True,
         help_text=_("The species of mosquito that the abdomen resembles, according to the user.")
     )
     user_perceived_mosquito_legs = models.CharField(
-        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True,
+        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True, blank=True,
         help_text=_("The species of mosquito that the leg resembles, according to the user.")
     )
 
@@ -818,23 +818,23 @@ class Report(TimeZoneModelMixin, models.Model):
     )
 
     breeding_site_type = models.CharField(
-        max_length=32, choices=BREEDING_SITE_TYPE_CHOICES, null=True,
+        max_length=32, choices=BREEDING_SITE_TYPE_CHOICES, null=True, blank=True,
         help_text=_("Breeding site type.")
     )
     breeding_site_has_water = models.BooleanField(
-        null=True,
+        null=True, blank=True,
         help_text=_("Either if the user perceived water in the breeding site.")
     )
     breeding_site_in_public_area = models.BooleanField(
-        null=True,
+        null=True, blank=True,
         help_text=_("Either if the breeding site is found in a public area.")
     )
     breeding_site_has_near_mosquitoes = models.BooleanField(
-        null=True,
+        null=True, blank=True,
         help_text=_("Either if the user perceived mosquitoes near the breeding site (less than 10 meters).")
     )
     breeding_site_has_larvae = models.BooleanField(
-        null=True,
+        null=True, blank=True,
         help_text=_("Either if the user perceived larvaes the breeding site.")
     )
     # Object Manager
