@@ -9,27 +9,49 @@ sys.path.append(proj_path)
 os.chdir(proj_path)
 
 from django.core.wsgi import get_wsgi_application
+from django.db import transaction
+from django.db.models import Window, F, Min, Max
+from django.db.models.functions import DenseRank
+from django.utils import timezone
 
 application = get_wsgi_application()
 
-from tigascoring.xp_scoring import get_ranking_data
-from tigaserver_app.models import RankingData
-import datetime
+from tigascoring.xp_scoring import get_user_class
+from tigaserver_app.models import RankingData, TigaUser
 
+@transaction.atomic
 def init_ranking_data():
-    data = get_ranking_data()
+    # Step 1: Clear existing ranking data
     RankingData.objects.all().delete()
-    hydrated = []
-    for d in data['data']:
-        #hydrate models
-        r = RankingData(
-            user_uuid=d['user_uuid'],
-            class_value=d['class']['value'],
-            rank=d['rank'],
-            score_v2=d['score_v2']
+
+    # Step 2: Get ranked users from TigaUser
+    users_qs = TigaUser.objects.exclude(score_v2=0)
+    ranked_users = users_qs.annotate(
+        rank=Window(expression=DenseRank(), order_by=F('score_v2').desc())
+    ).order_by('-score_v2')
+
+    scores = users_qs.aggregate(
+        min_score=Min('score_v2'),
+        max_score=Max('score_v2')
+    )
+    min_score = scores['min_score']
+    max_score = scores['max_score']
+
+    # Step 3: Populate RankingData
+    last_update = timezone.now()
+    ranking_data_instances = []
+    for user in ranked_users.iterator():
+        ranking_data_instances.append(
+            RankingData(
+                user_uuid=user.pk,
+                class_value=get_user_class(min=min_score, max=max_score, user_score=user.score_v2)['value'],
+                rank=user.rank,
+                score_v2=user.score_v2,
+                last_update=last_update
+            )
         )
-        hydrated.append(r)
-    RankingData.objects.bulk_create(hydrated)
-    RankingData.objects.all().update(last_update=datetime.datetime.now())
+
+    # Bulk create for efficiency
+    RankingData.objects.bulk_create(ranking_data_instances)
 
 init_ranking_data()
