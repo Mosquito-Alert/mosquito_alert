@@ -610,38 +610,6 @@ def compute_user_score_in_xp_v2(user_uuid, update=False):
     return result
 
 
-def get_ranking_data( date_ini=None, date_end=datetime.datetime.today() ):
-    retval = {}
-    qs_reports = Report.objects.filter(creation_time__lte=datetime.datetime.today())
-    if date_ini is not None:
-        qs_reports = qs_reports.filter( creation_time__gte=date_ini )
-
-    uuid_replicas = get_uuid_replicas()
-    qs_overall = TigaUser.objects.exclude(score_v2=0).exclude(user_UUID__in=uuid_replicas)
-
-    overall_df = pd.DataFrame(list(qs_overall.values_list('score_v2', 'user_UUID')), columns=['score_v2', 'user_UUID'])
-    overall_sorted_df = overall_df.sort_values('score_v2', inplace=False)
-    overall_sorted_df["rank"] = overall_sorted_df['score_v2'].rank(method='dense', ascending=False)
-    overall_sorted_df.sort_values('rank', inplace=True)
-    min_max_overall = get_min_max(overall_sorted_df, 'score_v2')
-    min = min_max_overall['min']
-    max = min_max_overall['max']
-    retval['data'] = []
-    for index, row in overall_sorted_df.iterrows():
-        score = row['score_v2']
-        user_class = get_user_class( max, min, score)
-        retval['data'].append(
-            {
-                "score_v2": score,
-                "user_uuid":row['user_UUID'],
-                "identicon": '/media/identicons/' + row['user_UUID'] + '.png',
-                "class": user_class,
-                "rank": int(row['rank'])
-            }
-        )
-    return retval
-
-
 def compute_all_user_scores():
     all_users = TigaUser.objects.all()
     for user in all_users:
