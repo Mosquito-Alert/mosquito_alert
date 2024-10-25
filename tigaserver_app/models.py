@@ -608,7 +608,6 @@ class Report(TimeZoneModelMixin, models.Model):
     type = models.CharField(
         max_length=7,
         choices=TYPE_CHOICES,
-        editable=False,
         help_text="Type of report: 'adult', 'site', or 'mission'.",
     )
 

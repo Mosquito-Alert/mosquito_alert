@@ -44,11 +44,6 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(editable=False, help_text="Date and time on phone when first version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."),
         ),
         migrations.AlterField(
-            model_name='historicalreport',
-            name='type',
-            field=models.CharField(choices=[('bite', 'Bite'), ('adult', 'Adult'), ('site', 'Breeding Site'), ('mission', 'Mission')], editable=False, help_text="Type of report: 'adult', 'site', or 'mission'.", max_length=7),
-        ),
-        migrations.AlterField(
             model_name='report',
             name='creation_time',
             field=models.DateTimeField(editable=False, help_text="Date and time on phone when first version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."),
@@ -57,11 +52,6 @@ class Migration(migrations.Migration):
             model_name='report',
             name='phone_upload_time',
             field=models.DateTimeField(editable=False, help_text="Date and time on phone when it uploaded fix. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."),
-        ),
-        migrations.AlterField(
-            model_name='report',
-            name='type',
-            field=models.CharField(choices=[('bite', 'Bite'), ('adult', 'Adult'), ('site', 'Breeding Site'), ('mission', 'Mission')], editable=False, help_text="Type of report: 'adult', 'site', or 'mission'.", max_length=7),
         ),
         migrations.AlterField(
             model_name='report',
