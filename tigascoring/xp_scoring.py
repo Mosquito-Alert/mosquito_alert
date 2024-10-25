@@ -326,6 +326,9 @@ def get_unrelated_awards_score( user_uuid, user_uuids ):
 
 def compute_user_score_in_xp_v2(user_uuid):
 
+    # Cast UUID to string.
+    user_uuid = str(user_uuid)
+
     user = TigaUser.objects.get(pk=user_uuid)
     user_uuids = None
     if user.profile is not None:
