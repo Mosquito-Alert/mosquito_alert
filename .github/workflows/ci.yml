@@ -44,7 +44,7 @@ jobs:
 
       - name: Run Django Tests
         # Need to run as root because we are writing the results into the shared volume.
-        run: docker compose -f docker-compose-local.yml run -u root --rm django coverage run manage.py test --noinput
+        run: docker compose -f docker-compose-local.yml run -u root --rm django coverage run -m pytest
 
       - name: Create coverage XML report
         # Need to run as root because we are writing the results into the shared volume.

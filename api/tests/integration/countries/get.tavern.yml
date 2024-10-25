@@ -1,0 +1,31 @@
+test_name: Country retrieve
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - country
+
+stages:
+  - name: Retrieve country for unauthorized users must fail
+    request:
+      url: "{api_live_url}/{endpoint}/{country.pk}/"
+      method: "GET"
+    response:
+      status_code: 403
+  # AUTH
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Retrieve country for authorized users & check schema result
+    request:
+      url: "{api_live_url}/{endpoint}/{country.pk}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"

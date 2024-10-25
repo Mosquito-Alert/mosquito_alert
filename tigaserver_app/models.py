@@ -16,8 +16,9 @@ from slugify import slugify
 from typing import Optional
 import uuid
 
+from django.apps import apps
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractBaseUser, AnonymousUser
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
 from django.contrib.gis.geos import GEOSGeometry
@@ -31,16 +32,18 @@ from django.template.loader import render_to_string, TemplateDoesNotExist
 from django.urls import reverse
 from django.utils import translation, timezone
 from django.utils.deconstruct import deconstructible
+from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from simple_history.models import HistoricalRecords
+from timezone_field import TimeZoneField
 
 from common.translation import get_translation_in, get_locale_for_native
 from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, STATUS_CATEGORIES
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
-from .managers import ReportManager
+from .managers import ReportManager, NotificationManager
 from .mixins import TimeZoneModelMixin
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
@@ -200,8 +203,12 @@ class RankingData(models.Model):
     last_update = models.DateTimeField(help_text="Last time ranking data was updated", null=True, blank=True)
 
 
-class TigaUser(models.Model):
-    user_UUID = models.CharField(max_length=36, primary_key=True, help_text='UUID randomly generated on '
+class TigaUser(AbstractBaseUser, AnonymousUser):
+    USERNAME_FIELD = 'pk'
+
+    password = models.CharField(_('password'), max_length=128, null=True, blank=True)
+
+    user_UUID = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False, help_text='UUID randomly generated on '
                                                                             'phone to identify each unique user. Must be exactly 36 '
                                                                             'characters (32 hex digits plus 4 hyphens).')
     registration_time = models.DateTimeField(auto_now_add=True, help_text='The date and time when user '
@@ -433,7 +440,7 @@ class MissionItem(models.Model):
 
 
 class EuropeCountry(models.Model):
-    gid = models.IntegerField(primary_key=True)
+    gid = models.AutoField(primary_key=True)
     cntr_id = models.CharField(max_length=2, blank=True)
     name_engl = models.CharField(max_length=44, blank=True)
     iso3_code = models.CharField(max_length=3, blank=True)
@@ -555,6 +562,7 @@ class Report(TimeZoneModelMixin, models.Model):
     # Attributes - Mandatory
     version_UUID = models.CharField(
         primary_key=True,
+        default=uuid.uuid4,
         max_length=36,
         help_text="UUID randomly generated on phone to identify each unique report version. Must be exactly 36 characters (32 hex digits plus 4 hyphens).",
     )
@@ -592,6 +600,10 @@ class Report(TimeZoneModelMixin, models.Model):
     )
     version_time = models.DateTimeField(
         help_text="Date and time on phone when this version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
+    )
+    phone_timezone = TimeZoneField(
+        blank=True, null=True,
+        help_text="The timezone corresponding to the datetime collected from the phone. Please provide values from the IANA timezone database (e.g., 'America/New_York')."
     )
     datetime_fix_offset = models.IntegerField(
         default=None,
@@ -996,6 +1008,10 @@ class Report(TimeZoneModelMixin, models.Model):
             return round(floor(self.lon / 0.05) * 0.05, 2)
         else:
             return None
+
+    @cached_property
+    def published(self) -> bool:
+        return hasattr(self, 'map_aux_report')
 
     @property
     def response_html(self) -> str:
@@ -1601,6 +1617,8 @@ class Report(TimeZoneModelMixin, models.Model):
     def save(self, *args, **kwargs):
         # Forcing self.version_number to be either 0 or -1
         self.version_number = 0 if self.version_number >= 0 else -1
+
+        self.version_time = self.version_time or self.creation_time
 
         # Recreate the Point (just in case lat/lon has changed)
         _old_point = self.point
@@ -2581,6 +2599,23 @@ def issue_notification(report, reason_label, xp_amount, current_domain):
             notification.send_to_user(user=report.user)
 
 @receiver(post_save, sender=Report)
+def subscribe_user_to_country_topic(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    topic_code_candidates = [instance.country, instance.nuts_2, instance.nuts_3]
+    for topic_code in filter(lambda x: x is not None, topic_code_candidates):
+        try:
+            topic = NotificationTopic.objects.get(topic_code=topic_code)
+        except NotificationTopic.DoesNotExist:
+            pass
+        else:
+            UserSubscription.objects.get_or_create(
+                user=instance.user,
+                topic=topic
+            )
+
+@receiver(post_save, sender=Report)
 def maybe_give_awards(sender, instance, created, **kwargs):
     #only for adults and sites
     if created:
@@ -3075,7 +3110,7 @@ class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', null=True, blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.CASCADE, )
     # The field 'user' is kept for backwards compatibility with the map notifications. It only has meaningful content on MAP NOTIFICATIONS
     # and in all other cases is given a default value (null user 00000000-0000-0000-0000-000000000000)
-    user = models.ForeignKey(TigaUser, default='00000000-0000-0000-0000-000000000000', related_name="user_notifications", help_text='User to which the notification will be sent', on_delete=models.CASCADE, )
+    user = models.ForeignKey(TigaUser, null=True, blank=True, on_delete=models.CASCADE)
     expert = models.ForeignKey(User, null=True, blank=True, related_name="expert_notifications", help_text='Expert sending the notification', on_delete=models.SET_NULL, )
     date_comment = models.DateTimeField(auto_now_add=True)
     #blank is True to avoid problems in the migration, this should be removed!!
@@ -3088,6 +3123,20 @@ class Notification(models.Model):
     # The field 'acknowledged' is kept for backwards compatibility with the map notifications. It only has meaningful content on MAP NOTIFICATIONS
     acknowledged = models.BooleanField(default=False, help_text='This is set to True through the public API, when the user signals that the message has been received')
     # map_notification = models.BooleanField(default=False, help_text='Flag field to help discriminate notifications which have been issued from the map')
+
+    objects = NotificationManager()
+
+    def mark_as_seen_for_user(self, user: TigaUser) -> None:
+        _ = AcknowledgedNotification.objects.get_or_create(
+            user=user,
+            notification=self
+        )
+
+    def mark_as_unseen_for_user(self, user: TigaUser) -> None:
+        _ = AcknowledgedNotification.objects.filter(
+            user=user,
+            notification=self
+        ).delete()
 
 
     def send_to_topic(self, topic: 'NotificationTopic', push: bool = True, language_code: Optional[str] = None) -> Optional[str]:

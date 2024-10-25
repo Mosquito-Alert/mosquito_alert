@@ -1,0 +1,284 @@
+---
+# TODO: check tz is required and test that OS/app settings is set
+test_name: Create requires user to be sign in
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  - name: Non auth user can not create
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+    response:
+      status_code: 403
+
+---
+
+test_name: Test create bite report
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Create bite report
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "POST"
+      data: &request_bite_data
+        type: bite
+        created_at: '2024-01-01T00:00:00Z'
+        sent_at: '2024-01-01T00:30:00Z'
+        timezone: 'Europe/Madrid'
+        location.point: !raw '{"latitude": 41.67419, "longitude": 2.79036}'
+        location.type: 'current'
+        note: "Test"
+        package:
+          name: testapp
+          version: v123
+          language: english
+        device:
+          manufacturer: test_make
+          model: test model
+          os: testOs
+          os_version: v123
+          os_language: en
+        event_environment: indoors
+        event_moment: now
+        head_bite_count: 2
+        chest_bite_count: 1
+    response:
+      status_code: 201
+      json:
+        uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        short_id: !anystr
+        user_uuid: "{user_uuid}"
+        type: bite
+        session_id: null
+        created_at: '2024-01-01T00:00:00Z'
+        sent_at: '2024-01-01T00:30:00Z'
+        received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        location:
+          type: 'current'
+          point:
+            latitude: "41.67419"
+            longitude: "2.79036"
+          country_id: !anything
+          nuts_2: !anything
+          nuts_3: !anything
+        note: Test
+        published: false
+        event_environment: indoors
+        event_moment: now
+        bite_count: 3
+        head_bite_count: 2
+        left_arm_bite_count: 0
+        right_arm_bite_count: 0
+        chest_bite_count: 1
+        left_leg_bite_count: 0
+        right_leg_bite_count: 0
+  - name: Create bite report without TZ should raise
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "POST"
+      data:
+        <<: *request_bite_data
+        created_at: '2024-01-01T00:00:00'
+    response:
+      status_code: 400
+
+---
+
+test_name: Create adult report
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - test_jpg_image_path
+    - test_png_image_path
+    - test_non_image_path
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Create adult report with photos
+    request: &request_adult_data
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "POST"
+      files:
+        photos[0]file: "{test_jpg_image_path}"
+        photos[1]file: "{test_png_image_path}"
+      data: 
+        type: adult
+        created_at: '2024-01-01T00:00:00Z'
+        sent_at: '2024-01-01T00:30:00Z'
+        timezone: 'Europe/Madrid'
+        location.point: !raw '{"latitude": 41.67419, "longitude": 2.79036}'
+        location.type: 'current'
+        note: "Test"
+        package:
+          name: testapp
+          version: v123
+          language: english
+        device:
+          manufacturer: test_make
+          model: test model
+          os: testOs
+          os_version: v123
+          os_language: en
+        event_environment: indoors
+        event_moment: now
+        user_perceived_mosquito_specie: 'culex'
+    response:
+      status_code: 201
+      json: &response_adult_with_photo
+        uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        short_id: !anystr
+        user_uuid: "{user_uuid}"
+        type: adult
+        session_id: null
+        created_at: '2024-01-01T00:00:00Z'
+        sent_at: '2024-01-01T00:30:00Z'
+        received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        location:
+          type: 'current'
+          point:
+            latitude: "41.67419"
+            longitude: "2.79036"
+          country_id: !anything
+          nuts_2: !anything
+          nuts_3: !anything
+        note: Test
+        published: false
+        event_environment: indoors
+        event_moment: now
+        user_perceived_mosquito_specie: 'culex'
+        user_perceived_mosquito_thorax: null
+        user_perceived_mosquito_abdomen: null
+        user_perceived_mosquito_legs: null
+        photos:
+          - id: !anyint
+            url: !anystr
+          - id: !anyint
+            url: !anystr
+  - name: Create adult report without photos
+    request:
+      <<: *request_adult_data
+      files: null
+    response:
+      status_code: 201
+      json:
+        <<: *response_adult_with_photo
+        photos: []
+  - name: Uploading non-images should return 400
+    request:
+      <<: *request_adult_data
+      files: 
+        photos[0]file: "{test_non_image_path}"
+    response:
+      status_code: 400
+
+---
+
+test_name: Create site report
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - test_jpg_image_path
+    - test_png_image_path
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Create site report with photos
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "POST"
+      files:
+        photos[0]file: "{test_jpg_image_path}"
+        photos[1]file: "{test_png_image_path}"
+      data:
+        type: site
+        created_at: '2024-01-01T00:00:00Z'
+        sent_at: '2024-01-01T00:30:00Z'
+        timezone: 'Europe/Madrid'
+        location.point: !raw '{"latitude": 41.67419, "longitude": 2.79036}'
+        location.type: 'current'
+        note: "Test"
+        package:
+          name: testapp
+          version: v123
+          language: english
+        device:
+          manufacturer: test_make
+          model: test model
+          os: testOs
+          os_version: v123
+          os_language: en
+        breeding_site_type: storm_drain
+        breeding_site_has_water: True
+    response:
+      status_code: 201
+      json:
+        uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        short_id: !anystr
+        user_uuid: "{user_uuid}"
+        type: site
+        session_id: null
+        created_at: '2024-01-01T00:00:00Z'
+        sent_at: '2024-01-01T00:30:00Z'
+        received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        location:
+          type: 'current'
+          point:
+            latitude: "41.67419"
+            longitude: "2.79036"
+          country_id: !anything
+          nuts_2: !anything
+          nuts_3: !anything
+        note: Test
+        published: false
+        breeding_site_type: storm_drain
+        breeding_site_has_water: True
+        breeding_site_in_public_area: null
+        breeding_site_has_near_mosquitoes: null
+        breeding_site_has_larvae: null
+        photos:
+          - id: !anyint
+            url: !anystr
+          - id: !anyint
+            url: !anystr

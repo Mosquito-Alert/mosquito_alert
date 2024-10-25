@@ -50,6 +50,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'rest_framework.authtoken',
+    'api',
     'tigaserver_app',
     'tigamap',
     'tigahelp',
@@ -63,7 +64,7 @@ INSTALLED_APPS = (
     'django_messages',
     'tigaserver_messages',
     'tigascoring',
-    'rest_framework_swagger',
+    'drf_spectacular',
     'django.contrib.sites',
     'django_filters',
     'corsheaders',
@@ -192,6 +193,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = ''
 
 REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
@@ -199,12 +201,54 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser',
     ),
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend',]
+}
+
+SIMPLE_JWT = {
+    "UPDATE_LAST_LOGIN": True,
+    "USER_ID_FIELD": "user_UUID", # NOTE: from TigaUser
+    "TOKEN_OBTAIN_SERIALIZER": "api.auth.serializers.AppUserTokenObtainPairSerializer",
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Mosquito Alert API',
+    'DESCRIPTION': "Introducing API v1 for Mosquito Alert platform, a project desgined to facilitate citizen science initiatives and enable collaboration among scientists, public health officials, and environmental managers in the investigation and control of disease-carrying mosquitoes.",
+    'VERSION': None,
+    'CONTACT': {
+            'name': 'Developers',
+            'email': 'it@mosquitoalert.com',
+            'x-role': 'responsible developer'
+    },
+    'LICENSE': {
+        'name': 'GPL-3',
+        'url': 'https://github.com/Mosquito-Alert/mosquito_alert/blob/master/LICENSE.md'
+    },
+    'TOS': 'https://www.mosquitoalert.com/en/user-agreement/',
+    'OAS_VERSION': '3.1.0',
+    'SCHEMA_PATH_PREFIX': '/api/v[0-9]',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'ENUM_NAME_OVERRIDES': {
+        'MosquitoTypeEnum': 'tigaserver_app.models.Report.MOSQUITO_SPECIE_CHOICES',
+        'ReportTypeEnum': 'tigaserver_app.models.Report.TYPE_CHOICES'
+    },
+    'ENUM_GENERATE_CHOICE_DESCRIPTION': False,
+    'EXTENSIONS_INFO': {
+        'x-logo': {
+            'altText': 'Mosquito Alert Logo',
+            'backgroundColor': "#fafafa",
+            'url': STATIC_URL + 'api/icons/og_logo.png'
+        },
+    },
+    'REDOC_UI_SETTINGS': {
+        'maxDisplayedEnumValues': '5',
+    },
+    'COMPONENT_SPLIT_REQUEST': True,
 }
 
 LEAFLET_CONFIG = {
@@ -315,6 +359,11 @@ DISABLE_PUSH = True
 # NOTE: paste json data here
 # See: https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk?authuser=1
 FIREBASE_SERVICE_ACCOUNT_CREDENTIAL = {}
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'tigaserver_app.backends.AppUserBackend'
+]
 
 try:
     from tigaserver_project.settings_local import *

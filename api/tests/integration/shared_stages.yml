@@ -1,0 +1,38 @@
+---
+
+name: Shared stages
+description:
+  Reusable test stages
+
+variables:
+  user_device_token: "123456789"
+  user_password: "testpassword123_tmp"
+  accounts_login_path: 'en/accounts/login'
+
+stages:
+  - id: signup
+    name: Sign up
+    request:
+      url: "{api_live_url}/users/"
+      json:
+        password: "{user_password}"
+        device_token: "{user_device_token}"
+      method: POST
+    response:
+      status_code: 201
+      save:
+        json:
+          user_uuid: uuid
+  - id: login
+    name: Login app user using JWT
+    request:
+      url: "{api_live_url}/token/"
+      json:
+        uuid: "{user_uuid}"
+        password: "{user_password}"
+      method: POST
+    response:
+      status_code: 200
+      save:
+        json:
+          token: 'access'
