@@ -161,6 +161,10 @@ class AnonymousUser(User):
         """Return the name of the role/group it belongs to."""
         return 'anonymous'
 
+    class Meta:
+        """Meta."""
+        proxy = True
+
 
 def extendUser(user):
     """Return a User with extended methods."""
