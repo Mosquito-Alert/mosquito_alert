@@ -32,7 +32,6 @@ from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
 from tigascoring.maUsers import smmry
-from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from tigaserver_app.serializers import custom_render_notification,score_label
 import tigaserver_project.settings as conf
 import copy
@@ -1219,8 +1218,8 @@ def user_score_v2(request):
     if user_id == -1:
         raise ParseError(detail='user_id is mandatory')
     user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
-    result = compute_user_score_in_xp_v2(user_id, update=True)
-    return Response(result)
+    user.update_score(commit=True)
+    return Response(user.score_v2_struct)
 
 
 @api_view(['GET', 'POST'])
