@@ -167,6 +167,8 @@ class TokenAPITest(APITestCase):
 
     def setUp(self) -> None:
         self.app_user = TigaUser.objects.create(device_token=123456)
+        self.app_user.set_password('testpassword123_tmp')
+        self.app_user.save()
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_user_last_login_is_updated_on_token_create(self):
@@ -176,7 +178,7 @@ class TokenAPITest(APITestCase):
             self.endpoint,
             data={
                 'uuid': self.app_user.pk,
-                'device_token': self.app_user.device_token,
+                'password': 'testpassword123_tmp',
             }
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)

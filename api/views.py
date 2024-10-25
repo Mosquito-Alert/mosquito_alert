@@ -35,6 +35,7 @@ from .serializers import (
     PartnerSerializer,
     CampaignSerializer,
     UserSerializer,
+    CreateUserSerializer,
     ReportSerializer,
     FixSerializer,
     CountrySerializer,
@@ -182,3 +183,9 @@ class UserViewSet(
             return [AllowAny(),]
 
         return super().get_permissions()
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateUserSerializer
+        else:
+            return UserSerializer

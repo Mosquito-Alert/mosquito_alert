@@ -80,7 +80,7 @@ stages:
       url: "{api_live_url}/token/"
       json:
         uuid: "{app_user.pk}"
-        device_token: "{app_user.device_token}"
+        password: "{user_password}"
       method: POST
     response:
       status_code: 200
@@ -141,7 +141,7 @@ stages:
       url: "{api_live_url}/token/"
       json:
         uuid: "{app_user.pk}"
-        device_token: "{app_user.device_token}"
+        password: "{user_password}"
       method: POST
     response:
       status_code: 200
@@ -183,7 +183,7 @@ stages:
       url: "{api_live_url}/token/"
       json:
         uuid: "{app_user.pk}"
-        device_token: "{app_user.device_token}"
+        password: "{user_password}"
       method: POST
     response:
       status_code: 200

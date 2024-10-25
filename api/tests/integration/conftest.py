@@ -13,8 +13,15 @@ User = get_user_model()
 
 
 @pytest.fixture
-def app_user():
-    return TigaUser.objects.create(device_token="123456789")
+def user_password():
+    return "testpassword123_tmp"
+
+@pytest.fixture
+def app_user(user_password):
+    user = TigaUser.objects.create(device_token="123456789")
+    user.set_password(user_password)
+    user.save(0)
+    return user
 
 
 @pytest.fixture

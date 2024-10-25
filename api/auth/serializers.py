@@ -10,18 +10,16 @@ from rest_framework_simplejwt.serializers import (
 
 class AppUserTokenObtainSerializer(TokenObtainSerializer):
     uuid = serializers.UUIDField(required=True)
-    device_token = serializers.CharField(allow_blank=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         del self.fields[self.username_field]
-        del self.fields["password"]
 
     def validate(self, attrs):
         authenticate_kwargs = {
             "uuid": attrs["uuid"],
-            "device_token": attrs["device_token"],  # or None,
+            "password": attrs["password"],  # or None,
         }
         try:
             authenticate_kwargs["request"] = self.context["request"]

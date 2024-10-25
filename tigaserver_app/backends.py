@@ -12,8 +12,23 @@ class AppUserBackend:
         except TigaUser.DoesNotExist:
             return None
 
-    def authenticate(self, request: HttpRequest, uuid: Optional[str] = None, device_token: Optional[str] = None, **kwargs: Any) -> Optional[AbstractBaseUser]:
+    def authenticate(self, request: HttpRequest, uuid: str = None, password: str = None, **kwargs: Any) -> Optional[AbstractBaseUser]:
+        if uuid is None or password is None:
+            return
+
         try:
-            return TigaUser._default_manager.get(pk=uuid, device_token=device_token)
+            user = TigaUser._default_manager.get(pk=uuid)
         except TigaUser.DoesNotExist:
-            return None
+            # Run the default password hasher once to reduce the timing
+            # difference between an existing and a nonexistent user (#20760).
+            TigaUser().set_password(password)
+        else:
+            if user.check_password(password) and self.user_can_authenticate(user):
+                return user
+
+    def user_can_authenticate(self, user):
+        """
+        Reject users with is_active=False. Custom user models that don't have
+        that attribute are allowed.
+        """
+        return getattr(user, "is_active", True)
