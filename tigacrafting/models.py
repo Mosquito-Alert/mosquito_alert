@@ -1,5 +1,8 @@
+import copy
+
 from django.db import models
-from django.contrib.auth.models import User
+from django.db.utils import IntegrityError
+from django.contrib.auth import get_user_model
 from datetime import datetime, timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
@@ -8,6 +11,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 import tigacrafting.html_utils as html_utils
 import pytz
+
+User = get_user_model()
 
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
     return float(n_yes - n_no)/n_total
@@ -420,6 +425,49 @@ class ExpertReportAnnotation(models.Model):
 
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
 
+        if self.validation_complete and self.validation_complete_executive:
+            cloned_instance = copy.deepcopy(self)
+            cloned_instance.simplified_annotation = True
+            cloned_instance.tiger_certainty_notes = 'exec_auto'
+            cloned_instance.validation_complete = True
+            cloned_instance.validation_complete_executive = False
+            cloned_instance.best_photo = None
+            cloned_instance.edited_user_notes = "" 
+            cloned_instance.message_for_user = ""
+            cloned_instance.revise = False
+
+            for dummy_user in User.objects.filter(username__in=["innie", "minnie"]):
+                try:
+                    cloned_instance.pk = None
+                    cloned_instance.user = dummy_user
+                    cloned_instance.save()
+                except IntegrityError:
+                    # Case unique constraint raises
+                    pass
+
+            try:
+                ExpertReportAnnotation.objects.update_or_create(
+                    user=User.objects.get(username="super_reritja"),
+                    report=self.report,
+                    defaults={
+                        "validation_complete": True
+                    }
+                )
+            except User.DoesNotExist:
+                pass
+
+    def delete(self, *args, **kwargs):
+        if self.validation_complete_executive:
+            ExpertReportAnnotation.objects.filter(
+                report=self.report,
+                validation_complete=True,
+                validation_complete_executive=False
+            ).filter(
+                models.Q(user__username__in=["innie", "minnie"]) 
+                | models.Q(user__username="super_reritja", revise=False)
+            ).delete()
+
+        return super().delete(*args, **kwargs)
 
 class UserStat(models.Model):
     user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE, )
