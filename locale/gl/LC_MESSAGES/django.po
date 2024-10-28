@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Mosquito Alert Server Po-files\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-13 16:44+0200\n"
-"PO-Revision-Date: 2022-11-22 10:11+0100\n"
+"PO-Revision-Date: 2024-10-25 04:59+0200\n"
 "Last-Translator: Agusti Escobar\n"
 "Language-Team: Galician (Spain)\n"
 "Language: gl-ES\n"
@@ -14,9 +14,8 @@ msgstr ""
 "X-Generator: Loco https://localise.biz\n"
 "X-Loco-Source-Locale: es-ES\n"
 "X-Loco-Project-Id: 95706\n"
-"X-Loco-Tagged: plain_po\n"
 "X-Loco-Lookup: id\n"
-"X-Loco-Api-Version: 1.0.27 20230212-1"
+"X-Loco-Api-Version: 1.0.28 20241018-1"
 
 #: stats/templates/stats/chart.html:64
 #: stats/templates/stats/fix_user_chart.html:78
@@ -43,48 +42,48 @@ msgstr "Informes de lugares de cría"
 
 #: stats/templates/stats/fix_user_chart.html:99 loco:5f3558c334e29c5953399546
 msgid "Participants with over 20 fixes"
-msgstr "Participants with over 20 fixes"
+msgstr ""
 
 #: stats/templates/stats/fix_user_chart.html:108 loco:5f3558c334e29c5953399547
 msgid "Participants with over 15 fixes"
-msgstr "Participants with over 15 fixes"
+msgstr ""
 
 #: stats/templates/stats/fix_user_chart.html:117 loco:5f3558c334e29c5953399548
 msgid "Participants with over 10 fixes"
-msgstr "Participants with over 10 fixes"
+msgstr ""
 
 #: stats/templates/stats/fix_user_chart.html:126 loco:5f3558c334e29c5953399549
 msgid "Participants with over 5 fixes"
-msgstr "Participants with over 5 fixes"
+msgstr ""
 
 #: stats/templates/stats/fix_user_chart.html:135 loco:5f3558c334e29c595339954a
 msgid "Participants with at least 1 fix"
-msgstr "Participants with at least 1 fix"
+msgstr ""
 
 #: stats/templates/stats/report_user_chart.html:99
 #: loco:5f3558c334e29c595339954b
 msgid "Participants with at least 1 report"
-msgstr "Participants with at least 1 report"
+msgstr ""
 
 #: stats/templates/stats/report_user_chart.html:108
 #: loco:5f3558c334e29c595339954c
 msgid "Participants with over 1 reports"
-msgstr "Participants with over 1 reports"
+msgstr ""
 
 #: stats/templates/stats/report_user_chart.html:117
 #: loco:5f3558c334e29c595339954d
 msgid "Participants with over 2 reports"
-msgstr "Participants with over 2 reports"
+msgstr ""
 
 #: stats/templates/stats/report_user_chart.html:126
 #: loco:5f3558c334e29c595339954e
 msgid "Participants with over 3 reports"
-msgstr "Participants with over 3 reports"
+msgstr ""
 
 #: stats/templates/stats/report_user_chart.html:135
 #: loco:5f3558c334e29c595339954f
 msgid "Participants with over 4 reports"
-msgstr "Participants with over 4 reports"
+msgstr ""
 
 #: stats/templates/stats/user_ranking.html:30 loco:5f3558c334e29c5953399550
 #| msgid ""
@@ -417,22 +416,22 @@ msgstr "Navegación"
 #: tigacrafting/templates/tigacrafting/expert_validation.html:98
 #: loco:5f3558c334e29c595339958b
 msgid "Menu"
-msgstr "Menu"
+msgstr ""
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:101
 #: loco:5f3558c334e29c595339958c
 msgid "New batch"
-msgstr "New batch"
+msgstr ""
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:102
 #: loco:5f3558c334e29c595339958d
 msgid "Photos you have taken notes on but not yet scored"
-msgstr "Photos you have taken notes on but not yet scored"
+msgstr ""
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:103
 #: loco:5f3558c334e29c595339958e
 msgid "Photos you have already scored"
-msgstr "Photos you have already scored"
+msgstr ""
 
 #: tigacrafting/templates/tigacrafting/expert_validation.html:171
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:195
@@ -444,7 +443,7 @@ msgstr "Gardar"
 #: tigacrafting/templates/tigacrafting/movelab_validation.html:103
 #: loco:5f3558c334e29c5953399590
 msgid "Photos per page"
-msgstr "Photos per page"
+msgstr ""
 
 #: tigahelp/templates/tigahelp/policies.html:30
 #: tigahelp/templates/tigahelp/policies_en.html:29
@@ -621,7 +620,7 @@ msgstr "Media"
 #: tigamap/templates/tigamap/coverage_map_beta.html:79
 #: loco:5f3558c334e29c59533995a8
 msgid "high"
-msgstr "high"
+msgstr ""
 
 #: tigamap/templates/tigamap/coverage_map_new.html:221
 #: tigamap/templates/tigamap/validated_report_map_filterable.html:605
@@ -1254,7 +1253,7 @@ msgstr "Zonas exploradas"
 
 #: tigamap/views.py:155 loco:5f3558c334e29c59533995ff
 msgid "Pseudo Occurrence-Exposure Map"
-msgstr "Pseudo Occurrence-Exposure Map"
+msgstr ""
 
 #: tigamap/views.py:162 loco:5f3558c334e29c5953399600
 #| msgid "Mosquitos: Todos"
@@ -1504,6 +1503,128 @@ msgstr "Inglés"
 #: tigaserver_project/settings.py:134 loco:5f3558c334e29c595339962f
 msgid "Chinese"
 msgstr ""
+
+#: stats/static/stats/user_ranking.js:20 loco:5f355e391e841656806f0f12
+#| msgid "Nivel General"
+msgid "Overall"
+msgstr "Nivel xeral"
+
+#: stats/static/stats/user_ranking.js:24 loco:5f355e391e841656806f0f13
+#| msgid "Nivel Mosquito"
+msgid "Adult"
+msgstr "Nivel Mosquito"
+
+#: stats/static/stats/user_ranking.js:27 stats/static/stats/user_ranking.js:37
+#: loco:5f355e391e841656806f0f14
+#| msgid "Datos enviados"
+msgid "Reports"
+msgstr "Datos enviados"
+
+#: stats/static/stats/user_ranking.js:34 loco:5f355e391e841656806f0f15
+#| msgid "Nivel Lugares de cría"
+msgid "Site"
+msgstr "Nivel Lugares de cría"
+
+#: tigacrafting/static/tigacrafting/jquery-ui/jquery-ui.min.js:10
+#: loco:5f355e391e841656806f0f16
+msgid "'"
+msgstr ""
+
+#: tigacrafting/static/tigacrafting/tinymce/js/tinymce/plugins/imagetools/plugin.min.js:1
+#: loco:5f355e391e841656806f0f17
+msgid "v"
+msgstr ""
+
+#: tigacrafting/static/tigacrafting/tinymce/js/tinymce/plugins/imagetools/plugin.min.js:1
+#: loco:5f355e391e841656806f0f18
+msgid "h"
+msgstr ""
+
+#: tigacrafting/static/tigacrafting/tinymce/js/tinymce/tinymce.min.js:8
+#: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
+#: loco:5f355e391e841656806f0f19
+msgid "blockquote"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
+#: loco:5f355e391e841656806f0f1a
+msgid "UL"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
+#: loco:5f355e391e841656806f0f1b
+msgid "OL"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/plugins/lists/plugin.min.js:1
+#: loco:5f355e391e841656806f0f1c
+msgid "DL"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
+#: loco:5f355e391e841656806f0f1d
+msgid "align"
+msgstr ""
+
+#: tigapublic/static/tigapublic/lib/tinymce/tinymce.min.js:8
+#: loco:5f355e391e841656806f0f1e
+msgid "p"
+msgstr ""
+
+#: tigaserver_app/models.py:1219 loco:5f3ce44d1e9dae2c5f6e1142
+#| msgid "No identificable"
+msgid "species_unclassified"
+msgstr "Non identificable"
+
+#: tigaserver_app/models.py:1220 loco:5f3ce44d1e9dae2c5f6e1143
+#| msgid "Otras especies"
+msgid "species_other"
+msgstr "Outras especies"
+
+#: tigaserver_app/models.py:1221 loco:5f3ce44d1e9dae2c5f6e1144
+#| msgid "mosquito tigre (Aedes albopictus)"
+msgid "species_albopictus"
+msgstr "mosquito tigre (Aedes albopictus)"
+
+#: tigaserver_app/models.py:1222 loco:5f3ce44d1e9dae2c5f6e1145
+#| msgid "mosquito de la fiebre amarilla (Aedes aegypti)"
+msgid "species_aegypti"
+msgstr "mosquito da febre amarela (Aedes aegypti)"
+
+#: tigaserver_app/models.py:1223 loco:5f3ce44d1e9dae2c5f6e1146
+#| msgid "mosquito del Japón (Aedes japonicus)"
+msgid "species_japonicus"
+msgstr "mosquito do Xapón (Aedes japonicus)"
+
+#: tigaserver_app/models.py:1224 loco:5f3ce44d1e9dae2c5f6e1147
+#| msgid "mosquito de Corea (Aedes koreicus)"
+msgid "species_koreicus"
+msgstr "mosquito de Corea (Aedes koreicus)"
+
+#: tigaserver_app/models.py:1225 loco:5f3ce44d1e9dae2c5f6e1148
+#| msgid "Mezcla de especies"
+msgid "species_complex"
+msgstr "Mestura de especies"
+
+#: tigaserver_app/models.py:1226 loco:5f3ce44d1e9dae2c5f6e1149
+#| msgid "No está claro"
+msgid "species_notsure"
+msgstr "Non está claro"
+
+#: tigaserver_app/models.py:1227 loco:5f3ce44d1e9dae2c5f6e114a
+#| msgid "mosquito común (Culex sp.)"
+msgid "species_culex"
+msgstr "mosquito común (Culex sp.)"
+
+#: tigaserver_app/models.py:1240 loco:5f3ce44d1e9dae2c5f6e114b
+#| msgid "Probable"
+msgid "species_value_possible"
+msgstr "Probable"
+
+#: tigaserver_app/models.py:1241 loco:5f3ce44d1e9dae2c5f6e114c
+#| msgid "Confirmado"
+msgid "species_value_confirmed"
+msgstr "Confirmado"
 
 #: loco:5f6c4cd56b0ff67fdb48fc13
 #| msgid "¡Acabas de recibir una recompensa de puntos!"
