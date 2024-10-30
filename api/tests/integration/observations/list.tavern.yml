@@ -120,3 +120,46 @@ stages:
         count: 1
         results:
           - uuid: "{published_object.pk}"
+
+---
+
+test_name: 'Filters for observations list has_predictions'
+
+includes:
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_object
+    - published_observation_with_predictions
+
+stages:
+  - name: Filter by has_predictions True
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      params:
+        has_predictions: True
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - uuid: "{published_observation_with_predictions.pk}"
+  - name: Filter by has_predictions False
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      params:
+        has_predictions: False
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - uuid: "{published_object.pk}"

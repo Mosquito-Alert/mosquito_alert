@@ -1,0 +1,89 @@
+---
+
+test_name: Create is not allowed for mobile users and non auth
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - token_user
+    - app_user_token
+
+stages:
+  - name: Create method not allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "POST"
+    response:
+      status_code: 403
+  - name: Create method non authenticated users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+    response:
+      status_code: 403
+  - name: Create method authenticated users without permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Token {token_user}"
+      method: "POST"
+    response:
+      status_code: 403
+
+---
+
+test_name: Create method
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - report_photo
+    - token_user_can_add
+  - parametrize:
+      key: is_executive_validation
+      vals:
+        - true
+        - false
+
+stages:
+  - name: Create method
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Token {token_user_can_add}"
+      method: "POST"
+      json: &request_data
+        bbox:
+          x_min: 0
+          y_min: 0
+          x_max: 50
+          y_max: 50
+        insect_confidence: 0.9
+        scores:
+          ae_aegypti: 0.13
+          ae_albopictus: 0.8
+          ae_japonicus: 0.01
+          ae_koreicus: 0.01
+          anopheles: 0.01 
+          culex: 0.01
+          culiseta: 0.01
+          other_species: 0.01
+          not_sure: 0
+        is_executive_validation: !force_format_include "{is_executive_validation}"
+    response:
+      status_code: 201
+      json:
+        <<: *request_data
+        id: !anyint
+        class_name: "ae_albopictus"
+        class_score: 0.8

@@ -2,6 +2,8 @@ import pytest
 
 from tigaserver_app.models import Report, Photo
 
+from api.tests.integration.photos.predictions.factories import create_prediction
+
 from .factories import create_observation_object
 
 # NOTE: needed for token with perms fixture
@@ -48,4 +50,9 @@ def hidden_photo(dummy_image):
 def published_observation_with_hidden_photo(published_observation_with_photo, hidden_photo):
     hidden_photo.report=published_observation_with_photo
     hidden_photo.save()
+    return published_observation_with_photo
+
+@pytest.fixture
+def published_observation_with_predictions(published_observation_with_photo):
+    create_prediction(photo=published_observation_with_photo.photos.first())
     return published_observation_with_photo
