@@ -39,8 +39,8 @@ def main():
                 if report.creation_time.year == 2022 and report.creation_time.month == 9:
                     if not report.hide:
                         #report.get_final_combined_expert_category_euro_struct()
-                        # print("{} {} {} {} {}".format( p.uuid, str(p.photo), report.get_final_combined_expert_category_euro(), report.version_UUID, report.creation_time ))
-                        photo_data_writer.writerow([p.uuid, p.photo.url, report.get_final_combined_expert_category_euro(), report.version_UUID, report.creation_time])
+                        # print("{} {} {} {} {}".format( str(p.uuid), str(p.photo), report.get_final_combined_expert_category_euro(), report.version_UUID, report.creation_time ))
+                        photo_data_writer.writerow([str(p.uuid), p.photo.url, report.get_final_combined_expert_category_euro(), report.version_UUID, report.creation_time])
                         bar.next()
     bar.finish()
 
