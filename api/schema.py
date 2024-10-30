@@ -49,3 +49,14 @@ class FieldPolymorphicSerializerExtension(OpenApiSerializerExtension):
 
 class ReportSerializerExtension(FieldPolymorphicSerializerExtension):
     target_class = "api.serializers.ReportSerializer"
+
+
+class WritableSerializerMethodField(OpenApiSerializerFieldExtension):
+    target_class = "api.fields.WritableSerializerMethodField"
+
+    def map_serializer_field(self, auto_schema, direction):
+        return auto_schema._map_serializer_field(
+            field=self.target.deserializer_field if direction == 'request' else self.target.serializer_field,
+            direction=direction,
+            bypass_extensions=True
+        )

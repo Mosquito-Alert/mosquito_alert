@@ -93,7 +93,8 @@ class DetailNotificationSerializer(serializers.ModelSerializer):
     )
 
     seen = WritableSerializerMethodField(
-        deserializer_field=serializers.BooleanField(required=True)
+        field_class=serializers.BooleanField,
+        required=True
     )
 
     # Localized results
@@ -112,9 +113,6 @@ class DetailNotificationSerializer(serializers.ModelSerializer):
         return obj.notification_acknowledgements.filter(
             user=self.context.get("request").user
         ).exists() or (obj.user == user and obj.acknowledged)
-
-    def set_seen(self, value):
-        return value
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_title(self, obj):
@@ -174,9 +172,9 @@ class BaseNotificationCreateSerializer(serializers.ModelSerializer):
         raise NotImplementedError
 
     receiver_type = WritableSerializerMethodField(
-        deserializer_field=serializers.ChoiceField(
-            choices=["user", "topic"], write_only=True
-        ),
+        field_class=serializers.ChoiceField,
+        choices=["user", "topic"],
+        required=True
     )
 
     title_en = serializers.CharField(write_only=True)
@@ -184,9 +182,6 @@ class BaseNotificationCreateSerializer(serializers.ModelSerializer):
 
     created_at = serializers.DateTimeField(source="date_comment", read_only=True)
     expert = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
-    def set_receiver_type(self, value):
-        return value
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_receiver_type(self, obj):
