@@ -1,0 +1,37 @@
+test_name: Predictions can be read only by authenticated users.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - token_user
+    - albopictus_prediction
+    - app_user_token
+
+stages:
+  - name: List method returns 403 for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: Non auth user can not list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: User without perm view can list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_list_data_validation}"

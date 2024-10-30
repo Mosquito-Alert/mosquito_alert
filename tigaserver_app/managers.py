@@ -16,6 +16,15 @@ class ReportQuerySet(models.QuerySet):
             photo_exist=state
         )
 
+    def has_predictions(self, state: bool = True):
+        from .models import IAScore
+
+        return self.annotate(
+            prediction_exist=models.Exists(
+                IAScore.objects.filter(report=models.OuterRef('pk'))
+            )
+        ).filter(prediction_exist=state)
+
     def deleted(self, state: bool = True):
         return self.exclude(deleted_at__isnull=state)
 

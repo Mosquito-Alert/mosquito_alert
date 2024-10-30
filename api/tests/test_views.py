@@ -3,23 +3,28 @@ from datetime import timedelta
 import jwt
 import pytest
 import time_machine
+import pytest
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.module_loading import import_string
 
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase, APIClient
 
 from rest_framework_simplejwt.settings import api_settings
 
-from tigaserver_app.models import TigaUser, Report, Device, MobileApp
+from tigacrafting.models import ExpertReportAnnotation
+from tigaserver_app.models import TigaUser, Report, Device, MobileApp, IAScore
 
 from api.auth.serializers import AppUserTokenObtainPairSerializer
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
 from api.tests.factories import create_report_object
+
+from .utils import grant_permission_to_user
 
 User = get_user_model()
 
@@ -189,6 +194,95 @@ class TestObservationAPI(BaseReportTest):
     @pytest.fixture
     def report_object(self, app_user):
         return create_observation_object(user=app_user)
+
+@pytest.mark.django_db
+class TestPredictionAPI:
+    @classmethod
+    def build_url(cls, photo):
+        return f"/api/v1/photos/{photo.uuid}/predictions/"
+
+    @pytest.fixture
+    def permitted_user(self, user):
+        grant_permission_to_user(type='add', model_class=IAScore, user=user)
+        Token.objects.create(user=user)
+        return user
+
+    @pytest.fixture
+    def data_create_request(self):
+        """Fixture for the data create request."""
+        return {
+            "bbox": {"x_min": 0, "y_min": 0, "x_max": 0, "y_max": 0},
+            "insect_confidence": 0.9,
+            "scores": {
+                "ae_aegypti": 0.1,
+                "ae_albopictus": 0.8,
+                "ae_japonicus": 0.05,
+                "ae_koreicus": 0.05,
+                "anopheles": 0.05,
+                "culex": 0.05,
+                "culiseta": 0.05,
+                "other_species": 0,
+                "not_sure": 0
+            },
+            "is_executive_validation": False
+        }
+
+    @pytest.fixture()
+    def api_client(self, permitted_user):
+        from rest_framework.test import APIClient
+
+        client = APIClient()
+        token = Token.objects.get(user=permitted_user)
+        client.credentials(HTTP_AUTHORIZATION=f"Token {str(token)}")
+        return client
+
+    def test_is_execution_validation_False_does_not_create_annotations(self, api_client, report_photo, data_create_request):
+        assert not ExpertReportAnnotation.objects.filter(
+            report__photos__in=[report_photo]
+        ).exists()
+
+        response = api_client.post(
+            self.build_url(photo=report_photo),
+            data={
+                **data_create_request,
+                **{
+                    "is_executive_validation": False
+                }
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        assert not ExpertReportAnnotation.objects.filter(
+            report__photos__in=[report_photo]
+        ).exists()
+
+    def test_is_execution_validation_True_does_create_annotations(self, api_client, report_photo, data_create_request):
+        assert not ExpertReportAnnotation.objects.filter(
+            report__photos__in=[report_photo]
+        ).exists()
+
+        response = api_client.post(
+            self.build_url(photo=report_photo),
+            data={
+                **data_create_request,
+                **{
+                    "is_executive_validation": True
+                }
+            },
+            format='json'
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        assert ExpertReportAnnotation.objects.filter(
+            report__photos__in=[report_photo]
+        ).count() == 4
+        assert ExpertReportAnnotation.objects.filter(
+            report__photos__in=[report_photo],
+            user__username='aima',
+            validation_complete_executive=True
+        ).count() == 1
 
 @pytest.mark.django_db
 class TokenAPITest(APITestCase):

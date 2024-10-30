@@ -9,6 +9,7 @@ from rest_framework import serializers
 from drf_extra_fields.geo_fields import PointField
 from taggit.serializers import TaggitSerializer
 
+from tigacrafting.models import ExpertReportAnnotation
 from tigaserver_app.models import (
     NotificationContent,
     Notification,
@@ -21,7 +22,8 @@ from tigaserver_app.models import (
     Fix,
     NotificationTopic,
     Device,
-    MobileApp
+    MobileApp,
+    IAScore
 )
 
 from .fields import (
@@ -673,4 +675,100 @@ class DeviceUpdateSerializer(DeviceSerializer):
             "type",
             "manufacturer",
             "model"
+        )
+class PredictionSerializer(serializers.ModelSerializer):
+
+    class_name_to_category = {
+        'ae_aegypti': 5,
+        'ae_albopictus': 4,
+        'anopheles': 2,
+        'culex': 10,
+        'culiseta': 2,
+        'ae_japonicus': 6,
+        'ae_koreicus': 7,
+        'other_species': 2,
+        'not_sure': 9,
+    }
+
+    class_name_to_otherspecies = {
+        'anopheles': 101,
+        'culiseta': 103
+    }
+
+    class BoundingBoxSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = IAScore
+            fields = (
+                'x_min',
+                'y_min',
+                'x_max',
+                'y_max',
+            )
+            extra_kwargs = {
+                "x_min": {"source": "x_tl"},
+                "y_min": {"source": "y_tl"},
+                "x_max": {"source": "x_br"},
+                "y_max": {"source": "y_br"},
+            }
+
+    class PredictionScoreSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = IAScore
+            fields = IAScore.CLASS_FIELDNAMES
+
+    id = serializers.IntegerField(source="pk", read_only=True, help_text="Unique identifier for the prediction.")
+    bbox = BoundingBoxSerializer(source='*')
+    scores = PredictionScoreSerializer(source='*')
+    class_name = serializers.SerializerMethodField()
+    class_score = serializers.SerializerMethodField()
+    is_executive_validation = WritableSerializerMethodField(
+        field_class=serializers.BooleanField,
+        default=False,
+    )
+
+    def get_class_name(self, obj) -> str:
+        return obj.class_name
+
+    def get_class_score(self, obj) -> float:
+        return obj.class_score
+
+    def get_is_executive_validation(self, obj) -> bool:
+        return not obj.expert_annotation is None
+
+    def create(self, validated_data):
+        is_executive_validation = validated_data.pop('is_executive_validation')
+
+        validated_data['report'] = validated_data['photo'].report
+
+        instance = super().create(validated_data)
+
+        if is_executive_validation:
+            obj = ExpertReportAnnotation.objects.create(
+                user=get_user_model().objects.get(username='aima'),
+                report=instance.photo.report,
+                best_photo=instance.photo,
+                category_id=self.class_name_to_category.get(self.get_class_name(obj=instance)),
+                validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY,
+                validation_complete=True,
+                validation_complete_executive=True,
+                simplified_annotation=False,
+                status=1,  # Force public
+                # edited_user_notes="", # TODO: value for publication,
+                other_species=self.class_name_to_otherspecies.get(self.get_class_name(obj=instance))
+            )
+            instance.expert_annotation = obj
+            instance.save()
+
+        return instance
+
+    class Meta:
+        model = IAScore
+        fields = (
+            'id',
+            'bbox',
+            'insect_confidence',
+            'class_name',
+            'class_score',
+            'scores',
+            'is_executive_validation'
         )

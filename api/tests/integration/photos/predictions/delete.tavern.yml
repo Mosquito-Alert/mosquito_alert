@@ -1,0 +1,55 @@
+test_name: Delete is disabled
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - albopictus_prediction
+    - token_user
+    - app_user_token
+
+
+stages:
+  - name: Delete is disabeld for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/{albopictus_prediction.pk}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "DELETE"
+    response:
+      status_code: 403
+  - name: Delete method authenticated users without permissions
+    request:
+      url: "{api_live_url}/{endpoint}/{albopictus_prediction.pk}/"
+      headers:
+        Authorization: "Token {token_user}"
+      method: "DELETE"
+    response:
+      status_code: 403
+
+---
+
+test_name: Delete is allowed to users with permissions
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - albopictus_prediction
+    - token_user_can_delete
+
+stages:
+  - name: Delete is disabeld users even with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/{albopictus_prediction.pk}/"
+      headers:
+        Authorization: "Token {token_user_can_delete}"
+      method: "DELETE"
+    response:
+      status_code: 204

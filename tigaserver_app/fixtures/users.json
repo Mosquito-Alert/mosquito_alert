@@ -82,5 +82,26 @@
                 4
             ]
         }
+    },
+    {
+        "model": "auth.user",
+        "pk": 183,
+        "fields":
+        {
+            "password": "password",
+            "last_login": "2024-07-09T06:43:58.440Z",
+            "is_superuser": false,
+            "username": "aima",
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2023-03-27T10:22:25Z",
+            "groups":
+            [
+                3
+            ]
+        }
     }
 ]

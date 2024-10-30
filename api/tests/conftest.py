@@ -7,6 +7,7 @@ import random
 from rest_framework.authtoken.models import Token
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -19,6 +20,12 @@ from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo
 User = get_user_model()
 TEST_DATA_PATH = Path(Path(__file__).parent.absolute(), "test_data/")
 
+@pytest.fixture(scope='function', autouse=True)
+def load_initial_data(django_db_setup, django_db_blocker):
+    with django_db_blocker.unblock():
+        call_command('loaddata', 'tigaserver_app/fixtures/categories.json')
+        call_command('loaddata', 'tigaserver_app/fixtures/auth_group.json')
+        call_command('loaddata', 'tigaserver_app/fixtures/users.json')
 
 @pytest.fixture
 def user_password():

@@ -35,6 +35,7 @@ from tigaserver_app.models import (
     Report,
     Fix,
     Notification,
+    IAScore,
     Photo,
     Device
 )
@@ -47,6 +48,7 @@ from .serializers import (
     FixSerializer,
     CountrySerializer,
     PhotoSerializer,
+    PredictionSerializer,
     ObservationSerializer,
     BiteSerializer,
     BreedingSiteSerializer,
@@ -60,7 +62,7 @@ from .serializers import (
     UserNotificationCreateSerializer,
 )
 from .permissions import NotificationObjectPermissions, ReportPermissions, MyReportPermissions
-from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet
+from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet, NestedViewSetMixin
 
 User = get_user_model()
 
@@ -349,6 +351,25 @@ class PhotoViewSet(
 
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'
+
+
+class PredictionViewSet(
+    NestedViewSetMixin, CreateModelMixin, RetrieveModelMixin, ListModelMixin, DestroyModelMixin, GenericNoMobileViewSet
+):
+    # NOTE: This ViewSet is nested in /photos
+
+    parent_lookup_kwargs = {
+        'photo_uuid': 'photo__uuid'
+    }
+    lookup_field = 'photo_id'
+    lookup_url_kwarg = 'id'
+
+    queryset = IAScore.objects.all().order_by('pk')
+    serializer_class = PredictionSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(photo=Photo.objects.get(uuid=self.kwargs['photo_uuid']))
+
 
 class DeviceViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericMobileOnlyViewSet):
     queryset = Device.objects.filter(device_id__isnull=False).exclude(device_id='').select_related('mobile_app')

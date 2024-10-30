@@ -78,7 +78,11 @@ class BaseReportWithPhotosFilter(BaseReportFilter):
 
 
 class ObservationFilter(BaseReportWithPhotosFilter):
-    pass
+    has_predictions = filters.BooleanFilter(method='filter_has_predictions', help_text='Has any prediction')
+
+    def filter_has_predictions(self, queryset, name, value):
+        # Subquery to check for existence of related Predictions
+        return queryset.has_predictions(state=value)
 
 class BiteFilter(BaseReportFilter):
     pass
