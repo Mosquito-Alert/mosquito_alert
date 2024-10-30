@@ -147,7 +147,7 @@ class ReportViewSet(
     DestroyModelMixin,
     GenericViewSet,
 ):
-    queryset = Report.objects.prefetch_related(
+    queryset = Report.objects.select_related('map_aux_report').prefetch_related(
         models.Prefetch(
             "photos",
             queryset=Photo.objects.visible()
