@@ -57,6 +57,7 @@ router.register(r"identification-tasks", IdentificationTaskViewSet)
 identification_task_router = NestedSimpleRouter(router, r'identification-tasks', lookup='')
 identification_task_router.register(r"photos", IdentificationTaskViewSet.PhotoViewSet)
 identification_task_router.register(r"annotations", IdentificationTaskViewSet.AnnotationViewSet)
+identification_task_router.register(r"predictions", IdentificationTaskViewSet.PhotoPredictionViewSet)
 
 router.register(r"notifications", NotificationViewSet)
 router.register(r"observations", ObservationViewSest)
