@@ -28,7 +28,7 @@ admin.autodiscover()
 
 urlpatterns = [
     path('api/v1/', include(('api.urls', 'api'), namespace='v1')),
-    path('api/', include(('tigaserver_app.urls', 'api'), namespace='legacy')),
+    path('api/', include(('tigaserver_app.urls', 'tigaserver_app'), namespace='legacy')),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api-docs/', TemplateView.as_view(template_name='swagger.html',extra_context={'schema_url':'openapi-schema'}), name='swagger-ui'),
 ]
