@@ -3,11 +3,12 @@ import random
 
 from rest_framework.authtoken.models import Token
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from api.tests.utils import grant_permission_to_user
-from tigaserver_app.models import EuropeCountry, TigaUser, Report
+from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo
 
 User = get_user_model()
 
@@ -23,10 +24,17 @@ def app_user(user_password):
     user.save(0)
     return user
 
+@pytest.fixture
+def dummy_image():
+    # Prepare a fake image file
+    image_content = b"fake image content"  # Replace with actual binary data if needed
+    test_image = SimpleUploadedFile("test_image.jpg", image_content, content_type="image/jpeg")
+
+    return test_image
 
 @pytest.fixture
-def adult_report(app_user):
-    return Report.objects.create(
+def adult_report(app_user, dummy_image):
+    r = Report.objects.create(
         user=app_user,
         report_id=1234,  # TODO: change
         phone_upload_time=timezone.now(),
@@ -38,6 +46,16 @@ def adult_report(app_user):
         current_location_lat=2,
     )
 
+    _ = Photo.objects.create(
+        photo=dummy_image,
+        report=r,
+    )
+
+    return r
+
+@pytest.fixture
+def report_photo(adult_report):
+    return adult_report.photos.first()
 
 @pytest.fixture
 def django_live_url(live_server):
@@ -79,7 +97,6 @@ def user():
         username=f"user_{random.randint(1,1000)}",
         password=User.objects.make_random_password(),
     )
-
 
 @pytest.fixture
 def token_instance_user(user):

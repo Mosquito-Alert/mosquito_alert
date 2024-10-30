@@ -554,3 +554,21 @@ class CreateUserSerializer(UserSerializer):
         return instance
     class Meta(UserSerializer.Meta):
         fields = UserSerializer.Meta.fields + ("password",)
+
+class PhotoSerializer(serializers.ModelSerializer):
+
+    image_path = serializers.SerializerMethodField()
+
+    def get_image_path(self, obj) -> str:
+        return obj.photo.path
+
+    class Meta:
+        model = Photo
+        fields = (
+            "uuid",
+            "image_url",
+            "image_path"
+        )
+        extra_kwargs = {
+            "image_url": {"source": "photo"},
+        }

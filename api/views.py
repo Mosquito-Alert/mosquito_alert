@@ -40,6 +40,7 @@ from .serializers import (
     ReportSerializer,
     FixSerializer,
     CountrySerializer,
+    PhotoSerializer,
 )
 from .serializers import (
     DetailNotificationSerializer,
@@ -47,7 +48,7 @@ from .serializers import (
     UserNotificationCreateSerializer,
 )
 from .permissions import NotificationObjectPermissions, ReportPermissions
-from .viewsets import GenericViewSet
+from .viewsets import GenericViewSet, GenericNoMobileViewSet
 
 User = get_user_model()
 
@@ -195,3 +196,12 @@ class UserViewSet(
             return CreateUserSerializer
         else:
             return UserSerializer
+
+class PhotoViewSet(
+    RetrieveModelMixin, GenericNoMobileViewSet
+):
+    queryset = Photo.objects.filter(hide=False)
+    serializer_class = PhotoSerializer
+
+    lookup_field = 'uuid'
+    lookup_url_kwarg = 'uuid'
