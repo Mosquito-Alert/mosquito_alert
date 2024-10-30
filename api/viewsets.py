@@ -2,6 +2,7 @@ from rest_framework.authentication import SessionAuthentication, TokenAuthentica
 from rest_framework.viewsets import GenericViewSet as DRFGenericViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
+from rest_framework import permissions
 from rest_framework.renderers import JSONRenderer
 
 from .auth.authentication import AppUserJWTAuthentication
@@ -24,3 +25,10 @@ class GenericViewSet(DRFGenericViewSet):
     permission_classes = (UserObjectPermissions,)
     parser_classes = (JSONParser, FormParser, MultiPartParser)
     renderer_classes = (JSONRenderer,)
+
+class GenericNoMobileViewSet(GenericViewSet):
+    authentication_classes = (
+        SessionAuthentication,
+        TokenAuthentication,
+    )
+    permission_classes = (permissions.DjangoModelPermissions,)

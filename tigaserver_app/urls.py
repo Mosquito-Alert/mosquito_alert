@@ -42,7 +42,7 @@ urlpatterns = [
     url('photo_blood_reset/', views.photo_blood_reset),
     url('time_info/$', views.get_data_time_info),
     url('score_v2/$', views.user_score_v2),
-    url('photos/$', views.post_photo),
+    url(r'^photos/$', views.post_photo),
     url('photos_user/$', views.get_photo),
     url('configuration/$', views.get_current_configuration),
     url('user_notifications/$', views.user_notifications),

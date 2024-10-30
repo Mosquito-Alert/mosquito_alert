@@ -1,0 +1,43 @@
+test_name: Update is disabled
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - report_photo
+    - token_user_can_change
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Update is disabeld for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/{report_photo.uuid}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "{method}"
+    response:
+      status_code: 403
+  - name: Update is disabeld for non auth users
+    request:
+      url: "{api_live_url}/{endpoint}/{report_photo.uuid}/"
+      method: "{method}"
+    response:
+      status_code: 403
+  - name: Update is disabeld users even with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/{report_photo.uuid}/"
+      headers:
+        Authorization: "Token {token_user_can_change}"
+      method: "{method}"
+    response:
+      status_code: 405

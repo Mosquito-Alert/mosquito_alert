@@ -15,6 +15,7 @@ from .views import (
     PartnersViewSet,
     CountriesViewSet,
     NotificationViewSet,
+    PhotoViewSet,
 )
 
 
@@ -37,6 +38,7 @@ router.register(r"countries", CountriesViewSet)
 router.register(r"fixes", FixViewSet)
 router.register(r"notifications", NotificationViewSet)
 router.register(r"partners", PartnersViewSet)
+router.register(r"photos", PhotoViewSet)
 router.register(r"reports", ReportViewSet)
 router.register(r"users", UserViewSet)
 

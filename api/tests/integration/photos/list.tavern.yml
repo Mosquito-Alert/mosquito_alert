@@ -1,0 +1,37 @@
+test_name: Photos can not be listed.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - token_user_can_view
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: List method returns not exist for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 404
+  - name: Non auth user can not list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+    response:
+      status_code: 404
+  - name: Auth user can not list even with permission
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 404

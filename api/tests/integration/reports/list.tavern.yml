@@ -218,7 +218,7 @@ stages:
       strict:
         - json:off
       json:
-        count: 0
+        count: 1
   - name: Filter by has_photos False
     request:
       url: "{api_live_url}/{endpoint}/?has_photos=false"
@@ -228,4 +228,4 @@ stages:
       strict:
         - json:off
       json:
-        count: 1
+        count: 0
