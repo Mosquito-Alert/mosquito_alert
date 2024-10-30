@@ -1,6 +1,19 @@
 from django.db import models
 
 class ReportQuerySet(models.QuerySet):
+    def has_photos(self, state: bool = True):
+        from .models import Photo
+
+        return self.annotate(
+            photo_exist=models.Exists(
+                Photo.objects.filter(
+                    report=models.OuterRef('pk')
+                ).visible()
+            )
+        ).filter(
+            photo_exist=state
+        )
+
     def deleted(self, state: bool = True):
         return self.exclude(deleted_at__isnull=state)
 

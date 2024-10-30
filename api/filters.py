@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from django_filters import rest_framework as filters
 
-from tigaserver_app.models import Report, Notification, OWCampaigns, Photo
+from tigaserver_app.models import Report, Notification, OWCampaigns
 
 
 class CampaignFilter(filters.FilterSet):
@@ -58,7 +58,7 @@ class ReportFilter(filters.FilterSet):
 
     def filter_has_photos(self, queryset, name, value):
         # Subquery to check for existence of related Photos
-        return queryset.annotate(photo_exist=models.Exists(Photo.objects.filter(report=models.OuterRef('pk')).visible())).filter(photo_exist=value)
+        return queryset.has_photos(state=value)
 
     class Meta:
         model = Report
