@@ -55,7 +55,7 @@ marks:
 stages:
   - name: User without perm view can not retrieve
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       method: "GET"
       headers:
         Authorization: "Token {token_user_can_view:s}"
