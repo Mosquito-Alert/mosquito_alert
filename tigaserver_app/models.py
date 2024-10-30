@@ -22,7 +22,10 @@ from django.contrib.gis.db.models.functions import Distance as DistanceFunction
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance as DistanceMeasure
 from django.db import transaction
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Count, Q
+from django.db.models.functions import Coalesce
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
@@ -2982,7 +2985,6 @@ def make_image_uuid(path):
     return wrapper
 '''
 
-
 BLOOD_GENRE = (('male', 'Male'), ('female', 'Female'), ('fblood', 'Female blood'), ('fgravid', 'Female gravid'), ('fgblood', 'Female gravid + blood'), ('dk', 'Dont know') )
 
 class Photo(models.Model):
@@ -3479,21 +3481,156 @@ class OrganizationPin(models.Model):
 
 
 class IAScore(models.Model):
-    report = models.ForeignKey('tigaserver_app.Report', related_name='report_iascore', help_text='Report which the score refers to.', on_delete=models.CASCADE, )
-    photo = models.ForeignKey('tigaserver_app.Photo', related_name='photo_iascore', help_text='Photo to which the score refers to', on_delete=models.CASCADE, )
-    f1_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 1, class 1')
-    f1_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 1, class 2')
-    f2_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 1')
-    f2_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 2')
-    f2_c3 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 3')
-    f2_c4 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 4')
-    f2_c5 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 5')
-    f2_c6 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 6')
-    f2_c7 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 7')
-    f2_c8 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 8')
-    f2_c9 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 9')
-    x_tl = models.IntegerField(default=0, help_text="photo bounding box coordinates top left x")
-    x_br = models.IntegerField(default=0, help_text="photo bounding box coordinates bottom right x")
-    y_tl = models.IntegerField(default=0, help_text="photo bounding box coordinates top left y")
-    y_br = models.IntegerField(default=0, help_text="photo bounding box coordinates bottom right y")
+    photo = models.OneToOneField(Photo, primary_key=True, related_name='iascore', help_text='Photo to which the score refers to', on_delete=models.CASCADE, limit_choices_to={"report__type": Report.TYPE_ADULT})
+    report = models.ForeignKey(Report, related_name='report_iascore', help_text='Report which the score refers to.', on_delete=models.CASCADE, )
 
+    expert_annotation = models.ForeignKey(ExpertReportAnnotation, null=True, blank=True, on_delete=models.SET_NULL)
+
+    insect_confidence = models.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(1.0)
+        ],
+        help_text='Insect confidence'
+    )
+    f1_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 1, class 2')
+
+    CLASS_FIELDNAMES = ["ae_albopictus", "ae_aegypti", "ae_japonicus", "ae_koreicus", "culex", "anopheles", "culiseta", "other_species", "not_sure"]
+    ae_aegypti = models.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(1.0)
+        ],
+        help_text='Score for Ae. aegypti'
+    )
+    ae_albopictus = models.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(1.0)
+        ],
+        help_text='Score for Ae. albopictus'
+    )
+    anopheles = models.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(1.0)
+        ],
+        help_text='Score for Anopheles (s.p.)'
+    )
+    culex = models.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(1.0)
+        ],
+        help_text='Score for Culex (s.p.)'
+    )
+    culiseta = models.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(1.0)
+        ],
+        help_text='Score for Culiseta (s.p.)'
+    )
+    ae_japonicus = models.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(1.0)
+        ],
+        help_text='Score for Ae. japonicus'
+    )
+    ae_koreicus = models.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(1.0)
+        ],
+        help_text='Score for Ae. koreicus'
+    )
+    other_species = models.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(1.0)
+        ],
+        help_text='Score for other species'
+    )
+    not_sure = models.FloatField(
+        blank=True,
+        null=True,
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(1.0)
+        ],
+        help_text='Score for not sure class'
+    )
+
+    x_tl = models.PositiveIntegerField(help_text="photo bounding box coordinates top left x")
+    x_br = models.PositiveIntegerField(help_text="photo bounding box coordinates bottom right x")
+    y_tl = models.PositiveIntegerField(help_text="photo bounding box coordinates top left y")
+    y_br = models.PositiveIntegerField(help_text="photo bounding box coordinates bottom right y")
+
+    @property
+    def class_name(self) -> str:
+        return max(
+            self.CLASS_FIELDNAMES,
+            key=lambda k: getattr(self, k) or -1 if hasattr(self, k) else -1)
+
+    @property
+    def class_score(self) -> float:
+        return getattr(self, self.class_name)
+
+    def clean(self):
+        # Get the linked photo dimensions
+        try:
+            width, height = self.photo.photo.width, self.photo.photo.height
+        except FileNotFoundError:
+            width = height = None
+
+        # Check if x_br is greater than the photo width
+        if width is not None and self.x_br > width:
+            raise ValidationError("Bottom right x-coordinate (x_br) cannot exceed the width of the photo.")
+
+        # Check if y_br is greater than the photo height
+        if height is not None and self.y_br > height:
+            raise ValidationError("Bottom right y-coordinate (y_br) cannot exceed the height of the photo.")
+
+    def save(self, *args, **kwargs):
+        # Force report assignation to avoid inconsistencies.
+        self.report = self.photo.report
+
+        self.clean()
+
+        super().save(*args, **kwargs)
+
+        self.report.ia_filter_1 = max(
+            self.report.ia_filter_1 or 0,
+            self.insect_confidence or 0
+        )
+        self.report.save()
+
+    def delete(self, *args, **kwargs):
+        report = self.report
+
+        if self.expert_annotation:
+            self.expert_annotation.delete()
+
+        super().delete(*args, **kwargs)
+
+        report.ia_filter_1 = IAScore.objects.filter(
+            report=report
+        ).aggregate(
+            max_insect_confidence=Coalesce(models.Max('insect_confidence'), models.Value(None))
+        )['max_insect_confidence']
+        report.save()
+
+    class Meta:
+        constraints = [
+            # Ensure x_tl is less than or equal to x_br
+            models.CheckConstraint(
+                check=Q(x_tl__lte=models.F('x_br')),
+                name='x_tl_less_equal_x_br'
+            ),
+            # Ensure y_tl is less than or equal to y_br
+            models.CheckConstraint(
+                check=Q(y_tl__lte=models.F('y_br')),
+                name='y_tl_less_equal_y_br'
+            ),
+        ]

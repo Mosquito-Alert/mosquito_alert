@@ -1,0 +1,34 @@
+---
+
+name: Common test information
+description: Login information for test server
+
+variables:
+  response_data_validation: &retrieve_validation
+    id: !anyint
+    bbox:
+      x_min: !anyint
+      y_min: !anyint
+      x_max: !anyint
+      y_max: !anyint
+    insect_confidence: !anyfloat
+    class_name: !anystr
+    class_score: !anyfloat
+    scores:
+      ae_aegypti: !anyfloat
+      ae_albopictus: !anyfloat
+      ae_japonicus: !anyfloat
+      ae_koreicus: !anyfloat
+      anopheles: !anyfloat
+      culex: !anyfloat
+      culiseta: !anyfloat
+      other_species: !anyfloat
+      not_sure: !anyfloat
+    is_executive_validation: !anybool
+  response_list_data_validation: &response_list_validation
+    count: !anyint
+    next: !anything
+    previous: !anything
+    results: [
+      <<: *retrieve_validation
+    ]
