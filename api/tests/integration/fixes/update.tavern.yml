@@ -6,7 +6,6 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - country
   - parametrize:
       key: method
       vals:
@@ -20,7 +19,7 @@ stages:
     type: ref
   - name: Update is disabeld
     request:
-      url: "{api_live_url}/{endpoint}/{country.pk}/"
+      url: "{api_live_url}/{endpoint}/1/"
       headers:
         Authorization: "Bearer {token}"
       method: "{method}"
