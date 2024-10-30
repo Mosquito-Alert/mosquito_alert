@@ -43,7 +43,7 @@ from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categ
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
-from .managers import ReportManager, NotificationManager
+from .managers import ReportManager, PhotoManager, NotificationManager
 from .mixins import TimeZoneModelMixin
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
@@ -1070,7 +1070,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
     @property
     def visible_photos(self):
-        return self.photos.all().exclude(hide=True)
+        return self.photos.visible().all()
 
     @property
     def n_visible_photos(self) -> int:
@@ -1722,7 +1722,7 @@ class Report(TimeZoneModelMixin, models.Model):
     def get_crowdcrafting_score(self):
         if self.type not in (self.TYPE_SITE, self.TYPE_ADULT):
             return None
-        these_photos = self.photos.exclude(hide=True).annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
+        these_photos = self.photos.visible().annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
         if these_photos.count() == 0:
             return None
         if self.type == self.TYPE_SITE:
@@ -1750,7 +1750,7 @@ class Report(TimeZoneModelMixin, models.Model):
         result = ''
         if self.type not in (self.TYPE_SITE, self.TYPE_ADULT):
             return result
-        these_photos = self.photos.exclude(hide=True).annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
+        these_photos = self.photos.visible().annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
         for photo in these_photos:
             result += '<br>' + photo.small_image_() + '<br>'
         return result
@@ -2858,6 +2858,8 @@ class Photo(models.Model):
     hide = models.BooleanField(default=False, help_text='Hide this photo from public views?', db_index=True)
     uuid = models.UUIDField(default=uuid.uuid4, db_index=True)
     blood_genre = models.CharField(max_length=20, choices=BLOOD_GENRE, null=True, default=None)
+
+    objects = PhotoManager()
 
     def __unicode__(self):
         return self.photo.name

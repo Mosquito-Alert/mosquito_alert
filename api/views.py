@@ -150,7 +150,7 @@ class ReportViewSet(
     queryset = Report.objects.prefetch_related(
         models.Prefetch(
             "photos",
-            queryset=Photo.objects.filter(hide=False)
+            queryset=Photo.objects.visible()
         )
     ).non_deleted()
 
@@ -200,7 +200,7 @@ class UserViewSet(
 class PhotoViewSet(
     RetrieveModelMixin, GenericNoMobileViewSet
 ):
-    queryset = Photo.objects.filter(hide=False)
+    queryset = Photo.objects.visible()
     serializer_class = PhotoSerializer
 
     lookup_field = 'uuid'

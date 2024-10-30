@@ -232,7 +232,7 @@ class ExpertReportAnnotation(models.Model):
         return False
 
     # def get_photo_html_for_report_validation_wblood(self):
-    #     #these_photos = Photo.objects.filter(report=self.report).exclude(hide=True)
+    #     #these_photos = Photo.objects.filter(report=self.report).visible()
     #     these_photos = self.report.photos.all()
     #     result = ''
     #     for photo in these_photos:
@@ -259,7 +259,7 @@ class ExpertReportAnnotation(models.Model):
     #     return result
 
     def get_photo_html_for_report_validation_wblood(self):
-        # these_photos = Photo.objects.filter(report=self.report).exclude(hide=True)
+        # these_photos = Photo.objects.filter(report=self.report).visible()
         these_photos = self.report.photos.all()
         result = ''
         for photo in these_photos:
@@ -287,7 +287,7 @@ class ExpertReportAnnotation(models.Model):
 
 
     def get_photo_html_for_report_validation(self):
-        #these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
+        #these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).visible()
         these_photos = self.report.photos.all()
         result = ''
         for photo in these_photos:
@@ -300,7 +300,7 @@ class ExpertReportAnnotation(models.Model):
         return result
 
     def get_photo_html_for_report_validation_superexpert(self):
-        #these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).exclude(hide=True)
+        #these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).visible()
         these_photos = self.report.photos.all()
         result = ''
 

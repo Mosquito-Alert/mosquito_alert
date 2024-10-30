@@ -35,7 +35,7 @@ def users_with_topic(topic_id):
     return UserSubscription.objects.filter(topic__topic_code=topic_id)
 
 def filter_reports(type):
-    photos = Photo.objects.filter(hide=False)
+    photos = Photo.objects.visible()
     report_ids = set(photos.values_list('report_id', flat=True))
     reports_site = Report.objects.filter(hide=False).filter(version_UUID__in=report_ids).filter(type='site')
     reports_all = Report.objects.filter(hide=False).filter(version_UUID__in=report_ids)

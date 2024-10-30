@@ -183,7 +183,7 @@ def get_current_domain(request):
 
 
 def photos_to_tasks():
-    these_photos = Photo.objects.filter(crowdcraftingtask=None).exclude(report__hide=True).exclude(hide=True)
+    these_photos = Photo.objects.filter(crowdcraftingtask=None).exclude(report__hide=True).visible()
     if these_photos:
         for p in these_photos:
             new_task = CrowdcraftingTask()

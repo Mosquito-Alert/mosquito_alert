@@ -12,6 +12,12 @@ class ReportQuerySet(models.QuerySet):
 
 ReportManager = models.Manager.from_queryset(ReportQuerySet)
 
+class PhotoQuerySet(models.QuerySet):
+    def visible(self):
+        return self.filter(hide=False)
+
+PhotoManager = models.Manager.from_queryset(PhotoQuerySet)
+
 class NotificationQuerySet(models.QuerySet):
     def for_user(self, user: 'TigaUser'):
         from .models import SentNotification
