@@ -1,7 +1,7 @@
 from django.urls import path, re_path
 
 from rest_framework import routers
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from drf_spectacular.settings import spectacular_settings
 from drf_spectacular.utils import extend_schema
@@ -33,7 +33,7 @@ class CustomRedocView(SpectacularRedocView):
 
 router = routers.DefaultRouter()
 router.register(r"campaigns", CampaignsViewSet)
-router.register(r"countries", CountriesViewSet),
+router.register(r"countries", CountriesViewSet)
 router.register(r"fixes", FixViewSet)
 router.register(r"notifications", NotificationViewSet)
 router.register(r"partners", PartnersViewSet)
