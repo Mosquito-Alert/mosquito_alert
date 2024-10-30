@@ -7,6 +7,7 @@ from django.db import migrations, models
 import django.db.models.deletion
 import tigaserver_app.models
 
+import uuid
 
 class Migration(migrations.Migration):
 
@@ -185,7 +186,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('photo', models.ImageField(help_text='Photo uploaded by user.', upload_to=tigaserver_app.models.MakeImageUUID('tigapics'))),
                 ('hide', models.BooleanField(default=False, help_text='Hide this photo from public views?')),
-                ('uuid', models.CharField(default=tigaserver_app.models.make_uuid, max_length=36)),
+                ('uuid', models.CharField(default=lambda: str(uuid.uuid4()), max_length=36)),
                 ('report', models.ForeignKey(help_text='Report and version to which this photo is associated (36-digit report_UUID).', on_delete=django.db.models.deletion.DO_NOTHING, related_name='photos', to='tigaserver_app.Report')),
             ],
         ),

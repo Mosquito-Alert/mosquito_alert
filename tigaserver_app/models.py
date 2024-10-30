@@ -2845,9 +2845,6 @@ def make_image_uuid(path):
     return wrapper
 '''
 
-def make_uuid():
-    return str(uuid.uuid4())
-
 
 BLOOD_GENRE = (('male', 'Male'), ('female', 'Female'), ('fblood', 'Female blood'), ('fgravid', 'Female gravid'), ('fgblood', 'Female gravid + blood'), ('dk', 'Dont know') )
 
@@ -2859,7 +2856,7 @@ class Photo(models.Model):
     report = models.ForeignKey(Report, related_name='photos', help_text='Report and version to which this photo is associated (36-digit '
                                                  'report_UUID).', on_delete=models.CASCADE, )
     hide = models.BooleanField(default=False, help_text='Hide this photo from public views?', db_index=True)
-    uuid = models.CharField(max_length=36, default=make_uuid)
+    uuid = models.UUIDField(default=uuid.uuid4, db_index=True)
     blood_genre = models.CharField(max_length=20, choices=BLOOD_GENRE, null=True, default=None)
 
     def __unicode__(self):
