@@ -2858,7 +2858,7 @@ class Photo(models.Model):
     photo = models.ImageField(upload_to=make_image_uuid, help_text='Photo uploaded by user.')
     report = models.ForeignKey(Report, related_name='photos', help_text='Report and version to which this photo is associated (36-digit '
                                                  'report_UUID).', on_delete=models.CASCADE, )
-    hide = models.BooleanField(default=False, help_text='Hide this photo from public views?')
+    hide = models.BooleanField(default=False, help_text='Hide this photo from public views?', db_index=True)
     uuid = models.CharField(max_length=36, default=make_uuid)
     blood_genre = models.CharField(max_length=20, choices=BLOOD_GENRE, null=True, default=None)
 

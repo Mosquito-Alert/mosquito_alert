@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db import transaction
+from django.db import models
 
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
@@ -28,6 +28,7 @@ from tigaserver_app.models import (
     Report,
     Fix,
     Notification,
+    Photo
 )
 
 from .filters import ReportFilter, NotificationFilter, CampaignFilter
@@ -145,7 +146,12 @@ class ReportViewSet(
     DestroyModelMixin,
     GenericViewSet,
 ):
-    queryset = Report.objects.prefetch_related("photos").non_deleted()
+    queryset = Report.objects.prefetch_related(
+        models.Prefetch(
+            "photos",
+            queryset=Photo.objects.filter(hide=False)
+        )
+    ).non_deleted()
 
     serializer_class = ReportSerializer
     lookup_url_kwarg = "uuid"

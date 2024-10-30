@@ -58,7 +58,7 @@ class ReportFilter(filters.FilterSet):
 
     def filter_has_photos(self, queryset, name, value):
         # Subquery to check for existence of related Photos
-        return queryset.annotate(photo_exist=models.Exists(Photo.objects.filter(report=models.OuterRef('pk')))).filter(photo_exist=value)
+        return queryset.annotate(photo_exist=models.Exists(Photo.objects.filter(report=models.OuterRef('pk'), hide=False))).filter(photo_exist=value)
 
     class Meta:
         model = Report
