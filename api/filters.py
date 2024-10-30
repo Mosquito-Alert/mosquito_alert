@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from django_filters import rest_framework as filters
 
-from tigaserver_app.models import Report, Notification, OWCampaigns
+from tigaserver_app.models import Report, Notification, OWCampaigns, Photo
 
 
 class CampaignFilter(filters.FilterSet):
@@ -46,9 +46,7 @@ class ReportFilter(filters.FilterSet):
     updated_at = filters.IsoDateTimeFromToRangeFilter(
         field_name="updated_at", label="Update at"
     )
-    has_photos = filters.BooleanFilter(
-        field_name="photos", lookup_expr="isnull", exclude=True, label="Has any photo"
-    )
+    has_photos = filters.BooleanFilter(method='filter_has_photos', help_text='Has any photo')
 
     location_country = filters.CharFilter(field_name="country")
     location_nuts_3 = filters.CharFilter(field_name="nuts_3")
@@ -57,6 +55,10 @@ class ReportFilter(filters.FilterSet):
     order_by = filters.OrderingFilter(
         fields=(("server_upload_time", "received_at"), ("creation_time", "created_at"))
     )
+
+    def filter_has_photos(self, queryset, name, value):
+        # Subquery to check for existence of related Photos
+        return queryset.annotate(photo_exist=models.Exists(Photo.objects.filter(report=models.OuterRef('pk')))).filter(photo_exist=value)
 
     class Meta:
         model = Report
