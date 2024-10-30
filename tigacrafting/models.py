@@ -409,6 +409,15 @@ class ExpertReportAnnotation(models.Model):
         if not kwargs.pop('skip_lastmodified', False):
             self.last_modified = timezone.now()
 
+        if self.category:
+            self.tiger_certainty_notes = -2
+            if self.category.pk == 4: # albopictus
+                self.tiger_certainty_notes = 2
+
+            self.aegypti_certainty_category = -2
+            if self.category.pk == 5: # aegypti
+                self.aegypti_certainty_category = 2
+
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
 
 
