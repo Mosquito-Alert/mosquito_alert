@@ -2102,7 +2102,7 @@ def coarse_filter_reports(request):
         if type == 'adult':
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
                 type=Report.TYPE_ADULT,
-                ia_filter_1__lte=float(aithr)
+                identification_task__pred_insect_confidence__lte=float(aithr)
             )
         elif type == 'site':
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
@@ -2121,7 +2121,7 @@ def coarse_filter_reports(request):
         elif country == 'all' and country_exclude != '':
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.exclude(country__gid=int(country_exclude))
 
-        results = new_reports_unfiltered_qs.select_related('user', 'country').prefetch_related('photos').order_by('-server_upload_time')
+        results = new_reports_unfiltered_qs.select_related('user', 'country', 'identification_task').prefetch_related('photos').order_by('-server_upload_time')
 
         try:
             paginator = Paginator(results, limit)

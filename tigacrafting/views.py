@@ -1053,7 +1053,7 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
             reports_qs = reports_qs.filter(country=country)
 
     if aithr:
-        reports_qs = reports_qs.filter(ia_filter_1__lte=float(aithr))
+        reports_qs = reports_qs.filter(identification_task__pred_insect_confidence__lte=float(aithr))
 
     reports_qs = reports_qs.prefetch_related('photos').select_related('country').order_by('-server_upload_time')
     paginator = Paginator(

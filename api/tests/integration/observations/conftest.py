@@ -17,7 +17,6 @@ def object(app_user):
 def published_object(app_user):
     return create_observation_object(user=app_user, is_published=True)
 
-
 @pytest.fixture
 def unpublished_object(app_user):
     return create_observation_object(user=app_user, is_published=False)
@@ -49,3 +48,4 @@ def published_observation_with_hidden_photo(published_observation_with_photo, hi
     hidden_photo.report=published_observation_with_photo
     hidden_photo.save()
     return published_observation_with_photo
+

@@ -1,0 +1,86 @@
+test_name: Update is disabled
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - photo_prediction
+    - token_user_can_change
+    - app_user_token
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - name: Non auth user can not update
+    request:
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
+      method: "{method}"
+    response:
+      status_code: 403
+  - name: Update is disabeld for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "{method}"
+    response:
+      status_code: 403
+  - name: Update is disabeld users even with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
+      headers:
+        Authorization: "Token {token_user_can_change}"
+      method: "{method}"
+      json:
+        bbox:
+          x_min: 50
+          y_min: 50
+          x_max: 51
+          y_max: 51
+        insect_confidence: 0.2
+        predicted_class: 'not_sure'
+        threshold_deviation: 0.9
+        scores:
+          ae_aegypti: 0.0
+          ae_albopictus: 0.8
+          ae_japonicus: 0.01
+          ae_koreicus: 0.01
+          anopheles: 0.01 
+          culex: 0.01
+          culiseta: 0.01
+          other_species: 0.01
+          not_sure: 0.13
+        classifier_version: v2025.1
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        photo:
+          uuid: "{photo_prediction.photo.uuid}"
+          url: !anystr
+        bbox:
+          x_min: 50
+          y_min: 50
+          x_max: 51
+          y_max: 51
+        insect_confidence: 0.2
+        predicted_class: 'not_sure'
+        threshold_deviation: 0.9
+        scores:
+          ae_aegypti: 0.0
+          ae_albopictus: 0.8
+          ae_japonicus: 0.01
+          ae_koreicus: 0.01
+          anopheles: 0.01 
+          culex: 0.01
+          culiseta: 0.01
+          other_species: 0.01
+          not_sure: 0.13
+        classifier_version: v2025.1

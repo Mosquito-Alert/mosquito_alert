@@ -92,7 +92,10 @@ def update_larvae(cursor):
 
 def update_ia_value(cursor):
     cursor.execute(
-        """update map_aux_reports_newmap set ia_value=r.ia_filter_1 from (select \"version_UUID\", ia_filter_1 from tigaserver_app_report) as r where version_uuid = r.\"version_UUID\""""
+        """UPDATE map_aux_reports_newmap
+            SET ia_value = t.pred_insect_confidence
+            FROM tigacrafting_identificationtask t
+            WHERE map_aux_reports_newmap.version_uuid = t.report_id"""
     )
     cursor.execute(
         """UPDATE map_aux_reports_newmap set ia_value=NULL where expert_validated<>2;"""

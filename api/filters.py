@@ -5,7 +5,7 @@ from django.utils import timezone
 from django_filters import rest_framework as filters
 
 from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon
-from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry
+from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry, Photo
 
 User = get_user_model()
 
@@ -121,6 +121,33 @@ class IdentificationTaskFilter(filters.FilterSet):
         if not value:
             return queryset
         return queryset.assigned_to(users=value)
+
+    fully_predicted = filters.BooleanFilter(
+        method='filter_fully_predicted',
+        help_text='Filters identification task based on whether all associated photos have predictions. Set to True to include identification tasks where every photo has a prediction; set to False to include identification tasks where at least one photo is missing a prediction.'
+    )
+
+    def filter_fully_predicted(self, queryset, name, value):
+        # Subquery to check for existence of related Predictions
+        photos_qs = Photo.objects.visible()
+
+        return queryset.annotate(
+            has_visible_photos=models.Exists(
+                photos_qs.filter(
+                    report=models.OuterRef('report')
+                )
+            ),
+            has_missing_predictions=models.Exists(
+                photos_qs.filter(
+                    report=models.OuterRef('report')
+                ).exclude(
+                    prediction__identification_task=models.OuterRef('pk')
+                )
+            )
+        ).filter(
+            has_visible_photos=True,
+            has_missing_predictions=not value
+        )
 
     num_annotations = filters.RangeFilter(field_name="total_finished_annotations")
 

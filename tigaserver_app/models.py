@@ -16,7 +16,8 @@ from typing import Optional, Union
 import uuid
 
 from django.conf import settings
-from django.contrib.auth.models import User, AbstractBaseUser, AnonymousUser
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
 from django.contrib.gis.geos import GEOSGeometry
@@ -52,6 +53,7 @@ from .mixins import TimeZoneModelMixin
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
+User = get_user_model()
 
 ACHIEVEMENT_10_REPORTS = 'achievement_10_reports'
 ACHIEVEMENT_20_REPORTS = 'achievement_20_reports'
@@ -927,17 +929,6 @@ class Report(TimeZoneModelMixin, models.Model):
     nuts_2 = models.CharField(max_length=4, null=True, blank=True, editable=False)
     nuts_3 = models.CharField(max_length=5, null=True, blank=True, editable=False)
 
-    ia_filter_1 = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="Value ranging from -1.0 to 1.0 positive values indicate possible insect, negative values indicate spam(non-insect)",
-    )
-    ia_filter_2 = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="Score for best classified image. 0 indicates not classified, 1.xx indicates classified with score xx, 2.xx classified with alert with score xx.",
-    )
-
     tags = TaggableManager(
         through=UUIDTaggedItem,
         blank=True,
@@ -1178,8 +1169,6 @@ class Report(TimeZoneModelMixin, models.Model):
             'version_time',
             'deleted_at',
             'hide',
-            'ia_filter_1',
-            'ia_filter_2',
             'package_name',
             'device_manufacturer',
             'device_model',
@@ -2986,7 +2975,6 @@ def make_image_uuid(path):
     return wrapper
 '''
 
-
 BLOOD_GENRE = (('male', 'Male'), ('female', 'Female'), ('fblood', 'Female blood'), ('fgravid', 'Female gravid'), ('fgblood', 'Female gravid + blood'), ('dk', 'Dont know') )
 
 class Photo(models.Model):
@@ -3479,24 +3467,4 @@ class OrganizationPin(models.Model):
     point = models.PointField(srid=4326)
     textual_description = models.TextField(help_text='Text desription on the pin. This text is meant to be visualized as the text body of the dialog on the map')
     page_url = models.URLField(help_text='URL link to the organization page')
-
-
-class IAScore(models.Model):
-    report = models.ForeignKey('tigaserver_app.Report', related_name='report_iascore', help_text='Report which the score refers to.', on_delete=models.CASCADE, )
-    photo = models.ForeignKey('tigaserver_app.Photo', related_name='photo_iascore', help_text='Photo to which the score refers to', on_delete=models.CASCADE, )
-    f1_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 1, class 1')
-    f1_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 1, class 2')
-    f2_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 1')
-    f2_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 2')
-    f2_c3 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 3')
-    f2_c4 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 4')
-    f2_c5 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 5')
-    f2_c6 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 6')
-    f2_c7 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 7')
-    f2_c8 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 8')
-    f2_c9 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 9')
-    x_tl = models.IntegerField(default=0, help_text="photo bounding box coordinates top left x")
-    x_br = models.IntegerField(default=0, help_text="photo bounding box coordinates bottom right x")
-    y_tl = models.IntegerField(default=0, help_text="photo bounding box coordinates top left y")
-    y_br = models.IntegerField(default=0, help_text="photo bounding box coordinates bottom right y")
 
