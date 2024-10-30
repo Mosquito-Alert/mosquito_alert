@@ -295,7 +295,7 @@ class ReportPhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Photo
-        fields = ("id", "url", "file")
+        fields = ("uuid", "url", "file")
 
 
 class BaseReportSerializer(serializers.ModelSerializer):

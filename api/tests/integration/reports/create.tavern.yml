@@ -182,9 +182,9 @@ stages:
         user_perceived_mosquito_abdomen: null
         user_perceived_mosquito_legs: null
         photos:
-          - id: !anyint
+          - uuid: !anystr
             url: !anystr
-          - id: !anyint
+          - uuid: !anystr
             url: !anystr
   - name: Create adult report without photos
     request:
@@ -278,7 +278,7 @@ stages:
         breeding_site_has_near_mosquitoes: null
         breeding_site_has_larvae: null
         photos:
-          - id: !anyint
+          - uuid: !anystr
             url: !anystr
-          - id: !anyint
+          - uuid: !anystr
             url: !anystr
