@@ -138,7 +138,7 @@ stages:
       save:
         json:
           token: 'access'
-  - name: App user can retrieve their notification
+  - name: App user can retrieve their reports
     request:
       url: "{api_live_url}/{endpoint}/{adult_report.pk}/"
       method: "GET"
@@ -177,7 +177,7 @@ stages:
     type: ref
   - id: login
     type: ref
-  - name: App user can not retrieve others notification
+  - name: App user can not retrieve others reports
     request:
       url: "{api_live_url}/{endpoint}/{adult_report.pk}/"
       method: "GET"
