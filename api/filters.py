@@ -3,11 +3,11 @@ from django.utils import timezone
 
 from django_filters import rest_framework as filters
 
-from tigaserver_app.models import Report, Notification, OWCampaigns
+from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry
 
 
 class CampaignFilter(filters.FilterSet):
-    country_id = filters.CharFilter(field_name="country_id")
+    country_id = filters.ModelChoiceFilter(field_name="country_id", queryset=EuropeCountry.objects.all())
     is_active = filters.BooleanFilter(method="filter_is_active")
 
     order_by = filters.OrderingFilter(
@@ -48,7 +48,7 @@ class ReportFilter(filters.FilterSet):
     )
     has_photos = filters.BooleanFilter(method='filter_has_photos', help_text='Has any photo')
 
-    location_country = filters.CharFilter(field_name="country")
+    location_country_id = filters.ModelChoiceFilter(field_name="country_id", queryset=EuropeCountry.objects.all())
     location_nuts_3 = filters.CharFilter(field_name="nuts_3")
     location_nuts_2 = filters.CharFilter(field_name="nuts_2")
 
@@ -68,7 +68,7 @@ class ReportFilter(filters.FilterSet):
             "created_at",
             "received_at",
             "updated_at",
-            "location_country",
+            "location_country_id",
             "location_nuts_3",
             "location_nuts_2",
             "has_photos",
