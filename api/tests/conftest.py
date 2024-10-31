@@ -1,3 +1,5 @@
+import io
+from PIL import Image
 import pytest
 import random
 
@@ -27,8 +29,13 @@ def app_user(user_password):
 @pytest.fixture
 def dummy_image():
     # Prepare a fake image file
-    image_content = b"fake image content"  # Replace with actual binary data if needed
-    test_image = SimpleUploadedFile("test_image.jpg", image_content, content_type="image/jpeg")
+    # Create a simple image using Pillow
+    img = Image.new("RGB", (100, 100), color=(73, 109, 137))  # Create a 100x100 image with a specific color
+    img_byte_arr = io.BytesIO()
+    img.save(img_byte_arr, format='JPEG')  # Save the image in JPEG format
+    img_byte_arr.seek(0)  # Move to the beginning of the BytesIO buffer
+
+    test_image = SimpleUploadedFile("test_image.jpg", img_byte_arr.read(), content_type="image/jpeg")
 
     return test_image
 
