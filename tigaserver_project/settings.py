@@ -5,8 +5,10 @@ import pytz
 from datetime import datetime
 
 from pillow_heif import register_heif_opener
+from raw_pillow_opener import register_raw_opener
 
 register_heif_opener()
+register_raw_opener()
 
 
 """
