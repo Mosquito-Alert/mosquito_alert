@@ -9,6 +9,8 @@ from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
 from drf_spectacular.types import OpenApiTypes
 
+from drf_extra_fields.geo_fields import PointField
+
 from tigaserver_app.models import (
     NotificationContent,
     Notification,
@@ -23,7 +25,6 @@ from tigaserver_app.models import (
 )
 from .base_serializers import FieldPolymorphicSerializer
 from .fields import (
-    ExpandedPointField,
     TimezoneAwareDateTimeField,
     WritableSerializerMethodField,
     TimeZoneSerializerChoiceField,
@@ -275,7 +276,7 @@ class TopicNotificationCreateSerializer(BaseNotificationCreateSerializer):
 #### END NOTIFICATION SERIALIZERS ####
 
 class PartnerSerializer(serializers.ModelSerializer):
-    point = ExpandedPointField(srid=4326)
+    point = PointField()
 
     class Meta:
         model = OrganizationPin
@@ -320,7 +321,7 @@ class BaseReportSerializer(serializers.ModelSerializer):
             }
 
     class ReportLocationSerializer(serializers.ModelSerializer):
-        point = ExpandedPointField(srid=4326, required=True, allow_null=True)
+        point = PointField(required=True, allow_null=True)
 
         def to_internal_value(self, data):
             ret = super().to_internal_value(data)

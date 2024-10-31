@@ -76,8 +76,8 @@ stages:
         location:
           type: 'current'
           point:
-            latitude: "41.67419"
-            longitude: "2.79036"
+            latitude: 41.67419
+            longitude: 2.79036
           country_id: !anything
           nuts_2: !anything
           nuts_3: !anything
@@ -168,8 +168,8 @@ stages:
         location:
           type: 'current'
           point:
-            latitude: "41.67419"
-            longitude: "2.79036"
+            latitude: 41.67419
+            longitude: 2.79036
           country_id: !anything
           nuts_2: !anything
           nuts_3: !anything
@@ -265,8 +265,8 @@ stages:
         location:
           type: 'current'
           point:
-            latitude: "41.67419"
-            longitude: "2.79036"
+            latitude: 41.67419
+            longitude: 2.79036
           country_id: !anything
           nuts_2: !anything
           nuts_3: !anything

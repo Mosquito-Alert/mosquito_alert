@@ -10,7 +10,6 @@ from django.utils.dateparse import parse_datetime
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
-from drf_extra_fields.geo_fields import PointField
 from timezone_field.utils import use_pytz_default
 from timezone_field.rest_framework import TimeZoneSerializerField
 
@@ -25,11 +24,6 @@ class TimezoneAwareDateTimeField(serializers.DateTimeField):
             raise ValidationError("Datetime value must include timezone information.")
 
         return super().to_internal_value(value=value)
-
-
-class ExpandedPointField(PointField):
-    def __init__(self, *args, **kwargs):
-        super().__init__(str_points=True, *args, **kwargs)
 
 
 class IntegerDefaultField(serializers.IntegerField):

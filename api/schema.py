@@ -7,17 +7,18 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.plumbing import force_instance
 
 
-class ExpandedPointFieldExtension(OpenApiSerializerFieldExtension):
-    target_class = "api.fields.ExpandedPointField"
+class PointFieldExtension(OpenApiSerializerFieldExtension):
+    target_class = "drf_extra_fields.geo_fields.PointField"
 
     def map_serializer_field(self, auto_schema, direction):
+        openapi_type = OpenApiTypes.STR if self.target.str_points else OpenApiTypes.FLOAT
         return build_object_type(
             properties={
-                "latitude": build_basic_type(OpenApiTypes.FLOAT),
-                "longitude": build_basic_type(OpenApiTypes.FLOAT),
-            }
+                "latitude": build_basic_type(openapi_type),
+                "longitude": build_basic_type(openapi_type),
+            },
+            required=["latitude", "longitude"] if self.target.required else None
         )
-
 
 class FieldPolymorphicSerializerExtension(OpenApiSerializerExtension):
     target_class = "api.base_serializers.FieldPolymorphicSerializer"
