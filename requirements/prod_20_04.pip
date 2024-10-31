@@ -94,7 +94,7 @@ python-geohash==0.8.5
 python-magic==0.4.27
 python-slugify==4.0.1
 python3-memcached==1.51
-raw-pillow-opener==0.1.0
+rawpy==0.17.1
 redgreenunittest==0.1.1
 redis==2.10.3
 rsa==4.7.2
