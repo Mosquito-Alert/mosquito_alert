@@ -558,7 +558,7 @@ class CreateUserSerializer(UserSerializer):
 
 class PhotoSerializer(serializers.ModelSerializer):
 
-    image_path = serializers.SerializerMethodField()
+    image_path = serializers.SerializerMethodField(help_text="Internal server path of the image.")
 
     def get_image_path(self, obj) -> str:
         return obj.photo.path
