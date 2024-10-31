@@ -39,3 +39,27 @@ stages:
     response:
       status_code: 200
       json: !force_format_include "{response_data_validation}"
+
+
+---
+
+test_name: Hidden photos are not displayed
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - report_hidden_photo
+    - token_user_can_view
+
+stages:
+  - name: User without perm view can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{report_hidden_photo.uuid}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 404

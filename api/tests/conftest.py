@@ -58,6 +58,12 @@ def report_photo(adult_report):
     return adult_report.photos.first()
 
 @pytest.fixture
+def report_hidden_photo(report_photo):
+    report_photo.hide = True
+    report_photo.save()
+    return report_photo
+
+@pytest.fixture
 def django_live_url(live_server):
     yield live_server.url
 
