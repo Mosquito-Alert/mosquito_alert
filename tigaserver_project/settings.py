@@ -69,6 +69,7 @@ INSTALLED_APPS = (
     'django_filters',
     'corsheaders',
     'simple_history',
+    'imagekit'
 )
 
 '''

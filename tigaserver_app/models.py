@@ -35,6 +35,8 @@ from django.utils.deconstruct import deconstructible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
+from imagekit.models import ProcessedImageField
+from imagekit.processors import ResizeToFit
 from simple_history.models import HistoricalRecords
 from timezone_field import TimeZoneField
 
@@ -2854,7 +2856,13 @@ class Photo(models.Model):
     """
     Photo uploaded by user.
     """
-    photo = models.ImageField(upload_to=make_image_uuid, help_text='Photo uploaded by user.')
+    photo = ProcessedImageField(
+        upload_to=make_image_uuid,
+        processors=[ResizeToFit(height=2160, upscale=False)],
+        format="JPEG",
+        options={"quality": 98},
+        help_text='Photo uploaded by user.'
+    )
     report = models.ForeignKey(Report, related_name='photos', help_text='Report and version to which this photo is associated (36-digit '
                                                  'report_UUID).', on_delete=models.CASCADE, )
     hide = models.BooleanField(default=False, help_text='Hide this photo from public views?', db_index=True)
