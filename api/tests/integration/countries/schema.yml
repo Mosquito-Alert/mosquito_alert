@@ -7,5 +7,5 @@ variables:
   endpoint: "countries"
   response_data_validation:
     id: !anyint
-    name_engl: !anystr
+    name_en: !anystr
     iso3_code: !anystr

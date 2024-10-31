@@ -46,9 +46,10 @@ class CampaignSerializer(serializers.ModelSerializer):
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = EuropeCountry
-        fields = ("id", "name_engl", "iso3_code")
+        fields = ("id", "name_en", "iso3_code")
         extra_kwargs = {
             "id": {"source": "gid"},
+            "name_en": {"source": "name_engl"}
         }
 
 

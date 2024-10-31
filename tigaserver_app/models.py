@@ -442,8 +442,8 @@ class MissionItem(models.Model):
 class EuropeCountry(models.Model):
     gid = models.AutoField(primary_key=True)
     cntr_id = models.CharField(max_length=2, blank=True)
-    name_engl = models.CharField(max_length=44, blank=True)
-    iso3_code = models.CharField(max_length=3, blank=True)
+    name_engl = models.CharField(max_length=44, help_text='Full name of the country in English (e.g., Spain).')
+    iso3_code = models.CharField(max_length=3, help_text='ISO 3166-1 alpha-3 country code (3-letter code, e.g., ESP).')
     fid = models.CharField(max_length=2, blank=True)
     geom = models.MultiPolygonField(blank=True, null=True)
     x_min = models.FloatField(blank=True, null=True)
