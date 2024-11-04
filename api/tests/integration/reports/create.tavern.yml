@@ -68,7 +68,6 @@ stages:
         short_id: !anystr
         user_uuid: "{user_uuid}"
         type: bite
-        session_id: null
         created_at: '2024-01-01T00:00:00Z'
         sent_at: '2024-01-01T00:30:00Z'
         received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
@@ -160,7 +159,6 @@ stages:
         short_id: !anystr
         user_uuid: "{user_uuid}"
         type: adult
-        session_id: null
         created_at: '2024-01-01T00:00:00Z'
         sent_at: '2024-01-01T00:30:00Z'
         received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
@@ -257,7 +255,6 @@ stages:
         short_id: !anystr
         user_uuid: "{user_uuid}"
         type: site
-        session_id: null
         created_at: '2024-01-01T00:00:00Z'
         sent_at: '2024-01-01T00:30:00Z'
         received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z

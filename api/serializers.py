@@ -393,7 +393,6 @@ class BaseReportSerializer(serializers.ModelSerializer):
             "short_id",
             "user_uuid",
             "user",
-            "session_id",
             "created_at",
             "sent_at",
             "timezone",
