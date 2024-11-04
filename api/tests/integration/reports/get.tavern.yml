@@ -159,8 +159,8 @@ stages:
         location:
           type: !anystr
           point:
-            latitude: !anystr
-            longitude: !anystr
+            latitude: !anyfloat
+            longitude: !anyfloat
           country_id: !anything
           nuts_2: !anything
           nuts_3: !anything

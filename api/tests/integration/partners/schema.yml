@@ -8,8 +8,8 @@ variables:
   response_data_validation: &retrieve_validation
     id: !anyint
     point:
-      latitude: !anystr
-      longitude: !anystr
+      latitude: !anyfloat
+      longitude: !anyfloat
     description: !anystr
     url: !anystr
   response_list_data_validation: &response_list_validation
