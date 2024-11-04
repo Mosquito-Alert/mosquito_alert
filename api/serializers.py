@@ -6,9 +6,6 @@ from django.db import transaction
 
 from rest_framework import serializers
 
-from drf_spectacular.utils import extend_schema_field
-from drf_spectacular.types import OpenApiTypes
-
 from drf_extra_fields.geo_fields import PointField
 
 from tigaserver_app.models import (
@@ -103,8 +100,7 @@ class DetailNotificationSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField(read_only=True)
     body = serializers.SerializerMethodField(read_only=True)
 
-    @extend_schema_field(OpenApiTypes.BOOL)
-    def get_seen(self, obj):
+    def get_seen(self, obj) -> bool:
         user = self.context.get("request").user
         if not isinstance(user, TigaUser):
             return False
@@ -116,8 +112,7 @@ class DetailNotificationSerializer(serializers.ModelSerializer):
             user=self.context.get("request").user
         ).exists() or (obj.user == user and obj.acknowledged)
 
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_title(self, obj):
+    def get_title(self, obj) -> str:
         if obj.notification_content is None:
             return ""
 
@@ -125,8 +120,7 @@ class DetailNotificationSerializer(serializers.ModelSerializer):
             language_code=self.context.get("request").LANGUAGE_CODE
         )
 
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_body(self, obj):
+    def get_body(self, obj) -> str:
         if obj.notification_content is None:
             return ""
 
@@ -173,21 +167,29 @@ class BaseNotificationCreateSerializer(serializers.ModelSerializer):
     def RECEIVER_TYPE(self):
         raise NotImplementedError
 
-    receiver_type = WritableSerializerMethodField(
-        field_class=serializers.ChoiceField,
-        choices=["user", "topic"],
-        required=True
-    )
-
     title_en = serializers.CharField(write_only=True)
     body_en = serializers.CharField(write_only=True)
 
     created_at = serializers.DateTimeField(source="date_comment", read_only=True)
     expert = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_receiver_type(self, obj):
-        return self.RECEIVER_TYPE
+    def __init__(self, *args, **kwargs):
+        # Call the parent constructor first
+        super().__init__(*args, **kwargs)
+
+        # Add a dynamic field
+        self.fields['receiver_type'] = serializers.ChoiceField(
+            choices=[self.RECEIVER_TYPE,],
+            write_only=True,
+            required=True
+        )
+
+        # Re-order the fields with 'receiver_type' at the start
+        from collections import OrderedDict
+        self.fields = OrderedDict(
+            [('receiver_type', self.fields['receiver_type'])] +
+            [(key, field) for key, field in self.fields.items() if key != 'receiver_type']
+        )
 
     @transaction.atomic
     def create(self, validated_data):
@@ -203,7 +205,12 @@ class BaseNotificationCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ("id", "receiver_type", "created_at", "title_en", "body_en")
+        fields = (
+            "id",
+            "created_at",
+            "title_en",
+            "body_en"
+        )
 
 
 class UserNotificationCreateSerializer(BaseNotificationCreateSerializer):
@@ -235,11 +242,10 @@ class UserNotificationCreateSerializer(BaseNotificationCreateSerializer):
         return data
 
     class Meta(BaseNotificationCreateSerializer.Meta):
-        fields = (
-            "receiver_type",
+        fields = BaseNotificationCreateSerializer.Meta.fields + (
             "report_uuid",
             "user_uuid",
-        ) + BaseNotificationCreateSerializer.Meta.fields
+        )
 
 
 class TopicNotificationCreateSerializer(BaseNotificationCreateSerializer):
@@ -268,10 +274,7 @@ class TopicNotificationCreateSerializer(BaseNotificationCreateSerializer):
         return instance
 
     class Meta(BaseNotificationCreateSerializer.Meta):
-        fields = (
-            "receiver_type",
-            "topic_code",
-        ) + BaseNotificationCreateSerializer.Meta.fields
+        fields = BaseNotificationCreateSerializer.Meta.fields + ("topic_code", )
 
 #### END NOTIFICATION SERIALIZERS ####
 
@@ -390,7 +393,6 @@ class BaseReportSerializer(serializers.ModelSerializer):
             "short_id",
             "user_uuid",
             "user",
-            "type",
             "session_id",
             "created_at",
             "sent_at",

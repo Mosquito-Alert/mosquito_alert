@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from drf_spectacular.settings import spectacular_settings
 from drf_spectacular.utils import extend_schema
-from drf_spectacular.views import SpectacularRedocView, SpectacularAPIView
+from drf_spectacular.views import SpectacularRedocView, SpectacularAPIView, SpectacularJSONAPIView
 
 from .views import (
     UserViewSet,
@@ -51,6 +51,7 @@ api_urlpatterns = [
 api_urlpatterns += router.urls
 
 urlpatterns = [
-    path("schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("openapi.yml", SpectacularAPIView.as_view(), name="schema"),
+    path("openapi.json", SpectacularJSONAPIView.as_view(), name="schema-json"),
     re_path("$^", CustomRedocView.as_view(url_name="schema"), name="redoc"),
 ] + api_urlpatterns

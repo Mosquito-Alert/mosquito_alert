@@ -1,10 +1,10 @@
+from drf_spectacular.contrib.rest_polymorphic import PolymorphicSerializerExtension
+from drf_spectacular.drainage import warn
 from drf_spectacular.extensions import (
     OpenApiSerializerFieldExtension,
-    OpenApiSerializerExtension,
 )
 from drf_spectacular.plumbing import build_object_type, build_basic_type
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.plumbing import force_instance
 
 
 class PointFieldExtension(OpenApiSerializerFieldExtension):
@@ -20,31 +20,57 @@ class PointFieldExtension(OpenApiSerializerFieldExtension):
             required=["latitude", "longitude"] if self.target.required else None
         )
 
-class FieldPolymorphicSerializerExtension(OpenApiSerializerExtension):
+class FieldPolymorphicSerializerExtension(PolymorphicSerializerExtension):
     target_class = "api.base_serializers.FieldPolymorphicSerializer"
 
-    def get_name(self):
-        return self.target.model._meta.model_name
-
+    # NOTE: even if the implementation in PolymorphicSerializerExtension works pretty well,
+    # it causes errors on openapi-generator.
+    # That is because it's creating a Typed component (see self.build_typed_component())
+    # And it's a bug in the generator: https://github.com/OpenAPITools/openapi-generator/issues/19261
+    # See: https://redocly.com/docs/resources/discriminator
     def map_serializer(self, auto_schema, direction):
         sub_components = []
+        serializer = self.target
+
         for (
-            resource_type_field_name,
+            resource_type_field_name_value,
             sub_serializer,
         ) in self.target.field_value_serializer_mapping.items():
-            sub_serializer = force_instance(sub_serializer)
-            resolved = auto_schema.resolve_serializer(sub_serializer, direction)
-            sub_components.append((resource_type_field_name, resolved.ref))
+            sub_serializer.partial = serializer.partial
+            component = auto_schema.resolve_serializer(sub_serializer, direction)
+
+            # Define the discriminator field schema
+            field_schema = build_basic_type(OpenApiTypes.STR)
+            field_schema['enum'] = [resource_type_field_name_value,] # NOTE: in openapi 3.1 is 'const'
+            # field_schema['default'] = resource_type_field_name_value
+
+            component.schema['properties'] = {
+                serializer.resource_type_field_name: field_schema,
+                **component.schema['properties']
+            }
+            component.schema['required'].append(serializer.resource_type_field_name)
+
+            sub_components.append((resource_type_field_name_value, component.ref))
+
+            if not resource_type_field_name_value:
+                warn(
+                    f'discriminator mapping key is empty for {sub_serializer.__class__}. '
+                    f'this might lead to code generation issues.'
+                )
+
+        one_of_list = []
+        for _, ref in sub_components:
+            if ref not in one_of_list:
+                one_of_list.append(ref)
 
         return {
-            "oneOf": [schema for _, schema in sub_components],
+            "oneOf": one_of_list,
             "discriminator": {
-                "propertyName": self.target.resource_type_field_name,
+                "propertyName": serializer.resource_type_field_name,
                 "mapping": {
-                    resource_type: schema["$ref"]
-                    for resource_type, schema in sub_components
-                },
-            },
+                    resource_type_field_name_value: ref["$ref"]
+                    for resource_type_field_name_value, ref in sub_components},
+            }
         }
 
 
