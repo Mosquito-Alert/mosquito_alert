@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='photo',
             name='photo',
-            field=imagekit.models.fields.ProcessedImageField(help_text='Photo uploaded by user.', upload_to=tigaserver_app.models.MakeImageUUID('tigapics')),
+            field=tigaserver_app.fields.ProcessedImageField(help_text='Photo uploaded by user.', upload_to=tigaserver_app.models.MakeImageUUID('tigapics')),
         ),
     ]

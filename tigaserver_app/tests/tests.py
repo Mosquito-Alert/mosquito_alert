@@ -1,12 +1,11 @@
-from django.test import TestCase
 from datetime import datetime
 import uuid
 
 # Create your tests here.
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse
 from django.core.management import call_command
-import PIL.Image
+from PIL import Image, ExifTags
 from PIL.ExifTags import TAGS, GPSTAGS
 import tigaserver_project.settings as conf
 import os
@@ -27,6 +26,12 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 import urllib
 import json
+import tempfile
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+import io
+import piexif
+from pillow_heif import HeifFile
 
 '''
 class PictureTestCase(APITestCase):
@@ -1208,3 +1213,159 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertTrue(annotation.site_certainty_notes == 'auto', "Report annotation notes should be 'auto'")
         self.assertTrue(annotation.validation_complete, "Report annotation validation should be done")
         self.assertTrue(annotation.revise, "Report annotation revision should be done")
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+class PhotoModelTest(TestCase):
+    def setUp(self):
+        self.report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=0,
+            current_location_lat=0,
+        )
+
+    @classmethod
+    def create_image_file(cls, name, size, format) -> SimpleUploadedFile:
+        # Helper to create an image in memory and return as SimpleUploadedFile
+        image = Image.new("RGB", size, color=(255, 0, 0))  # Create a red image
+        image_file = io.BytesIO()
+        if format.upper() == 'HEIF':
+            heif_file = HeifFile()
+            heif_file.add_from_pillow(image)
+            image = heif_file
+        image.save(image_file, format=format)
+        image_file.seek(0)
+        return SimpleUploadedFile(name, image_file.read(), content_type=f"image/{format.lower()}")
+
+    @classmethod
+    def _create_raw_file(cls, path):
+        # Get the directory of the current script
+        current_directory = os.path.dirname(__file__)
+
+        # Construct the path to the file
+        file_path = os.path.join(current_directory, path)
+        _, extension = os.path.splitext(file_path)
+        with open(file_path, 'rb') as file:
+            file_bytes = file.read()
+        return SimpleUploadedFile(os.path.basename(path), file_bytes, content_type=f"image/{extension.lower()}")
+
+    @classmethod
+    def create_dng_file(cls):
+        # See: https://www.rawsamples.ch/
+        return cls._create_raw_file(path='./testdata/test.DNG')
+
+    @classmethod
+    def create_arw_file(cls):
+        # See: https://www.rawsamples.ch/
+        return cls._create_raw_file(path='./testdata/test.ARW')
+
+    @classmethod
+    def create_image_with_exif(cls):
+        """Creates an in-memory image with EXIF metadata, including GPS data."""
+        img = Image.new("RGB", (100, 100), color="red")
+        exif_dict = {
+            "0th": {
+                piexif.ImageIFD.Make: b"Dummy Camera",
+                piexif.ImageIFD.Model: b"Dummy Model",
+                piexif.ImageIFD.Software: b"Pillow Test",
+            },
+            "Exif": {
+                piexif.ExifIFD.DateTimeOriginal: b"2024:11:05 10:00:00",
+            },
+            "GPS": {
+                piexif.GPSIFD.GPSLatitudeRef: b"N",
+                piexif.GPSIFD.GPSLatitude: [(34, 1), (0, 1), (0, 1)],  # 34°0'0" N
+                piexif.GPSIFD.GPSLongitudeRef: b"E",
+                piexif.GPSIFD.GPSLongitude: [(118, 1), (0, 1), (0, 1)],  # 118°0'0" E
+                piexif.GPSIFD.GPSAltitudeRef: 0,
+                piexif.GPSIFD.GPSAltitude: (100, 1),  # 100 meters
+            }
+        }
+        exif_bytes = piexif.dump(exif_dict)
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format="JPEG", exif=exif_bytes)
+        img_bytes.seek(0)
+        return img_bytes
+
+    def test_photo_processing_with_jpeg(self):
+        # Test the processing of a standard JPEG image
+        photo_instance = Photo.objects.create(
+            photo=self.create_image_file("test.jpg", (3000, 4000), format="JPEG"), 
+            report=self.report
+        )
+        self.assert_image_properties(photo_instance)
+
+    def test_photo_processing_with_png(self):
+        # Test the processing of a standard JPEG image
+        photo_instance = Photo.objects.create(
+            photo=self.create_image_file("test.png", (3000, 4000), format="PNG"), 
+            report=self.report
+        )
+        self.assert_image_properties(photo_instance)
+
+    def test_photo_processing_with_heic(self):
+        photo_instance = Photo.objects.create(
+            photo=self.create_image_file("test.heic", (3000, 4000), format="HEIF"),
+            report=self.report
+        )
+        self.assert_image_properties(photo_instance)
+
+    def test_small_photo_doest_not_upscale(self):
+        photo_instance = Photo.objects.create(
+            photo=self.create_image_file("test.heic", (300, 400), format="HEIF"),
+            report=self.report
+        )
+        self.assert_image_properties(photo_instance, expected_heigt=400)
+
+    def test_photo_processing_with_dng(self):
+        photo_instance = Photo.objects.create(
+            photo=self.create_dng_file(),
+            report=self.report
+        )
+        self.assert_image_properties(photo_instance)
+
+    def test_photo_processing_with_arw(self):
+        photo_instance = Photo.objects.create(
+            photo=self.create_arw_file(),
+            report=self.report
+        )
+        self.assert_image_properties(photo_instance)
+
+    def assert_image_properties(self, photo_instance, expected_heigt=2160):
+        # Refresh from database to get the processed image
+        photo_instance.refresh_from_db()
+
+        # Open the processed image to check its properties
+        with Image.open(photo_instance.photo.path) as processed_image:
+            self.assertEqual(processed_image.height, expected_heigt)
+            self.assertEqual(processed_image.format, "JPEG")
+
+    def test_exif_data_is_presserved(self):
+        def get_exif(img_bytes):
+            """Extracts EXIF data from an in-memory image."""
+            with Image.open(img_bytes) as img:
+                exif_data = img._getexif() or {}
+                exif = {ExifTags.TAGS.get(tag, tag): value for tag, value in exif_data.items()}
+            exif.pop('ExifOffset')
+            return exif
+
+        # Step 1: Create a dummy image with EXIF metadata
+        original_img_bytes = self.create_image_with_exif()
+
+        # Step 2: Process the image
+        photo_instance = Photo.objects.create(
+            photo=SimpleUploadedFile('test_exif.jpg', original_img_bytes.read(), content_type=f"image/jpeg"),
+            report=self.report
+        )
+        photo_instance.refresh_from_db()
+
+        processed_exif = get_exif(photo_instance.photo)
+        original_exif = get_exif(original_img_bytes)
+
+        # Step 3: Assert EXIF data is the same before and after processing
+        assert original_exif == processed_exif, "EXIF metadata was not preserved after processing."

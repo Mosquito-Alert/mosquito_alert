@@ -35,7 +35,6 @@ from django.utils.deconstruct import deconstructible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from imagekit.models import ProcessedImageField
 from imagekit.processors import ResizeToFit
 from simple_history.models import HistoricalRecords
 from timezone_field import TimeZoneField
@@ -45,6 +44,7 @@ from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categ
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
+from .fields import ProcessedImageField
 from .managers import ReportManager, PhotoManager, NotificationManager
 from .mixins import TimeZoneModelMixin
 
@@ -2891,10 +2891,7 @@ class Photo(models.Model):
             if not os.path.isfile(self.get_small_path()):
                 try:
                     im = Image.open(self.photo.path)
-                    try:
-                        im.thumbnail((120, 120), Image.ANTIALIAS)
-                    except IOError:
-                        im.thumbnail((120, 120), Image.NEAREST)
+                    im.thumbnail((120, 120))
                     im.save(self.get_small_path())
                 except IOError:
                     return ""
@@ -2905,10 +2902,7 @@ class Photo(models.Model):
             if not os.path.isfile(self.get_popup_path()):
                 try:
                     im = Image.open(self.photo.path)
-                    try:
-                        im.thumbnail((180, 180), Image.ANTIALIAS)
-                    except IOError:
-                        im.thumbnail((180, 180), Image.NEAREST)
+                    im.thumbnail((180, 180))
                     im.save(self.get_popup_path())
                 except IOError:
                     return ""
@@ -2932,10 +2926,7 @@ class Photo(models.Model):
             if not os.path.isfile(self.get_medium_path()):
                 try:
                     im = Image.open(self.photo.path)
-                    try:
-                        im.thumbnail((460, 460), Image.ANTIALIAS)
-                    except IOError:
-                        im.thumbnail((460, 460), Image.NEAREST)
+                    im.thumbnail((460, 460))
                     im.save(self.get_medium_path())
                 except IOError:
                     return ""

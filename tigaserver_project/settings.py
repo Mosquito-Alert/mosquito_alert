@@ -4,12 +4,6 @@ import django.conf.global_settings as DEFAULT_SETTINGS
 import pytz
 from datetime import datetime
 
-from .utils import register_raw_opener
-from pillow_heif import register_heif_opener
-
-register_heif_opener()
-register_raw_opener()
-
 
 """
 Django settings for tigaserver_project project.
