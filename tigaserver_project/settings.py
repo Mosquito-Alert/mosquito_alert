@@ -229,14 +229,22 @@ SPECTACULAR_SETTINGS = {
         'name': 'GPL-3',
         'url': 'https://github.com/Mosquito-Alert/mosquito_alert/blob/master/LICENSE.md'
     },
+    'SERVERS': [
+        {
+            'url': 'https://api.mosquitoalert.com/',
+            'description': 'Production API'
+        },
+    ],
     'TOS': 'https://www.mosquitoalert.com/en/user-agreement/',
-    'OAS_VERSION': '3.1.0',
+    'OAS_VERSION': '3.0.3',
     'SCHEMA_PATH_PREFIX': '/api/v[0-9]',
     'SERVE_INCLUDE_SCHEMA': False,
     'ENUM_NAME_OVERRIDES': {
         'MosquitoTypeEnum': 'tigaserver_app.models.Report.MOSQUITO_SPECIE_CHOICES',
         'ReportTypeEnum': 'tigaserver_app.models.Report.TYPE_CHOICES'
     },
+    'POSTPROCESSING_HOOKS': [],  # NOTE: needed for the openapi-generator
+    'ENUM_ADD_EXPLICIT_BLANK_NULL_CHOICE': False,  # See: https://github.com/tfranzel/drf-spectacular/issues/235
     'ENUM_GENERATE_CHOICE_DESCRIPTION': False,
     'EXTENSIONS_INFO': {
         'x-logo': {

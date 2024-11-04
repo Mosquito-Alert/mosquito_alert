@@ -29,29 +29,36 @@ class FieldPolymorphicSerializer(serializers.Serializer):
             raise ImproperlyConfigured(
                 "`{cls}.model` must be a django Model".format(cls=cls.__name__)
             )
-        return super().__new__(cls, *args, **kwargs)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        field_value_serializer_mapping = self.field_value_serializer_mapping
-        self.field_value_serializer_mapping = {}
+        instance = super().__new__(cls, *args, **kwargs)
+
+        field_value_serializer_mapping = cls.field_value_serializer_mapping
+        instance.field_value_serializer_mapping = {}
         for field_value, serializer in field_value_serializer_mapping.items():
-            if callable(serializer):
+            if isinstance(serializer, serializers.Serializer):
+                serializer = serializer
+            else:
                 serializer = serializer(*args, **kwargs)
-                serializer.parent = self
+                serializer.parent = instance
 
-            self.field_value_serializer_mapping[field_value] = serializer
+            instance.field_value_serializer_mapping[field_value] = serializer
+
+        return instance
 
     def to_representation(self, instance):
         serializer = self._get_serializer_for_instance(instance=instance)
-        return serializer.to_representation(instance)
+        ret = serializer.to_representation(instance)
+        ret[self.resource_type_field_name] = getattr(instance, self.resource_type_field_name)
+        return ret
 
     def to_internal_value(self, data):
         if self.instance:
             serializer = self._get_serializer_for_instance(instance=self.instance)
         else:
             serializer = self._get_serializer_for_data(data=data)
-        return serializer.to_internal_value(data=data)
+        ret = serializer.to_internal_value(data=data)
+        ret[self.resource_type_field_name] = data[self.resource_type_field_name]
+        return ret
 
     def create(self, validated_data):
         serializer = self._get_serializer_for_data(data=validated_data)
@@ -82,7 +89,9 @@ class FieldPolymorphicSerializer(serializers.Serializer):
             serializer = self._get_serializer_for_instance(instance=self.instance)
         else:
             serializer = self._get_serializer_for_data(data=data)
-        return serializer.run_validation(data)
+        validated_data = serializer.run_validation(data)
+        validated_data[self.resource_type_field_name] = data[self.resource_type_field_name]
+        return validated_data
 
     def _get_serializer_for_type(self, type_value):
         try:

@@ -9,7 +9,7 @@ from rest_framework_simplejwt.serializers import (
 
 
 class AppUserTokenObtainSerializer(TokenObtainSerializer):
-    uuid = serializers.UUIDField(required=True)
+    uuid = serializers.UUIDField(write_only=True, required=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

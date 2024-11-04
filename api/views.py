@@ -8,6 +8,7 @@ from drf_spectacular.utils import (
     PolymorphicProxySerializer,
 )
 
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -17,6 +18,7 @@ from rest_framework.mixins import (
     DestroyModelMixin,
 )
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from tigaserver_app.models import (
@@ -82,16 +84,7 @@ class FixViewSet(CreateModelMixin, GenericViewSet):
             },
             resource_type_field_name="receiver_type",
         ),
-        responses={
-            201: PolymorphicProxySerializer(
-                component_name="MetaNotification",
-                serializers={
-                    "user": UserNotificationCreateSerializer,
-                    "topic": TopicNotificationCreateSerializer,
-                },
-                resource_type_field_name="receiver_type",
-            ),
-        },
+        responses=DetailNotificationSerializer
     )
 )
 class NotificationViewSet(
@@ -111,6 +104,15 @@ class NotificationViewSet(
         .prefetch_related("notification_acknowledgements")
         .all()
     )
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        notification = serializer.save()
+
+        response_serializer = DetailNotificationSerializer(notification, context=self.get_serializer_context())
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_serializer_class(self):
         if self.request.method == "POST":
