@@ -480,7 +480,7 @@ class MapDataSerializer(serializers.ModelSerializer):
     def get_final_expert_status(self, obj):
         return obj.get_final_expert_status()
 
-    def get_latest_version(self):
+    def get_latest_version(self, obj):
         return True
 
     def get_country(self,obj):
