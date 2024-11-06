@@ -4,6 +4,7 @@ import django.conf.global_settings as DEFAULT_SETTINGS
 import pytz
 from datetime import datetime
 
+
 """
 Django settings for tigaserver_project project.
 
@@ -69,6 +70,7 @@ INSTALLED_APPS = (
     'django_filters',
     'corsheaders',
     'simple_history',
+    'imagekit'
 )
 
 '''

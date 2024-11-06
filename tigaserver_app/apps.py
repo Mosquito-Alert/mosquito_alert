@@ -5,6 +5,12 @@ import firebase_admin
 from firebase_admin.credentials import Certificate
 from timezonefinder import TimezoneFinder
 
+from .pillow_utils import register_raw_opener
+from pillow_heif import register_heif_opener
+
+register_heif_opener()
+register_raw_opener()
+
 
 class TigaserverApp(AppConfig):
     name = "tigaserver_app"
