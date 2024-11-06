@@ -1,17 +1,8 @@
 import inspect
-import pytz
-
-try:
-    import zoneinfo
-except ImportError:
-    from backports import zoneinfo
 
 from django.utils.dateparse import parse_datetime
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
-
-from timezone_field.utils import use_pytz_default
-from timezone_field.rest_framework import TimeZoneSerializerField
 
 
 class TimezoneAwareDateTimeField(serializers.DateTimeField):
@@ -34,16 +25,6 @@ class IntegerDefaultField(serializers.IntegerField):
             attibute = self.default
         return attibute
 
-
-class TimeZoneSerializerChoiceField(TimeZoneSerializerField, serializers.ChoiceField):
-    def __init__(self, **kwargs):
-        self.use_pytz = kwargs.pop("use_pytz", use_pytz_default())
-
-        _tzstrs = (
-            pytz.common_timezones if self.use_pytz else zoneinfo.available_timezones()
-        )
-
-        super().__init__(choices=_tzstrs, html_cutoff=5, **kwargs)
 
 class WritableSerializerMethodField(serializers.Field):
     # Reference: https://stackoverflow.com/a/64274128/8450576

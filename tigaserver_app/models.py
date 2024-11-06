@@ -604,10 +604,6 @@ class Report(TimeZoneModelMixin, models.Model):
     version_time = models.DateTimeField(
         help_text="Date and time on phone when this version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
     )
-    phone_timezone = TimeZoneField(
-        blank=True, null=True,
-        help_text="The timezone corresponding to the datetime collected from the phone. Please provide values from the IANA timezone database (e.g., 'America/New_York')."
-    )
     datetime_fix_offset = models.IntegerField(
         default=None,
         null=True,
@@ -658,6 +654,10 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text="Longitude of location selected by user on map. In decimal degrees.",
     )
     point = models.PointField(null=True, blank=True, srid=4326)
+    timezone = TimeZoneField(
+        null=True,
+        help_text="The timezone corresponding to the GPS of the report."
+    )
 
     deleted_at = models.DateTimeField(null=True, blank=True, editable=False, default=None)
 
@@ -1626,6 +1626,7 @@ class Report(TimeZoneModelMixin, models.Model):
         # Recreate the Point (just in case lat/lon has changed)
         _old_point = self.point
         self.point = self._get_point()
+        self.timezone = self.get_timezone_from_coordinates()
 
         # Fill the country field
         if not self.country or _old_point != self.point:
