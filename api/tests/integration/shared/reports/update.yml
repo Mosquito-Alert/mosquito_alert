@@ -1,0 +1,21 @@
+name: Update is disabled
+
+stages:
+  - id: put_is_disabled
+    name: Update is disabeld
+    request:
+      url: "{api_live_url}/{endpoint}/{object.pk}/"
+      headers:
+        Authorization: "Bearer {app_user_token:s}"
+      method: "PUT"
+    response:
+      status_code: 405
+  - id: patch_is_disabled
+    name: Update is disabeld
+    request:
+      url: "{api_live_url}/{endpoint}/{object.pk}/"
+      headers:
+        Authorization: "Bearer {app_user_token:s}"
+      method: "PATCH"
+    response:
+      status_code: 405

@@ -1,0 +1,29 @@
+---
+
+test_name: 'Common tests for bite deletion (inherits from report)'
+
+includes:
+  - !include '../shared/reports/delete.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - object
+    - token_user
+    - app_user_token
+
+stages:
+  - type: ref
+    id: anonymous_cannot_delete
+  - type: ref
+    id: auth_non_permissions_cannot_delete
+  - type: ref
+    id: appuser_can_delete_own_reports
+  # Creating a new user. Needed for testing different login user with different report owner.
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - type: ref
+    id: appuser_cannot_delete_others_reports

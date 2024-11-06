@@ -17,6 +17,7 @@ from rest_framework.mixins import (
     UpdateModelMixin,
     DestroyModelMixin,
 )
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -33,16 +34,18 @@ from tigaserver_app.models import (
     Photo
 )
 
-from .filters import ReportFilter, NotificationFilter, CampaignFilter
+from .filters import NotificationFilter, CampaignFilter, ObservationFilter, BiteFilter, BreedingSiteFilter
 from .serializers import (
     PartnerSerializer,
     CampaignSerializer,
     UserSerializer,
     CreateUserSerializer,
-    ReportSerializer,
     FixSerializer,
     CountrySerializer,
     PhotoSerializer,
+    ObservationSerializer,
+    BiteSerializer,
+    BreedingSiteSerializer
 )
 from .serializers import (
     DetailNotificationSerializer,
@@ -142,7 +145,7 @@ class PartnersViewSet(ReadOnlyModelViewSet, GenericViewSet):
     serializer_class = PartnerSerializer
 
 
-class ReportViewSet(
+class BaseReportViewSet(
     CreateModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
@@ -156,11 +159,9 @@ class ReportViewSet(
         )
     ).non_deleted()
 
-    serializer_class = ReportSerializer
     lookup_url_kwarg = "uuid"
 
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = ReportFilter
 
     permission_classes = (ReportPermissions,)
 
@@ -177,6 +178,35 @@ class ReportViewSet(
 
     def perform_destroy(self, instance):
         instance.soft_delete()
+
+class BaseReportWithPhotosViewSet(BaseReportViewSet):
+    def get_parsers(self):
+        # Since photos are required on POST, only allow
+        # parasers that allow files.
+        if self.request and self.request.method == 'POST':
+            return [MultiPartParser(), FormParser()]
+        return super().get_parsers()
+
+class BiteViewSet(BaseReportViewSet):
+    serializer_class = BiteSerializer
+    filterset_class = BiteFilter
+
+    def get_queryset(self):
+        return super().get_queryset().filter(type=Report.TYPE_BITE)
+
+class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
+    serializer_class = BreedingSiteSerializer
+    filterset_class = BreedingSiteFilter
+
+    def get_queryset(self):
+        return super().get_queryset().filter(type=Report.TYPE_SITE)
+
+class ObservationViewSest(BaseReportWithPhotosViewSet):
+    serializer_class = ObservationSerializer
+    filterset_class = ObservationFilter
+
+    def get_queryset(self):
+        return super().get_queryset().filter(type=Report.TYPE_ADULT)
 
 
 class UserViewSet(

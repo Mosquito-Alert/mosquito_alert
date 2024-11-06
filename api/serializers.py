@@ -20,7 +20,7 @@ from tigaserver_app.models import (
     Fix,
     NotificationTopic,
 )
-from .base_serializers import FieldPolymorphicSerializer
+
 from .fields import (
     TimezoneAwareDateTimeField,
     WritableSerializerMethodField,
@@ -296,7 +296,7 @@ class ReportPhotoSerializer(serializers.ModelSerializer):
         source="photo", use_url=True, read_only=True,
         help_text="URL of the photo associated with the item. Note: This URL may change over time. Do not rely on it for permanent storage."
     )
-    file = serializers.ImageField(source="photo", write_only=True)
+    file = serializers.ImageField(required=True, source="photo", write_only=True)
 
     class Meta:
         model = Photo
@@ -410,9 +410,8 @@ class BaseReportSerializer(serializers.ModelSerializer):
             "received_at",
         )
 
-
 class BaseReportWithPhotosSerializer(BaseReportSerializer):
-    photos = ReportPhotoSerializer(required=False, many=True)
+    photos = ReportPhotoSerializer(required=True, many=True)
 
     def create(self, validated_data):
         photos = validated_data.pop("photos", [])
@@ -427,100 +426,99 @@ class BaseReportWithPhotosSerializer(BaseReportSerializer):
     class Meta(BaseReportSerializer.Meta):
         fields = BaseReportSerializer.Meta.fields + ("photos",)
 
+class ObservationSerializer(BaseReportWithPhotosSerializer):
 
-class ReportSerializer(FieldPolymorphicSerializer):
-    class AdultReportSerializer(BaseReportWithPhotosSerializer):
-        class Meta(BaseReportWithPhotosSerializer.Meta):
-            fields = BaseReportWithPhotosSerializer.Meta.fields + (
-                "event_environment",
-                "event_moment",
-                "user_perceived_mosquito_specie",
-                "user_perceived_mosquito_thorax",
-                "user_perceived_mosquito_abdomen",
-                "user_perceived_mosquito_legs",
-            )
+    def create(self, validated_data):
+        validated_data['type'] = Report.TYPE_ADULT
+        return super().create(validated_data)
 
-    class BiteReportSerializer(BaseReportSerializer):
-        head_bite_count = IntegerDefaultField(
-            default=0,
-            allow_null=True,
-            help_text=Report._meta.get_field("head_bite_count").help_text,
-        )
-        left_arm_bite_count = IntegerDefaultField(
-            default=0,
-            allow_null=True,
-            help_text=Report._meta.get_field("left_arm_bite_count").help_text,
-        )
-        right_arm_bite_count = IntegerDefaultField(
-            default=0,
-            allow_null=True,
-            help_text=Report._meta.get_field("right_arm_bite_count").help_text,
-        )
-        chest_bite_count = IntegerDefaultField(
-            default=0,
-            allow_null=True,
-            help_text=Report._meta.get_field("chest_bite_count").help_text,
-        )
-        left_leg_bite_count = IntegerDefaultField(
-            default=0,
-            allow_null=True,
-            help_text=Report._meta.get_field("left_leg_bite_count").help_text,
-        )
-        right_leg_bite_count = IntegerDefaultField(
-            default=0,
-            allow_null=True,
-            help_text=Report._meta.get_field("right_leg_bite_count").help_text,
+    class Meta(BaseReportWithPhotosSerializer.Meta):
+        fields = BaseReportWithPhotosSerializer.Meta.fields + (
+            "event_environment",
+            "event_moment",
+            "user_perceived_mosquito_specie",
+            "user_perceived_mosquito_thorax",
+            "user_perceived_mosquito_abdomen",
+            "user_perceived_mosquito_legs",
         )
 
-        class Meta(BaseReportSerializer.Meta):
-            fields = BaseReportSerializer.Meta.fields + (
-                "event_environment",
-                "event_moment",
-                "bite_count",
-                "head_bite_count",
-                "left_arm_bite_count",
-                "right_arm_bite_count",
-                "chest_bite_count",
-                "left_leg_bite_count",
-                "right_leg_bite_count",
-            )
-            read_only_fields = BaseReportSerializer.Meta.read_only_fields + (
-                "bite_count",
-            )
+class BiteSerializer(BaseReportSerializer):
+    head_bite_count = IntegerDefaultField(
+        default=0,
+        allow_null=True,
+        help_text=Report._meta.get_field("head_bite_count").help_text,
+    )
+    left_arm_bite_count = IntegerDefaultField(
+        default=0,
+        allow_null=True,
+        help_text=Report._meta.get_field("left_arm_bite_count").help_text,
+    )
+    right_arm_bite_count = IntegerDefaultField(
+        default=0,
+        allow_null=True,
+        help_text=Report._meta.get_field("right_arm_bite_count").help_text,
+    )
+    chest_bite_count = IntegerDefaultField(
+        default=0,
+        allow_null=True,
+        help_text=Report._meta.get_field("chest_bite_count").help_text,
+    )
+    left_leg_bite_count = IntegerDefaultField(
+        default=0,
+        allow_null=True,
+        help_text=Report._meta.get_field("left_leg_bite_count").help_text,
+    )
+    right_leg_bite_count = IntegerDefaultField(
+        default=0,
+        allow_null=True,
+        help_text=Report._meta.get_field("right_leg_bite_count").help_text,
+    )
 
-    class BreedingSiteReportSerializer(BaseReportWithPhotosSerializer):
-        class Meta(BaseReportWithPhotosSerializer.Meta):
-            fields = BaseReportWithPhotosSerializer.Meta.fields + (
-                "breeding_site_type",
-                "breeding_site_has_water",
-                "breeding_site_in_public_area",
-                "breeding_site_has_near_mosquitoes",
-                "breeding_site_has_larvae",
-            )
-            extra_kwargs = {
-                "breeding_site_type": {"allow_null": False},
-                # Need to set default to None, otherwise BooleanField uses False
-                "breeding_site_has_water": {"allow_null": True, "default": None},
-                "breeding_site_in_public_area": {"allow_null": True, "default": None},
-                "breeding_site_has_near_mosquitoes": {
-                    "allow_null": True,
-                    "default": None,
-                },
-                "breeding_site_has_larvae": {"allow_null": True, "default": None},
-            }
+    def create(self, validated_data):
+        validated_data['type'] = Report.TYPE_BITE
+        return super().create(validated_data)
 
-    class MissionReportSerializer(BaseReportSerializer):
-        class Meta(BaseReportSerializer.Meta):
-            fields = BaseReportSerializer.Meta.fields + ("mission_id",)
+    class Meta(BaseReportSerializer.Meta):
+        fields = BaseReportSerializer.Meta.fields + (
+            "event_environment",
+            "event_moment",
+            "bite_count",
+            "head_bite_count",
+            "left_arm_bite_count",
+            "right_arm_bite_count",
+            "chest_bite_count",
+            "left_leg_bite_count",
+            "right_leg_bite_count",
+        )
+        read_only_fields = BaseReportSerializer.Meta.read_only_fields + (
+            "bite_count",
+        )
 
-    field_value_serializer_mapping = {
-        Report.TYPE_ADULT: AdultReportSerializer,
-        Report.TYPE_BITE: BiteReportSerializer,
-        Report.TYPE_SITE: BreedingSiteReportSerializer,
-        Report.TYPE_MISSION: MissionReportSerializer,
-    }
-    resource_type_field_name = "type"
-    model = Report
+class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
+    def create(self, validated_data):
+        validated_data['type'] = Report.TYPE_SITE
+        return super().create(validated_data)
+
+    class Meta(BaseReportWithPhotosSerializer.Meta):
+        fields = BaseReportWithPhotosSerializer.Meta.fields + (
+            "site_type",
+            "has_water",
+            "in_public_area",
+            "has_near_mosquitoes",
+            "has_larvae",
+        )
+        extra_kwargs = {
+            "site_type": {"allow_null": False, "source": "breeding_site_type"},
+            # Need to set default to None, otherwise BooleanField uses False
+            "has_water": {"allow_null": True, "default": None, "source": "breeding_site_has_water"},
+            "in_public_area": {"allow_null": True, "default": None, "source": "breeding_site_in_public_area"},
+            "has_near_mosquitoes": {
+                "allow_null": True,
+                "default": None,
+                "source": "breeding_site_has_near_mosquitoes"
+            },
+            "has_larvae": {"allow_null": True, "default": None, "source": "breeding_site_has_larvae"},
+        }
 
 #### END REPORT SERIALIZERS ####
 

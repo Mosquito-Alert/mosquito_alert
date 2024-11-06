@@ -9,13 +9,15 @@ from drf_spectacular.views import SpectacularRedocView, SpectacularAPIView, Spec
 
 from .views import (
     UserViewSet,
-    ReportViewSet,
     FixViewSet,
     CampaignsViewSet,
     PartnersViewSet,
     CountriesViewSet,
     NotificationViewSet,
     PhotoViewSet,
+    ObservationViewSest,
+    BiteViewSet,
+    BreedingSiteViewSet
 )
 
 
@@ -33,13 +35,15 @@ class CustomRedocView(SpectacularRedocView):
 
 
 router = routers.DefaultRouter()
+router.register(r"bites", BiteViewSet)
+router.register(r"breeding-sites", BreedingSiteViewSet)
 router.register(r"campaigns", CampaignsViewSet)
 router.register(r"countries", CountriesViewSet)
 router.register(r"fixes", FixViewSet)
 router.register(r"notifications", NotificationViewSet)
+router.register(r"observations", ObservationViewSest)
 router.register(r"partners", PartnersViewSet)
 router.register(r"photos", PhotoViewSet)
-router.register(r"reports", ReportViewSet)
 router.register(r"users", UserViewSet)
 
 

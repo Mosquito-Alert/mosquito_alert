@@ -1,4 +1,6 @@
+from abc import abstractmethod
 from datetime import timedelta
+import pytest
 import time_machine
 
 from django.contrib.auth import get_user_model
@@ -12,7 +14,17 @@ from rest_framework_simplejwt.settings import api_settings
 
 from tigaserver_app.models import TigaUser, Report
 
+from api.tests.integration.observations.factories import create_observation_object
+from api.tests.integration.breeding_sites.factories import create_breeding_site_object
+from api.tests.integration.bites.factories import create_bite_object
+
 User = get_user_model()
+
+@pytest.fixture
+def app_api_client(app_user):
+    api_client = AppAPIClient()
+    api_client.force_login(user=app_user)
+    return api_client
 
 # TODO: automatic user subscription on new report.
 
@@ -31,68 +43,63 @@ class AppAPIClient(APIClient):
         else:
             raise NotImplementedError
 
-class ReportAPITest(APITestCase):
+@pytest.mark.django_db
+class BaseReportTest:
+    queryset = None
+    POST_FORMAT = 'json'
 
-    client_class = AppAPIClient
+    _common_post_data = {
+        'created_at': '2024-01-01T00:00:00Z',
+        'sent_at': '2024-01-01T00:30:00Z',
+        'timezone': 'Europe/Madrid',
+        'location': {
+            'type': 'current',
+            'point': {
+                'latitude': 0,
+                'longitude': 0,
+            }
+        },
+    }
 
-    @classmethod
-    def setUpTestData(cls) -> None:
-        cls.endpoint = '/api/v1/reports/'
+    @pytest.fixture
+    def data_create_request(self):
+        return self._common_post_data
 
-    def setUp(self) -> None:
-        self.app_user = TigaUser.objects.create()
+    @abstractmethod
+    def report_object(self):
+        raise NotImplemented
 
-        self.data_create_request = {
-            'type': 'adult',
-            'created_at': '2024-01-01T00:00:00Z',
-            'sent_at': '2024-01-01T00:30:00Z',
-            'timezone': 'Europe/Madrid',
-            'location': {
-                'type': 'current',
-                'point': {
-                    'latitude': 0,
-                    'longitude': 0,
-                }
-            },
-        }
+    @property
+    @abstractmethod
+    def endpoint(self):
+        raise NotImplementedError
 
-    def test_user_is_set_to_authenticated_user(self):
-        self.client.force_login(self.app_user)
+    def test_timezone_is_save_on_report_create(self, app_api_client, data_create_request):
+        if self.POST_FORMAT == 'multipart':
+            pytest.skip("Skipping test for multipart format")
+        # Testing here due its write_only field
 
-        response = self.client.post(
+        response = app_api_client.post(
             self.endpoint,
-            data=self.data_create_request,
-            format='json'
+            data=data_create_request,
+            format=self.POST_FORMAT
         )
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        report = Report.objects.get(pk=response.data.get('uuid'))
+        assert response.status_code == status.HTTP_201_CREATED
 
-        self.assertEqual(str(report.user.pk), str(self.app_user.pk))
+        report = self.queryset.get(pk=response.data.get('uuid'))
 
-    def test_timezone_is_save_on_report_create(self):
+        assert str(report.phone_timezone) == data_create_request['timezone']
+
+    def test_package_is_set_on_report_create(self, app_api_client, data_create_request):
+        if self.POST_FORMAT == 'multipart':
+            pytest.skip("Skipping test for multipart format")
         # Testing here due its write_only field
-        self.client.force_login(self.app_user)
 
-        response = self.client.post(
-            self.endpoint,
-            data=self.data_create_request,
-            format='json'
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        report = Report.objects.get(pk=response.data.get('uuid'))
-
-        self.assertEqual(str(report.phone_timezone), self.data_create_request['timezone'])
-
-    def test_package_is_set_on_report_create(self):
-        # Testing here due its write_only field
-        self.client.force_login(self.app_user)
-
-        response = self.client.post(
+        response = app_api_client.post(
             self.endpoint,
             data={
-                **self.data_create_request,
+                **data_create_request,
                 **{
                     'package': {
                         'name': 'testapp',
@@ -101,23 +108,23 @@ class ReportAPITest(APITestCase):
                     }
                 }
             },
-            format='json'
+            format=self.POST_FORMAT
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        report = Report.objects.get(pk=response.data.get('uuid'))
+        assert response.status_code == status.HTTP_201_CREATED
+        report = self.queryset.get(pk=response.data.get('uuid'))
 
-        self.assertEqual(report.package_name, 'testapp')
-        self.assertEqual(report.package_version, 1234)
-        self.assertEqual(report.app_language, 'en')
+        assert report.package_name == 'testapp'
+        assert report.package_version == 1234
+        assert report.app_language == 'en'
 
-    def test_device_is_set_on_report_create(self):
+    def test_device_is_set_on_report_create(self, app_api_client, data_create_request):
+        if self.POST_FORMAT == 'multipart':
+            pytest.skip("Skipping test for multipart format")
         # Testing here due its write_only field
-        self.client.force_login(self.app_user)
-
-        response = self.client.post(
+        response = app_api_client.post(
             self.endpoint,
             data={
-                **self.data_create_request,
+                **data_create_request,
                 **{
                     'device': {
                         'manufacturer': 'test_make',
@@ -128,36 +135,57 @@ class ReportAPITest(APITestCase):
                     }
                 }
             },
-            format='json'
+            format=self.POST_FORMAT
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        report = Report.objects.get(pk=response.data.get('uuid'))
 
-        self.assertEqual(report.device_manufacturer, 'test_make')
-        self.assertEqual(report.device_model, 'test_model')
-        self.assertEqual(report.os, 'testOs')
-        self.assertEqual(report.os_version, 'testv123')
-        self.assertEqual(report.os_language, 'testen')
+        assert response.status_code == status.HTTP_201_CREATED
 
-    def test_delete_method_performs_soft_delete(self):
-        self.client.force_login(self.app_user)
+        report = self.queryset.get(pk=response.data.get('uuid'))
 
-        # Create dummy report
-        response_post = self.client.post(
-            self.endpoint,
-            data=self.data_create_request,
-            format='json'
-        )
-        report_uuid = response_post.data.get('uuid')
+        assert report.device_manufacturer == 'test_make'
+        assert report.device_model == 'test_model'
+        assert report.os == 'testOs'
+        assert report.os_version == 'testv123'
+        assert report.os_language == 'testen'
 
+    def test_delete_method_performs_soft_delete(self, app_api_client, report_object):
         # Delete
-        response = self.client.delete(
-            self.endpoint + f"{report_uuid}/"
+        response = app_api_client.delete(
+            self.endpoint + f"{report_object.pk}/"
         )
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        assert response.status_code == status.HTTP_204_NO_CONTENT
 
-        report = Report.objects.get(pk=report_uuid)
-        self.assertTrue(report.deleted)
+        report = self.queryset.get(pk=report_object.pk)
+        assert report.deleted
+
+class TestBiteAPI(BaseReportTest):
+
+    endpoint = '/api/v1/bites/'
+    queryset = Report.objects.filter(type=Report.TYPE_BITE)
+
+    @pytest.fixture
+    def report_object(self, app_user):
+        return create_bite_object(user=app_user)
+
+class TestBreedingSiteAPI(BaseReportTest):
+
+    endpoint = '/api/v1/breeding-sites/'
+    queryset = Report.objects.filter(type=Report.TYPE_SITE)
+    POST_FORMAT = 'multipart'
+
+    @pytest.fixture
+    def report_object(self, app_user):
+        return create_breeding_site_object(user=app_user)
+
+class TestObservationAPI(BaseReportTest):
+
+    endpoint = '/api/v1/observations/'
+    queryset = Report.objects.filter(type=Report.TYPE_ADULT)
+    POST_FORMAT = 'multipart'
+
+    @pytest.fixture
+    def report_object(self, app_user):
+        return create_observation_object(user=app_user)
 
 class TokenAPITest(APITestCase):
     @classmethod

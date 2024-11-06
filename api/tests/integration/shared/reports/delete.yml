@@ -1,0 +1,42 @@
+---
+
+name: Delete is not allowed for non auth users
+description:
+  Reusable test for report based models
+
+
+stages:
+  - id: anonymous_cannot_delete
+    name: Non auth user can not delete
+    request:
+      url: "{api_live_url}/{endpoint}/{object.pk}/"
+      method: DELETE
+    response:
+      status_code: 403
+  - id: auth_non_permissions_cannot_delete
+    name: User without perm can not delete
+    request:
+      url: "{api_live_url}/{endpoint}/{object.pk}/"
+      method: DELETE
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 403
+  - id: appuser_can_delete_own_reports
+    name: App user can only delete the reports they own
+    request:
+      url: "{api_live_url}/{endpoint}/{object.pk}/"
+      method: DELETE
+      headers:
+        Authorization: "Bearer {app_user_token:s}"
+    response:
+      status_code: 204
+  - id: appuser_cannot_delete_others_reports
+    name: App user can not delete others' reports
+    request:
+      url: "{api_live_url}/{endpoint}/{object.pk}/"
+      method: DELETE
+      headers:
+        Authorization: "Bearer {token:s}"
+    response:
+      status_code: 404
