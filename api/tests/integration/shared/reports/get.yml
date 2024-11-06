@@ -1,0 +1,126 @@
+---
+
+name: Common GET methods for reports-based objects.
+
+stages:
+  # Everybody can retrieve published
+  - id: anonymous_can_retrieve_published
+    name: Non auth user can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{published_object.pk}/"
+      method: "GET"
+    response: &response_published_object
+      status_code: 200
+      strict: 
+        - json:off
+      json:
+        published: true
+  - id: auth_without_perm_can_retrieve_published
+    name: User without perm view per retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{published_object.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      <<: *response_published_object
+  - id: appuser_can_retrieve_published
+    name: App user can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{published_object.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token:s}"
+    response:
+      <<: *response_published_object
+  # Nobody can retrieve soft-deleted objects
+  - id: anonymous_cannot_retrieve_deleted
+    name: Non auth user can not retrieve deleted reports
+    request:
+      url: "{api_live_url}/{endpoint}/{soft_deleted_object.pk}/"
+      method: "GET"
+    response:
+      status_code: 404
+  - id: auth_with_perm_cannot_retrieve_deleted
+    name: User with perm view can not retrieve deleted reports
+    request:
+      url: "{api_live_url}/{endpoint}/{soft_deleted_object.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 404
+  - id: appuser_cannot_retrieve_deleted
+    name: App user owner can not retrieve deleted reports
+    request:
+      url: "{api_live_url}/{endpoint}/{soft_deleted_object.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {app_user_token:s}"
+    response:
+      status_code: 404
+  # Non published
+  - id: anonymous_cannot_retrieve_unpublished
+    name: Non auth user can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{unpublished_object.pk}/"
+      method: "GET"
+    response:
+      status_code: 404
+  - id: auth_can_retrieve_unpublished
+    name: User without perm view per retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{unpublished_object.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response: &response_unpublished_object
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        published: false
+  - id: auth_with_viewperm_can_retrieve_unpublished
+    name: User without perm view per retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{unpublished_object.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response: 
+      <<: *response_unpublished_object
+  - id: appuser_can_retrieve_owned_unpublished
+    name: App user can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{unpublished_object.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {app_user_token:s}"
+    response:
+      <<: *response_unpublished_object
+  - id: appuser_cannot_retrieve_unowned_unpublished
+    name: App user can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{unpublished_object.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token:s}"
+    response:
+      status_code: 404
+    # Photos
+  # - id: hidden_photos_are_not_displayed
+  #   name: User without perm view can retrieve
+  #   request:
+  #     url: "{api_live_url}/{endpoint}/{object_with_hidden_photos.pk:s}/"
+  #     method: "GET"
+  #     headers:
+  #       Authorization: "Token {token_user_can_view:s}"
+  #   response:
+  #     status_code: 200
+  #     verify_response_with:
+  #       function: tavern.helpers:validate_content
+  #       extra_kwargs:
+  #         comparisons:
+  #           - jmespath: "photos"
+  #             operator: "count_eq"
+  #             expected: 0

@@ -1,4 +1,5 @@
 import io
+from pathlib import Path
 from PIL import Image
 import pytest
 import random
@@ -8,12 +9,15 @@ from rest_framework.authtoken.models import Token
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.utils.module_loading import import_string
+
+from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
 
 from api.tests.utils import grant_permission_to_user
 from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo
 
 User = get_user_model()
-
+TEST_DATA_PATH = Path(Path(__file__).parent.absolute(), "test_data/")
 
 @pytest.fixture
 def user_password():
@@ -25,6 +29,10 @@ def app_user(user_password):
     user.set_password(user_password)
     user.save(0)
     return user
+
+@pytest.fixture
+def app_user_token(app_user):
+    return str(import_string(simplejwt_settings.TOKEN_OBTAIN_SERIALIZER).get_token(user=app_user).access_token)
 
 @pytest.fixture
 def dummy_image():
@@ -168,3 +176,17 @@ def token_user_can_delete(token_instance_user, model_class):
     yield token_instance_user.key
 
     permission.delete()
+
+@pytest.fixture
+def test_png_image_path():
+    return Path(TEST_DATA_PATH, Path("white_image.png"))
+
+
+@pytest.fixture
+def test_jpg_image_path():
+    return Path(TEST_DATA_PATH, Path("black_image.jpg"))
+
+
+@pytest.fixture
+def test_non_image_path():
+    return Path(TEST_DATA_PATH, Path("non_image.txt"))

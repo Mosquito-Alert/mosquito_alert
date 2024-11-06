@@ -1,0 +1,20 @@
+---
+
+test_name: 'Update is disabeld'
+
+includes:
+  - !include '../shared/reports/update.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - object
+    - app_user_token
+
+
+stages:
+  - type: ref
+    id: put_is_disabled
+  - type: ref
+    id: patch_is_disabled

@@ -1,0 +1,36 @@
+---
+
+name: Common test information
+description: Login information for test server
+
+variables:
+  endpoint: "bites"
+  response_data_validation:
+    # Common for all reports
+    uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    short_id: !anystr
+    user_uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    sent_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    location:
+      type: !anystr
+      point:
+        latitude: !anyfloat
+        longitude: !anyfloat
+      country_id: !anything
+      nuts_2: !anything
+      nuts_3: !anything
+    note: !anything
+    published: !anybool
+    # Fields only for bites
+    event_environment: !anystr
+    event_moment: !anystr
+    bite_count: !anyint
+    head_bite_count: !anyint
+    left_arm_bite_count: !anyint
+    right_arm_bite_count: !anyint
+    chest_bite_count: !anyint
+    left_leg_bite_count: !anyint
+    right_leg_bite_count: !anyint

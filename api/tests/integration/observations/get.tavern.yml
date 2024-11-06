@@ -1,0 +1,152 @@
+---
+
+test_name: 'Common tests for published breeding sites retrieve (inherits from report)'
+
+includes:
+  - !include '../shared/reports/get.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_object
+    - token_user
+
+stages:
+  - type: ref
+    id: anonymous_can_retrieve_published
+  - type: ref
+    id: auth_without_perm_can_retrieve_published
+  # Creating a new appuser that does not own the object
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - type: ref
+    id: appuser_can_retrieve_published
+
+---
+
+test_name: 'Common tests for deleted breeding sites retrieve (inherits from report)'
+
+includes:
+  - !include '../shared/reports/get.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - soft_deleted_object
+    - token_user_can_view
+    - app_user_token
+
+stages:
+  - type: ref
+    id: anonymous_cannot_retrieve_deleted
+  - type: ref
+    id: auth_with_perm_cannot_retrieve_deleted
+  - type: ref
+    id: appuser_cannot_retrieve_deleted
+
+---
+
+test_name: 'Common tests for non-published breeding sites retrieve (inherits from report)'
+
+includes:
+  - !include '../shared/reports/get.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - unpublished_object
+    - token_user
+    - app_user_token
+
+stages:
+  - type: ref
+    id: anonymous_cannot_retrieve_unpublished
+  - type: ref
+    id: auth_can_retrieve_unpublished
+  - type: ref
+    id: appuser_can_retrieve_owned_unpublished
+  # Creating a new appuser that does not own the object
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - type: ref
+    id: appuser_cannot_retrieve_unowned_unpublished
+
+---
+
+test_name: 'Common tests for non-published breeding sites retrieve (inherits from report)'
+
+includes:
+  - !include '../shared/reports/get.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - unpublished_object
+    - token_user_can_view
+
+stages:
+  - type: ref
+    id: auth_with_viewperm_can_retrieve_unpublished
+
+---
+
+test_name: 'Test response structure'
+
+includes:
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - object
+    - app_user_token
+
+stages:
+  - name: Test response schema
+    request:
+      url: "{api_live_url}/{endpoint}/{object.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 200
+      json: !force_original_structure "{response_data_validation}"
+
+---
+
+test_name: 'Test hidden photos are not shown'
+
+includes:
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - hidden_photo
+    - published_observation_with_hidden_photo
+    - app_user_token
+
+stages:
+  - name: Test hidden photos are not shown
+    request:
+      url: "{api_live_url}/{endpoint}/{published_observation_with_hidden_photo.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.helpers:validate_content
+        extra_kwargs:
+          comparisons:
+            - jmespath: "photos[?uuid=='{hidden_photo.uuid}']"
+              operator: "count_eq"
+              expected: 0

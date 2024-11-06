@@ -1,0 +1,33 @@
+---
+
+name: Common test information
+description: Login information for test server
+
+variables:
+  endpoint: "breeding-sites"
+  response_data_validation:
+    # Common for all reports
+    uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    short_id: !anystr
+    user_uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    sent_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    location:
+      type: !anystr
+      point:
+        latitude: !anyfloat
+        longitude: !anyfloat
+      country_id: !anything
+      nuts_2: !anything
+      nuts_3: !anything
+    note: !anything
+    published: !anybool
+    # Fields only for breeding sites
+    photos: !anylist
+    site_type: !anystr
+    has_water: !anything
+    in_public_area: !anything
+    has_near_mosquitoes: !anything
+    has_larvae: !anything

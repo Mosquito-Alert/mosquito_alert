@@ -1,0 +1,12 @@
+---
+
+name: Create requires user to be sign in
+
+stages:
+  - id: anonymous_cannot_create
+    name: Non auth user can not create
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+    response:
+      status_code: 403

@@ -33,8 +33,7 @@ class CampaignFilter(filters.FilterSet):
         model = OWCampaigns
         fields = ("country_id", "is_active")
 
-
-class ReportFilter(filters.FilterSet):
+class BaseReportFilter(filters.FilterSet):
     user_uuid = filters.UUIDFilter(field_name="user")
     short_id = filters.CharFilter(field_name="report_id", label="Short ID")
     created_at = filters.IsoDateTimeFromToRangeFilter(
@@ -46,7 +45,6 @@ class ReportFilter(filters.FilterSet):
     updated_at = filters.IsoDateTimeFromToRangeFilter(
         field_name="updated_at", label="Update at"
     )
-    has_photos = filters.BooleanFilter(method='filter_has_photos', help_text='Has any photo')
 
     location_country_id = filters.ModelChoiceFilter(field_name="country_id", queryset=EuropeCountry.objects.all())
     location_nuts_3 = filters.CharFilter(field_name="nuts_3")
@@ -56,23 +54,37 @@ class ReportFilter(filters.FilterSet):
         fields=(("server_upload_time", "received_at"), ("creation_time", "created_at"))
     )
 
-    def filter_has_photos(self, queryset, name, value):
-        # Subquery to check for existence of related Photos
-        return queryset.has_photos(state=value)
-
     class Meta:
         model = Report
         fields = (
             "short_id",
-            "type",
             "created_at",
             "received_at",
             "updated_at",
             "location_country_id",
             "location_nuts_3",
             "location_nuts_2",
-            "has_photos",
         )
+
+class BaseReportWithPhotosFilter(BaseReportFilter):
+    has_photos = filters.BooleanFilter(method='filter_has_photos', help_text='Has any photo')
+
+    def filter_has_photos(self, queryset, name, value):
+        # Subquery to check for existence of related Photos
+        return queryset.has_photos(state=value)
+
+    class Meta(BaseReportFilter.Meta):
+        fields = BaseReportFilter.Meta.fields + ("has_photos",)
+
+
+class ObservationFilter(BaseReportWithPhotosFilter):
+    pass
+
+class BiteFilter(BaseReportFilter):
+    pass
+
+class BreedingSiteFilter(BaseReportWithPhotosFilter):
+    pass
 
 
 class NotificationFilter(filters.FilterSet):

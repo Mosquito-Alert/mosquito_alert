@@ -1,0 +1,114 @@
+---
+
+test_name: 'Common tests for observation creation (inherits from report)'
+
+includes:
+  - !include '../shared/reports/create.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  - type: ref
+    id: anonymous_cannot_create
+
+---
+
+test_name: Test create observation report
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - app_user_token
+    - test_jpg_image_path
+    - test_png_image_path
+    - test_non_image_path
+
+stages:
+  - name: Create observation report with image
+    request: &request_observation
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token:s}"
+      method: "POST"
+      files:
+        photos[0]file: "{test_jpg_image_path}"
+        photos[1]file: "{test_png_image_path}"
+      data: &request_site_data
+        created_at: '2024-01-01T00:00:00Z'
+        sent_at: '2024-01-01T00:30:00Z'
+        timezone: 'Europe/Madrid'
+        location.point: !raw '{"latitude": 41.67419, "longitude": 2.79036}'
+        location.type: 'current'
+        note: "Test"
+        package:
+          name: testapp
+          version: v123
+          language: english
+        device:
+          manufacturer: test_make
+          model: test model
+          os: testOs
+          os_version: v123
+          os_language: en
+    response:
+      status_code: 201
+      json: &response_observation_with_photo
+        uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        short_id: !anystr
+        user_uuid: "{app_user.pk}"
+        created_at: '2024-01-01T00:00:00Z'
+        sent_at: '2024-01-01T00:30:00Z'
+        received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        location:
+          type: 'current'
+          point:
+            latitude: 41.67419
+            longitude: 2.79036
+          country_id: !anything
+          nuts_2: !anything
+          nuts_3: !anything
+        note: Test
+        published: false
+        photos:
+          - uuid: !anystr
+            url: !anystr
+          - uuid: !anystr
+            url: !anystr
+        event_environment: !anything
+        event_moment: !anything
+        user_perceived_mosquito_specie: !anything
+        user_perceived_mosquito_thorax: !anything
+        user_perceived_mosquito_abdomen: !anything
+        user_perceived_mosquito_legs: !anything
+  - name: Create observation report without TZ should raise
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token:s}"
+      method: "POST"
+      data:
+        <<: *request_site_data
+        created_at: '2024-01-01T00:00:00'
+    response:
+      status_code: 400
+  - name: Create observation without photo is not allowed
+    request:
+      <<: *request_observation
+      files: null
+    response:
+      status_code: 400
+  - name: Uploading non-images should return 400
+    request:
+      <<: *request_observation
+      files: 
+        photos[0]file: "{test_non_image_path}"
+    response:
+      status_code: 400
