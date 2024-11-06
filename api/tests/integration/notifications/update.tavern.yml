@@ -73,7 +73,6 @@ stages:
       status_code: 200
       json:
         id: !int "{user_notification.pk}"
-        report_uuid: !anything
         expert_id: !anything
         created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
         title: !anystr
@@ -149,7 +148,6 @@ stages:
       save:
         json:
           original_id: id
-          original_report_uuid: report_uuid
           original_expert_id: expert_id
           original_created_at: created_at
           original_title: title
@@ -161,7 +159,6 @@ stages:
         seen: true
         title: 'another title'
         body: 'another body'
-        report_uuid: '123123'
         created_at: '123'
       method: "{method}"
       headers:
@@ -170,7 +167,6 @@ stages:
       status_code: 200
       json:
         id: !int "{original_id}"
-        report_uuid: null # NOTE: fixture set it to None
         expert_id: null # NOTE: fixture set it to None
         created_at: "{original_created_at}"
         title: "{original_title}"

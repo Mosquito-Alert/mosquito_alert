@@ -52,7 +52,6 @@ stages:
         previous: null
         results:
           - id: !int "{user_notification.pk}"
-            report_uuid: !anything
             expert_id: !anything
             created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
             title: !anystr

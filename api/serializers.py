@@ -87,9 +87,6 @@ class FixSerializer(serializers.ModelSerializer):
 
 #### START NOTIFICATION SERIALIZERS ####
 class DetailNotificationSerializer(serializers.ModelSerializer):
-    report_uuid = serializers.UUIDField(
-        source="report_id", required=False, read_only=True, allow_null=True
-    )
 
     seen = WritableSerializerMethodField(
         field_class=serializers.BooleanField,
@@ -144,7 +141,6 @@ class DetailNotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = (
             "id",
-            "report_uuid",
             "expert_id",
             "created_at",
             "title",
@@ -216,9 +212,6 @@ class BaseNotificationCreateSerializer(serializers.ModelSerializer):
 class UserNotificationCreateSerializer(BaseNotificationCreateSerializer):
     RECEIVER_TYPE = "user"
 
-    report_uuid = serializers.UUIDField(
-        source="report_id", write_only=True, required=False, allow_null=True
-    )
     user_uuid = serializers.UUIDField(write_only=True)
 
     def create(self, validated_data):
@@ -231,19 +224,8 @@ class UserNotificationCreateSerializer(BaseNotificationCreateSerializer):
 
         return instance
 
-    def validate(self, data):
-        report_uuid = data.get("report_uuid", None)
-        if report_uuid is not None:
-            # Checking that the user is the owner of the report.
-            if Report.objects.get(pk=report_uuid).user_id != data.get("user_uuid"):
-                raise serializers.ValidationError(
-                    "Can only assign report_uuid if the user is the owner of that report."
-                )
-        return data
-
     class Meta(BaseNotificationCreateSerializer.Meta):
         fields = BaseNotificationCreateSerializer.Meta.fields + (
-            "report_uuid",
             "user_uuid",
         )
 

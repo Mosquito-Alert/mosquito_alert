@@ -67,7 +67,6 @@ stages:
       json:
         receiver_type: "user"
         user_uuid: "{app_user.pk}"
-        report_uuid: null
         title_en: "english title"
         body_en: "english body"
       headers:
