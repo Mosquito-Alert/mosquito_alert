@@ -143,6 +143,7 @@ class ReportAdmin(SimpleHistoryAdmin):
         "version_time",
         "phone_upload_time",
         "creation_time",
+        "timezone"
     ]
 
     fieldsets = [
@@ -167,7 +168,8 @@ class ReportAdmin(SimpleHistoryAdmin):
                 "fields": [
                     ("country", "nuts_2", "nuts_3"),
                     "location_choice",
-                    "point"
+                    "point",
+                    "timezone"
                 ]
             }
         ),

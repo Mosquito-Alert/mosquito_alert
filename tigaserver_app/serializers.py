@@ -10,6 +10,8 @@ from django.urls import reverse
 from django.db import models
 from django.utils import timezone
 
+from timezone_field.rest_framework import TimeZoneSerializerField
+
 from .fields import AutoTimeZoneDatetimeField
 from .mixins import AutoTimeZoneOrInstantUploadSerializerMixin
 
@@ -192,6 +194,7 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
     current_location_lat = serializers.FloatField(required=False)
     selected_location_lon = serializers.FloatField(required=False)
     selected_location_lat = serializers.FloatField(required=False)
+    timezone = TimeZoneSerializerField(read_only=True)
     note = serializers.CharField(required=False, allow_blank=True)
     package_name = serializers.CharField(required=False)
     package_version = serializers.IntegerField(required=False)
@@ -404,6 +407,7 @@ class NearbyReportSerializer(serializers.ModelSerializer):
     current_location_lat = serializers.FloatField(required=False)
     selected_location_lon = serializers.FloatField(required=False)
     selected_location_lat = serializers.FloatField(required=False)
+    timezone = TimeZoneSerializerField(read_only=True)
     note = serializers.CharField(required=False)
     package_name = serializers.CharField(required=False)
     package_version = serializers.IntegerField(required=False)

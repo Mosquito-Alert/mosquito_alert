@@ -51,7 +51,6 @@ class BaseReportTest:
     _common_post_data = {
         'created_at': '2024-01-01T00:00:00Z',
         'sent_at': '2024-01-01T00:30:00Z',
-        'timezone': 'Europe/Madrid',
         'location': {
             'type': 'current',
             'point': {
@@ -73,23 +72,6 @@ class BaseReportTest:
     @abstractmethod
     def endpoint(self):
         raise NotImplementedError
-
-    def test_timezone_is_save_on_report_create(self, app_api_client, data_create_request):
-        if self.POST_FORMAT == 'multipart':
-            pytest.skip("Skipping test for multipart format")
-        # Testing here due its write_only field
-
-        response = app_api_client.post(
-            self.endpoint,
-            data=data_create_request,
-            format=self.POST_FORMAT
-        )
-
-        assert response.status_code == status.HTTP_201_CREATED
-
-        report = self.queryset.get(pk=response.data.get('uuid'))
-
-        assert str(report.phone_timezone) == data_create_request['timezone']
 
     def test_package_is_set_on_report_create(self, app_api_client, data_create_request):
         if self.POST_FORMAT == 'multipart':

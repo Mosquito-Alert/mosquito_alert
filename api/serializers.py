@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -7,6 +8,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from drf_extra_fields.geo_fields import PointField
+from timezone_field.rest_framework import TimeZoneSerializerField
 
 from tigaserver_app.models import (
     NotificationContent,
@@ -24,7 +26,6 @@ from tigaserver_app.models import (
 from .fields import (
     TimezoneAwareDateTimeField,
     WritableSerializerMethodField,
-    TimeZoneSerializerChoiceField,
     IntegerDefaultField,
 )
 
@@ -307,6 +308,7 @@ class BaseReportSerializer(serializers.ModelSerializer):
 
     class ReportLocationSerializer(serializers.ModelSerializer):
         point = PointField(required=True, allow_null=True)
+        timezone = TimeZoneSerializerField(read_only=True)
 
         def to_internal_value(self, data):
             ret = super().to_internal_value(data)
@@ -326,6 +328,7 @@ class BaseReportSerializer(serializers.ModelSerializer):
             fields = (
                 "type",
                 "point",
+                "timezone",
                 "country_id",
                 "nuts_2",
                 "nuts_3",
@@ -353,20 +356,19 @@ class BaseReportSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     created_at = TimezoneAwareDateTimeField(required=True, source="creation_time")
-    sent_at = TimezoneAwareDateTimeField(required=True, source="phone_upload_time")
-    timezone = TimeZoneSerializerChoiceField(
-        use_pytz=True,
-        required=True,
-        write_only=True,
-        source="phone_timezone",
-        help_text=Report._meta.get_field("phone_timezone").help_text,
+    created_at_local = serializers.SerializerMethodField(
+        help_text="The date and time when the record was created, displayed in the local timezone specified for this entry."
     )
+    sent_at = TimezoneAwareDateTimeField(required=True, source="phone_upload_time")
 
     received_at = serializers.DateTimeField(read_only=True, source="server_upload_time")
 
     location = ReportLocationSerializer(source="*")
     package = PackageSerializer(required=False, write_only=True, source="*")
     device = DeviceSerializer(required=False, write_only=True, source="*")
+
+    def get_created_at_local(self, obj) -> datetime:
+        return obj.creation_time_local
 
     class Meta:
         model = Report
@@ -376,8 +378,8 @@ class BaseReportSerializer(serializers.ModelSerializer):
             "user_uuid",
             "user",
             "created_at",
+            "created_at_local",
             "sent_at",
-            "timezone",
             "received_at",
             "updated_at",
             "location",
