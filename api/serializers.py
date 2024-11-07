@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -355,6 +356,9 @@ class BaseReportSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     created_at = TimezoneAwareDateTimeField(required=True, source="creation_time")
+    created_at_local = serializers.SerializerMethodField(
+        help_text="The date and time when the record was created, displayed in the local timezone specified for this entry."
+    )
     sent_at = TimezoneAwareDateTimeField(required=True, source="phone_upload_time")
 
     received_at = serializers.DateTimeField(read_only=True, source="server_upload_time")
@@ -362,6 +366,9 @@ class BaseReportSerializer(serializers.ModelSerializer):
     location = ReportLocationSerializer(source="*")
     package = PackageSerializer(required=False, write_only=True, source="*")
     device = DeviceSerializer(required=False, write_only=True, source="*")
+
+    def get_created_at_local(self, obj) -> datetime:
+        return obj.creation_time_local
 
     class Meta:
         model = Report
@@ -371,6 +378,7 @@ class BaseReportSerializer(serializers.ModelSerializer):
             "user_uuid",
             "user",
             "created_at",
+            "created_at_local",
             "sent_at",
             "received_at",
             "updated_at",

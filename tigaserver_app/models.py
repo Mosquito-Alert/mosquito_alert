@@ -1521,6 +1521,12 @@ class Report(TimeZoneModelMixin, models.Model):
     def creation_day_since_launch(self) -> int:
         return (self.creation_time - settings.START_TIME).days
 
+    @property
+    def creation_time_local(self) -> datetime:
+        if self.timezone:
+            return self.creation_time.astimezone(self.timezone)
+        return self.creation_time
+
     # Methods
     # See TimeZoneModelMixin
     def _get_latitude_for_timezone(self):
