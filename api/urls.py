@@ -1,4 +1,4 @@
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -34,7 +34,7 @@ class CustomRedocView(SpectacularRedocView):
         return response
 
 
-router = routers.DefaultRouter()
+router = routers.SimpleRouter()
 router.register(r"bites", BiteViewSet)
 router.register(r"breeding-sites", BreedingSiteViewSet)
 router.register(r"campaigns", CampaignsViewSet)
@@ -55,7 +55,8 @@ api_urlpatterns = [
 api_urlpatterns += router.urls
 
 urlpatterns = [
-    path("openapi.yml", SpectacularAPIView.as_view(), name="schema"),
-    path("openapi.json", SpectacularJSONAPIView.as_view(), name="schema-json"),
+    path("", include(api_urlpatterns)),
+    path("openapi.yml", SpectacularAPIView.as_view(api_version='v1'), name="schema"),
+    path("openapi.json", SpectacularJSONAPIView.as_view(api_version='v1'), name="schema-json"),
     re_path("$^", CustomRedocView.as_view(url_name="schema"), name="redoc"),
-] + api_urlpatterns
+]
