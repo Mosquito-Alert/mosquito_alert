@@ -16,14 +16,33 @@ class ReportQuerySet(models.QuerySet):
             photo_exist=state
         )
 
-    def has_predictions(self, state: bool = True):
-        from .models import IAScore
+    def has_prediction(self, state: bool = True):
+        return self.filter(prediction__isnull=not state)
 
+        from .models import ObservationPrediction
         return self.annotate(
             prediction_exist=models.Exists(
-                IAScore.objects.filter(report=models.OuterRef('pk'))
+                ObservationPrediction.objects.filter(report=models.OuterRef('pk'))
             )
         ).filter(prediction_exist=state)
+
+    def has_predictions_all_photos(self, state: bool = True):
+        # Annotate the Report model with counts of photos and photos with predictions
+        annotated_queryset = self.has_photos().annotate(
+            total_photos=models.Count('photos'),  # Count total photos in the report
+            photos_with_predictions=models.Count('photos__prediction')  # Count photos with predictions
+        )
+
+        if state:
+            # When state is True, ensure all photos have predictions
+            return annotated_queryset.filter(
+                total_photos=models.F('photos_with_predictions')  # Ensure all photos have predictions
+            )
+        else:
+            # When state is False, allow even if one photo does not have a prediction
+            return annotated_queryset.filter(
+                total_photos__gt=models.F('photos_with_predictions')  # If not all photos have predictions
+            )
 
     def deleted(self, state: bool = True):
         return self.exclude(deleted_at__isnull=state)

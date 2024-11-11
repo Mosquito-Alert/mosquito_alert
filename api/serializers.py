@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -9,7 +9,6 @@ from rest_framework import serializers
 from drf_extra_fields.geo_fields import PointField
 from taggit.serializers import TaggitSerializer
 
-from tigacrafting.models import ExpertReportAnnotation
 from tigaserver_app.models import (
     NotificationContent,
     Notification,
@@ -23,7 +22,8 @@ from tigaserver_app.models import (
     NotificationTopic,
     Device,
     MobileApp,
-    IAScore
+    PhotoPrediction,
+    ObservationPrediction
 )
 
 from .fields import (
@@ -676,28 +676,11 @@ class DeviceUpdateSerializer(DeviceSerializer):
             "manufacturer",
             "model"
         )
-class PredictionSerializer(serializers.ModelSerializer):
-
-    class_name_to_category = {
-        'ae_aegypti': 5,
-        'ae_albopictus': 4,
-        'anopheles': 2,
-        'culex': 10,
-        'culiseta': 2,
-        'ae_japonicus': 6,
-        'ae_koreicus': 7,
-        'other_species': 2,
-        'not_sure': 9,
-    }
-
-    class_name_to_otherspecies = {
-        'anopheles': 101,
-        'culiseta': 103
-    }
+class PhotoPredictionSerializer(serializers.ModelSerializer):
 
     class BoundingBoxSerializer(serializers.ModelSerializer):
         class Meta:
-            model = IAScore
+            model = PhotoPrediction
             fields = (
                 'x_min',
                 'y_min',
@@ -713,62 +696,104 @@ class PredictionSerializer(serializers.ModelSerializer):
 
     class PredictionScoreSerializer(serializers.ModelSerializer):
         class Meta:
-            model = IAScore
-            fields = IAScore.CLASS_FIELDNAMES
+            model = PhotoPrediction
+            fields = [fname.replace(PhotoPrediction.CLASS_FIELD_SUFFIX, '')  for fname in PhotoPrediction.get_score_fieldnames()]
+            extra_kwargs = {
+                fname.replace(PhotoPrediction.CLASS_FIELD_SUFFIX, ''): {"source": fname}
+                for fname in PhotoPrediction.get_score_fieldnames()
+            }
 
-    id = serializers.IntegerField(source="pk", read_only=True, help_text="Unique identifier for the prediction.")
     bbox = BoundingBoxSerializer(source='*')
     scores = PredictionScoreSerializer(source='*')
-    class_name = serializers.SerializerMethodField()
-    class_score = serializers.SerializerMethodField()
+
+    def validate(self, data):
+        photo__uuid = self.context.pop('photo__uuid')
+
+        try:
+            data['photo'] = Photo.objects.get(uuid=photo__uuid)
+        except Photo.DoesNotExist:
+            raise serializers.ValidationError("The selected photo does not exist.")
+
+        return data
+
+    class Meta:
+        model = PhotoPrediction
+        fields = (
+            'bbox',
+            'insect_confidence',
+            'predicted_class',
+            'threshold_deviation',
+            'scores',
+            'classifier_version',
+            'created_at',
+            'updated_at'
+        )
+
+
+class ObservationPredictionSerializer(serializers.ModelSerializer):
+
+    ref_photo_uuid = serializers.UUIDField(
+        source='photo_prediction.photo.uuid',
+        help_text="The selected photo whose prediction represents the observation as the best classification result."
+    )
+
+    insect_confidence = serializers.FloatField(
+        source='photo_prediction.insect_confidence', read_only=True,
+        min_value=0, max_value=1
+    )
+    predicted_class = serializers.ChoiceField(
+        source='photo_prediction.predicted_class',
+        read_only=True,
+        choices=[fname for fname, _ in PhotoPrediction.CLASS_FIELDNAMES_CHOICES]
+    )
+    predicted_class_display = serializers.SerializerMethodField()
+
     is_executive_validation = WritableSerializerMethodField(
         field_class=serializers.BooleanField,
         default=False,
+        help_text="Whether if the photo prediction will be used as an executive validation for the report."
     )
 
-    def get_class_name(self, obj) -> str:
-        return obj.class_name
-
-    def get_class_score(self, obj) -> float:
-        return obj.class_score
+    def get_predicted_class_display(self, obj) -> Literal[tuple(value for _, value in PhotoPrediction.CLASS_FIELDNAMES_CHOICES)]:
+        return obj.photo_prediction.get_predicted_class_display()
 
     def get_is_executive_validation(self, obj) -> bool:
         return not obj.expert_annotation is None
 
+    def validate(self, data):
+        data['report_id'] = self.context.get('report__pk')
+        photo__uuid = data.pop('photo_prediction').get('photo')['uuid']
+
+        try:
+            photo = Photo.objects.get(uuid=photo__uuid, report=data['report_id'])
+        except Photo.DoesNotExist:
+            raise serializers.ValidationError("The selected photo does not belong to this observation.")
+
+        try:
+            data['photo_prediction'] = photo.prediction
+        except PhotoPrediction.DoesNotExist:
+            raise serializers.ValidationError("The selected photo has no prediction.")
+
+        return data
+
     def create(self, validated_data):
         is_executive_validation = validated_data.pop('is_executive_validation')
-
-        validated_data['report'] = validated_data['photo'].report
 
         instance = super().create(validated_data)
 
         if is_executive_validation:
-            obj = ExpertReportAnnotation.objects.create(
-                user=get_user_model().objects.get(username='aima'),
-                report=instance.photo.report,
-                best_photo=instance.photo,
-                category_id=self.class_name_to_category.get(self.get_class_name(obj=instance)),
-                validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY,
-                validation_complete=True,
-                validation_complete_executive=True,
-                simplified_annotation=False,
-                status=1,  # Force public
-                # edited_user_notes="", # TODO: value for publication,
-                other_species=self.class_name_to_otherspecies.get(self.get_class_name(obj=instance))
-            )
-            instance.expert_annotation = obj
-            instance.save()
+            instance.create_executive_expert_annotation()
 
         return instance
 
     class Meta:
-        model = IAScore
+        model = ObservationPrediction
         fields = (
-            'id',
-            'bbox',
+            'ref_photo_uuid',
             'insect_confidence',
-            'class_name',
-            'class_score',
-            'scores',
-            'is_executive_validation'
+            'predicted_class',
+            'predicted_class_display',
+            'is_executive_validation',
+            'created_at',
+            'updated_at'
         )

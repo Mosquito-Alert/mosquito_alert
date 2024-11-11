@@ -78,11 +78,22 @@ class BaseReportWithPhotosFilter(BaseReportFilter):
 
 
 class ObservationFilter(BaseReportWithPhotosFilter):
-    has_predictions = filters.BooleanFilter(method='filter_has_predictions', help_text='Has any prediction')
+    has_prediction = filters.BooleanFilter(
+        method='filter_has_prediction',
+        help_text='Filter observations that have an associated prediction. An observation is considered to have a prediction if a photo has been selected as reference to use the prediction from.'
+    )
+    has_predictions_all_photos = filters.BooleanFilter(
+        method='filter_has_predictions_all_photos',
+        help_text='Filters observations based on whether all associated photos have predictions. Set to True to include observations where every photo has a prediction; set to False to include observations where at least one photo is missing a prediction.'
+    )
 
-    def filter_has_predictions(self, queryset, name, value):
+    def filter_has_prediction(self, queryset, name, value):
         # Subquery to check for existence of related Predictions
-        return queryset.has_predictions(state=value)
+        return queryset.has_prediction(state=value)
+
+    def filter_has_predictions_all_photos(self, queryset, name, value):
+        # Subquery to check for existence of related Predictions
+        return queryset.has_predictions_all_photos(state=value)
 
 class BiteFilter(BaseReportFilter):
     pass

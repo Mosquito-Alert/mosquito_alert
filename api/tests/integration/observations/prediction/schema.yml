@@ -5,25 +5,11 @@ description: Login information for test server
 
 variables:
   response_data_validation: &retrieve_validation
-    bbox:
-      x_min: !anyint
-      y_min: !anyint
-      x_max: !anyint
-      y_max: !anyint
+    ref_photo_uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
     insect_confidence: !anyfloat
     predicted_class: !anystr
-    threshold_deviation: !anyfloat
-    scores:
-      ae_aegypti: !anyfloat
-      ae_albopictus: !anyfloat
-      ae_japonicus: !anyfloat
-      ae_koreicus: !anyfloat
-      anopheles: !anyfloat
-      culex: !anyfloat
-      culiseta: !anyfloat
-      other_species: !anyfloat
-      not_sure: !anyfloat
-    classifier_version: !anystr
+    predicted_class_display: !anystr
+    is_executive_validation: !anybool
     created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
     updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
   response_list_data_validation: &response_list_validation

@@ -16,13 +16,14 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework_simplejwt.settings import api_settings
 
 from tigacrafting.models import ExpertReportAnnotation
-from tigaserver_app.models import TigaUser, Report, Device, MobileApp, IAScore
+from tigaserver_app.models import TigaUser, Report, Device, MobileApp, ObservationPrediction
 
 from api.auth.serializers import AppUserTokenObtainPairSerializer
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
 from api.tests.factories import create_report_object
+from api.tests.integration.photos.predictions.factories import create_photo_prediction
 
 from .utils import grant_permission_to_user
 
@@ -196,36 +197,16 @@ class TestObservationAPI(BaseReportTest):
         return create_observation_object(user=app_user)
 
 @pytest.mark.django_db
-class TestPredictionAPI:
+class TestObservationPredictionAPI:
     @classmethod
-    def build_url(cls, photo):
-        return f"/api/v1/photos/{photo.uuid}/predictions/"
+    def build_url(cls, observation):
+        return f"/api/v1/observations/{observation.pk}/prediction/"
 
     @pytest.fixture
     def permitted_user(self, user):
-        grant_permission_to_user(type='add', model_class=IAScore, user=user)
+        grant_permission_to_user(type='add', model_class=ObservationPrediction, user=user)
         Token.objects.create(user=user)
         return user
-
-    @pytest.fixture
-    def data_create_request(self):
-        """Fixture for the data create request."""
-        return {
-            "bbox": {"x_min": 0, "y_min": 0, "x_max": 0, "y_max": 0},
-            "insect_confidence": 0.9,
-            "scores": {
-                "ae_aegypti": 0.1,
-                "ae_albopictus": 0.8,
-                "ae_japonicus": 0.05,
-                "ae_koreicus": 0.05,
-                "anopheles": 0.05,
-                "culex": 0.05,
-                "culiseta": 0.05,
-                "other_species": 0,
-                "not_sure": 0
-            },
-            "is_executive_validation": False
-        }
 
     @pytest.fixture()
     def api_client(self, permitted_user):
@@ -236,53 +217,35 @@ class TestPredictionAPI:
         client.credentials(HTTP_AUTHORIZATION=f"Token {str(token)}")
         return client
 
-    def test_is_execution_validation_False_does_not_create_annotations(self, api_client, report_photo, data_create_request):
-        assert not ExpertReportAnnotation.objects.filter(
-            report__photos__in=[report_photo]
-        ).exists()
+    @pytest.mark.parametrize("is_executive_validation", [False, True])
+    def test_is_execution_validation_False_does_not_create_annotations(self, api_client, adult_report, is_executive_validation):
+        annotations_qs = ExpertReportAnnotation.objects.filter(
+            report=adult_report
+        )
+
+        assert not annotations_qs.exists()
+
+        photo = adult_report.photos.first()
+        _ = create_photo_prediction(photo=photo)
 
         response = api_client.post(
-            self.build_url(photo=report_photo),
+            self.build_url(observation=adult_report),
             data={
-                **data_create_request,
-                **{
-                    "is_executive_validation": False
-                }
+                "ref_photo_uuid": photo.uuid,
+                "is_executive_validation": is_executive_validation
             },
             format='json'
         )
         assert response.status_code == status.HTTP_201_CREATED
 
-        assert not ExpertReportAnnotation.objects.filter(
-            report__photos__in=[report_photo]
-        ).exists()
-
-    def test_is_execution_validation_True_does_create_annotations(self, api_client, report_photo, data_create_request):
-        assert not ExpertReportAnnotation.objects.filter(
-            report__photos__in=[report_photo]
-        ).exists()
-
-        response = api_client.post(
-            self.build_url(photo=report_photo),
-            data={
-                **data_create_request,
-                **{
-                    "is_executive_validation": True
-                }
-            },
-            format='json'
-        )
-
-        assert response.status_code == status.HTTP_201_CREATED
-
-        assert ExpertReportAnnotation.objects.filter(
-            report__photos__in=[report_photo]
-        ).count() == 4
-        assert ExpertReportAnnotation.objects.filter(
-            report__photos__in=[report_photo],
-            user__username='aima',
-            validation_complete_executive=True
-        ).count() == 1
+        if is_executive_validation:
+            assert annotations_qs.count() == 4
+            assert annotations_qs.filter(
+                user__username='aima',
+                validation_complete_executive=True
+            ).count() == 1
+        else:
+            assert not annotations_qs.exists()
 
 @pytest.mark.django_db
 class TokenAPITest(APITestCase):

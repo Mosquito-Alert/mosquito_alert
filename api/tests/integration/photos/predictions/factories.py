@@ -1,20 +1,22 @@
-from tigaserver_app.models import Photo, IAScore
+from tigaserver_app.models import Photo, PhotoPrediction
 
 
-def create_prediction(photo: Photo) -> IAScore:
-    return IAScore.objects.create(
-        report=photo.report,
+def create_photo_prediction(photo: Photo) -> PhotoPrediction:
+    return PhotoPrediction.objects.create(
         photo=photo,
+        classifier_version=PhotoPrediction.CLASSIFIER_VERSION_CHOICES[0][0],
         insect_confidence=0.93,
-        ae_aegypti=0.8,
-        ae_albopictus=0.01,
-        anopheles=0.01,
-        culex=0.01,
-        culiseta=0.01,
-        ae_japonicus=0.01,
-        ae_koreicus=0.01,
-        other_species=0.01,
-        not_sure=0,
+        predicted_class=PhotoPrediction.CLASS_FIELDNAMES_CHOICES[0][0],
+        threshold_deviation=0.9,
+        ae_aegypti_score=0.8,
+        ae_albopictus_score=0.01,
+        anopheles_score=0.01,
+        culex_score=0.01,
+        culiseta_score=0.01,
+        ae_japonicus_score=0.01,
+        ae_koreicus_score=0.01,
+        other_species_score=0.01,
+        not_sure_score=0,
         x_tl=0,
         x_br=photo.photo.width / 2,
         y_tl=0,

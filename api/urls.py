@@ -18,7 +18,6 @@ from .views import (
     NotificationViewSet,
     MyNotificationViewSet,
     PhotoViewSet,
-    PredictionViewSet,
     ObservationViewSest,
     MyObservationViewSest,
     BiteViewSet,
@@ -53,8 +52,6 @@ router.register(r"notifications", NotificationViewSet)
 router.register(r"observations", ObservationViewSest)
 router.register(r"partners", PartnersViewSet)
 router.register(r"photos", PhotoViewSet)
-photos_router = routers.NestedDefaultRouter(router, r'photos', lookup='photo')
-photos_router.register(r"predictions", PredictionViewSet)
 router.register(r"users", UserViewSet)
 
 token_obtain_view = TokenObtainPairView.as_view()
@@ -82,7 +79,7 @@ api_urlpatterns += [
     path("me/breeding-sites/", MyBreedingSiteViewSet.as_view({'get': 'list'}), name='my-breeding-sites'),
 ]
 
-api_urlpatterns += router.urls + photos_router.urls
+api_urlpatterns += router.urls
 
 urlpatterns = [
     path("", include(api_urlpatterns)),

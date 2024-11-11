@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigacrafting', '0021_auto_20240125_1557'),
+        ('tigacrafting', '0022_add_taxon'),
     ]
 
     operations = [
