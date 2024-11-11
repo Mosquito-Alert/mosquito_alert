@@ -7,7 +7,7 @@ marks:
   - usefixtures:
     - api_live_url
     - endpoint
-    - photo_prediction
+    - published_observation_with_prediction
     - token_user
     - app_user_token
 
@@ -41,7 +41,7 @@ marks:
   - usefixtures:
     - api_live_url
     - endpoint
-    - photo_prediction
+    - published_observation_with_prediction
     - token_user_can_delete
 
 stages:
