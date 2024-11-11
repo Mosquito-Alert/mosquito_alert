@@ -10,8 +10,6 @@ from django.urls import reverse
 from django.db import models
 from django.utils import timezone
 
-from timezone_field.rest_framework import TimeZoneSerializerField
-
 from .fields import AutoTimeZoneDatetimeField
 from .mixins import AutoTimeZoneOrInstantUploadSerializerMixin
 
@@ -194,7 +192,6 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
     current_location_lat = serializers.FloatField(required=False)
     selected_location_lon = serializers.FloatField(required=False)
     selected_location_lat = serializers.FloatField(required=False)
-    timezone = TimeZoneSerializerField(read_only=True)
     note = serializers.CharField(required=False, allow_blank=True)
     package_name = serializers.CharField(required=False)
     package_version = serializers.IntegerField(required=False)
@@ -354,7 +351,42 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
     class Meta:
         model = Report
         depth = 0
-        fields = '__all__'
+        fields = (
+            "version_UUID",
+            "version_number",
+            "report_id",
+            "phone_upload_time",
+            "creation_time",
+            "version_time",
+            "type",
+            "location_choice",
+            "current_location_lon",
+            "current_location_lat",
+            "selected_location_lon",
+            "selected_location_lat",
+            "note",
+            "package_name",
+            "package_version",
+            "device_manufacturer",
+            "device_model",
+            "os",
+            "os_version",
+            "os_language",
+            "app_language",
+            "responses",
+            "photos",
+            "updated_at",
+            "server_upload_time",
+            "datetime_fix_offset",
+            "hide",
+            "point",
+            "nuts_2",
+            "nuts_3",
+            "user",
+            "mission",
+            "country",
+            "session"
+        )
 
 
 class PhotoSerializer(serializers.ModelSerializer):
@@ -407,7 +439,6 @@ class NearbyReportSerializer(serializers.ModelSerializer):
     current_location_lat = serializers.FloatField(required=False)
     selected_location_lon = serializers.FloatField(required=False)
     selected_location_lat = serializers.FloatField(required=False)
-    timezone = TimeZoneSerializerField(read_only=True)
     note = serializers.CharField(required=False)
     package_name = serializers.CharField(required=False)
     package_version = serializers.IntegerField(required=False)
@@ -423,7 +454,42 @@ class NearbyReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        fields = '__all__'
+        fields = (
+            "version_UUID",
+            "version_number",
+            "report_id",
+            "phone_upload_time",
+            "creation_time",
+            "version_time",
+            "type",
+            "location_choice",
+            "current_location_lon",
+            "current_location_lat",
+            "selected_location_lon",
+            "selected_location_lat",
+            "note",
+            "package_name",
+            "package_version",
+            "device_manufacturer",
+            "device_model",
+            "os",
+            "os_version",
+            "os_language",
+            "app_language",
+            "responses",
+            "photos",
+            "updated_at",
+            "server_upload_time",
+            "datetime_fix_offset",
+            "hide",
+            "point",
+            "nuts_2",
+            "nuts_3",
+            "user",
+            "mission",
+            "country",
+            "session"
+        )
 
 
 '''
