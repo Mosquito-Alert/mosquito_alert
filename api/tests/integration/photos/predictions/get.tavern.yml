@@ -9,14 +9,14 @@ marks:
   - usefixtures:
     - api_live_url
     - endpoint
-    - albopictus_prediction
+    - photo_prediction
     - token_user
     - app_user_token
 
 stages:
   - name: Retrieve is not allowed for mobile users
     request:
-      url: "{api_live_url}/{endpoint}/{albopictus_prediction.pk}/"
+      url: "{api_live_url}/{endpoint}/"
       headers:
         Authorization: "Bearer {app_user_token}"
       method: "GET"
@@ -24,13 +24,13 @@ stages:
       status_code: 403
   - name: Non auth user can not retrieve
     request:
-      url: "{api_live_url}/{endpoint}/{albopictus_prediction.pk}/"
+      url: "{api_live_url}/{endpoint}/"
       method: "GET"
     response:
       status_code: 403
   - name: User without perm view can retrieve
     request:
-      url: "{api_live_url}/{endpoint}/{albopictus_prediction.pk}/"
+      url: "{api_live_url}/{endpoint}/"
       method: "GET"
       headers:
         Authorization: "Token {token_user:s}"

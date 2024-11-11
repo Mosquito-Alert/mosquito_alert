@@ -7,7 +7,7 @@ marks:
   - usefixtures:
     - api_live_url
     - endpoint
-    - photo_prediction
+    - published_observation_with_prediction
     - token_user_can_change
     - app_user_token
   - parametrize:
