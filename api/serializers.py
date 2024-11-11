@@ -9,7 +9,6 @@ from rest_framework import serializers
 
 from drf_extra_fields.geo_fields import PointField
 from taggit.serializers import TaggitSerializer
-from timezone_field.rest_framework import TimeZoneSerializerField
 
 from tigaserver_app.models import (
     NotificationContent,
@@ -28,7 +27,8 @@ from .fields import (
     TimezoneAwareDateTimeField,
     WritableSerializerMethodField,
     IntegerDefaultField,
-    TagListSerializerField
+    TagListSerializerField,
+    TimeZoneSerializerChoiceField
 )
 
 User = get_user_model()
@@ -310,7 +310,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     class ReportLocationSerializer(serializers.ModelSerializer):
         point = PointField(required=True, allow_null=True)
-        timezone = TimeZoneSerializerField(read_only=True)
+        timezone = TimeZoneSerializerChoiceField(read_only=True)
 
         def to_internal_value(self, data):
             ret = super().to_internal_value(data)
