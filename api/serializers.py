@@ -159,12 +159,7 @@ class DetailNotificationSerializer(serializers.ModelSerializer):
             "created_at": {"source": "date_comment"}
         }
 
-
 class BaseNotificationCreateSerializer(serializers.ModelSerializer):
-    @property
-    @abstractmethod
-    def RECEIVER_TYPE(self):
-        raise NotImplementedError
 
     title_en = serializers.CharField(write_only=True)
     body_en = serializers.CharField(write_only=True)
@@ -172,22 +167,10 @@ class BaseNotificationCreateSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(source="date_comment", read_only=True)
     expert = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
-    def __init__(self, *args, **kwargs):
-        # Call the parent constructor first
-        super().__init__(*args, **kwargs)
-
-        # Add a dynamic field
-        self.fields['receiver_type'] = serializers.ChoiceField(
-            choices=[self.RECEIVER_TYPE,],
+    receiver_type = serializers.ChoiceField(
+            choices=["user", "topic"],
             write_only=True,
             required=True
-        )
-
-        # Re-order the fields with 'receiver_type' at the start
-        from collections import OrderedDict
-        self.fields = OrderedDict(
-            [('receiver_type', self.fields['receiver_type'])] +
-            [(key, field) for key, field in self.fields.items() if key != 'receiver_type']
         )
 
     @transaction.atomic
@@ -205,16 +188,15 @@ class BaseNotificationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = (
+            "receiver_type",
             "id",
             "created_at",
             "title_en",
-            "body_en"
+            "body_en",
+            "expert"
         )
 
-
 class UserNotificationCreateSerializer(BaseNotificationCreateSerializer):
-    RECEIVER_TYPE = "user"
-
     user_uuid = serializers.UUIDField(write_only=True)
 
     def create(self, validated_data):
@@ -234,8 +216,6 @@ class UserNotificationCreateSerializer(BaseNotificationCreateSerializer):
 
 
 class TopicNotificationCreateSerializer(BaseNotificationCreateSerializer):
-    RECEIVER_TYPE = "topic"
-
     topic_code = serializers.CharField(required=True, write_only=True)
 
     def validate(self, data):

@@ -48,6 +48,7 @@ from .serializers import (
     BreedingSiteSerializer
 )
 from .serializers import (
+    BaseNotificationCreateSerializer,
     DetailNotificationSerializer,
     TopicNotificationCreateSerializer,
     UserNotificationCreateSerializer,
@@ -87,7 +88,7 @@ class FixViewSet(CreateModelMixin, GenericViewSet):
             },
             resource_type_field_name="receiver_type",
         ),
-        responses=DetailNotificationSerializer
+        responses=BaseNotificationCreateSerializer
     )
 )
 class NotificationViewSet(
@@ -113,7 +114,7 @@ class NotificationViewSet(
         serializer.is_valid(raise_exception=True)
         notification = serializer.save()
 
-        response_serializer = DetailNotificationSerializer(notification, context=self.get_serializer_context())
+        response_serializer = BaseNotificationCreateSerializer(notification, context=self.get_serializer_context())
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 

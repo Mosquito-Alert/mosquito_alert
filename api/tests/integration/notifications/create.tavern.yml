@@ -74,7 +74,9 @@ stages:
       method: "POST"
     response:
       status_code: 201
-      json: !force_format_include "{response_data_validation}"
+      json: &response_validation
+        id: !anyint
+        created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
   - name: Create topic notification using auth user with permissions
     request:
       url: "{api_live_url}/{endpoint}/"
@@ -88,4 +90,5 @@ stages:
       method: "POST"
     response:
       status_code: 201
-      json: !force_format_include "{response_data_validation}"
+      json:
+        <<: *response_validation
