@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from collections import Counter
 from datetime import datetime, timedelta
 import json
+import re
 import firebase_admin.messaging
 import firebase_admin._messaging_utils
 from firebase_admin.exceptions import FirebaseError
@@ -38,6 +39,8 @@ from django.utils.translation import ugettext_lazy as _
 from imagekit.processors import ResizeToFit
 from simple_history.models import HistoricalRecords
 from timezone_field import TimeZoneField
+from taggit.managers import TaggableManager
+from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
 from common.translation import get_translation_in, get_locale_for_native
 from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, STATUS_CATEGORIES
@@ -509,6 +512,13 @@ class Session(models.Model):
     class Meta:
         unique_together = ('session_ID', 'user',)
 
+class UUIDTaggedItem(GenericUUIDTaggedItemBase, TaggedItemBase):
+    # NOTE: legacy since Report.version_UUID is still a charfield.
+    object_id = models.CharField(max_length=36, verbose_name=_("object ID"), db_index=True)
+
+    # See: https://django-taggit.readthedocs.io/en/stable/custom_tagging.html
+    class Meta(GenericUUIDTaggedItemBase.Meta, TaggedItemBase.Meta):
+        abstract = False
 
 class Report(TimeZoneModelMixin, models.Model):
     TYPE_BITE = "bite"
@@ -677,6 +687,12 @@ class Report(TimeZoneModelMixin, models.Model):
         null=True,
         blank=True,
         help_text="Score for best classified image. 0 indicates not classified, 1.xx indicates classified with score xx, 2.xx classified with alert with score xx.",
+    )
+
+    tags = TaggableManager(
+        through=UUIDTaggedItem,
+        blank=True,
+        help_text=_("A comma-separated list of tags you can add to a report to make them easier to find."),
     )
 
     cached_visible = models.IntegerField(
@@ -1633,6 +1649,11 @@ class Report(TimeZoneModelMixin, models.Model):
         _old_point = self.point
         self.point = self._get_point()
         self.timezone = self.get_timezone_from_coordinates()
+
+        if self._state.adding:
+            if self.note and not self.tags.exists():
+                # Init tags from note hashtags
+                self.tags.set(set(re.findall(r'(?<=#)\w+', self.note)))
 
         # Fill the country field
         if not self.country or _old_point != self.point:

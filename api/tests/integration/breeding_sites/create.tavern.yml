@@ -46,6 +46,9 @@ stages:
         location.point: !raw '{"latitude": 41.67419, "longitude": 2.79036}'
         location.type: 'current'
         note: "Test"
+        tags:
+          - tag1
+          - tag2
         package:
           name: testapp
           version: v123
@@ -79,6 +82,7 @@ stages:
           nuts_2: !anything
           nuts_3: !anything
         note: Test
+        tags: !anylist
         published: false
         site_type: storm_drain
         has_water: True

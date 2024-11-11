@@ -25,6 +25,7 @@ variables:
       nuts_2: !anything
       nuts_3: !anything
     note: !anything
+    tags: !anylist
     published: !anybool
     # Fields only for breeding sites
     photos: !anylist

@@ -33,7 +33,7 @@ drf-extra-fields==3.3.0
 drf-spectacular==0.27.1
 django-simple-history==3.0.0
 django-sslserver==0.22
-django-taggit==1.1.0
+django-taggit==2.1.0
 djangorestframework==3.10.3
 drf-api-logger==1.0.2
 et-xmlfile==1.0.1
@@ -113,6 +113,7 @@ text-unidecode==1.3
 tqdm==4.66.1
 traitlets==4.3.2
 tzlocal==1.1.1
+Unidecode==1.3.8
 uritemplate==3.0.1
 urllib3==1.21.1
 vine==1.1.3
