@@ -4,6 +4,7 @@ from django.utils.dateparse import parse_datetime
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
+from taggit.serializers import TagListSerializerField as OriginalTagListSerializerField
 
 class TimezoneAwareDateTimeField(serializers.DateTimeField):
     def to_internal_value(self, value):
@@ -56,3 +57,9 @@ class WritableSerializerMethodField(serializers.Field):
 
     def to_representation(self, value):
         return self.serializer_field.to_representation(value=value)
+
+
+class TagListSerializerField(OriginalTagListSerializerField, serializers.ListField):
+    # NOTE: the current django-taggit version uses CharField, which introduces an error 
+    # on POST, getting char instead of a list of element.
+    pass

@@ -180,7 +180,8 @@ class ReportAdmin(SimpleHistoryAdmin):
                     ("package_name", "package_version", "app_language"),
                     ("device_manufacturer", "device_model"),
                     ("os", "os_version", "os_language"),
-                    "note"
+                    "note",
+                    "tags"
                 ],
                 "classes": ["collapse",]
             }

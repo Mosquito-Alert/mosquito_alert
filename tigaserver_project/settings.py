@@ -375,6 +375,9 @@ AUTHENTICATION_BACKENDS = [
     'tigaserver_app.backends.AppUserBackend'
 ]
 
+#django taggit
+TAGGIT_CASE_INSENSITIVE=True
+
 try:
     from tigaserver_project.settings_local import *
 except ModuleNotFoundError:

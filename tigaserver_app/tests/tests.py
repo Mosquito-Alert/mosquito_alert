@@ -1369,3 +1369,44 @@ class PhotoModelTest(TestCase):
 
         # Step 3: Assert EXIF data is the same before and after processing
         assert original_exif == processed_exif, "EXIF metadata was not preserved after processing."
+
+class ReportModelTest(TestCase):
+    def test_tags_are_set_from_note_on_create(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=0,
+            current_location_lat=0,
+            note='this a dummy note #tag1, with differents #tag2 tags.'
+        )
+
+        report.refresh_from_db()
+
+        # Check if tags are correctly set by comparing tag names
+        tag_names = list(report.tags.values_list('name', flat=True))
+        self.assertEqual(sorted(tag_names), ['tag1', 'tag2'])
+
+    def test_tags_from_note_are_unique(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=0,
+            current_location_lat=0,
+            note='this is a repeated tag #tag1 #tag1 #tag2'
+        )
+
+        report.refresh_from_db()
+
+        # Check if tags are correctly set by comparing tag names
+        tag_names = list(report.tags.values_list('name', flat=True))
+        self.assertEqual(sorted(tag_names), ['tag1', 'tag2'])

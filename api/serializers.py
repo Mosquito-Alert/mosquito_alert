@@ -8,6 +8,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from drf_extra_fields.geo_fields import PointField
+from taggit.serializers import TaggitSerializer
 from timezone_field.rest_framework import TimeZoneSerializerField
 
 from tigaserver_app.models import (
@@ -27,6 +28,7 @@ from .fields import (
     TimezoneAwareDateTimeField,
     WritableSerializerMethodField,
     IntegerDefaultField,
+    TagListSerializerField
 )
 
 User = get_user_model()
@@ -286,7 +288,7 @@ class ReportPhotoSerializer(serializers.ModelSerializer):
         fields = ("uuid", "url", "file")
 
 
-class BaseReportSerializer(serializers.ModelSerializer):
+class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
     class DeviceSerializer(serializers.ModelSerializer):
         class Meta:
             model = Report
@@ -366,6 +368,7 @@ class BaseReportSerializer(serializers.ModelSerializer):
     location = ReportLocationSerializer(source="*")
     package = PackageSerializer(required=False, write_only=True, source="*")
     device = DeviceSerializer(required=False, write_only=True, source="*")
+    tags = TagListSerializerField(required=False, allow_empty=True)
 
     def get_created_at_local(self, obj) -> datetime:
         return obj.creation_time_local
@@ -384,6 +387,7 @@ class BaseReportSerializer(serializers.ModelSerializer):
             "updated_at",
             "location",
             "note",
+            "tags",
             "package",
             "device",
             "published",
