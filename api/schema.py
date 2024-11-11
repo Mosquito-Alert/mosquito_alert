@@ -74,10 +74,6 @@ class FieldPolymorphicSerializerExtension(PolymorphicSerializerExtension):
         }
 
 
-class ReportSerializerExtension(FieldPolymorphicSerializerExtension):
-    target_class = "api.serializers.ReportSerializer"
-
-
 class WritableSerializerMethodField(OpenApiSerializerFieldExtension):
     target_class = "api.fields.WritableSerializerMethodField"
 
