@@ -70,7 +70,8 @@ INSTALLED_APPS = (
     'django_filters',
     'corsheaders',
     'simple_history',
-    'imagekit'
+    'imagekit',
+    'django_hosts'
 )
 
 '''
@@ -85,6 +86,7 @@ MIDDLEWARE_CLASSES = (
 )
 '''
 MIDDLEWARE = [
+    'django_hosts.middleware.HostsRequestMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -93,6 +95,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_hosts.middleware.HostsResponseMiddleware'
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -233,13 +236,14 @@ SPECTACULAR_SETTINGS = {
     },
     'SERVERS': [
         {
-            'url': 'https://api.mosquitoalert.com/',
-            'description': 'Production API'
+            'url': 'https://api.mosquitoalert.com/v1/',
+            'description': 'Production API v1'
         },
     ],
     'TOS': 'https://www.mosquitoalert.com/en/user-agreement/',
     'OAS_VERSION': '3.0.3',
     'SCHEMA_PATH_PREFIX': '/api/v[0-9]',
+    'SCHEMA_PATH_PREFIX_TRIM': True,
     'SERVE_INCLUDE_SCHEMA': False,
     'ENUM_NAME_OVERRIDES': {
         'MosquitoTypeEnum': 'tigaserver_app.models.Report.MOSQUITO_SPECIE_CHOICES',
@@ -377,6 +381,10 @@ AUTHENTICATION_BACKENDS = [
 
 #django taggit
 TAGGIT_CASE_INSENSITIVE=True
+
+# For django-hsots
+ROOT_HOSTCONF = 'tigaserver_project.hosts'
+DEFAULT_HOST = 'webserver'
 
 try:
     from tigaserver_project.settings_local import *

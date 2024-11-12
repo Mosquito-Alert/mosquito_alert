@@ -27,7 +27,7 @@ admin.autodiscover()
 # Additionally, we include login URLs for the browseable API.
 
 urlpatterns = [
-    path('api/v1/', include(('api.urls', 'api'), namespace='v1')),
+    path('api/', include('tigaserver_project.api_urls')),
     path('api/', include(('tigaserver_app.urls', 'tigaserver_app'), namespace='legacy')),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api-docs/', TemplateView.as_view(template_name='swagger.html',extra_context={'schema_url':'openapi-schema'}), name='swagger-ui'),
