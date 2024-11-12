@@ -48,8 +48,8 @@ from .serializers import (
     BreedingSiteSerializer
 )
 from .serializers import (
-    BaseNotificationCreateSerializer,
-    DetailNotificationSerializer,
+    CreateNotificationSerializer,
+    NotificationSerializer,
     TopicNotificationCreateSerializer,
     UserNotificationCreateSerializer,
 )
@@ -88,7 +88,7 @@ class FixViewSet(CreateModelMixin, GenericViewSet):
             },
             resource_type_field_name="receiver_type",
         ),
-        responses=BaseNotificationCreateSerializer
+        responses=CreateNotificationSerializer
     )
 )
 class NotificationViewSet(
@@ -114,7 +114,7 @@ class NotificationViewSet(
         serializer.is_valid(raise_exception=True)
         notification = serializer.save()
 
-        response_serializer = BaseNotificationCreateSerializer(notification, context=self.get_serializer_context())
+        response_serializer = CreateNotificationSerializer(notification, context=self.get_serializer_context())
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -129,7 +129,7 @@ class NotificationViewSet(
                 raise ValidationError(
                     "Invalid 'receiver_type'. Must be 'user' or 'topic'"
                 )
-        return DetailNotificationSerializer
+        return NotificationSerializer
 
     def get_queryset(self):
         qs = super().get_queryset()

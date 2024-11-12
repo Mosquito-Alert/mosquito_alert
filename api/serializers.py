@@ -89,7 +89,7 @@ class FixSerializer(serializers.ModelSerializer):
 
 
 #### START NOTIFICATION SERIALIZERS ####
-class DetailNotificationSerializer(serializers.ModelSerializer):
+class NotificationSerializer(serializers.ModelSerializer):
 
     seen = WritableSerializerMethodField(
         field_class=serializers.BooleanField,
@@ -159,7 +159,7 @@ class DetailNotificationSerializer(serializers.ModelSerializer):
             "created_at": {"source": "date_comment"}
         }
 
-class BaseNotificationCreateSerializer(serializers.ModelSerializer):
+class CreateNotificationSerializer(serializers.ModelSerializer):
 
     title_en = serializers.CharField(write_only=True)
     body_en = serializers.CharField(write_only=True)
@@ -196,7 +196,7 @@ class BaseNotificationCreateSerializer(serializers.ModelSerializer):
             "expert"
         )
 
-class UserNotificationCreateSerializer(BaseNotificationCreateSerializer):
+class UserNotificationCreateSerializer(CreateNotificationSerializer):
     user_uuid = serializers.UUIDField(write_only=True)
 
     def create(self, validated_data):
@@ -209,13 +209,13 @@ class UserNotificationCreateSerializer(BaseNotificationCreateSerializer):
 
         return instance
 
-    class Meta(BaseNotificationCreateSerializer.Meta):
-        fields = BaseNotificationCreateSerializer.Meta.fields + (
+    class Meta(CreateNotificationSerializer.Meta):
+        fields = CreateNotificationSerializer.Meta.fields + (
             "user_uuid",
         )
 
 
-class TopicNotificationCreateSerializer(BaseNotificationCreateSerializer):
+class TopicNotificationCreateSerializer(CreateNotificationSerializer):
     topic_code = serializers.CharField(required=True, write_only=True)
 
     def validate(self, data):
@@ -238,8 +238,8 @@ class TopicNotificationCreateSerializer(BaseNotificationCreateSerializer):
 
         return instance
 
-    class Meta(BaseNotificationCreateSerializer.Meta):
-        fields = BaseNotificationCreateSerializer.Meta.fields + ("topic_code", )
+    class Meta(CreateNotificationSerializer.Meta):
+        fields = CreateNotificationSerializer.Meta.fields + ("topic_code", )
 
 #### END NOTIFICATION SERIALIZERS ####
 
@@ -256,7 +256,7 @@ class PartnerSerializer(serializers.ModelSerializer):
 
 #### START REPORT SERIALIZERS ####
 
-class ReportPhotoSerializer(serializers.ModelSerializer):
+class SimplePhotoSerializer(serializers.ModelSerializer):
     url = serializers.ImageField(
         source="photo", use_url=True, read_only=True,
         help_text="URL of the photo associated with the item. Note: This URL may change over time. Do not rely on it for permanent storage."
@@ -291,7 +291,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
                 "language": {"source": "app_language"},
             }
 
-    class ReportLocationSerializer(serializers.ModelSerializer):
+    class LocationSerializer(serializers.ModelSerializer):
         point = PointField(required=True, allow_null=True)
         timezone = TimeZoneSerializerChoiceField(read_only=True)
 
@@ -348,7 +348,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     received_at = serializers.DateTimeField(read_only=True, source="server_upload_time")
 
-    location = ReportLocationSerializer(source="*")
+    location = LocationSerializer(source="*")
     package = PackageSerializer(required=False, write_only=True, source="*")
     device = DeviceSerializer(required=False, write_only=True, source="*")
     tags = TagListSerializerField(required=False, allow_empty=True)
@@ -382,7 +382,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
         )
 
 class BaseReportWithPhotosSerializer(BaseReportSerializer):
-    photos = ReportPhotoSerializer(required=True, many=True)
+    photos = SimplePhotoSerializer(required=True, many=True)
 
     def create(self, validated_data):
         photos = validated_data.pop("photos", [])
