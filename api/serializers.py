@@ -266,6 +266,9 @@ class ReportPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
         fields = ("uuid", "url", "file")
+        read_only_fields = (
+            "uuid",
+        )
 
 
 class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
