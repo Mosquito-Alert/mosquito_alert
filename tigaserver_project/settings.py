@@ -256,7 +256,7 @@ SPECTACULAR_SETTINGS = {
         'x-logo': {
             'altText': 'Mosquito Alert Logo',
             'backgroundColor': "#fafafa",
-            'url': STATIC_URL + 'api/icons/og_logo.png'
+            'url': 'api/icons/og_logo.png'
         },
     },
     'REDOC_UI_SETTINGS': {
@@ -390,6 +390,10 @@ try:
     from tigaserver_project.settings_local import *
 except ModuleNotFoundError:
     pass
+
+# NOTE: Since STATIC_URL might change in settings_local
+# we are redifining all variables that depend on it.
+SPECTACULAR_SETTINGS['EXTENSIONS_INFO']['x-logo']['url'] = STATIC_URL + SPECTACULAR_SETTINGS['EXTENSIONS_INFO']['x-logo']['url']
 
 # Disable history reverting
 SIMPLE_HISTORY_REVERT_DISABLED=True
