@@ -215,9 +215,12 @@ function unlockui(){
 }
 
 function load_previews(){
-    $(".preview").each(function (index, element) {
-        return hoverPreview($(this)[0]);
-    });
+    var previews = [...document.querySelectorAll('.preview')].map((element, index) =>
+        {
+            return hoverPreview(element, {
+                source : element.href
+            });
+        });
 }
 
 function set_visibility_icons(){
