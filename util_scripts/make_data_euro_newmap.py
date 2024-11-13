@@ -12,16 +12,11 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
-from rest_framework.renderers import JSONRenderer
-import requests
-from requests.auth import HTTPBasicAuth
 import json
 from datetime import datetime
 import config
 import psycopg2
 from django.utils.dateparse import parse_datetime
-from tigaserver_app.views import all_reports_internal
-from tigaserver_app.views import get_cfa_reports, get_cfs_reports, non_visible_reports_internal, coverage_month_internal
 
 
 def update_bite_location(cursor):

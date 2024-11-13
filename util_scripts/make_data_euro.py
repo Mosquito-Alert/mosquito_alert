@@ -13,8 +13,6 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from rest_framework.renderers import JSONRenderer
-import requests
-from requests.auth import HTTPBasicAuth
 import json
 from datetime import datetime
 import config

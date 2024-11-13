@@ -19,8 +19,6 @@ from django.db.models import Count
 from tigaserver_app.models import Report
 from django.contrib.auth.models import User
 from tigacrafting.models import ExpertReportAnnotation
-from tigaserver_app.models import ReportResponse
-from django.db.models import Q
 
 
 def load_fast_track_ids():
