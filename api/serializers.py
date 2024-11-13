@@ -293,7 +293,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     class LocationSerializer(serializers.ModelSerializer):
         point = PointField(required=True, allow_null=True)
-        timezone = TimeZoneSerializerChoiceField(read_only=True)
+        timezone = TimeZoneSerializerChoiceField(read_only=True, allow_null=True)
 
         def to_internal_value(self, data):
             ret = super().to_internal_value(data)
