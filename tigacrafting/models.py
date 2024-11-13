@@ -221,10 +221,10 @@ class ExpertReportAnnotation(models.Model):
         ]
 
     def is_superexpert(self):
-        return 'superexpert' in self.user.groups.values_list('name', flat=True)
+        return self.user.groups.filter(name='superexpert').exist()
 
     def is_expert(self):
-        return 'expert' in self.user.groups.values_list('name', flat=True)
+        return self.user.groups.filter(name='expert').exist()
 
     @property
     def is_on_ns_executive_validation_period(self):
