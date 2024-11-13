@@ -60,11 +60,6 @@ from django.utils import timezone
 
 #-----------------------------------#
 
-from .messages import culex_msg_dict as culex
-from .messages import albopictus_msg_dict as albopictus
-from .messages import albopictus_probably_msg_dict as albopictus_probably
-from .messages import notsure_msg_dict as notsure
-from .messages import other_insect_msg_dict as other_insect
 from .messaging import send_finished_validation_notification
 
 logger_notification = logging.getLogger('mosquitoalert.notification')
@@ -1134,58 +1129,17 @@ def auto_annotate(
         category: Categories,
         validation_value: Optional[Literal[ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY, ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY]]
     ) -> ExpertReportAnnotation:
-
-    tiger_aegypti_cert_to_cat = {
-        "4": { "t": 2, "a": -2 }, #albopictus
-        "5": { "t": -2, "a": 2 }  #aegypti
-    }
-    try:
-        cats = tiger_aegypti_cert_to_cat[str(category.id)]
-    except KeyError:
-        cats = {"t": -2, "a": -2}
-    users = []
-    users.append(User.objects.get(username="innie"))
-    users.append(User.objects.get(username="minnie"))
-    users.append(User.objects.get(username="manny"))
-    super_reritja = User.objects.get(username="super_reritja")
-    photo = report.photos.first()
-    report_locale = report.app_language
-    if category.id == 4: #albopictus
-        if str(validation_value) == "2":
-            user_notes = albopictus.get(report_locale, albopictus['en'])
-        else:
-            user_notes = albopictus_probably.get(report_locale, albopictus_probably['en'])
-    elif category.id == 10: #culex
-        user_notes = culex.get(report_locale, culex['en'])
-    elif category.id == 9:  # not sure
-        user_notes = notsure.get(report_locale, notsure['en'])
-    else: #other_insect
-        user_notes = other_insect.get(report_locale, other_insect['en'])
-    for u in users:
-        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
-            new_annotation = ExpertReportAnnotation(report=report, user=u)
-            if u.username == 'innie':
-                new_annotation.edited_user_notes = user_notes
-                new_annotation.best_photo_id = photo.id
-                new_annotation.simplified_annotation = False
-            else:
-                new_annotation.simplified_annotation = True
-            new_annotation.tiger_certainty_notes = 'auto'
-            new_annotation.tiger_certainty_category = cats['t']
-            new_annotation.aegypti_certainty_category = cats['a']
-            new_annotation.status = 1
-            new_annotation.category = category
-            new_annotation.validation_complete = True
-            if category.specify_certainty_level:
-                new_annotation.validation_value = validation_value
-            new_annotation.save()
-    try:
-        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
-    except ExpertReportAnnotation.DoesNotExist:
-        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
-
-    roger_annotation.validation_complete = True
-    roger_annotation.save()
+    roger_annotation, _ = ExpertReportAnnotation.objects.get_or_create(
+        user=User.objects.get(username="super_reritja"),
+        report=report,
+        defaults={
+            'category': category,
+            'validation_value': int(validation_value) if validation_value else None,
+            'validation_complete': True,
+            'validation_complete_executive': True,
+            'best_photo': report.photos.first(),
+        }
+    )
 
     send_finished_validation_notification(roger_annotation)
 
