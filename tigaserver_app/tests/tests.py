@@ -616,7 +616,7 @@ class FixEndpointTestCase(APITestCase):
 
 class NotificationTestCase(APITestCase):
 
-    fixtures = ['reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
+    fixtures = ['auth_group.json', 'reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
 
     def setUp(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')

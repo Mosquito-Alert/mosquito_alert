@@ -19,7 +19,7 @@ VALIDATION_VALUE_CONFIRMED = 2
 
 
 class ScoringTestCase(TestCase):
-    fixtures = ['awardcategory.json', 'tigaprofile.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json']
+    fixtures = ['auth_group.json', 'awardcategory.json', 'tigaprofile.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json']
 
     def create_single_report(self, day, month, year, user, id, hour=None, minute=None, second=None, report_app_language='es'):
         utc = pytz.UTC
@@ -77,7 +77,7 @@ class ScoringTestCase(TestCase):
                                                      '00000000-0000-0000-0000-000000000002')
         report_in_season.save()
         reritja_user = User.objects.get(pk=25)
-        superexperts_group = Group.objects.create(name='superexpert')
+        superexperts_group = Group.objects.get(name='superexpert')
         superexperts_group.user_set.add(reritja_user)
         c_4 = Categories.objects.get(pk=4)  # Aedes albopictus
         anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, report=report_in_season, category=c_4,

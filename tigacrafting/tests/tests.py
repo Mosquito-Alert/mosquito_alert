@@ -65,16 +65,14 @@ def create_report(version_number, version_uuid, user, country):
 
 
 class NewReportAssignment(TestCase):
-    fixtures = ['europe_countries_new.json', 'reritja_like.json', 'granter_user.json', 'awardcategory.json', 'nutseurope.json']
+    fixtures = ['auth_group.json','europe_countries_new.json', 'reritja_like.json', 'granter_user.json', 'awardcategory.json', 'nutseurope.json']
 
     # just regular european users
     def create_regular_team(self):
         europe_group = Group.objects.create(name='eu_group_europe')
         europe_group.save()
-        experts = Group.objects.create(name='expert')
-        experts.save()
-        superexperts = Group.objects.create(name='superexpert')
-        superexperts.save()
+        experts = Group.objects.get(name='expert')
+        superexperts = Group.objects.get(name='superexpert')
 
         u2 = User.objects.create(pk=2)
         u2.username = 'expert_2_eu'
@@ -107,10 +105,8 @@ class NewReportAssignment(TestCase):
         europe_group.save()
         spain_group = Group.objects.create(name='eu_group_spain')
         spain_group.save()
-        experts = Group.objects.create(name='expert')
-        experts.save()
-        superexperts = Group.objects.create(name='superexpert')
-        superexperts.save()
+        experts = Group.objects.get(name='expert')
+        superexperts = Group.objects.get(name='superexpert')
 
         # National supervisor
         u1 = User.objects.create(pk=3)
@@ -148,10 +144,8 @@ class NewReportAssignment(TestCase):
         europe_group.save()
         spain_group = Group.objects.create(name='eu_group_spain')
         spain_group.save()
-        experts = Group.objects.create(name='expert')
-        experts.save()
-        superexperts = Group.objects.create(name='superexpert')
-        superexperts.save()
+        experts = Group.objects.get(name='expert')
+        superexperts = Group.objects.get(name='superexpert')
 
         # National supervisor
         u1 = User.objects.create(pk=3)
@@ -189,10 +183,8 @@ class NewReportAssignment(TestCase):
         europe_group.save()
         spain_group = Group.objects.create(name='eu_group_spain')
         spain_group.save()
-        experts = Group.objects.create(name='expert')
-        experts.save()
-        superexperts = Group.objects.create(name='superexpert')
-        superexperts.save()
+        experts = Group.objects.get(name='expert')
+        superexperts = Group.objects.get(name='superexpert')
 
         u1 = User.objects.create(pk=1)
         u1.username = 'expert_1_es'
@@ -557,8 +549,7 @@ class NewReportAssignment(TestCase):
     def create_small_region_team(self):
         spain_group = Group.objects.create(name='eu_group_spain')
         spain_group.save()
-        experts = Group.objects.create(name='expert')
-        experts.save()
+        experts = Group.objects.get(name='expert')
 
         extremadura = NutsEurope.objects.get(name_latn='Extremadura')
 
@@ -586,8 +577,7 @@ class NewReportAssignment(TestCase):
         spain_group = Group.objects.create(name='eu_group_spain')
         spain_group.save()
 
-        experts = Group.objects.create(name='expert')
-        experts.save()
+        experts = Group.objects.get(name='expert')
 
         catalonia = NutsEurope.objects.get(name_latn='Cataluña')
         andalucia = NutsEurope.objects.get(name_latn='Andalucía')
@@ -624,8 +614,7 @@ class NewReportAssignment(TestCase):
         europe_group.save()
         spain_group = Group.objects.create(name='eu_group_spain')
         spain_group.save()
-        experts = Group.objects.create(name='expert')
-        experts.save()
+        experts = Group.objects.get(name='expert')
 
         stlouis = EuropeCountry.objects.get(pk=53)
 
@@ -1121,10 +1110,9 @@ class NewReportAssignment(TestCase):
         self.create_report_pool()
         r = Report.objects.get(pk='1')
         reritja_user = User.objects.get(pk=25)
-        superexperts_group = Group.objects.create(name='superexpert')
+        superexperts_group = Group.objects.get(name='superexpert')
         superexperts_group.user_set.add(reritja_user)
         reritja_user.save()
-        superexperts_group.save()
 
         c_1 = Categories.objects.create(pk=1, name="Unclassified", specify_certainty_level=False)
         c_1.save()
