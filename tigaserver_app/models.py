@@ -29,7 +29,6 @@ from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
-from django.template.loader import render_to_string, TemplateDoesNotExist
 from django.urls import reverse
 from django.utils import translation, timezone
 from django.utils.deconstruct import deconstructible
@@ -42,13 +41,13 @@ from timezone_field import TimeZoneField
 from taggit.managers import TaggableManager
 from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
-from common.translation import get_translation_in, get_locale_for_native
 from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, STATUS_CATEGORIES
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
 from .fields import ProcessedImageField
 from .managers import ReportManager, PhotoManager, NotificationManager
+from .messaging import send_new_award_notification
 from .mixins import TimeZoneModelMixin
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
@@ -97,10 +96,6 @@ def grant_two_consecutive_days_sending( report, granter ):
 def grant_three_consecutive_days_sending(report, granter):
         c = AwardCategory.objects.get(category_label=FIDELITY_DAY_3)
         grant_award(report, report.creation_time, report.user, granter, c)
-
-def get_xp_value_of_category(category_label):
-    c = AwardCategory.objects.get(category_label=category_label)
-    return c.xp_points
 
 def grant_special_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_expert, special_award_label, special_award_xp):
     '''
@@ -1031,6 +1026,12 @@ class Report(TimeZoneModelMixin, models.Model):
     @cached_property
     def published(self) -> bool:
         return hasattr(self, 'map_aux_report')
+
+    @property
+    def public_map_url(self) -> Optional[str]:
+        if not self.published:
+            return None
+        return f"https://map.mosquitoalert.com/{self.pk}/en"
 
     @property
     def response_html(self) -> str:
@@ -2552,84 +2553,6 @@ def get_user_reports_count(user):
     return Report.objects.filter(user__pk__in=user_uuids).exclude(type=Report.TYPE_BITE).non_deleted().count()
 
 
-def package_number_allows_notification(report):
-    minimum_package_version = getattr(conf, 'MINIMUM_PACKAGE_VERSION_SCORING_NOTIFICATIONS', 32)
-    if report is not None:
-        if report.package_version is not None:
-            if report.package_version >= minimum_package_version:
-                return True
-    return False
-
-
-def issue_notification(report, reason_label, xp_amount, current_domain):
-    if getattr( conf, 'DISABLE_ACHIEVEMENT_NOTIFICATIONS', True) == False:
-        if package_number_allows_notification(report):
-            #table = {k: '&{};'.format(v) for k, v in html.entities.codepoint2name.items()}
-            notification_content = NotificationContent()
-            # context_es = {}
-            # context_ca = {}
-            context_en = {}
-            context_native = {}
-            # locale_for_en = get_locale_for_en(report)
-            locale_for_native = get_locale_for_native(report)
-            notification_content.native_locale = locale_for_native
-            super_movelab = User.objects.get(pk=24)
-            # notification_content.title_es = "¡Acabas de recibir una recompensa de puntos!"
-            # notification_content.title_ca = "Acabes de rebre una recompensa de punts!"
-            notification_content.title_en = get_translation_in("you_just_received_a_points_award",'en')
-            notification_content.title_native = get_translation_in("you_just_received_a_points_award", locale_for_native)
-            if report is not None:
-                if report.get_final_photo_url_for_notification():
-                    #context_es['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-                    context_en['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-                    context_native['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-                    #context_ca['picture_link'] = 'http://' + current_domain + report.get_final_photo_url_for_notification()
-                else:
-                    pic = report.get_first_visible_photo()
-                    if pic:
-                        pic_url = pic.get_medium_url()
-                        if pic_url is not None:
-                            # context_es['picture_link'] = 'http://' + current_domain + pic_url
-                            context_en['picture_link'] = 'http://' + current_domain + pic_url
-                            context_native['picture_link'] = 'http://' + current_domain + pic_url
-                            # context_ca['picture_link'] = 'http://' + current_domain + pic_url
-
-            # context_es['amount_awarded'] = xp_amount
-            context_en['amount_awarded'] = xp_amount
-            context_native['amount_awarded'] = xp_amount
-            # context_ca['amount_awarded'] = xp_amount
-
-            # context_es['reason_awarded'] = get_translation_in(reason_label, 'es')
-            context_en['reason_awarded'] = get_translation_in(reason_label, 'en')
-            context_native['reason_awarded'] = get_translation_in(reason_label, locale_for_native)
-            # context_ca['reason_awarded'] = get_translation_in(reason_label, 'ca')
-
-            #notification_content.body_html_es = render_to_string('tigaserver_app/award_notification_es.html', context_es)
-            #notification_content.body_html_ca = render_to_string('tigaserver_app/award_notification_ca.html', context_ca)
-            notification_content.body_html_en = render_to_string('tigaserver_app/award_notification_en.html', context_en)
-            try:
-                notification_content.body_html_native = render_to_string('tigaserver_app/award_notification_' + locale_for_native + '.html', context_native)
-            except TemplateDoesNotExist:
-                notification_content.body_html_native = render_to_string('tigaserver_app/award_notification_en.html',context_en)
-
-
-            #notification_content.body_html_es = notification_content.body_html_es.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
-            #notification_content.body_html_ca = notification_content.body_html_ca.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
-            notification_content.body_html_en = notification_content.body_html_en.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
-            notification_content.body_html_native = notification_content.body_html_native.encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
-
-
-            '''
-            if conf.DEBUG == True:
-                print(notification_content.body_html_es)
-                print(notification_content.body_html_ca)
-                print(notification_content.body_html_en)
-            '''
-            notification_content.save()
-            notification = Notification(report=report, expert=super_movelab, notification_content=notification_content)
-            notification.save()
-            notification.send_to_user(user=report.user)
-
 @receiver(post_save, sender=Report)
 def subscribe_user_to_country_topic(sender, instance, created, **kwargs):
     if not created:
@@ -2659,13 +2582,10 @@ def maybe_give_awards(sender, instance, created, **kwargs):
             n_reports = get_user_reports_count(instance.user)
             if n_reports == 10:
                 grant_10_reports_achievement(instance, super_movelab)
-                issue_notification(instance, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, conf.HOST_NAME)
             if n_reports == 20:
                 grant_20_reports_achievement(instance, super_movelab)
-                issue_notification(instance, ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, conf.HOST_NAME)
             if n_reports == 50:
                 grant_50_reports_achievement(instance, super_movelab)
-                issue_notification(instance, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP, conf.HOST_NAME)
             if instance.type == Report.TYPE_ADULT or instance.type == Report.TYPE_SITE:
                 # check award for first of season
                 current_year = instance.creation_time.year
@@ -2677,7 +2597,6 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                     # can be first of season?
                     if instance.creation_time.month >= conf.SEASON_START_MONTH and instance.creation_time.day >= conf.SEASON_START_DAY:
                         grant_first_of_season(instance, super_movelab)
-                        issue_notification(instance, START_OF_SEASON, get_xp_value_of_category(START_OF_SEASON), conf.HOST_NAME)
 
                 report_day = instance.creation_time.day
                 report_month = instance.creation_time.month
@@ -2700,7 +2619,6 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                         'report__creation_time')  # first is oldest
                 if awards.count() == 0: # not yet awarded
                     grant_first_of_day(instance, super_movelab)
-                    issue_notification(instance, DAILY_PARTICIPATION, get_xp_value_of_category(DAILY_PARTICIPATION), conf.HOST_NAME)
 
                 date_1_day_before_report = instance.creation_time - timedelta(days=1)
                 date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
@@ -2712,11 +2630,9 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                     #report before this one has not been awarded neither 2nd nor 3rd day streak
                     if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
                         grant_two_consecutive_days_sending(instance, super_movelab)
-                        issue_notification(instance, FIDELITY_DAY_2, get_xp_value_of_category(FIDELITY_DAY_2), conf.HOST_NAME)
                     else:
                         if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count() == 1:
                             grant_three_consecutive_days_sending(instance, super_movelab)
-                            issue_notification(instance, FIDELITY_DAY_3, get_xp_value_of_category(FIDELITY_DAY_3), conf.HOST_NAME)
         except User.DoesNotExist:
             pass
 
@@ -2924,6 +2840,7 @@ class Photo(models.Model):
                 except IOError:
                     return ""
             return self.photo.url.replace('tigapics/', 'tigapics_small/')
+        return self.photo.url
 
     def get_popup_url(self):
         if os.path.isfile(self.photo.path):
@@ -2935,6 +2852,7 @@ class Photo(models.Model):
                 except IOError:
                     return ""
             return self.photo.url.replace('tigapics/', 'tigapics_popups/')
+        return self.photo.url
 
     def small_image_(self):
         return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_small_url())
@@ -2959,6 +2877,7 @@ class Photo(models.Model):
                 except IOError:
                     return ""
             return self.photo.url.replace('tigapics/', 'tigapics_medium/')
+        return self.photo.url
 
     def medium_image_(self):
         return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
@@ -3132,7 +3051,12 @@ class NotificationContent(models.Model):
     def get_body(self, language_code: Optional[str] = None) -> str:
         body_html = self.get_body_html(language_code=language_code)
         soup = BeautifulSoup(body_html, 'html.parser')
-        return soup.get_text(separator='\n', strip=True)
+        body = soup.find('body')  # Try to find the <body> tag
+        if body:
+            return body.get_text(separator='\n', strip=True)  # If <body> is found, extract text
+        else:
+            # If no <body> tag is found, return text from the entire HTML document
+            return soup.get_text(separator='\n', strip=True)
 
 class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', null=True, blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.CASCADE, )
@@ -3309,14 +3233,20 @@ class AwardCategory(models.Model):
 class Award(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', default=None, blank=True, null=True, related_name='report_award', help_text='Report which the award refers to. Can be blank for arbitrary awards', on_delete=models.CASCADE, )
     date_given = models.DateTimeField(default=datetime.now, help_text='Date in which the award was given')
-    given_to = models.ForeignKey(TigaUser, blank=True, null=True, related_name="user_awards", help_text='User to which the notification was awarded. Usually this is the user that uploaded the report, but the report can be blank for special awards', on_delete=models.CASCADE, )
+    given_to = models.ForeignKey(TigaUser, related_name="user_awards", help_text='User to which the notification was awarded. Usually this is the user that uploaded the report, but the report can be blank for special awards', on_delete=models.CASCADE, )
     expert = models.ForeignKey(User, null=True, blank=True, related_name="expert_awards", help_text='Expert that gave the award', on_delete=models.SET_NULL, )
     category = models.ForeignKey(AwardCategory, blank=True, null=True, related_name="category_awards", help_text='Category to which the award belongs. Can be blank for arbitrary awards', on_delete=models.CASCADE, )
     special_award_text = models.TextField(default=None, blank=True, null=True, help_text='Custom text for custom award')
     special_award_xp = models.IntegerField(default=0, blank=True, null=True, help_text='Custom xp awarded')
 
     def save(self, *args, **kwargs) -> None:
+        is_adding = self._state.adding
+
         super().save(*args, **kwargs)
+
+        if is_adding:
+            send_new_award_notification(award=self)
+
         if self.given_to is not None:
             self.given_to.update_score()
 

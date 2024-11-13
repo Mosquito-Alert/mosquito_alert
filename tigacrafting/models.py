@@ -184,8 +184,12 @@ SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding s
 
 STATUS_CATEGORIES = ((1, 'public'), (0, 'flagged'), (-1, 'hidden'))
 
-VALIDATION_CATEGORIES = ((2, 'Definitely'), (1, 'Probably'))
 class ExpertReportAnnotation(models.Model):
+    VALIDATION_CATEGORY_DEFINITELY = 2
+    VALIDATION_CATEGORY_PROBABLY = 1
+
+    VALIDATION_CATEGORIES = ((VALIDATION_CATEGORY_DEFINITELY, 'Definitely'), (VALIDATION_CATEGORY_PROBABLY, 'Probably'))
+
     user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
     report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations', on_delete=models.CASCADE, )
     tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
@@ -382,7 +386,7 @@ class ExpertReportAnnotation(models.Model):
                 # This should not happen, but safety first
                 return "Unclassified"
             if self.category.specify_certainty_level:
-                return dict(list(VALIDATION_CATEGORIES))[self.validation_value] + " " + self.category.name
+                return dict(list(self.VALIDATION_CATEGORIES))[self.validation_value] + " " + self.category.name
             elif self.category.id == 8:
                 return self.complex.description
             elif self.category.id == 2:

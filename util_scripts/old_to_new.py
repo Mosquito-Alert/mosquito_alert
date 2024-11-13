@@ -72,19 +72,19 @@ for r in ExpertReportAnnotation.objects.filter(validation_complete=True):
                     r.save(skip_lastmodified=True)
         elif r.aegypti_certainty_category == 2 and r.tiger_certainty_category is None:
             r.category = c5
-            r.validation_value = 2
+            r.validation_value = ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY
             r.save(skip_lastmodified=True)
         elif r.aegypti_certainty_category == 1 and r.tiger_certainty_category is None:
             r.category = c5
-            r.validation_value = 1
+            r.validation_value = ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
             r.save(skip_lastmodified=True)
         elif r.tiger_certainty_category == 2 and  r.aegypti_certainty_category is None:
             r.category = c4
-            r.validation_value = 2
+            r.validation_value = ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY
             r.save(skip_lastmodified=True)
         elif r.tiger_certainty_category == 1 and r.aegypti_certainty_category is None:
             r.category = c4
-            r.validation_value = 1
+            r.validation_value = ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
             r.save(skip_lastmodified=True)
         elif r.tiger_certainty_category == 0 and r.aegypti_certainty_category == 0:
             r.category = c9
