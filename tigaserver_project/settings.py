@@ -187,13 +187,15 @@ LOCALE_PATHS = (
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-STATIC_URL = '/static/'
+# The static web URL
+STATIC_URL = 'https://webserver.mosquitoalert.com/static/'
 
 STATIC_ROOT = ''
 
 # STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
-MEDIA_URL = '/media/'
+# The static web URL
+MEDIA_URL = 'https://webserver.mosquitoalert.com/media/'
 
 MEDIA_ROOT = ''
 
@@ -358,8 +360,6 @@ SEASON_START_DAY = 23
 # This email shows up for contact in case of technical issues
 ENTOLAB_ADMIN = 'a.escobar@creaf.uab.cat'
 SHOW_USER_AGREEMENT_ENTOLAB = False
-
-HOST_NAME = 'webserver.mosquitoalert.com'
 
 SITE_ID = 1
 

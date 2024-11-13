@@ -33,7 +33,7 @@ def check_validations():
         wrong_annotations = [ r for r in base_qs ]
         send_email(wrong_annotations)
     for ano in base_qs:
-        ano.validation_value = 1
+        ano.validation_value = ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
         ano.save()
 
 

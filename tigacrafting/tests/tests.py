@@ -1,7 +1,6 @@
-from django.test import TestCase
-
 # Create your tests here.
 from django.test import TestCase
+from django.utils.translation import activate, deactivate, gettext as _
 from tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
 from tigacrafting.models import UserStat, ExpertReportAnnotation, Categories, Complex
 from tigacrafting.views import must_be_autoflagged
@@ -10,10 +9,9 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from django.core.exceptions import ObjectDoesNotExist
 from operator import attrgetter
-from tigacrafting.views import issue_notification
+from tigacrafting.messaging import send_finished_validation_notification
 import tigaserver_project.settings as conf
 from django.utils import timezone
-from common.translation import get_translation_in
 import pytz
 from tigacrafting.report_queues import *
 
@@ -1133,9 +1131,6 @@ class NewReportAssignment(TestCase):
         c_9 = Categories.objects.create(pk=9, name="Culex sp.", specify_certainty_level=True)
         c_9.save()
 
-        validation_value_possible = 1
-        validation_value_confirmed = 2
-
         for l in conf.LANGUAGES:
             locale = l[0]
             if locale != 'zh-cn':
@@ -1143,12 +1138,15 @@ class NewReportAssignment(TestCase):
                 r.save()
                 anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, report=r, category=c_3,
                                                                      validation_complete=True, revise=True,
-                                                                     validation_value=validation_value_confirmed)
+                                                                     validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
                 anno_reritja.save()
-                issue_notification(anno_reritja, "http://127.0.0.1:8000")
+                send_finished_validation_notification(anno_reritja)
                 nc = NotificationContent.objects.order_by('-id').first()
                 # native title should be in the same language as the report
-                self.assertEqual( get_translation_in("your_picture_has_been_validated_by_an_expert", locale), nc.title_native )
+                activate(locale)
+
+                self.assertEqual(_("your_picture_has_been_validated_by_an_expert"), nc.title_native )
+                deactivate()
                 # we do this to avoid triggering the unique(user_id,report_id) constraint
                 anno_reritja.delete()
 

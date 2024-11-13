@@ -19,8 +19,8 @@ from rest_framework.test import APIClient, APITestCase
 from django.urls import reverse
 import io
 from rest_framework import status
-from tigacrafting.views import issue_notification
-from tigacrafting.views import other_insect, albopictus, culex, notsure, albopictus_probably
+from tigacrafting.messaging import send_finished_validation_notification
+from tigacrafting.messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict, notsure_msg_dict
 from rest_framework.test import APIRequestFactory
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -666,9 +666,6 @@ class NotificationTestCase(APITestCase):
 
         self.categories = [c_1, c_2, c_3, c_4, c_5, c_6, c_7, c_8, c_9]
 
-        self.validation_value_possible = 1
-        self.validation_value_confirmed = 2
-
         t1 = NotificationTopic(topic_code="global", topic_description="This is the global topic")
         t1.save()
         self.global_topic = t1
@@ -681,11 +678,11 @@ class NotificationTestCase(APITestCase):
     def test_auto_notification_report_is_issued_and_readable_via_api(self):
         r = Report.objects.get(pk='1')
 
-        # this should cause issue_notification to be called
-        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, report=r, category=self.categories[2], validation_complete=True, revise=True, validation_value=self.validation_value_confirmed)
+        # this should cause send_finished_validation_notification to be called
+        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, report=r, category=self.categories[2], validation_complete=True, revise=True, validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         anno_reritja.save()
 
-        issue_notification(anno_reritja, "http://127.0.0.1:8000")
+        send_finished_validation_notification(anno_reritja)
 
         # there should be a new Notification
         self.assertEqual(Notification.objects.all().count(), 1)
@@ -703,14 +700,14 @@ class NotificationTestCase(APITestCase):
     def test_ack_notification(self):
         r = Report.objects.get(pk='1')
 
-        # this should cause issue_notification to be called
+        # this should cause send_finished_validation_notification to be called
         anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, report=r,
                                                              category=self.categories[2], validation_complete=True,
                                                              revise=True,
-                                                             validation_value=self.validation_value_confirmed)
+                                                             validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         anno_reritja.save()
 
-        issue_notification(anno_reritja, "http://127.0.0.1:8000")
+        send_finished_validation_notification(anno_reritja)
         self.client.force_authenticate(user=self.reritja_user)
         response = self.client.get('/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000')
         # response should be ok
@@ -1064,16 +1061,16 @@ class AnnotateCoarseTestCase(APITestCase):
             notif = Notification.objects.get(report=r)
             notif_content = notif.notification_content
             if c_id == 2: #other species
-                self.assertTrue( other_insect['es'] in notif_content.body_html_native, "Report classified as other species associated notification should contain other insect message, it does not" )
+                self.assertTrue( other_insect_msg_dict['es'] in notif_content.body_html_native, "Report classified as other species associated notification should contain other insect message, it does not" )
                 #'no pertenece a la familia de los Culícidos'
             elif c_id == 10: #culex sp.
-                self.assertTrue(culex['es'] in notif_content.body_html_native, "Report classified as culex associated notification should contain culex message, it does not")
+                self.assertTrue(culex_msg_dict['es'] in notif_content.body_html_native, "Report classified as culex associated notification should contain culex message, it does not")
                 #'no podemos asegurar totalmente que sea un Culex'
             elif c_id == 4: #aedes albopictus
-                self.assertTrue(albopictus_probably['es'] in notif_content.body_html_native, "Report classified as albopictus associated notification should contain probably albopictus message, it does not")
+                self.assertTrue(albopictus_probably_msg_dict['es'] in notif_content.body_html_native, "Report classified as albopictus associated notification should contain probably albopictus message, it does not")
                 #'Has conseguido que se pueda identificar perfectamente el mosquito tigre'
             else: #c_id == 9 not_sure
-                self.assertTrue(notsure['es'] in notif_content.body_html_native, "Report classified as not_sure associated notification should contain not_sure message, it does not")
+                self.assertTrue(notsure_msg_dict['es'] in notif_content.body_html_native, "Report classified as not_sure associated notification should contain not_sure message, it does not")
                 #'Con esta foto no podemos identificar ninguna especie'
             Notification.objects.filter(report=r).delete()
             ExpertReportAnnotation.objects.filter(report=r).delete()
@@ -1094,7 +1091,7 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertEqual(category_id, category.id, "Category id should be {0}, is {1}".format(category.id, category_id))
         notif = Notification.objects.get(report=r)
         notif_content = notif.notification_content
-        self.assertTrue(albopictus['es'] in notif_content.body_html_native,"Report classified as albopictus associated notification should contain definitely albopictus message, it does not")
+        self.assertTrue(albopictus_msg_dict['es'] in notif_content.body_html_native,"Report classified as albopictus associated notification should contain definitely albopictus message, it does not")
         Notification.objects.filter(report=r).delete()
         ExpertReportAnnotation.objects.filter(report=r).delete()
 

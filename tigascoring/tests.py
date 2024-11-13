@@ -1,6 +1,7 @@
 from django.test import TestCase
+from django.utils.translation import activate, deactivate, gettext as _
 from tigaserver_app.models import EuropeCountry, TigaUser, TigaProfile, Report, ExpertReportAnnotation, Award, AwardCategory, \
-    Notification, NotificationContent, get_translation_in, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
+    Notification, NotificationContent, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
     ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
 from tigacrafting.models import Categories
 from tigaserver_project import settings as conf
@@ -13,9 +14,6 @@ from django.template.loader import render_to_string
 import html.entities
 from django.contrib.auth.models import User, Group
 import string
-
-VALIDATION_VALUE_POSSIBLE = 1
-VALIDATION_VALUE_CONFIRMED = 2
 
 
 class ScoringTestCase(TestCase):
@@ -82,7 +80,7 @@ class ScoringTestCase(TestCase):
         c_4 = Categories.objects.get(pk=4)  # Aedes albopictus
         anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, report=report_in_season, category=c_4,
                                                              validation_complete=True, revise=True,
-                                                             validation_value=VALIDATION_VALUE_CONFIRMED)
+                                                             validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         retval = compute_user_score_in_xp_v2(user_id)
         # 6 points first of season
         # 6 points first of day
@@ -271,14 +269,18 @@ class ScoringTestCase(TestCase):
     def get_notification_body_en(category_label, xp):
         context_en = {}
         context_en['amount_awarded'] = xp
-        context_en['reason_awarded'] = get_translation_in(category_label, 'en')
+        activate('en')
+        context_en['reason_awarded'] = _(category_label)
+        deactivate()
         return render_to_string('tigaserver_app/award_notification_en.html', context_en).encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
 
     @staticmethod
     def get_notification_body_for_locale(category_label, xp, locale):
         context = {}
         context['amount_awarded'] = xp
-        context['reason_awarded'] = get_translation_in(category_label, locale)
+        activate(locale)
+        context['reason_awarded'] = _(category_label)
+        deactivate()
         return render_to_string('tigaserver_app/award_notification_' + locale + '.html', context).encode('ascii', 'xmlcharrefreplace').decode('UTF-8')
 
     def test_10_report_achievement(self):

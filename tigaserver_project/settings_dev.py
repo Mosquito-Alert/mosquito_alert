@@ -27,10 +27,12 @@ DISABLE_PUSH = True
 
 DISABLE_ACHIEVEMENT_NOTIFICATIONS = False
 
-HOST_NAME = "localhost"
 SITE_URL = "http://localhost:8000/static/tigapublic/"
 TIGASERVER_API = "http://localhost:8000/api/"
 
 SITE_ID = 1
 
 TIGASERVER_API = "development"
+
+MEDIA_URL = '/media/'
+STATIC_URL = '/static/'
