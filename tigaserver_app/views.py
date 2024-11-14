@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -25,7 +27,6 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance
-from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
@@ -643,70 +644,6 @@ def get_latest_reports_qs(reports, property_filter=None):
 # UNION
 # select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
 
-'''
-class CoarseFilterAdultReports(ReadOnlyModelViewSet):
-    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_adults, False)
-    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
-    #there seems to be some kind of caching issue .all() forces the queryset to refresh
-    queryset = unfiltered_clean_reports_query.all()
-    serializer_class = ReportIdSerializer
-
-class CoarseFilterSiteReports(ReadOnlyModelViewSet):
-    reports_imbornal = get_reports_imbornal()
-    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_sites, False)
-    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(hide=True)
-    # there seems to be some kind of caching issue .all() forces the queryset to refresh
-    queryset = unfiltered_clean_reports_query.all()
-    serializer_class = ReportIdSerializer
-'''
-
-'''
-class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
-
-    reports_imbornal = get_reports_imbornal()
-    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-
-    new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
-
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered,False)
-    unfiltered_clean_reports_id = [ report.version_UUID for report in unfiltered_clean_reports ]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
-
-    #new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
-    if conf.FAST_LOAD and conf.FAST_LOAD == True:
-        non_visible_report_id = []
-    else:
-        non_visible_report_id = [report.version_UUID for report in Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if not report.published]
-
-    hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
-    queryset = hidden_reports | unfiltered_clean_reports_query
-
-    serializer_class = MapDataSerializer
-    filter_class = MapDataFilter
-'''
-
-'''
-class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
-    if conf.FAST_LOAD and conf.FAST_LOAD == True:
-        non_visible_report_id = []
-    else:
-        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.published]
-    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
-    serializer_class = MapDataSerializer
-    filter_class = MapDataFilter
-    paginate_by = 10
-    paginate_by_param = 'page_size'
-    max_paginate_by = 100
-'''
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 100
@@ -1050,44 +987,17 @@ def string_par_to_bool(string_par):
             return True
     return False
 
-def get_cfa_reports():
-    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_adults, False)
-    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(
-        hide=True)
-    # there seems to be some kind of caching issue .all() forces the queryset to refresh
-    results = []
-    for report in unfiltered_clean_reports_query:
-        results.append({"version_UUID": report.version_UUID})
-    return results
-
 @api_view(['GET'])
 def force_refresh_cfa_reports(request):
     if request.method == 'GET':
-        results = get_cfa_reports()
-        return Response(results)
-
-def get_cfs_reports():
-    reports_imbornal = get_reports_imbornal()
-    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_sites, False)
-    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(
-        hide=True)
-    # there seems to be some kind of caching issue .all() forces the queryset to refresh
-    results = []
-    for report in unfiltered_clean_reports_query:
-        results.append({"version_UUID": report.version_UUID})
-    return results
+        results = Report.objects.in_coarse_filter().filter(type=Report.TYPE_ADULT).order_by('-server_upload_time')
+        return Response(list(results.values('version_UUID')))
 
 @api_view(['GET'])
 def force_refresh_cfs_reports(request):
     if request.method == 'GET':
-        results = get_cfs_reports()
-        return Response(results)
+        results = Report.objects.in_coarse_filter().filter(type=Report.TYPE_SITE).order_by('-server_upload_time')
+        return Response(list(results.values('version_UUID')))
 
 @api_view(['POST'])
 def msg_ios(request):
@@ -1922,39 +1832,27 @@ def all_reports_paginated(request):
         #return Response(serializer.data)
 
 # this function can be called by scripts and replicates the api behaviour, without calling API. Therefore, no timeouts
-def all_reports_internal(year):
-    queryset = Report.objects.published().exclude(type='mission').filter( package_filter )\
-        .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).filter(creation_time__year=year)
+def all_reports_internal(year: int):
+    queryset = Report.objects.published().filter( package_filter )\
+        .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).filter(server_upload_time__year=year)
     serializer = MapDataSerializer(queryset, many=True)
     return serializer.data
 
 @api_view(['GET'])
 def all_reports(request):
     if request.method == 'GET':
-        queryset = Report.objects.published().exclude(type='mission').filter( package_filter )\
+        queryset = Report.objects.published().filter( package_filter )\
             .exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
         f = MapDataFilter(request.GET, queryset=queryset)
         serializer = MapDataSerializer(f.qs, many=True)
         return Response(serializer.data)
 
 
-def non_visible_reports_internal(year):
-    reports_imbornal = get_reports_imbornal()
-    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
+def non_visible_reports_internal(year: int):
+    queryset = Report.objects.published(False)
 
-    new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
-
-    unfiltered_clean_reports_query = new_reports_unfiltered.non_deleted()
-
-    hidden_reports = Report.objects.published(False).exclude(type='mission').filter( package_filter )\
-        .exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
-
-    queryset = hidden_reports | unfiltered_clean_reports_query
     if year is not None:
-        queryset = queryset.filter(creation_time__year=year)
+        queryset = queryset.filter(server_upload_time__year=year)
 
     serializer = MapDataSerializer(queryset, many=True)
     return serializer.data
@@ -1965,22 +1863,9 @@ def non_visible_reports_paginated(request):
     if request.method == 'GET':
         year = request.query_params.get('year', None)
 
-        reports_imbornal = get_reports_imbornal()
-        new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-        new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-        new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-        new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-
-        new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
-
-        unfiltered_clean_reports_query = new_reports_unfiltered.non_deleted()
-
-        hidden_reports = Report.objects.published(False).exclude(type='mission').filter( package_filter )\
-            .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
-
-        queryset = hidden_reports | unfiltered_clean_reports_query
+        queryset = Report.objects.published(False)
         if year is not None:
-            queryset = queryset.filter(creation_time__year=year)
+            queryset = queryset.filter(server_upload_time__year=year)
 
         paginator = StandardResultsSetPagination()
         result_page = paginator.paginate_queryset(queryset, request)
@@ -1993,22 +1878,9 @@ def non_visible_reports(request):
     if request.method == 'GET':
         year = request.query_params.get('year', None)
 
-        reports_imbornal = get_reports_imbornal()
-        new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-        new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-        new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-        new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-
-        new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
-
-        unfiltered_clean_reports_query = new_reports_unfiltered.non_deleted()
-
-        hidden_reports = Report.objects.published(False).exclude(type='mission').filter( package_filter )\
-            .exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
-
-        queryset = hidden_reports | unfiltered_clean_reports_query
+        queryset = Report.objects.published(False)
         if year is not None:
-            queryset = queryset.filter(creation_time__year=year)
+            queryset = queryset.filter(server_upload_time__year=year)
 
         serializer = MapDataSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -2224,15 +2096,7 @@ def coarse_filter_reports(request):
         limit = request.query_params.get("limit", 300)
         offset = request.query_params.get("offset", 1)
 
-        new_reports_unfiltered_qs = Report.objects.filter(
-            creation_time__year__gt=2014,
-        ).exclude(
-            note__icontains='#345'
-        ).non_deleted().has_photos().annotate(
-            n_annotations=Count('expert_report_annotations')
-        ).filter(
-            n_annotations=0
-        ).order_by('-server_upload_time')
+        new_reports_unfiltered_qs = Report.objects.in_coarse_filter()
 
         if type == 'adult':
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
@@ -2241,8 +2105,7 @@ def coarse_filter_reports(request):
             )
         elif type == 'site':
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
-                type=Report.TYPE_SITE,
-                breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN
+                type=Report.TYPE_SITE
             )
 
         if visibility == 'visible':

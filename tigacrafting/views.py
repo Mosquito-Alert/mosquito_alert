@@ -222,16 +222,6 @@ def filter_tasks(tasks):
     tasks_filtered = filter(lambda x: not x.photo.report.deleted, tasks)
     return tasks_filtered
 
-
-def filter_reports(reports, sort=True):
-    reports_filtered = reports.non_deleted()
-
-    if sort:
-        reports_filtered = sorted(reports_filtered, key=attrgetter('n_annotations'), reverse=True)
-
-    return list(reports_filtered)
-
-
 def filter_spain_reports(reports, sort=True):
     if sort:
         reports_filtered = sorted( filter(lambda x: x.is_spain, reports), key=attrgetter('n_annotations'), reverse=True)
@@ -932,43 +922,6 @@ def expert_report_complete(request):
 
     return Response(context)
 
-def get_reports_unfiltered_sites_embornal(reports_imbornal):
-    return Report.objects.filter(
-        type=Report.TYPE_SITE,
-        breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN,
-        server_upload_time__year__gt=2014,
-    ).exclude(
-        note__icontains='#345'
-    ).has_photos().annotate(
-        n_annotations=Count('expert_report_annotations')
-    ).filter(
-        n_annotations=0
-    ).order_by('-server_upload_time')
-
-def get_reports_unfiltered_sites_other(reports_imbornal):
-    return Report.objects.filter(
-        type=Report.TYPE_SITE,
-        server_upload_time__year__gt=2014,
-    ).exclude(
-        models.Q(note__icontains='#345') |
-        models.Q(breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN)
-    ).has_photos().annotate(
-        n_annotations=Count('expert_report_annotations')
-    ).filter(
-        n_annotations=0
-    ).order_by('-server_upload_time')
-
-def get_reports_imbornal():
-    return Report.objects.filter(breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN)
-
-def get_reports_unfiltered_adults():
-    return Report.objects.filter(
-        type=Report.TYPE_ADULT,
-        identification_task__pk__in=models.Subquery(
-            IdentificationTask.objects.backlog().values('pk')
-        )
-    ).order_by('-server_upload_time')
-
 def auto_annotate_notsure(report: Report) -> None:
     ExpertReportAnnotation.create_auto_annotation(
         report=report,
@@ -1084,15 +1037,7 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
         if aithr == '':
             aithr = '0.75'
 
-    reports_qs = Report.objects.filter(
-        creation_time__year__gt=2014,
-    ).exclude(
-        note__icontains='#345'
-    ).non_deleted().has_photos().annotate(
-        n_annotations=Count('expert_report_annotations')
-    ).filter(
-        n_annotations=0
-    ).order_by('-server_upload_time')
+    reports_qs = Report.objects.in_coarse_filter().order_by('-server_upload_time')
 
     if type == 'adult':
         type_readable = "Adults"

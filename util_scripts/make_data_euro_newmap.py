@@ -349,64 +349,6 @@ filenames.append("/tmp/hidden_reports2025.json")
 
 
 
-# FILE WRITING
-
-'''
-cfa_data = get_cfa_reports()
-file = "/tmp/cfa.json"
-text_file = open(file, "w")
-text_file.write(json.dumps(cfa_data))
-text_file.close()
-print ('Coarse filter adults complete')
-
-cfs_data = get_cfs_reports()
-file = "/tmp/cfs.json"
-text_file = open(file, "w")
-text_file.write(json.dumps(cfs_data))
-text_file.close()
-print ('Coarse filter sites complete')
-
-
-# experimental paginated endpoint
-for year in range(2014, this_year + 1):
-    print (str(year))
-    d = all_reports_internal(year)
-    json_string = JSONRenderer().render(d)
-    data = json.loads(json_string)
-    accumulated_results = json.dumps(data)
-
-    file = static_path + "all_reports" + str(year) + ".json"
-    text_file = open(file, "w")
-    text_file.write(accumulated_results)
-    text_file.close()
-
-
-for year in range(2014, this_year + 1):
-    print (str(year))
-    d = non_visible_reports_internal(year)
-    json_string = JSONRenderer().render(d)
-    data = json.loads(json_string)
-    accumulated_results = json.dumps(data)
-
-    file = "/tmp/hidden_reports" + str(year) + ".json"
-    text_file = open(file, "w")
-    text_file.write(accumulated_results)
-    text_file.close()
-    print (str(year) + ' complete')
-
-print('Starting coverage month request')
-d = coverage_month_internal()
-json_string = JSONRenderer().render(d)
-data = json.loads(json_string)
-accumulated_results = json.dumps(data)
-text_file = open(static_path + "coverage_month_data.json", "w")
-text_file.write(accumulated_results)
-text_file.close()
-'''
-
-# END FILE WRITING
-
-
 #conn_string = "host='" + config.params['db_host'] + "' dbname='" + config.params['db_name'] + "' user='" + \
 #              config.params['db_user'] + "' password='" + config.params['db_password'] + "' port='" + \
 #              config.params['db_port'] + "'"
