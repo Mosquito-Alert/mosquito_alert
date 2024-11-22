@@ -2,7 +2,8 @@
 # !/usr/bin/env python
 import os, sys
 
-proj_path = "/home/webuser/webapps/tigaserver/"
+proj_path = os.path.abspath(os.path.dirname(__name__))
+#proj_path = "/home/webuser/webapps/tigaserver/"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings")
 sys.path.append(proj_path)
 
@@ -15,11 +16,13 @@ application = get_wsgi_application()
 from rest_framework.renderers import JSONRenderer
 import json
 from datetime import datetime
-import config
+#import config
+from tigaserver_project import settings
 import psycopg2
 from django.utils.dateparse import parse_datetime
 from tigaserver_app.views import all_reports_internal
 from tigaserver_app.views import get_cfa_reports, get_cfs_reports, non_visible_reports_internal, coverage_month_internal
+from urllib.parse import urlsplit
 
 
 def update_municipalities(cursor):
@@ -174,9 +177,12 @@ def get_storm_drain_status(report_responses):
 
 this_year = datetime.now().year
 
-headers = {'Authorization': config.params['auth_token']}
+# headers = {'Authorization': config.params['auth_token']}
 
-server_url = config.params['server_url']
+#server_url = config.params['server_url']
+#split_url = urlsplit(settings['STATIC_URL'])
+#server_url = split_url.scheme + "//" + split_url.netloc
+server_url = "https://webserver.mosquitoalert.com"
 
 filenames = []
 
@@ -271,7 +277,8 @@ text_file.close()
 #              config.params['db_port'] + "'"
 print ("Connecting to database")
 #conn = psycopg2.connect(conn_string)
-conn = psycopg2.connect(dbname=config.params['db_name'], user=config.params['db_user'], password=config.params['db_password'], port=config.params['db_port'], host=config.params['db_host'])
+#conn = psycopg2.connect(dbname=config.params['db_name'], user=config.params['db_user'], password=config.params['db_password'], port=config.params['db_port'], host=config.params['db_host'])
+conn = psycopg2.connect(dbname=settings.DATABASES["default"]["NAME"], user=settings.DATABASES["default"]["USER"], password=settings.DATABASES["default"]["PASSWORD"], port=settings.DATABASES["default"]["PORT"], host=settings.DATABASES["default"]["HOST"])
 cursor = conn.cursor()
 cursor.execute("DROP TABLE IF EXISTS map_aux_reports CASCADE;")
 cursor.execute("CREATE TABLE map_aux_reports (id serial primary key,version_uuid character varying(36) UNIQUE, " \
