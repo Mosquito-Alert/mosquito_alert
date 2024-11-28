@@ -7,10 +7,12 @@ import random
 from rest_framework.authtoken.models import Token
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.module_loading import import_string
 
+from languages_plus.utils import associate_countries_and_languages
 from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
 
 from api.tests.utils import grant_permission_to_user
@@ -19,13 +21,21 @@ from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo
 User = get_user_model()
 TEST_DATA_PATH = Path(Path(__file__).parent.absolute(), "test_data/")
 
+@pytest.fixture(scope='session')
+def django_db_setup(django_db_setup, django_db_blocker):
+    # NOTE: needed django_db_use_migrations to load fixtures applied in migrations
+    with django_db_blocker.unblock():
+        call_command('loaddata', 'languages_data.json', verbosity=0)
+        call_command('update_countries_plus', verbosity=0)
+        associate_countries_and_languages()
+
 @pytest.fixture
 def user_password():
     return "testpassword123_tmp"
 
 @pytest.fixture
 def app_user(user_password):
-    user = TigaUser.objects.create(device_token="123456789")
+    user = TigaUser.objects.create()
     user.set_password(user_password)
     user.save(0)
     return user

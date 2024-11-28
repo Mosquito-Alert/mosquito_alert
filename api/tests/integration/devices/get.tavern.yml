@@ -1,0 +1,67 @@
+---
+
+test_name: Only mobile app users can get
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - app_user_token
+    - token_user_can_view
+    - device
+
+stages:
+  - name: Anonymous users can not get
+    request:
+      url: "{api_live_url}/{endpoint}/{device.device_id}/"
+      method: GET
+    response:
+      status_code: 401
+  - name: Authorized user can not get
+    request:
+      url: "{api_live_url}/{endpoint}/{device.device_id}/"
+      method: GET
+      headers:
+        Authorization: "Token {token_user_can_view}"
+    response:
+      status_code: 401
+  - name: Authorized mobile user can get it device
+    request:
+      url: "{api_live_url}/{endpoint}/{device.device_id}/"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 200
+      json:
+        device_id: "{device.device_id}"
+        name: !anything
+        type: !anystr
+        manufacturer: !anything
+        model: !anystr
+        os:
+          name: !anystr
+          version: !anystr
+          # language_iso: !anything
+          # locale_code: !anything
+        mobile_app: !anything
+        user_uuid: "{app_user.pk}"
+        last_login: !anything
+        created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+  # Now simulate another user trying to access the first user data
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Get user by unauthorized user
+    request:
+      url: "{api_live_url}/{endpoint}/{device.device_id}/"
+      method: GET
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 404

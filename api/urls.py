@@ -17,7 +17,8 @@ from .views import (
     PhotoViewSet,
     ObservationViewSest,
     BiteViewSet,
-    BreedingSiteViewSet
+    BreedingSiteViewSet,
+    DeviceSerializerViewSet
 )
 
 
@@ -37,6 +38,7 @@ class CustomRedocView(SpectacularRedocView):
 router = routers.SimpleRouter()
 router.register(r"bites", BiteViewSet)
 router.register(r"breeding-sites", BreedingSiteViewSet)
+router.register(r"devices", DeviceSerializerViewSet)
 router.register(r"campaigns", CampaignsViewSet)
 router.register(r"countries", CountriesViewSet)
 router.register(r"fixes", FixViewSet)

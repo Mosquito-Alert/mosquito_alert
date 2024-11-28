@@ -3,7 +3,7 @@ import uuid
 
 # Create your tests here.
 from django.test import TestCase, override_settings
-from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse
+from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse, Device
 from django.core.management import call_command
 from PIL import Image, ExifTags
 from PIL.ExifTags import TAGS, GPSTAGS
@@ -99,10 +99,14 @@ class PictureTestCase(APITestCase):
 '''
 
 class ReportEndpointTestCase(APITestCase):
+    fixtures = ['languages_data.json',]
+
     def setUp(self):
         t = TigaUser.objects.create(user_UUID="00000000-0000-0000-0000-000000000000")
-        t.device_token = "caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT"
-        t.save()
+        Device.objects.create(
+            user=t,
+            registration_id="caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT"
+        )
 
         user = User.objects.create_user("dummy", "dummy@test.com", "dummypassword")
         self.token = Token.objects.create(user=user)
@@ -616,12 +620,15 @@ class FixEndpointTestCase(APITestCase):
 
 class NotificationTestCase(APITestCase):
 
-    fixtures = ['auth_group.json', 'reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
+    fixtures = ['languages_data.json', 'auth_group.json', 'reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
 
     def setUp(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
-        t.device_token = 'caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT'
-        t.save()
+        Device.objects.create(
+            user=t,
+            registration_id='caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT'
+        )
+
         self.regular_user = t
         non_naive_time = timezone.now()
         a = 1
@@ -988,7 +995,7 @@ class NotificationTestCase(APITestCase):
         self.client.logout()
 
 class AnnotateCoarseTestCase(APITestCase):
-    fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigaprofile.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json']
+    fixtures = ['languages_data.json', 'photos.json', 'categories.json','users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json']
     def test_annotate_taken(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
@@ -1213,6 +1220,8 @@ class AnnotateCoarseTestCase(APITestCase):
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class PhotoModelTest(TestCase):
+    fixtures = ['languages_data.json',]
+
     def setUp(self):
         self.report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -1368,6 +1377,8 @@ class PhotoModelTest(TestCase):
         assert original_exif == processed_exif, "EXIF metadata was not preserved after processing."
 
 class ReportModelTest(TestCase):
+    fixtures = ['languages_data.json',]
+
     def test_tags_are_set_from_note_on_create(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),

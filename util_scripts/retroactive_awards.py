@@ -16,24 +16,12 @@ application = get_wsgi_application()
 from tigaserver_app.models import grant_first_of_day, grant_first_of_season, grant_three_consecutive_days_sending, \
     grant_two_consecutive_days_sending, Award, grant_10_reports_achievement, grant_20_reports_achievement, \
     grant_50_reports_achievement
-from tigaserver_app.models import Report, TigaUser, TigaProfile
+from tigaserver_app.models import Report, TigaUser
 from django.contrib.auth.models import User
 import tigaserver_project.settings as conf
 from datetime import datetime, timedelta, date
 import pytz
 
-
-def get_uuid_replicas():
-    profiles = TigaProfile.objects.all()
-    exclude = []
-    for p in profiles:
-        if p.profile_devices.count() > 1:
-            i = 0
-            for d in p.profile_devices.all().order_by('user_UUID'):
-                if i > 0:
-                    exclude.append(d.user_UUID)
-                i+=1
-    return exclude
 
 def daterange(start_date, end_date):
     for n in range(int ((end_date - start_date).days)):
@@ -92,14 +80,7 @@ def can_be_first_of_season( report, year ):
 
 
 def get_all_user_reports(user):
-    user_uuids = []
-    if user.profile:
-        ps = user.profile.profile_devices.all()
-        for p in ps:
-            user_uuids.append(p.user_UUID)
-    else:
-        user_uuids.append(user.user_UUID)
-    return Report.objects.filter(user__user_UUID__in=user_uuids).exclude(type='bite')
+    return Report.objects.filter(user=user).exclude(type=Report.TYPE_BITE)
 
 
 def give_retroactive_awards_to_user(user, granter):
@@ -178,8 +159,7 @@ def test_awards_for_grandmaster():
 def crunch():
     #cleanup
     Award.objects.all().delete()
-    uuid_replicas = get_uuid_replicas()
-    users = TigaUser.objects.exclude(score_v2=0).exclude(user_UUID__in=uuid_replicas)
+    users = TigaUser.objects.exclude(score_v2=0)
     granter = User.objects.get(pk=24) #super_movelab
 
     for user in users:

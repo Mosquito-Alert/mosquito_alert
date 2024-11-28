@@ -1,4 +1,4 @@
-test_name: Make sure users can update device_token field
+test_name: Make sure users can not update
 
 includes:
   - !include schema.yml
@@ -6,6 +6,9 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user
+    - app_user_token
+    - token_user_can_change
   - parametrize:
       key: method
       vals:
@@ -13,27 +16,25 @@ marks:
         - PATCH
 
 stages:
-  - id: signup
-    type: ref
-  - id: login
-    type: ref
-  - name: Update device_token
+  - name: Anonymous can not update
     request:
-      url: "{api_live_url}/{endpoint}/{user_uuid}/"
-      json:
-        device_token: "987654321"
-        language_iso: "es"
-      headers:
-        Authorization: "Bearer {token}"
-      method: "{method}"
-    response:
-      status_code: 200
-  - name: Update device_token is not allowed for unauthorized
-    request:
-      url: "{api_live_url}/{endpoint}/{user_uuid}/"
-      json:
-        device_token: "987654321"
-        language_iso: "es"
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: "{method}"
     response:
       status_code: 403
+  - name: Auth user can not update
+    request:
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
+      method: "{method}"
+      headers:
+        Authorization: 'Token {token_user_can_change}'
+    response:
+      status_code: 405
+  - name: Mobile app user can not update
+    request:
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
+      method: "{method}"
+      headers:
+        Authorization: 'Bearer {app_user_token}'
+    response:
+      status_code: 405

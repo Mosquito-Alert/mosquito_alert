@@ -1,0 +1,83 @@
+---
+
+test_name: No mobile app users can not create
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - token_user_can_add
+
+stages:
+  - name: Non auth user can not create
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+    response:
+      status_code: 401
+  - name: Auth user can not create
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      headers:
+        Authorization: "Token {token_user_can_add:s}"
+    response:
+      status_code: 401
+
+---
+
+test_name: Mobile app users can create
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - app_user_token
+
+stages:
+  - name: Mobile user can create.
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {app_user_token:s}"
+      json:
+        device_id: unique_device_id
+        name: test_name
+        fcm_token: unique_fcm_token
+        type: android
+        manufacturer: test_manufacturer
+        model: test_model
+        os:
+          name: test_os
+          version: test_version
+          language_iso: en
+          locale_code: en-US
+        mobile_app:
+          package_name: test_package_name
+          package_version: test_package_version
+    response:
+      status_code: 201
+      json:
+        device_id: "unique_device_id"
+        name: "test_name"
+        type: "android"
+        manufacturer: "test_manufacturer"
+        model: "test_model"
+        os:
+          name: "test_os"
+          version: "test_version"
+          language_iso: "en"
+          locale_code: "en-US"
+        mobile_app:
+          package_name: "test_package_name"
+          package_version: "test_package_version"
+        user_uuid: "{app_user.pk}"
+        last_login: !anything
+        created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z

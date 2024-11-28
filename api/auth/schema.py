@@ -14,6 +14,7 @@ class AppUserTokenObtainPairSerializer(TokenObtainPairSerializerExtension):
         Fixed = inline_serializer('Fixed', fields={
             'uuid': serializers.UUIDField(write_only=True),
             'password': serializers.CharField(write_only=True),
+            'device_id': serializers.CharField(write_only=True, required=False),
             'access': serializers.CharField(read_only=True),
             'refresh': serializers.CharField(read_only=True),
         })

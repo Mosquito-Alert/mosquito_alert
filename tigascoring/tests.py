@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.utils.translation import activate, deactivate, gettext as _
-from tigaserver_app.models import EuropeCountry, TigaUser, TigaProfile, Report, ExpertReportAnnotation, Award, AwardCategory, \
+from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Award, AwardCategory, \
     Notification, NotificationContent, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
     ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
 from tigacrafting.models import Categories
@@ -17,7 +17,7 @@ import string
 
 
 class ScoringTestCase(TestCase):
-    fixtures = ['auth_group.json', 'awardcategory.json', 'tigaprofile.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json']
+    fixtures = ['languages_data.json', 'auth_group.json', 'awardcategory.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json']
 
     def create_single_report(self, day, month, year, user, id, hour=None, minute=None, second=None, report_app_language='es'):
         utc = pytz.UTC
@@ -431,95 +431,3 @@ class ScoringTestCase(TestCase):
                          1)  # Only one award given for two qualifyable reports of the same profile
         a = Award.objects.filter(category__id=1).first()
         self.assertEqual(a.given_to, user_1)  # Should have been given to user_1
-
-    def test_10_day_achievement_across_profiles(self):
-        user_id_1 = '00000000-0000-0000-0000-000000000002'
-        user_id_2 = '00000000-0000-0000-0000-000000000003'
-
-        user_1 = TigaUser.objects.get(pk=user_id_1)
-        user_2 = TigaUser.objects.get(pk=user_id_2)
-
-        month_1 = 1
-        year = 2020
-
-        for i in range(1, 11, 1):
-            if i <= 4:
-                r = self.create_single_report(i, month_1, year, user_1, '00000000-0000-0000-0000-0000000000' + str(i))
-            else:
-                r = self.create_single_report(i, month_1, year, user_2, '00000000-0000-0000-0000-0000000000' + str(i))
-            r.save()
-        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(),1)  # Ten report achievement granted
-        a = Award.objects.get(special_award_text='achievement_10_reports')
-        self.assertEqual(a.given_to, user_2)  # Should have been given to user_2
-        # emulate notifications
-        if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
-            notification_body = self.get_notification_body_en(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body).count(),1)
-
-    def test_20_report_achievement_across_profiles(self):
-        user_id_1 = '00000000-0000-0000-0000-000000000002'
-        user_id_2 = '00000000-0000-0000-0000-000000000003'
-
-        user_1 = TigaUser.objects.get(pk=user_id_1)
-        user_2 = TigaUser.objects.get(pk=user_id_2)
-
-        month_1 = 1
-        year = 2020
-
-        for i in range(1,21,1):
-            if i <= 12:
-                r = self.create_single_report(i, month_1, year, user_1, '00000000-0000-0000-0000-0000000000' + str(i))
-            else:
-                r = self.create_single_report(i, month_1, year, user_2, '00000000-0000-0000-0000-0000000000' + str(i))
-            r.save()
-        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
-        self.assertEqual(Award.objects.filter(special_award_text='achievement_20_reports').count(), 1)  # Ten report achievement granted
-        a = Award.objects.get(special_award_text='achievement_10_reports')
-        self.assertEqual(a.given_to, user_1)  # Should have been given to user_1
-        a = Award.objects.get(special_award_text='achievement_20_reports')
-        self.assertEqual(a.given_to, user_2)  # Should have been given to user_2
-
-        # emulate notifications
-        if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
-            notification_body_10 = self.get_notification_body_en(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
-            notification_body_20 = self.get_notification_body_en(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_10).count(), 1)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_20).count(), 1)
-
-    def test_50_report_achievement_across_profiles(self):
-        user_id_1 = '00000000-0000-0000-0000-000000000002'
-        user_id_2 = '00000000-0000-0000-0000-000000000003'
-
-        user_1 = TigaUser.objects.get(pk=user_id_1)
-        user_2 = TigaUser.objects.get(pk=user_id_2)
-
-        year = 2020
-
-        global_report_counter = 1
-        for i in range(1, 3, 1):
-            for j in range(1, 27 , 1):
-                if global_report_counter < 30:
-                    r = self.create_single_report(j, i, year, user_1, '00000000-0000-0000-0000-000000000' + str(j) + str(i))
-                else:
-                    r = self.create_single_report(j, i, year, user_2, '00000000-0000-0000-0000-000000000' + str(j) + str(i))
-                r.save()
-                global_report_counter += 1
-        self.assertEqual(Award.objects.filter(special_award_text='achievement_10_reports').count(), 1)  # Ten report achievement granted
-        self.assertEqual(Award.objects.filter(special_award_text='achievement_20_reports').count(), 1)  # Ten report achievement granted
-        self.assertEqual(Award.objects.filter(special_award_text='achievement_50_reports').count(), 1)  # Ten report achievement granted
-
-        a = Award.objects.get(special_award_text='achievement_10_reports')
-        self.assertEqual(a.given_to, user_1)  # Should have been given to user_1
-        a = Award.objects.get(special_award_text='achievement_20_reports')
-        self.assertEqual(a.given_to, user_1)  # Should have been given to user_1
-        a = Award.objects.get(special_award_text='achievement_50_reports')
-        self.assertEqual(a.given_to, user_2)  # Should have been given to user_2
-
-        # emulate notifications
-        if conf.DISABLE_ACHIEVEMENT_NOTIFICATIONS == False:
-            notification_body_10 = self.get_notification_body_en(ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP)
-            notification_body_20 = self.get_notification_body_en(ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
-            notification_body_50 = self.get_notification_body_en(ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_10).count(), 1)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_20).count(), 1)
-            self.assertEqual(Notification.objects.filter(notification_content__body_html_en=notification_body_50).count(), 1)

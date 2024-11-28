@@ -1,0 +1,36 @@
+test_name: Delete is disabled
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - app_user_token
+    - device
+    - token_user_can_add
+
+stages:
+  - name: Delete is disabled for anonymous users
+    request:
+      url: "{api_live_url}/{endpoint}/{device.device_id}/"
+      method: "DELETE"
+    response:
+      status_code: 401
+  - name: Auth user can not create
+    request:
+      url: "{api_live_url}/{endpoint}/{device.device_id}/"
+      method: "POST"
+      headers:
+        Authorization: "Token {token_user_can_add:s}"
+    response:
+      status_code: 401
+  - name: Delete is disabled for mobile users even if they own the device
+    request:
+      url: "{api_live_url}/{endpoint}/{device.device_id}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "DELETE"
+    response:
+      status_code: 405

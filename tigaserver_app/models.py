@@ -3,10 +3,8 @@ from collections import Counter
 from datetime import datetime, timedelta
 import json
 import re
-import firebase_admin.messaging
-import firebase_admin._messaging_utils
 from firebase_admin.exceptions import FirebaseError
-from firebase_admin.messaging import Message, Notification as FirebaseNotification, AndroidConfig, AndroidNotification
+from firebase_admin.messaging import Message, Notification as FirebaseNotification, AndroidConfig, AndroidNotification, SendResponse, BatchResponse
 import logging
 from math import floor
 from numpyencoder import NumpyEncoder
@@ -14,10 +12,9 @@ from PIL import Image
 import pydenticon
 import os
 from slugify import slugify
-from typing import Optional
+from typing import Optional, Union
 import uuid
 
-from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import User, AbstractBaseUser, AnonymousUser
 from django.contrib.gis.db import models
@@ -35,7 +32,9 @@ from django.utils.deconstruct import deconstructible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
+from fcm_django.models import AbstractFCMDevice
 from imagekit.processors import ResizeToFit
+from languages_plus.models import Language, CultureCode
 from simple_history.models import HistoricalRecords
 from timezone_field import TimeZoneField
 from taggit.managers import TaggableManager
@@ -190,10 +189,6 @@ def get_translated_value_name(locale, untranslated_value) -> str:
     translation.deactivate()
     return str(retval)
 
-class TigaProfile(models.Model):
-    firebase_token = models.TextField('Firebase token associated with the profile', null=True, blank=True,help_text='Firebase token supplied by firebase, suuplied by an registration service (Google, Facebook,etc)', unique=True)
-    score = models.IntegerField(help_text='Score associated with profile. This is the score associated with the account', default=0)
-
 
 class RankingData(models.Model):
     user_uuid = models.CharField(max_length=36, primary_key=True, help_text='User identifier uuid')
@@ -215,7 +210,6 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
                                                                       'registered and consented to sharing '
                                                                  'data. Automatically set by '
                                                                  'server when user uploads registration.')
-    device_token = models.TextField(help_text='Device token, used in messaging. Must be supplied by the client', null=True, blank=True)
 
     score = models.IntegerField(help_text='Score associated with user. This field is used only if the user does not have a profile', default=0)
 
@@ -227,28 +221,36 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
 
     score_v2_site = models.IntegerField(help_text='Site reports XP Score.',default=0)
 
-    profile = models.ForeignKey(TigaProfile, related_name='profile_devices', null=True, blank=True, on_delete=models.SET_NULL, )
-
     # NOTE using NumpyEncoder since compute_user_score_in_xp_v2 function get result from pandas dataframe
     # and some integer are np.int64, which can not be encoded with the regular json library setup.
     score_v2_struct = JSONField(encoder=NumpyEncoder, help_text="Full cached score data", null=True, blank=True)
 
     last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
 
-    language_iso2 = models.CharField(
-        max_length=2,
-        default='en',
-        help_text="Language setting of app. 2-digit ISO-639-1 language code.",
+    language = models.ForeignKey(
+        Language,
+        on_delete=models.PROTECT,
+        limit_choices_to={'iso_639_1__in': [code for code, _ in settings.LANGUAGES]},
     )
+    @property
+    def language_iso2(self):
+        return self.language.iso
+
+    @property
+    def last_device(self) -> Optional['Device']:
+        try:
+            return self.devices.latest('date_created')
+        except Device.DoesNotExist:
+            return
+
+    @property
+    def device_token(self) -> Optional[str]:
+        last_device = self.last_device
+        if last_device:
+            return last_device.registration_id
 
     def __unicode__(self):
         return self.user_UUID
-
-    def number_of_reports_uploaded(self):
-        return Report.objects.filter(user=self).count()
-
-    def is_ios(self):
-        return self.user_UUID.isupper()
 
     def get_identicon(self):
         file_path = settings.MEDIA_ROOT + "/identicons/" + self.user_UUID + ".png"
@@ -288,11 +290,14 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
         if commit:
             self.save()
 
-    n_reports = property(number_of_reports_uploaded)
-    ios_user = property(is_ios)
-
     def save(self, *args, **kwargs):
-        if self.device_token:
+
+        try:
+            self.language
+        except TigaUser.language.RelatedObjectDoesNotExist:
+            self.language = Language.objects.get(iso_639_1='en')
+
+        if self._state.adding:
             # Make sure user is subscribed to global topic
             try:
                 global_topic = NotificationTopic.objects.get(topic_code='global')
@@ -314,16 +319,160 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
                     user=self,
                     topic=language_topic
                 )
-        else:
-            if hasattr(self, 'user_subscriptions'):
-                for subscription in self.user_subscriptions.all():
-                    subscription.delete()
+
         return super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "user"
         verbose_name_plural = "users"
 
+
+class MobileApp(models.Model):
+    package_name = models.CharField(max_length=128)
+    package_version = models.CharField(max_length=32)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['package_name', 'package_version'],
+                name='unique_name_version',
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.package_name} ({self.package_version})'
+
+
+class Device(AbstractFCMDevice):
+    # NOTE: is ever work on a logout method, set active to False on logout.
+    # Override user to make FK to TigaUser instead of User
+    user = models.ForeignKey(
+        TigaUser,
+        on_delete=models.CASCADE,
+        related_name="devices",
+        related_query_name=_("fcmdevice"),
+    )
+
+    mobile_app = models.ForeignKey(MobileApp, null=True, on_delete=models.PROTECT)
+
+    registration_id = models.TextField(null=True, verbose_name='Registration token')
+
+    manufacturer = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True,
+        help_text="The manufacturer of the device."
+    )
+    model = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True,
+        help_text="The end-user-visible name for the end product."
+    )
+    type = models.CharField(choices=AbstractFCMDevice.DEVICE_TYPES, max_length=10, null=True)
+    os_name = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+        help_text="Operating system of device from which this report was submitted.",
+    )
+    os_version = models.CharField(
+        max_length=16,
+        null=True,
+        blank=True,
+        help_text="Operating system version of device from which this report was submitted.",
+    )
+    os_language = models.ForeignKey(Language, null=True, on_delete=models.PROTECT)
+    os_locale = models.ForeignKey(CultureCode, null=True, on_delete=models.PROTECT)
+
+    updated_at = models.DateTimeField(auto_now=True)
+    last_login = models.DateTimeField(null=True)
+
+    history = HistoricalRecords(
+        # Exclude field the user can not modify or that are not relevant.
+        excluded_fields=[
+            'name',
+            'date_created',
+            'updated_at',
+            'last_login',
+            'user'
+        ],
+        cascade_delete_history=True,
+        user_model=TigaUser
+    )
+
+    __history_user = None
+    @property
+    def _history_user(self):
+        return self.__history_user or self.user
+
+    @_history_user.setter
+    def _history_user(self, value):
+        # TODO: if value is uuid, try getting the TigaUser.
+        if isinstance(value, TigaUser):
+            self.__history_user = value
+
+    def __get_changed_fields(self, update_fields=None):
+        if not self.pk:
+            return []  # New instance, no changes
+
+        original = self.__class__.objects.get(pk=self.pk)
+        changed_fields = []
+        for field in self._meta.fields:
+            field_name = field.name
+            if update_fields and field not in update_fields:
+                continue
+            if getattr(self, field_name) != getattr(original, field_name):
+                changed_fields.append(field_name)
+
+        return changed_fields
+
+    def save(self, *args, **kwargs):
+        if not self.registration_id:
+            self.active = False
+
+        if self.pk:
+            _tracked_fields = [field.name for field in self.__class__.history.model._meta.get_fields()]
+            _field_with_changes = self.__get_changed_fields(update_fields=kwargs.get('update_fields'))
+            if not any(element in _tracked_fields for element in _field_with_changes):
+                # Only will create history if at least one tracked field has changed.
+                self.skip_history_when_saving = True
+
+        try:
+            ret = super().save(*args, **kwargs)
+        finally:
+            if hasattr(self, 'skip_history_when_saving'):
+                del self.skip_history_when_saving
+
+        return ret
+
+    def __str__(self):
+        # NOTE: this is an override from the inherited class.
+        # Never use attributes present in the history.excluded_fields.
+        return str(self.pk)
+
+    class Meta(AbstractFCMDevice.Meta):
+        abstract = False
+        verbose_name = _("Device")
+        verbose_name_plural = _("Devices")
+        indexes = [
+            models.Index(fields=['device_id', 'user']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'device_id'],
+                name='unique_user_device_id',
+                condition=models.Q(user__isnull=False, device_id__isnull=False) & ~models.Q(device_id='')
+            ),
+            models.UniqueConstraint(
+                fields=['user', 'registration_id'],
+                name='unique_user_registration_id',
+                condition=models.Q(user__isnull=False, registration_id__isnull=False) & ~models.Q(registration_id='')
+            )
+        ]
 
 class Mission(models.Model):
     id = models.AutoField(primary_key=True, help_text='Unique identifier of the mission. Automatically generated by ' \
@@ -694,6 +843,13 @@ class Report(TimeZoneModelMixin, models.Model):
         null=True, blank=True, help_text="Precalculated value of show_on_map_function"
     )
 
+    mobile_app = models.ForeignKey(
+        MobileApp,
+        null=True,
+        on_delete=models.PROTECT,
+        related_name='reports',
+        help_text='The mobile app version from where the report was sent.'
+    )
     package_name = models.CharField(
         max_length=400,
         null=True,
@@ -708,6 +864,8 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text="Version number of tigatrapp package from which this report was submitted.",
     )
 
+    # NOTE: if every use django-simplehistory >= 3.1.0, consider using HistoricForeignKey
+    device = models.ForeignKey(Device, null=True, on_delete=models.PROTECT, related_name="created_reports", help_text='The device from where the report was sent.')
     device_manufacturer = models.CharField(
         max_length=200,
         null=True,
@@ -1651,10 +1809,87 @@ class Report(TimeZoneModelMixin, models.Model):
         self.point = self._get_point()
         self.timezone = self.get_timezone_from_coordinates()
 
+        if self.app_language:
+            try:
+                _app_language = Language.objects.get_by_code(code=self.app_language)
+                self.user.language = _app_language
+                self.user.save(update_fields=['language'])
+            except Language.DoesNotExist:
+                pass
+
+        # Bug in indonesian language
+        self.os_language = 'in' if self.os_language == 'id' else self.os_language
+
+        _language = None
+        _culture_code = None
+        if self.os_language:
+            try:
+                _language = Language.objects.get_by_code(code=self.os_language)
+            except Language.DoesNotExist:
+                pass
+
+            try:
+                _culture_code = CultureCode.objects.get(code=self.os_language)
+            except CultureCode.DoesNotExist:
+                pass
+
         if self._state.adding:
             if self.note and not self.tags.exists():
                 # Init tags from note hashtags
                 self.tags.set(set(re.findall(r'(?<=#)\w+', self.note)))
+
+            # Set mobile_app
+            if self.package_name and self.package_version:
+                self.mobile_app, _ = MobileApp.objects.get_or_create(
+                    package_name=self.package_name,
+                    package_version=self.package_version
+                )
+            # Update device according to the information provided in the report.
+            try:
+                # Try to update the device created in /token/ legacy api
+                # which creates a device with empty fields, except for registration_id.
+                device = Device.objects.filter(
+                    user=self.user,
+                    model__isnull=True,
+                    date_created__lte=self.server_upload_time or timezone.now()
+                ).latest('date_created')
+                device.type={
+                    'Android': 'android',
+                    'iPadOS': 'ios',
+                    'iOS': 'ios',
+                    'iPhone OS': 'ios'
+                }.get(self.os)
+                device.manufacturer = self.device_manufacturer
+                device.model = self.device_model
+                device.os_name = self.os
+                device.os_version = self.os_version
+                device.os_locale = _culture_code
+                device.os_language = _language
+                device.mobile_app = self.mobile_app
+                device.save()
+            except Device.DoesNotExist:
+                # Create a new Device.
+                device, _ = Device.objects.update_or_create(
+                    user=self.user,
+                    model=self.device_model,
+                    type={
+                        'Android': 'android',
+                        'iPadOS': 'ios',
+                        'iOS': 'ios',
+                        'iPhone OS': 'ios'
+                    }.get(self.os),
+                    defaults={
+                        'manufacturer': self.device_manufacturer,
+                        'model': self.device_model,
+                        'os_name': self.os,
+                        'os_version': self.os_version,
+                        'os_locale': _culture_code,
+                        'os_language': _language,
+                        'mobile_app': self.mobile_app
+                    }
+                )
+
+            self.device = device
 
         # Fill the country field
         if not self.country or _old_point != self.point:
@@ -1678,10 +1913,6 @@ class Report(TimeZoneModelMixin, models.Model):
             nuts2 = self._get_nuts_is_in(levl_code=2)
             if nuts2:
                 self.nuts_2 = nuts2.nuts_id
-
-        if self.app_language:
-            self.user.language_iso2 = self.app_language
-            self.user.save(update_fields=['language_iso2'])
 
         bite_fieldnames = [
             'head_bite_count',
@@ -1722,7 +1953,8 @@ class Report(TimeZoneModelMixin, models.Model):
 
     # Meta and String
     class Meta:
-        ordering = ['server_upload_time', ]
+        # NOTE: this ordering is prone to bugs, do not uncomment.
+        # ordering = ['server_upload_time', ]
         constraints = [
             models.CheckConstraint(
                 check=models.Q(
@@ -2542,15 +2774,7 @@ def one_day_between_and_same_week(r1_date_less_recent, r2_date_most_recent):
 
 
 def get_user_reports_count(user):
-    user_uuids = []
-    if user.profile:
-        ps = user.profile.profile_devices.all()
-        for p in ps:
-            user_uuids.append(p.user_UUID)
-    else:
-        user_uuids.append(user.user_UUID)
-
-    return Report.objects.filter(user__pk__in=user_uuids).exclude(type=Report.TYPE_BITE).non_deleted().count()
+    return Report.objects.filter(user=user).exclude(type=Report.TYPE_BITE).non_deleted().count()
 
 
 @receiver(post_save, sender=Report)
@@ -2575,9 +2799,6 @@ def maybe_give_awards(sender, instance, created, **kwargs):
     #only for adults and sites
     if created:
         try:
-            profile_uuids = None
-            if instance.user.profile is not None:
-                profile_uuids = TigaUser.objects.filter(profile=instance.user.profile).values('user_UUID')
             super_movelab = User.objects.get(pk=24)
             n_reports = get_user_reports_count(instance.user)
             if n_reports == 10:
@@ -2589,10 +2810,7 @@ def maybe_give_awards(sender, instance, created, **kwargs):
             if instance.type == Report.TYPE_ADULT or instance.type == Report.TYPE_SITE:
                 # check award for first of season
                 current_year = instance.creation_time.year
-                if profile_uuids is None:
-                    awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
-                else:
-                    awards = Award.objects.filter(given_to__user_UUID__in=profile_uuids).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
+                awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
                 if awards.count() == 0:  # not yet awarded
                     # can be first of season?
                     if instance.creation_time.month >= conf.SEASON_START_MONTH and instance.creation_time.day >= conf.SEASON_START_DAY:
@@ -2601,31 +2819,19 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                 report_day = instance.creation_time.day
                 report_month = instance.creation_time.month
                 report_year = instance.creation_time.year
-                if profile_uuids is None:
-                    awards = Award.objects \
-                        .filter(report__creation_time__year=report_year) \
-                        .filter(report__creation_time__month=report_month) \
-                        .filter(report__creation_time__day=report_day) \
-                        .filter(report__user=instance.user) \
-                        .filter(category__category_label='daily_participation').order_by(
-                        'report__creation_time')  # first is oldest
-                else:
-                    awards = Award.objects \
-                        .filter(report__creation_time__year=report_year) \
-                        .filter(report__creation_time__month=report_month) \
-                        .filter(report__creation_time__day=report_day) \
-                        .filter(report__user__user_UUID__in=profile_uuids) \
-                        .filter(category__category_label='daily_participation').order_by(
-                        'report__creation_time')  # first is oldest
+                awards = Award.objects \
+                    .filter(report__creation_time__year=report_year) \
+                    .filter(report__creation_time__month=report_month) \
+                    .filter(report__creation_time__day=report_day) \
+                    .filter(report__user=instance.user) \
+                    .filter(category__category_label='daily_participation').order_by(
+                    'report__creation_time')  # first is oldest
                 if awards.count() == 0: # not yet awarded
                     grant_first_of_day(instance, super_movelab)
 
                 date_1_day_before_report = instance.creation_time - timedelta(days=1)
                 date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
-                if profile_uuids is None:
-                    report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first()  # first is most recent
-                else:
-                    report_before_this_one = Report.objects.filter(user__user_UUID__in=profile_uuids).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first()  # first is most recent
+                report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first()  # first is most recent
                 if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
                     #report before this one has not been awarded neither 2nd nor 3rd day streak
                     if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
@@ -3091,7 +3297,7 @@ class Notification(models.Model):
         ).delete()
 
 
-    def send_to_topic(self, topic: 'NotificationTopic', push: bool = True, language_code: Optional[str] = None) -> Optional[str]:
+    def send_to_topic(self, topic: 'NotificationTopic', push: bool = True, language_code: Optional[str] = None) -> Optional[SendResponse]:
         obj, _ = SentNotification.objects.get_or_create(
             sent_to_topic=topic,
             notification=self
@@ -3100,7 +3306,7 @@ class Notification(models.Model):
         if push:
             return obj.send_push(language_code=language_code)
 
-    def send_to_user(self, user: TigaUser, push: bool = True) -> Optional[str]:
+    def send_to_user(self, user: TigaUser, push: bool = True) -> Optional[BatchResponse]:
         obj, _ = SentNotification.objects.get_or_create(
             sent_to_user=user,
             notification=self
@@ -3133,26 +3339,25 @@ class UserSubscription(models.Model):
     topic = models.ForeignKey(NotificationTopic, related_name="topic_users", help_text='Topics to which the user is subscribed', on_delete=models.CASCADE, )
 
     def save(self, *args, **kwargs):
-        if self.user.device_token:
+        if self._state.adding:
             try:
-                firebase_admin.messaging.subscribe_to_topic(
-                    tokens=[self.user.device_token,],
-                    topic=self.topic.topic_code
+                self.user.devices.all().handle_topic_subscription(
+                    should_subscribe=True, # Subscribe
+                    topic=self.topic.topic_code,
                 )
-            except (FirebaseError, ValueError) as e:
+            except ValueError as e:
                 logger_notification.exception(str(e))
 
         return super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        if self.user.device_token:
-            try:
-                firebase_admin.messaging.unsubscribe_from_topic(
-                    tokens=[self.user.device_token,],
-                    topic=self.topic.topic_code
-                )
-            except (FirebaseError, ValueError) as e:
-                logger_notification.exception(str(e))
+        try:
+            self.user.devices.all().handle_topic_subscription(
+                should_subscribe=False,  # Unsubscribe
+                topic=self.topic.topic_code,
+            )
+        except ValueError as e:
+            logger_notification.exception(str(e))
 
         return super().delete(*args, **kwargs)
 
@@ -3167,14 +3372,14 @@ class SentNotification(models.Model):
     #you either send a notification to a user, or to a group of users via topics
     notification = models.ForeignKey(Notification, related_name="notification_sendings", help_text='The notification which has been sent', on_delete=models.CASCADE, )
 
-    def send_push(self, language_code: str = None):
+    def send_push(self, language_code: str = None) -> Union[SendResponse, BatchResponse]:
 
         if settings.DISABLE_PUSH:
             return
 
         # See: https://firebase.google.com/docs/reference/admin/python/firebase_admin.messaging
         # See: https://firebaseopensource.com/projects/flutter/plugins/packages/firebase_messaging/readme/
-        message_payload = dict(
+        message = Message(
             data={
                 "id": str(self.notification.pk)
             },
@@ -3189,39 +3394,21 @@ class SentNotification(models.Model):
                 )
             )
         )
-        message_id = None
-        if self.sent_to_topic:
-            try:
-                message_id = firebase_admin.messaging.send(
-                    message=Message(
-                        **message_payload,
-                        topic=self.sent_to_topic.topic_code
-                    ),
-                    dry_run=settings.DRY_RUN_PUSH,
-                )
-            except firebase_admin._messaging_utils.UnregisteredError:
-                logger_notification.exception(f"Topic {self.sent_to_topic.topic_code} not valid")
-            except (FirebaseError, ValueError) as e:
-                logger_notification.exception(str(e))
-            except Exception as e:
-                logger_notification.exception(str(e))
-        elif self.sent_to_user and self.sent_to_user.device_token:
-            try:
-                message_id = firebase_admin.messaging.send(
-                    message=Message(
-                        **message_payload,
-                        token=self.sent_to_user.device_token
-                    ),
-                    dry_run=settings.DRY_RUN_PUSH,
-                )
-            except firebase_admin._messaging_utils.UnregisteredError:
-                logger_notification.exception(f"Device token {self.sent_to_user.device_token} not valid")
-            except (FirebaseError, ValueError) as e:
-                logger_notification.exception(str(e))
-            except Exception as e:
-                logger_notification.exception(str(e))
 
-        return message_id
+        try:
+            if self.sent_to_topic:
+                return Device.send_topic_message(
+                    message=message,
+                    topic_name=self.sent_to_topic.topic_code
+                )
+            elif self.sent_to_user:
+                return self.sent_to_user.devices.all().send_message(
+                    message=message
+                ).response
+        except (FirebaseError, ValueError) as e:
+            logger_notification.exception(str(e))
+        except Exception as e:
+            logger_notification.exception(str(e))
 
 
 class AwardCategory(models.Model):

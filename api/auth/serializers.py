@@ -1,11 +1,17 @@
+from typing import Optional
+
 from django.contrib.auth import authenticate
+from django.utils import timezone
 
 from rest_framework import exceptions, serializers
+from rest_framework_simplejwt.tokens import Token
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.serializers import (
     TokenObtainSerializer,
     TokenObtainPairSerializer,
 )
+
+from tigaserver_app.models import TigaUser, Device
 
 
 class AppUserTokenObtainSerializer(TokenObtainSerializer):
@@ -13,6 +19,7 @@ class AppUserTokenObtainSerializer(TokenObtainSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["device_id"] = serializers.CharField(required=False, write_only=True)
 
         del self.fields[self.username_field]
 
@@ -34,10 +41,41 @@ class AppUserTokenObtainSerializer(TokenObtainSerializer):
                 "no_active_account",
             )
 
+        self.device = None
+        if attrs.get("device_id"):
+            self.device, _ = Device.objects.get_or_create(
+                device_id=attrs["device_id"],
+                user=self.user
+            )
+
         return {}
 
 
 class AppUserTokenObtainPairSerializer(
     TokenObtainPairSerializer, AppUserTokenObtainSerializer
 ):
-    pass
+    @classmethod
+    def get_token(self, user: TigaUser, device_id: Optional[str] = None) -> Token:
+        token = self.token_class.for_user(user)  # type: ignore
+
+        if device_id:
+            # Add custom claims to the JWT token
+            token['device_id'] = device_id
+
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        if self.device:
+            # Recreate token passing now device_id
+            refresh =  self.get_token(user=self.user, device_id=self.device.device_id)
+            data["refresh"] = str(refresh)
+            data["access"] = str(refresh.access_token)
+
+        # Update last_login device
+        if self.device and api_settings.UPDATE_LAST_LOGIN:
+            self.device.last_login = timezone.now()
+            self.device.save(update_fields=["last_login"])
+
+        return data

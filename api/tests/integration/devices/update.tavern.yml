@@ -1,0 +1,77 @@
+test_name: Make sure users can update
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - device
+    - token_user_can_change
+    - app_user
+    - app_user_token
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - name: Anonymous can not update
+    request:
+      url: "{api_live_url}/{endpoint}/{device.device_id}/"
+      method: "{method}"
+    response:
+      status_code: 401
+  - name: Auth user can not update
+    request:
+      url: "{api_live_url}/{endpoint}/{device.device_id}/"
+      method: "{method}"
+      headers:
+        Authorization: "Token {token_user_can_change}"
+    response:
+      status_code: 401
+  - name: Mobile app user can update owned device
+    request:
+      url: "{api_live_url}/{endpoint}/{device.device_id}/"
+      method: "{method}"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      json:
+        name: new_test_name
+        fcm_token: new_fcm_token
+        os:
+          name: new_test_os
+          version: new_test_version
+          language_iso: es
+          locale_code: es-ES
+        mobile_app:
+          package_name: new_test_package_name
+          package_version: new_test_package_version
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        name: new_test_name
+        os:
+          name: new_test_os
+          version: new_test_version
+          language_iso: es
+          locale_code: es-ES
+        mobile_app:
+          package_name: new_test_package_name
+          package_version: new_test_package_version
+  # Now simulate another user trying to access the first user data
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Get user by unauthorized user
+    request:
+      url: "{api_live_url}/{endpoint}/{device.device_id}/"
+      method: "{method}"
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 404
