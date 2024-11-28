@@ -503,6 +503,7 @@ class UserSerializer(serializers.ModelSerializer):
             "uuid",
             "registration_time",
             "device_token",
+            "language_iso",
             "score",
             "last_score_update",
         )
@@ -513,7 +514,8 @@ class UserSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {
             "device_token": {"write_only": True},
-            "score": {"source": "score_v2"}
+            "score": {"source": "score_v2"},
+            "language_iso": {"source": "language_iso2"}
         }
 
 class CreateUserSerializer(UserSerializer):
