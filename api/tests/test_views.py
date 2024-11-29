@@ -11,7 +11,6 @@ from django.utils.module_loading import import_string
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from languages_plus.models import Language
 from rest_framework_simplejwt.settings import api_settings
 
 from tigaserver_app.models import TigaUser, Report, Device, MobileApp
@@ -87,7 +86,7 @@ class BaseReportTest:
             pytest.skip("Skipping test for multipart format")
 
         # Testing here due its a field taken from the JWT token
-        app_user.language = Language.objects.get(iso_639_1='es')
+        app_user.locale = 'es'
         app_user.save()
         app_api_client = AppAPIClient(
             device=Device.objects.create(
@@ -128,7 +127,7 @@ class BaseReportTest:
                 model="test_model",
                 os_name="testOs",
                 os_version="testv123",
-                os_language=Language.objects.get(iso_639_1='es'),
+                os_locale='es',
             )
         )
         app_api_client.force_login(user=app_user)

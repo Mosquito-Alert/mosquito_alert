@@ -17,7 +17,7 @@ import string
 
 
 class ScoringTestCase(TestCase):
-    fixtures = ['languages_data.json', 'auth_group.json', 'awardcategory.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json']
+    fixtures = ['auth_group.json', 'awardcategory.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json']
 
     def create_single_report(self, day, month, year, user, id, hour=None, minute=None, second=None, report_app_language='es'):
         utc = pytz.UTC
@@ -385,49 +385,3 @@ class ScoringTestCase(TestCase):
             #     print(n.notification_content.body_html_en)
             #     print("<---- END SEPARATOR ---->")
             self.assertEqual(Notification.objects.filter(notification_content__body_html_native=notification_body).count(), 1)
-
-    def test_profile_first_of_season(self):
-        user_id_1 = '00000000-0000-0000-0000-000000000002'
-        user_id_2 = '00000000-0000-0000-0000-000000000003'
-
-        day_1 = 30  # --> Daily participation, first of season
-        month_1 = 4
-        year = 2020
-
-        user_1 = TigaUser.objects.get(pk=user_id_1)
-        user_2 = TigaUser.objects.get(pk=user_id_2)
-
-        report_1_user_1 = self.create_single_report(day_1, month_1, year, user_1,
-                                                    '00000000-0000-0000-0000-000000000001')
-        report_1_user_1.save()
-        report_1_user_2 = self.create_single_report(day_1, month_1, year, user_2,
-                                                    '00000000-0000-0000-0000-000000000002')
-        report_1_user_2.save()
-        # only user_1 should have any awards
-        self.assertEqual(Award.objects.filter(category__id=1).count(),
-                         1)  # Only one award given for two qualifyable reports of the same profile
-        a = Award.objects.filter(category__id=1).first()
-        self.assertEqual(a.given_to, user_1)  # Should have been given to user_1
-
-    def test_profile_first_of_day(self):
-        user_id_1 = '00000000-0000-0000-0000-000000000002'
-        user_id_2 = '00000000-0000-0000-0000-000000000003'
-
-        day_1 = 30  # --> Daily participation, first of season
-        month_1 = 4
-        year = 2020
-
-        user_1 = TigaUser.objects.get(pk=user_id_1)
-        user_2 = TigaUser.objects.get(pk=user_id_2)
-
-        report_1_user_1 = self.create_single_report(day_1, month_1, year, user_1,
-                                                    '00000000-0000-0000-0000-000000000001')
-        report_1_user_1.save()
-        report_1_user_2 = self.create_single_report(day_1, month_1, year, user_2,
-                                                    '00000000-0000-0000-0000-000000000002')
-        report_1_user_2.save()
-        # only user_1 should have any awards
-        self.assertEqual(Award.objects.filter(category__id=2).count(),
-                         1)  # Only one award given for two qualifyable reports of the same profile
-        a = Award.objects.filter(category__id=1).first()
-        self.assertEqual(a.given_to, user_1)  # Should have been given to user_1

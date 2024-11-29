@@ -195,7 +195,7 @@ class BaseReportViewSet(
         kwargs = {}
         user = self.request.user
         if isinstance(user, TigaUser):
-            kwargs['app_language'] = user.language_iso2
+            kwargs['app_language'] = user.locale
 
         device = self._get_device_from_jwt()
         if device:
@@ -204,7 +204,7 @@ class BaseReportViewSet(
             kwargs['device_model'] = device.model
             kwargs['os'] = device.os_name
             kwargs['os_version'] = device.os_version
-            kwargs['os_language'] = device.os_language.iso if device.os_language else None
+            kwargs['os_language'] = device.os_locale
             if device.mobile_app:
                 kwargs['mobile_app'] = device.mobile_app
                 kwargs['package_name'] = device.mobile_app.package_name

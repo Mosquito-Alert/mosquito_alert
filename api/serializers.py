@@ -8,7 +8,6 @@ from django.db import transaction
 from rest_framework import serializers
 
 from drf_extra_fields.geo_fields import PointField
-from languages_plus.models import Language, CultureCode
 from taggit.serializers import TaggitSerializer
 
 from tigaserver_app.models import (
@@ -532,31 +531,17 @@ class MobileAppSerializer(serializers.ModelSerializer):
 
 class DeviceSerializer(serializers.ModelSerializer):
     class DeviceOsSerializer(serializers.ModelSerializer):
-        language_iso = serializers.ChoiceField(
-            choices=Language.objects.filter(**Device._meta.get_field('os_language').get_limit_choices_to()).values_list('iso_639_1', 'name_en'),
-            allow_null=False,
-            required=False,
-            help_text="ISO 639-1 language code",
-            source="os_language.iso_639_1"
-        )
-        locale_code = serializers.ChoiceField(
-            choices=CultureCode.objects.filter(**Device._meta.get_field('os_locale').get_limit_choices_to()).values_list('code', flat=True),
-            allow_null=False,
-            required=False,
-            source="os_locale.code"
-        )
-
         class Meta:
             model = Device
             fields = (
                 "name",
                 "version",
-                "language_iso",
-                "locale_code"
+                "locale",
             )
             extra_kwargs = {
                 "name": {"source": "os_name", "required": True, "allow_null": False},
-                "version": {"source": "os_version", "required": True, "allow_null": False}
+                "version": {"source": "os_version", "required": True, "allow_null": False},
+                "locale": {"source": "os_locale" }
             }
 
     mobile_app = MobileAppSerializer(required=False)
@@ -565,14 +550,6 @@ class DeviceSerializer(serializers.ModelSerializer):
         source="user_id", allow_null=False, read_only=True
     )
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
-    def validate_os(self, value):
-        if value.get('os_language'):
-            value['os_language'] = Language.objects.get(**value['os_language'])
-
-        if value.get('os_locale'):
-            value['os_locale'] = CultureCode.objects.get(**value['os_locale'])
-        return value
 
     def validate(self, data):
         mobile_app_data = data.pop("mobile_app", None)

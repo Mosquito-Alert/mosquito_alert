@@ -99,8 +99,6 @@ class PictureTestCase(APITestCase):
 '''
 
 class ReportEndpointTestCase(APITestCase):
-    fixtures = ['languages_data.json',]
-
     def setUp(self):
         t = TigaUser.objects.create(user_UUID="00000000-0000-0000-0000-000000000000")
         Device.objects.create(
@@ -620,7 +618,7 @@ class FixEndpointTestCase(APITestCase):
 
 class NotificationTestCase(APITestCase):
 
-    fixtures = ['languages_data.json', 'auth_group.json', 'reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
+    fixtures = ['auth_group.json', 'reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
 
     def setUp(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
@@ -995,7 +993,7 @@ class NotificationTestCase(APITestCase):
         self.client.logout()
 
 class AnnotateCoarseTestCase(APITestCase):
-    fixtures = ['languages_data.json', 'photos.json', 'categories.json','users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json']
+    fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json']
     def test_annotate_taken(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
@@ -1220,8 +1218,6 @@ class AnnotateCoarseTestCase(APITestCase):
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class PhotoModelTest(TestCase):
-    fixtures = ['languages_data.json',]
-
     def setUp(self):
         self.report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -1377,8 +1373,6 @@ class PhotoModelTest(TestCase):
         assert original_exif == processed_exif, "EXIF metadata was not preserved after processing."
 
 class ReportModelTest(TestCase):
-    fixtures = ['languages_data.json',]
-
     def test_tags_are_set_from_note_on_create(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),

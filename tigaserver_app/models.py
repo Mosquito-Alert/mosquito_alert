@@ -34,7 +34,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from fcm_django.models import AbstractFCMDevice
 from imagekit.processors import ResizeToFit
-from languages_plus.models import Language, CultureCode
+from langcodes import Language, closest_supported_match, standardize_tag as standarize_language_tag, tag_is_valid as language_tag_is_valid
 from simple_history.models import HistoricalRecords
 from timezone_field import TimeZoneField
 from taggit.managers import TaggableManager
@@ -199,6 +199,11 @@ class RankingData(models.Model):
 
 
 class TigaUser(AbstractBaseUser, AnonymousUser):
+
+    AVAILABLE_LANGUAGES = [
+        (standarize_language_tag(code), Language.get(code).autonym().title()) for code, _ in settings.LANGUAGES
+    ]
+
     USERNAME_FIELD = 'pk'
 
     password = models.CharField(_('password'), max_length=128, null=True, blank=True)
@@ -227,14 +232,17 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
 
     last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
 
-    language = models.ForeignKey(
-        Language,
-        on_delete=models.PROTECT,
-        limit_choices_to={'iso_639_1__in': [code for code, _ in settings.LANGUAGES]},
+    locale = models.CharField(
+        choices=AVAILABLE_LANGUAGES,
+        max_length=16,
+        default='en',
+        validators=[language_tag_is_valid],
+        help_text="The locale code representing the language preference selected by the user for displaying the interface text. Enter the locale following the BCP 47 standard in 'language' or 'language-region' format (e.g., 'en' for English, 'en-US' for English (United States), 'fr' for French). The language is a two-letter ISO 639-1 code, and the region is an optional two-letter ISO 3166-1 alpha-2 code."
     )
+
     @property
     def language_iso2(self):
-        return self.language.iso
+        return Language.get(self.locale).language
 
     @property
     def last_device(self) -> Optional['Device']:
@@ -292,10 +300,11 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
 
     def save(self, *args, **kwargs):
 
-        try:
-            self.language
-        except TigaUser.language.RelatedObjectDoesNotExist:
-            self.language = Language.objects.get(iso_639_1='en')
+        if self.locale:
+            self.locale = closest_supported_match(
+                self.locale,
+                [code for code, _ in self.AVAILABLE_LANGUAGES]
+            ) or 'en'
 
         if self._state.adding:
             # Make sure user is subscribed to global topic
@@ -385,8 +394,13 @@ class Device(AbstractFCMDevice):
         blank=True,
         help_text="Operating system version of device from which this report was submitted.",
     )
-    os_language = models.ForeignKey(Language, null=True, on_delete=models.PROTECT)
-    os_locale = models.ForeignKey(CultureCode, null=True, on_delete=models.PROTECT)
+    os_locale = models.CharField(
+        max_length=16,
+        validators=[language_tag_is_valid],
+        null=True,
+        blank=True,
+        help_text="The locale configured in the device following the BCP 47 standard in 'language' or 'language-region' format (e.g., 'en' for English, 'en-US' for English (United States), 'fr' for French). The language is a two-letter ISO 639-1 code, and the region is an optional two-letter ISO 3166-1 alpha-2 code."
+    )
 
     updated_at = models.DateTimeField(auto_now=True)
     last_login = models.DateTimeField(null=True)
@@ -431,6 +445,9 @@ class Device(AbstractFCMDevice):
         return changed_fields
 
     def save(self, *args, **kwargs):
+        if self.os_locale:
+            self.os_locale = standarize_language_tag(self.os_locale)
+
         if not self.registration_id:
             self.active = False
 
@@ -1810,28 +1827,12 @@ class Report(TimeZoneModelMixin, models.Model):
         self.timezone = self.get_timezone_from_coordinates()
 
         if self.app_language:
-            try:
-                _app_language = Language.objects.get_by_code(code=self.app_language)
-                self.user.language = _app_language
-                self.user.save(update_fields=['language'])
-            except Language.DoesNotExist:
-                pass
+            self.app_language = standarize_language_tag(self.app_language)
+            self.user.locale = self.app_language
+            self.user.save()
 
-        # Bug in indonesian language
-        self.os_language = 'in' if self.os_language == 'id' else self.os_language
-
-        _language = None
-        _culture_code = None
         if self.os_language:
-            try:
-                _language = Language.objects.get_by_code(code=self.os_language)
-            except Language.DoesNotExist:
-                pass
-
-            try:
-                _culture_code = CultureCode.objects.get(code=self.os_language)
-            except CultureCode.DoesNotExist:
-                pass
+            self.os_language = standarize_language_tag(self.os_language)
 
         if self._state.adding:
             if self.note and not self.tags.exists():
@@ -1863,8 +1864,7 @@ class Report(TimeZoneModelMixin, models.Model):
                 device.model = self.device_model
                 device.os_name = self.os
                 device.os_version = self.os_version
-                device.os_locale = _culture_code
-                device.os_language = _language
+                device.os_locale = self.os_language
                 device.mobile_app = self.mobile_app
                 device.save()
             except Device.DoesNotExist:
@@ -1883,8 +1883,7 @@ class Report(TimeZoneModelMixin, models.Model):
                         'model': self.device_model,
                         'os_name': self.os,
                         'os_version': self.os_version,
-                        'os_locale': _culture_code,
-                        'os_language': _language,
+                        'os_locale': self.os_language,
                         'mobile_app': self.mobile_app
                     }
                 )

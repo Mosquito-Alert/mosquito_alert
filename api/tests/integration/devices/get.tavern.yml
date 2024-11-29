@@ -45,8 +45,7 @@ stages:
         os:
           name: !anystr
           version: !anystr
-          # language_iso: !anything
-          # locale_code: !anything
+          locale: !anything
         mobile_app: !anything
         user_uuid: "{app_user.pk}"
         last_login: !anything

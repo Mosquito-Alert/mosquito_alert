@@ -3,14 +3,14 @@
 from django.db import migrations, models
 import django.db.models.deletion
 import simple_history.models
+import langcodes
+from langcodes import standardize_tag as standarize_language_tag
 
 
 def populate_device_histories(apps, schema_editor):
     Report = apps.get_model('tigaserver_app', 'Report')
     Device = apps.get_model('tigaserver_app', 'Device')
     HistoricalDevice = apps.get_model("tigaserver_app", "HistoricalDevice")
-    CultureCode = apps.get_model('languages_plus', 'CultureCode')
-    Language = apps.get_model('languages_plus', 'Language')
 
     history_to_add = []
     for device in Device.objects.all().iterator():
@@ -29,23 +29,9 @@ def populate_device_histories(apps, schema_editor):
                 history_type='+',
                 history_user_id=device.user_id,
                 mobile_app_id=device.mobile_app_id,
-                os_language_id=device.os_language_id,
-                os_locale_id=device.os_locale_id,
+                os_locale=device.os_locale,
             )
         )
-    
-    # Get the culture_code for Device.os_locale
-    culture_code_subquery = CultureCode.objects.filter(
-        models.Q(code=models.OuterRef('os_language'))
-    ).values('pk')[:1]
-
-    # Language subquery for os_language
-    language_subquery = Language.objects.filter(
-        models.Q(iso_639_1__iexact=models.OuterRef('normalized_os_language')) |
-        models.Q(iso_639_2T__iexact=models.OuterRef('normalized_os_language')) |
-        models.Q(iso_639_2B__iexact=models.OuterRef('normalized_os_language')) |
-        models.Q(iso_639_3__iexact=models.OuterRef('normalized_os_language'))
-    ).values('pk')[:1]
 
     # Create change histories.
     device_change_qs = Report.objects.exclude(
@@ -53,14 +39,11 @@ def populate_device_histories(apps, schema_editor):
         device_manufacturer=models.F('device__manufacturer'),
         os=models.F('device__os_name'),
         os_version=models.F('device__os_version'),
-        os_language=models.F('device__os_language')
+        os_language=models.F('device__os_locale')
     ).values(
         "user_id", "device_id", "device__active", "device__device_id", "device__registration_id", "mobile_app_id", "device_manufacturer", "device_model", "os", "os_version", "os_language"
     ).annotate(
         first_upload_time=models.Min('server_upload_time'),
-        normalized_os_language=models.Func(models.F('os_language'), models.Value('-'), models.Value(1), function='split_part'),
-        language_id=models.Subquery(language_subquery),
-        culture_code_id=models.Subquery(culture_code_subquery)
     )
     for device_change_in_report in device_change_qs.iterator():
         history_to_add.append(
@@ -83,8 +66,7 @@ def populate_device_histories(apps, schema_editor):
                 history_type='~',
                 history_user_id=device_change_in_report['user_id'],
                 mobile_app_id=device_change_in_report['mobile_app_id'],
-                os_language_id=device_change_in_report['language_id'],
-                os_locale_id=device_change_in_report['culture_code_id'],
+                os_locale=standarize_language_tag(device_change_in_report['os_language']),
             )
         )
 
@@ -116,8 +98,7 @@ class Migration(migrations.Migration):
                 ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
                 ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='tigaserver_app.TigaUser')),
                 ('mobile_app', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='tigaserver_app.MobileApp')),
-                ('os_language', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='languages_plus.Language')),
-                ('os_locale', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='languages_plus.CultureCode')),
+                ('os_locale', models.CharField(blank=True, help_text="The locale configured in the device following the BCP 47 standard in 'language' or 'language-region' format (e.g., 'en' for English, 'en-US' for English (United States), 'fr' for French). The language is a two-letter ISO 639-1 code, and the region is an optional two-letter ISO 3166-1 alpha-2 code.", max_length=16, null=True, validators=[langcodes.tag_is_valid])),
             ],
             options={
                 'verbose_name': 'historical Device',

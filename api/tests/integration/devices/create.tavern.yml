@@ -56,8 +56,7 @@ stages:
         os:
           name: test_os
           version: test_version
-          language_iso: en
-          locale_code: en-US
+          locale: en-US
         mobile_app:
           package_name: test_package_name
           package_version: test_package_version
@@ -72,8 +71,7 @@ stages:
         os:
           name: "test_os"
           version: "test_version"
-          language_iso: "en"
-          locale_code: "en-US"
+          locale: "en-US"
         mobile_app:
           package_name: "test_package_name"
           package_version: "test_package_version"

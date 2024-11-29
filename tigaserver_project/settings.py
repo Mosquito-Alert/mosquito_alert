@@ -75,8 +75,6 @@ INSTALLED_APPS = (
     'imagekit',
     'django_hosts',
     'fcm_django',
-    'languages_plus',
-    'countries_plus'
 )
 
 '''

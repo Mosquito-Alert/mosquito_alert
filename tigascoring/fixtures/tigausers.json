@@ -9,7 +9,7 @@
       "score": 1,
       "score_v2_site": 0,
       "score_v2": 0,
-      "language_id": "en"
+      "locale": "en"
     }
   },
   {
@@ -22,7 +22,7 @@
       "score": 1,
       "score_v2_site": 0,
       "score_v2": 0,
-      "language_id": "en"
+      "locale": "en"
     }
   },
   {
@@ -35,7 +35,7 @@
       "score": 1,
       "score_v2_site": 0,
       "score_v2": 0,
-      "language_id": "en"
+      "locale": "en"
     }
   },
   {
@@ -48,7 +48,7 @@
       "score": 1,
       "score_v2_site": 0,
       "score_v2": 0,
-      "language_id": "en"
+      "locale": "en"
     }
   }
 ]
