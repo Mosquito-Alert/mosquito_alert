@@ -2099,9 +2099,11 @@ def non_visible_reports(request):
 
 class OWCampaignsViewSet(ReadOnlyModelViewSet):
     serializer_class = OWCampaignsSerializer
+    queryset = OWCampaigns.objects.all()
 
     def get_queryset(self):
-        qs = OWCampaigns.objects.all()
+        qs = super().get_queryset()
+
         country_id = self.request.query_params.get('country_id', None)
         if country_id is not None:
             try:
@@ -2114,10 +2116,8 @@ class OWCampaignsViewSet(ReadOnlyModelViewSet):
 
 class OrganizationsPinViewSet(ReadOnlyModelViewSet):
     serializer_class = OrganizationPinsSerializer
+    queryset = OrganizationPin.objects.all()
 
-    def get_queryset(self):
-        qs = OrganizationPin.objects.all()
-        return qs
 
 
 @api_view(['POST'])

@@ -21,7 +21,6 @@ from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance as DistanceMeasure
-from django.contrib.postgres.fields import JSONField
 from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -32,7 +31,7 @@ from django.utils.deconstruct import deconstructible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
-from fcm_django.models import AbstractFCMDevice
+from fcm_django.models import AbstractFCMDevice, DeviceType
 from imagekit.processors import ResizeToFit
 from langcodes import Language, closest_supported_match, standardize_tag as standarize_language_tag, tag_is_valid as language_tag_is_valid
 from simple_history.models import HistoricalRecords
@@ -228,7 +227,7 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
 
     # NOTE using NumpyEncoder since compute_user_score_in_xp_v2 function get result from pandas dataframe
     # and some integer are np.int64, which can not be encoded with the regular json library setup.
-    score_v2_struct = JSONField(encoder=NumpyEncoder, help_text="Full cached score data", null=True, blank=True)
+    score_v2_struct = models.JSONField(encoder=NumpyEncoder, help_text="Full cached score data", null=True, blank=True)
 
     last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
 
@@ -381,7 +380,7 @@ class Device(AbstractFCMDevice):
         blank=True,
         help_text="The end-user-visible name for the end product."
     )
-    type = models.CharField(choices=AbstractFCMDevice.DEVICE_TYPES, max_length=10, null=True)
+    type = models.CharField(choices=DeviceType.choices, max_length=10, null=True)
     os_name = models.CharField(
         max_length=64,
         null=True,

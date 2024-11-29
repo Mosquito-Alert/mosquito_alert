@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
 from tigaserver_app.models import Notification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea, OWCampaigns, OrganizationPin, NotificationTopic, MobileApp, Device
-from rest_framework.authtoken.models import Token
 import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
@@ -49,15 +48,6 @@ def export_full_csv_sc(modeladmin, request, queryset):
     return response
 export_full_csv_sc.short_description = u"Export Full Semi-Colon Separated Values"
 
-
-class MyTokenAdmin(admin.ModelAdmin):
-    list_display = ('key', 'user', 'created')
-    fields = ('user', 'key')
-    ordering = ('-created',)
-
-
-admin.site.unregister(Token)
-admin.site.register(Token, MyTokenAdmin)
 
 admin.site.disable_action('delete_selected')
 

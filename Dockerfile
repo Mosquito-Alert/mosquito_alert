@@ -1,8 +1,11 @@
 # Use the official Ubuntu 20.04 image as a base
 FROM ubuntu:20.04
 
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Install prerequisites
-RUN apt-get update && apt-get install -y software-properties-common curl
+RUN apt-get update && apt-get install -y software-properties-common curl git
 
 # Add Deadsnakes PPA
 RUN add-apt-repository ppa:deadsnakes/ppa

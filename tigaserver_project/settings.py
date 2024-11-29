@@ -74,7 +74,6 @@ INSTALLED_APPS = (
     'simple_history',
     'imagekit',
     'django_hosts',
-    'fcm_django',
 )
 
 '''
@@ -394,7 +393,9 @@ FCM_DJANGO_SETTINGS = {
     "ONE_DEVICE_PER_USER": False,
     "DELETE_INACTIVE_DEVICES": False,
 }
-FCM_DJANGO_FCMDEVICE_MODEL = "tigaserver_app.models.Device"
+FCM_DJANGO_FCMDEVICE_MODEL = "tigaserver_app.Device"
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 try:
     from tigaserver_project.settings_local import *
