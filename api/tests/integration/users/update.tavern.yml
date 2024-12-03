@@ -1,4 +1,4 @@
-test_name: Make sure users can not update
+test_name: Make sure non auth users can not update
 
 includes:
   - !include schema.yml
@@ -7,7 +7,6 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
-    - app_user_token
     - token_user_can_change
   - parametrize:
       key: method
@@ -22,6 +21,25 @@ stages:
       method: "{method}"
     response:
       status_code: 403
+
+---
+test_name: Only auth user with can_change perm can update
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - token_user_can_change
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
   - name: Auth user can not update
     request:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"
@@ -29,12 +47,52 @@ stages:
       headers:
         Authorization: 'Token {token_user_can_change}'
     response:
-      status_code: 405
-  - name: Mobile app user can not update
+      status_code: 200
+
+---
+
+test_name: Mobile app user can update only itselves
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - app_user_token
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - name: Mobile app user can update itself
     request:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: "{method}"
       headers:
         Authorization: 'Bearer {app_user_token}'
+      json:
+        locale: "es"
     response:
-      status_code: 405
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        locale: "es"
+        language_iso: "es"
+  # Now simulate another user trying to update the first user data
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: Get user by unauthorized user
+    request:
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
+      method: GET
+      headers:
+        Authorization: "Bearer {token}"
+    response:
+      status_code: 403

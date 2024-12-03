@@ -259,7 +259,7 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
 
 
 class UserViewSet(
-    CreateModelMixin, RetrieveModelMixin, GenericViewSet
+    CreateModelMixin, UpdateModelMixin, RetrieveModelMixin, GenericViewSet
 ):
     queryset = TigaUser.objects.all()
     serializer_class = UserSerializer

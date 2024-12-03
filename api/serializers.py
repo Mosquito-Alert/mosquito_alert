@@ -476,6 +476,10 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     uuid = serializers.UUIDField(source="user_UUID", read_only=True)
+    language_iso = serializers.SerializerMethodField(help_text='ISO 639-1 code')
+
+    def get_language_iso(self, obj) -> str:
+        return obj.language_iso2
 
     class Meta:
         model = TigaUser
@@ -483,6 +487,7 @@ class UserSerializer(serializers.ModelSerializer):
             "uuid",
             "registration_time",
             "locale",
+            "language_iso",
             "score",
             "last_score_update",
         )
