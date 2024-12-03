@@ -561,6 +561,26 @@ class DeviceSerializer(serializers.ModelSerializer):
 
         return data
 
+    def create(self, validated_data):
+        # Extract the user and model from the data
+        user = validated_data.get('user')
+        model = validated_data.get('model')
+        device_id = validated_data.get('device_id')
+
+        # Check if there is a device with the same user, model, and device_id=None
+        # That is for the users that are migrating from the legacy API to this.
+        device = Device.objects.filter(user=user, model=model, device_id=None).first()
+        if device:
+            Device.objects.filter(user=user, model=model, device_id=device_id).delete()
+            # If device exists, update it
+            for attr, value in validated_data.items():
+                setattr(device, attr, value)
+            device.save()
+            return device
+
+        # If no matching device was found, create a new device
+        return super().create(validated_data)
+
     class Meta:
         model = Device
         fields = (

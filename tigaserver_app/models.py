@@ -44,7 +44,7 @@ import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
 from .fields import ProcessedImageField
-from .managers import ReportManager, PhotoManager, NotificationManager
+from .managers import ReportManager, PhotoManager, NotificationManager, DeviceManager
 from .messaging import send_new_award_notification
 from .mixins import TimeZoneModelMixin
 
@@ -355,7 +355,10 @@ class MobileApp(models.Model):
 
 
 class Device(AbstractFCMDevice):
-    # NOTE: is ever work on a logout method, set active to False on logout.
+    # NOTE: self.active : If the FCM TOKEN is active
+    #       self.is_logged_in : If the Device is is_logged_in for the user
+
+    # NOTE: if ever work on a logout method, set is_logged_in/active to False on logout.
     # Override user to make FK to TigaUser instead of User
     user = models.ForeignKey(
         TigaUser,
@@ -365,8 +368,9 @@ class Device(AbstractFCMDevice):
     )
 
     mobile_app = models.ForeignKey(MobileApp, null=True, on_delete=models.PROTECT)
+    is_logged_in = models.BooleanField(default=False)
 
-    registration_id = models.TextField(null=True, verbose_name='Registration token')
+    registration_id = models.TextField(null=True, db_index=True, verbose_name='Registration token')
 
     manufacturer = models.CharField(
         max_length=128,
@@ -410,12 +414,15 @@ class Device(AbstractFCMDevice):
             'name',
             'date_created',
             'updated_at',
+            'is_logged_in',
             'last_login',
             'user'
         ],
         cascade_delete_history=True,
         user_model=TigaUser
     )
+
+    objects = DeviceManager()
 
     __history_user = None
     @property
@@ -447,13 +454,38 @@ class Device(AbstractFCMDevice):
         if self.os_locale:
             self.os_locale = standarize_language_tag(self.os_locale)
 
-        if not self.registration_id:
+        _fields_with_changes = self.__get_changed_fields(update_fields=kwargs.get('update_fields'))
+        if self.registration_id and 'registration_id' in _fields_with_changes:
+            self.active = True
+
+        if not self.registration_id or not self.is_logged_in:
             self.active = False
+
+        if self.active and self.registration_id:
+            update_device_qs = Device.objects.filter(active=True, registration_id=self.registration_id)
+            if self.pk:
+                update_device_qs = update_device_qs.exclude(pk=self.pk)
+
+            for device in update_device_qs.iterator():
+                device.active = False
+                # For simple history
+                device._change_reason = 'Another user has created/update a device with the same registration_id'
+                device.save()
+
+        if self.is_logged_in and self.device_id:
+            update_device_qs = Device.objects.filter(is_logged_in=True, device_id=self.device_id)
+            if self.pk:
+                update_device_qs = update_device_qs.exclude(pk=self.pk)
+
+            for device in update_device_qs.iterator():
+                device.is_logged_in = False
+                # For simple history
+                device._change_reason = 'Another user has created/update a device with the same device_id'
+                device.save()
 
         if self.pk:
             _tracked_fields = [field.name for field in self.__class__.history.model._meta.get_fields()]
-            _field_with_changes = self.__get_changed_fields(update_fields=kwargs.get('update_fields'))
-            if not any(element in _tracked_fields for element in _field_with_changes):
+            if not any(element in _tracked_fields for element in _fields_with_changes):
                 # Only will create history if at least one tracked field has changed.
                 self.skip_history_when_saving = True
 
@@ -479,14 +511,24 @@ class Device(AbstractFCMDevice):
         ]
         constraints = [
             models.UniqueConstraint(
+                fields=['registration_id'],
+                name='unique_active_registration_id',
+                condition=models.Q(active=True) & ~models.Q(registration_id=None) & ~models.Q(registration_id__exact=''),
+            ),
+            models.UniqueConstraint(
+                fields=['device_id'],
+                name='unique_is_logged_in_device_id',
+                condition=models.Q(is_logged_in=True) & ~models.Q(device_id=None) & ~models.Q(device_id__exact=''),
+            ),
+            models.UniqueConstraint(
                 fields=['user', 'device_id'],
                 name='unique_user_device_id',
-                condition=models.Q(user__isnull=False, device_id__isnull=False) & ~models.Q(device_id='')
+                condition=models.Q(user__isnull=False, device_id__isnull=False) & ~models.Q(device_id__exact='')
             ),
             models.UniqueConstraint(
                 fields=['user', 'registration_id'],
                 name='unique_user_registration_id',
-                condition=models.Q(user__isnull=False, registration_id__isnull=False) & ~models.Q(registration_id='')
+                condition=models.Q(user__isnull=False, registration_id__isnull=False) & ~models.Q(registration_id__exact='')
             )
         ]
 
@@ -1854,17 +1896,19 @@ class Report(TimeZoneModelMixin, models.Model):
                     date_created__lte=self.server_upload_time or timezone.now()
                 ).latest('date_created')
                 device.type={
-                    'Android': 'android',
-                    'iPadOS': 'ios',
-                    'iOS': 'ios',
-                    'iPhone OS': 'ios'
-                }.get(self.os)
+                    'android': 'android',
+                    'ipados': 'ios',
+                    'ios': 'ios',
+                    'iphone os': 'ios'
+                }.get(self.os.lower() if self.os else None)
                 device.manufacturer = self.device_manufacturer
                 device.model = self.device_model
                 device.os_name = self.os
                 device.os_version = self.os_version
                 device.os_locale = self.os_language
                 device.mobile_app = self.mobile_app
+                device.is_logged_in = True
+                device.last_login = self.server_upload_time or timezone.now()
                 device.save()
             except Device.DoesNotExist:
                 # Create a new Device.
@@ -1872,12 +1916,14 @@ class Report(TimeZoneModelMixin, models.Model):
                     user=self.user,
                     model=self.device_model,
                     type={
-                        'Android': 'android',
-                        'iPadOS': 'ios',
-                        'iOS': 'ios',
-                        'iPhone OS': 'ios'
-                    }.get(self.os),
+                        'android': 'android',
+                        'ipados': 'ios',
+                        'ios': 'ios',
+                        'iphone os': 'ios'
+                    }.get(self.os.lower() if self.os else None),
                     defaults={
+                        'is_logged_in': True,
+                        'last_login': self.server_upload_time or timezone.now(),
                         'manufacturer': self.device_manufacturer,
                         'model': self.device_model,
                         'os_name': self.os,

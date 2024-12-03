@@ -31,7 +31,7 @@ def undo_standarize_locale(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0069_update_device_updated_at'),
+        ('tigaserver_app', '0070_update_device_updated_at'),
     ]
 
     operations = [

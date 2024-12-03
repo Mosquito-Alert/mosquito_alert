@@ -24,7 +24,7 @@ def unfix_device_updated_at_field(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0068_add_device_history'),
+        ('tigaserver_app', '0069_add_report_uniqueconstraints'),
     ]
 
     operations = [

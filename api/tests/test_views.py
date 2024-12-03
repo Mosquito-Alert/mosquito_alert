@@ -19,6 +19,7 @@ from api.auth.serializers import AppUserTokenObtainPairSerializer
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
+from api.tests.factories import create_report_object
 
 User = get_user_model()
 
@@ -390,3 +391,150 @@ class TokenAPITest(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             device.refresh_from_db()
             self.assertEqual(device.last_login, last_login)
+
+    def test_device_is_set_to_logged_in_on_login_if_not_logged(self):
+        device = Device.objects.create(
+            user=self.app_user,
+            device_id='unique_id_for_device',
+            registration_id='fcm_token',
+            is_logged_in=False
+        )
+        response = self.client.post(
+            self.endpoint,
+            data={
+                'uuid': self.app_user.pk,
+                'password': 'testpassword123_tmp',
+                'device_id': 'unique_id_for_device'
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        device.refresh_from_db()
+        self.assertEqual(device.is_logged_in, True)
+
+    def test_device_is_set_to_not_logged_in_if_login_with_duplicated_device_id(self):
+        dummy_user = TigaUser.objects.create()
+        device = Device.objects.create(
+            user=dummy_user,
+            device_id='unique_id_for_device',
+            registration_id='fcm_token',
+            is_logged_in=True
+        )
+        # Login with same device_id but different user.
+        response = self.client.post(
+            self.endpoint,
+            data={
+                'uuid': self.app_user.pk,
+                'password': 'testpassword123_tmp',
+                'device_id': 'unique_id_for_device'
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        device.refresh_from_db()
+        self.assertEqual(device.is_logged_in, False)
+
+
+@pytest.mark.django_db
+class TestDeviceAPI:
+    endpoint = '/api/v1/devices/'
+
+    def test_device_is_set_to_inactive_if_new_duplicated_device_is_created(self, app_api_client):
+        dummy_user = TigaUser.objects.create()
+        device = Device.objects.create(
+            device_id='unique_id',
+            registration_id='fcm_unique_token',
+            user=dummy_user,
+            type='android',
+            model='test_model',
+            os_name='android',
+            os_version='32',
+            active=True
+        )
+
+        response = app_api_client.post(
+            self.endpoint,
+            data={
+                'device_id': 'another_unique_id',
+                'fcm_token': device.registration_id,
+                'type': 'ios',
+                'manufacturer': 'another_manufacturer',
+                'model': 'another_model',
+                'os': {
+                    'name': 'iOs',
+                    'version': 'another_version'
+                }
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        device.refresh_from_db()
+        assert not device.active
+
+    def test_inactive_device_is_set_to_active_on_registration_id_change(self, app_user, app_api_client):
+        device = Device.objects.create(
+            device_id='unique_id',
+            registration_id='fcm_unique_token',
+            user=app_user,
+            type='android',
+            model='test_model',
+            os_name='android',
+            os_version='32',
+            active=False,
+            is_logged_in=True
+        )
+        response = app_api_client.patch(
+            self.endpoint + f"{device.device_id}/",
+            data={
+                'fcm_token': 'fcm_unique_token2',
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        device.refresh_from_db()
+        assert device.active
+
+    def test_device_without_device_id_is_updated_on_create(self, app_user):
+        # The legacy API create devices from Report model, which does not set the device_id
+        report = create_report_object(user=app_user)
+        report.type = Report.TYPE_BITE
+        report.device_manufacturer = 'test_make'
+        report.device_model = 'test_model'
+        report.os = 'iOs'
+        report.os_version = 'testv123'
+        report.os_language = 'es'
+        report.save()
+
+        device = report.device
+        assert device
+        assert device.device_id is None
+        assert device.registration_id is None
+
+        # Need to set a deviec_token for the force_login
+        # But not saving.
+        device_pk = device.pk
+        device.device_id = 'unique_id'
+        app_api_client = AppAPIClient(device=device)
+        app_api_client.force_login(user=app_user)
+
+        device.refresh_from_db()
+        assert device.device_id is None
+
+        response = app_api_client.post(
+            self.endpoint,
+            data={
+                'device_id': 'unique_id',
+                'fcm_token': 'fcm_token',
+                'type': device.type,
+                'manufacturer': device.manufacturer,
+                'model': device.model,
+                'os': {
+                    'name': device.os_name,
+                    'version': device.os_version
+                }
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        device.refresh_from_db()
+        assert device.device_id == 'unique_id'
+        assert device.pk == device_pk
+        assert Device.objects.filter(user=app_user).count() == 1

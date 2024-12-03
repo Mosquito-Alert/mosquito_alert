@@ -69,8 +69,8 @@ class MobileAppAdmin(admin.ModelAdmin):
 class DeviceInline(admin.StackedInline):
     model = Device
     fields = (
-        ('device_id','active'),
-        'registration_id',
+        ('device_id', 'is_logged_in', 'last_login'),
+        ('registration_id', 'active'),
         'type',
         'mobile_app',
         ('manufacturer', 'model'),
@@ -80,7 +80,9 @@ class DeviceInline(admin.StackedInline):
     )
     readonly_fields = (
         'date_created',
-        'updated_at'
+        'updated_at',
+        'is_logged_in',
+        'last_login'
     )
     extra = 0
 

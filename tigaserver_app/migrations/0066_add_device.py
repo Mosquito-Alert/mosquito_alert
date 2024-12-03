@@ -46,11 +46,14 @@ def populate_devices(apps, schema_editor):
             device_token=''
         )
         for user in users_without_reports_qs.iterator():
+            device_token = user.device_token
             device_to_add.append(
                 Device(
                     user=user,
-                    registration_id=user.device_token,
+                    registration_id=None if device_token == '' else device_token,
                     active=user.device_token not in [None, ""],
+                    is_logged_in=True,
+                    last_login=user.registration_time,
                     date_created=user.registration_time,
                     updated_at=user.registration_time,
                 )
@@ -63,25 +66,35 @@ def populate_devices(apps, schema_editor):
             device_model=models.OuterRef('device_model')
         ).order_by('server_upload_time').values('pk')[:1]
 
+        last_device_model_time_subquery = Report.objects.filter(
+            user=models.OuterRef('user'),
+            device_model=models.OuterRef('device_model')
+        ).order_by('-server_upload_time').values('server_upload_time')[:1]
+
         first_report_per_device_qs = Report.objects.filter(
             pk__in=models.Subquery(earliest_report_subquery)
+        ).annotate(
+            last_device_model_time=models.Subquery(last_device_model_time_subquery)
         ).order_by('user', 'device_model').distinct('user', 'device_model').select_related('user')
 
         device_to_add = []
         for first_report_device in first_report_per_device_qs.iterator():
+            device_token = first_report_device.user.device_token
             device_to_add.append(
                 Device(
                     user_id=first_report_device.user_id,
-                    registration_id=first_report_device.user.device_token,
+                    registration_id=None if device_token == '' else device_token,
                     active=first_report_device.user.device_token not in [None, ''],
+                    is_logged_in=True,
+                    last_login=first_report_device.last_device_model_time,
                     date_created=first_report_device.server_upload_time,
                     updated_at=first_report_device.server_upload_time, # NOTE: set to last history in following migratinos
                     type={
-                        'Android': 'android',
-                        'iPadOS': 'ios',
-                        'iOS': 'ios',
-                        'iPhone OS': 'ios'
-                    }.get(first_report_device.os),
+                        'android': 'android',
+                        'ipados': 'ios',
+                        'ios': 'ios',
+                        'iphone os': 'ios'
+                    }.get(first_report_device.os.lower() if first_report_device.os else None),
                     manufacturer=first_report_device.device_manufacturer,
                     model=first_report_device.device_model,
                     os_name=first_report_device.os,
@@ -101,6 +114,7 @@ def populate_devices(apps, schema_editor):
                     # If not the one with the latest date, set to None.
                     element.registration_id = None
                     element.active = False
+                    element.is_logged_in = False
 
                 device_to_add_filtered.append(element)
 
@@ -127,9 +141,10 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(blank=True, max_length=255, null=True, verbose_name='Name')),
                 ('active', models.BooleanField(default=True, help_text='Inactive devices will not be sent notifications', verbose_name='Is active')),
+                ('is_logged_in', models.BooleanField(default=False)),
                 ('date_created', models.DateTimeField(null=True, verbose_name='Creation date')),
                 ('device_id', models.CharField(blank=True, db_index=True, help_text='Unique device identifier', max_length=255, null=True, verbose_name='Device ID')),
-                ('registration_id', models.TextField(null=True, verbose_name='Registration token')),
+                ('registration_id', models.TextField(db_index=True, null=True, verbose_name='Registration token')),
                 ('type', models.CharField(null=True, choices=[('ios', 'ios'), ('android', 'android'), ('web', 'web')], max_length=10)),
                 ('manufacturer', models.CharField(blank=True, help_text='The manufacturer of the device.', max_length=128, null=True)),
                 ('model', models.CharField(blank=True, help_text='The end-user-visible name for the end product.', max_length=128, null=True)),
@@ -164,11 +179,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='device',
-            constraint=models.UniqueConstraint(condition=models.Q(('device_id__isnull', False), ('user__isnull', False), models.Q(_negated=True, device_id='')), fields=('user', 'device_id'), name='unique_user_device_id'),
+            constraint=models.UniqueConstraint(condition=models.Q(('device_id__isnull', False), ('user__isnull', False), models.Q(('device_id__exact', ''), _negated=True)), fields=('user', 'device_id'), name='unique_user_device_id'),
         ),
         migrations.AddConstraint(
             model_name='device',
-            constraint=models.UniqueConstraint(condition=models.Q(('registration_id__isnull', False), ('user__isnull', False), models.Q(_negated=True, registration_id='')), fields=('user', 'registration_id'), name='unique_user_registration_id'),
+            constraint=models.UniqueConstraint(condition=models.Q(('registration_id__isnull', False), ('user__isnull', False), models.Q(('registration_id__exact', ''), _negated=True)), fields=('user', 'registration_id'), name='unique_user_registration_id'),
         ),
         migrations.RemoveField(
             model_name='tigauser',

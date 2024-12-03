@@ -3,7 +3,7 @@ import uuid
 
 # Create your tests here.
 from django.test import TestCase, override_settings
-from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse, Device
+from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp
 from django.core.management import call_command
 from PIL import Image, ExifTags
 from PIL.ExifTags import TAGS, GPSTAGS
@@ -28,6 +28,7 @@ import urllib
 import json
 import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
+import time_machine
 
 import io
 import piexif
@@ -512,6 +513,150 @@ class ReportEndpointTestCase(APITestCase):
                 tzinfo=timezone.utc
             )
         )
+
+    def test_user_locale_is_updated_according_to_app_language(self):
+        user = TigaUser.objects.create(locale='en')
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "user": str(user.pk),
+                    "app_language": "es",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        user.refresh_from_db()
+
+        self.assertEqual(user.locale, 'es')
+
+    def test_mobile_app_fk_is_created_if_not_exist(self):
+        self.assertEqual(
+            MobileApp.objects.filter(package_name='testapp', package_version='100').count(),
+            0
+        )
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "package_name": "testapp",
+                    "package_version": "100",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        self.assertEqual(
+            MobileApp.objects.filter(package_name='testapp', package_version='100').count(),
+            1
+        )
+        mobile_app = MobileApp.objects.get(package_name='testapp', package_version='100')
+        self.assertEqual(mobile_app.package_name, 'testapp')
+        self.assertEqual(mobile_app.package_version, '100')
+
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+        self.assertEqual(report.mobile_app, mobile_app)
+
+    def test_mobile_app_fk_is_set_correctly_if_exist(self):
+        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='100')
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "package_name": "testapp",
+                    "package_version": "100",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+        self.assertEqual(report.mobile_app, mobile_app)
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_device_with_model_null_is_updated_on_new_report(self):
+        user = TigaUser.objects.create(locale='en')
+        device = Device.objects.create(
+            registration_id='fcm_random_token',
+            user=user
+        )
+        self.assertIsNone(device.type)
+        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='100')
+
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "user": str(user.pk),
+                    "device_manufacturer": "test_make",
+                    "device_model": "test_model",
+                    "os": "testOs",
+                    "os_version": "testVersion",
+                    "os_language": "es-ES",
+                    "package_name": "testapp",
+                    "package_version": "100",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        device.refresh_from_db()
+
+        self.assertEqual(device.manufacturer, "test_make")
+        self.assertEqual(device.model, "test_model")
+        self.assertEqual(device.os_name, "testOs")
+        self.assertEqual(device.os_version, "testVersion")
+        self.assertEqual(device.os_locale, "es-ES")
+        self.assertEqual(device.mobile_app, mobile_app)
+        self.assertEqual(device.is_logged_in, True)
+        self.assertEqual(device.last_login, timezone.now())
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_device_with_model_is_updated_on_new_report(self):
+        user = TigaUser.objects.create(locale='en')
+        device = Device.objects.create(
+            registration_id='fcm_random_token',
+            user=user,
+            model="test_model"
+        )
+        self.assertIsNone(device.type)
+        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='100')
+
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "user": str(user.pk),
+                    "device_manufacturer": "test_make",
+                    "device_model": "test_model",
+                    "os": "testOs",
+                    "os_version": "testVersion",
+                    "os_language": "es-ES",
+                    "package_name": "testapp",
+                    "package_version": "100",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        device.refresh_from_db()
+
+        self.assertEqual(device.manufacturer, "test_make")
+        self.assertEqual(device.model, "test_model")
+        self.assertEqual(device.os_name, "testOs")
+        self.assertEqual(device.os_version, "testVersion")
+        self.assertEqual(device.os_locale, "es-ES")
+        self.assertEqual(device.mobile_app, mobile_app)
+        self.assertEqual(device.is_logged_in, True)
+        self.assertEqual(device.last_login, timezone.now())
 
 
 class FixEndpointTestCase(APITestCase):

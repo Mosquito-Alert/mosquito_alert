@@ -7,7 +7,7 @@ import numpyencoder.numpyencoder
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0070_tigauser_locale_field'),
+        ('tigaserver_app', '0071_tigauser_locale_field'),
     ]
 
     operations = [

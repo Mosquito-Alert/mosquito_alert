@@ -53,11 +53,11 @@ def populate_device_histories(apps, schema_editor):
                 device_id=device_change_in_report['device__device_id'],
                 registration_id=device_change_in_report['device__registration_id'],
                 type={
-                    'Android': 'android',
-                    'iPadOS': 'ios',
-                    'iOS': 'ios',
-                    'iPhone OS': 'ios'
-                }.get(device_change_in_report['os']),
+                    'android': 'android',
+                    'ipados': 'ios',
+                    'ios': 'ios',
+                    'iphone os': 'ios'
+                }.get(device_change_in_report['os'].lower() if device_change_in_report['os'] else None),
                 manufacturer=device_change_in_report['device_manufacturer'],
                 model=device_change_in_report['device_model'],
                 os_name=device_change_in_report['os'],
@@ -86,7 +86,7 @@ class Migration(migrations.Migration):
                 ('id', models.IntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
                 ('active', models.BooleanField(default=True, help_text='Inactive devices will not be sent notifications', verbose_name='Is active')),
                 ('device_id', models.CharField(blank=True, db_index=True, help_text='Unique device identifier', max_length=255, null=True, verbose_name='Device ID')),
-                ('registration_id', models.TextField(null=True, verbose_name='Registration token')),
+                ('registration_id', models.TextField(db_index=True, null=True, verbose_name='Registration token')),
                 ('type', models.CharField(null=True, choices=[('ios', 'ios'), ('android', 'android'), ('web', 'web')], max_length=10)),
                 ('manufacturer', models.CharField(blank=True, help_text='The manufacturer of the device.', max_length=128, null=True)),
                 ('model', models.CharField(blank=True, help_text='The end-user-visible name for the end product.', max_length=128, null=True)),

@@ -2,6 +2,7 @@ import pytest
 
 from tigaserver_app.models import Device
 
+from .factories import create_device
 
 # NOTE: needed for token with perms fixture
 @pytest.fixture
@@ -10,11 +11,4 @@ def model_class():
 
 @pytest.fixture
 def device(app_user):
-    return Device.objects.create(
-        device_id='unique_id',
-        user=app_user,
-        type='android',
-        model='test_model',
-        os_name='android',
-        os_version='32'
-    )
+    return create_device(user=app_user)
