@@ -1,5 +1,7 @@
 from django.db import models
 
+from fcm_django.models import FCMDeviceQuerySet, FCMDeviceManager
+
 class ReportQuerySet(models.QuerySet):
     def has_photos(self, state: bool = True):
         from .models import Photo
@@ -63,3 +65,15 @@ class NotificationQuerySet(models.QuerySet):
         )
 
 NotificationManager = models.Manager.from_queryset(NotificationQuerySet)
+
+class DeviceQuerySet(FCMDeviceQuerySet):
+    def deactivate_devices_with_error_results(self, *args, **kwargs):
+        deactivated_ids = super().deactivate_devices_with_error_results(*args, **kwargs)
+
+        self.filter(registration_id__in=deactivated_ids).update(is_logged_in=False)
+
+        return deactivated_ids
+
+class DeviceManager(FCMDeviceManager):
+    def get_queryset(self):
+        return DeviceQuerySet(self.model)

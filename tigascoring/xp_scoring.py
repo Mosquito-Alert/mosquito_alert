@@ -331,8 +331,6 @@ def compute_user_score_in_xp_v2(user_uuid):
 
     user = TigaUser.objects.get(pk=user_uuid)
     user_uuids = None
-    if user.profile is not None:
-        user_uuids = TigaUser.objects.filter(profile=user.profile).values('user_UUID')
 
     qs_overall = TigaUser.objects.exclude(score_v2=0)
     qs_adult = TigaUser.objects.exclude(score_v2_adult=0)
@@ -377,10 +375,7 @@ def compute_user_score_in_xp_v2(user_uuid):
 
     result['joined_value'] = user.registration_time.strftime("%d/%m/%Y")
 
-    if user_uuids is None:
-        user_reports = Report.objects.filter(user__user_UUID=user_uuid).order_by('-creation_time')
-    else:
-        user_reports = Report.objects.filter(user__user_UUID__in=user_uuids).order_by('-creation_time')
+    user_reports = Report.objects.filter(user__user_UUID=user_uuid).order_by('-creation_time')
 
     if user_reports:
         result['active_value'] = user_reports[0].creation_time.strftime("%d/%m/%Y")
@@ -509,16 +504,8 @@ def compute_user_score_in_xp_v2(user_uuid):
 
 def get_all_user_reports(user_uuid):
     user = TigaUser.objects.get(pk=user_uuid)
-    user_uuids = None
-    if user.profile is not None:
-        user_uuids = TigaUser.objects.filter(profile=user.profile).values('user_UUID')
 
-    user_reports = None
-    if user_uuids is None:
-        user_reports = Report.objects.filter(user__user_UUID=user_uuid)
-    else:
-        user_reports = Report.objects.filter(user__user_UUID__in=user_uuids)
-    return user_reports
+    return Report.objects.filter(user=user)
 
 
 def get_first_report_of_season(user_uuid, current_year=None):

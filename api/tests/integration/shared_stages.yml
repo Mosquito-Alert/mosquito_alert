@@ -5,7 +5,6 @@ description:
   Reusable test stages
 
 variables:
-  user_device_token: "123456789"
   user_password: "testpassword123_tmp"
   accounts_login_path: 'en/accounts/login'
 
@@ -16,7 +15,6 @@ stages:
       url: "{api_live_url}/users/"
       json:
         password: "{user_password}"
-        device_token: "{user_device_token}"
       method: POST
     response:
       status_code: 201

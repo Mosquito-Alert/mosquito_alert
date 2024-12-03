@@ -49,16 +49,6 @@ stages:
         tags:
           - tag1
           - tag2
-        package:
-          name: testapp
-          version: v123
-          language: english
-        device:
-          manufacturer: test_make
-          model: test model
-          os: testOs
-          os_version: v123
-          os_language: en
     response:
       status_code: 201
       json: &response_observation_with_photo

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -21,6 +23,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework_simplejwt.tokens import Token
 
 from tigaserver_app.models import (
     TigaUser,
@@ -31,7 +34,8 @@ from tigaserver_app.models import (
     Report,
     Fix,
     Notification,
-    Photo
+    Photo,
+    Device
 )
 
 from .filters import NotificationFilter, CampaignFilter, ObservationFilter, BiteFilter, BreedingSiteFilter
@@ -45,7 +49,9 @@ from .serializers import (
     PhotoSerializer,
     ObservationSerializer,
     BiteSerializer,
-    BreedingSiteSerializer
+    BreedingSiteSerializer,
+    DeviceSerializer,
+    DeviceUpdateSerializer
 )
 from .serializers import (
     CreateNotificationSerializer,
@@ -54,7 +60,7 @@ from .serializers import (
     UserNotificationCreateSerializer,
 )
 from .permissions import NotificationObjectPermissions, ReportPermissions
-from .viewsets import GenericViewSet, GenericNoMobileViewSet
+from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet
 
 User = get_user_model()
 
@@ -158,13 +164,55 @@ class BaseReportViewSet(
             "photos",
             queryset=Photo.objects.visible()
         )
-    ).non_deleted()
+    ).non_deleted().order_by('-server_upload_time')
 
     lookup_url_kwarg = "uuid"
 
     filter_backends = (DjangoFilterBackend,)
 
     permission_classes = (ReportPermissions,)
+
+    def _get_device_from_jwt(self) -> Optional[Device]:
+        if not self.request:
+            return
+
+        if not isinstance(self.request.auth, Token):
+            return
+
+        device_id = self.request.auth.get('device_id')
+        if not device_id:
+            return
+
+        try:
+            return Device.objects.get(
+                user=self.request.user,
+                device_id=device_id
+            )
+        except Device.DoesNotExist:
+            return
+
+    def perform_create(self, serializer):
+        kwargs = {}
+        user = self.request.user
+        if isinstance(user, TigaUser):
+            kwargs['app_language'] = user.locale
+
+        device = self._get_device_from_jwt()
+        if device:
+            kwargs['device'] = device
+            kwargs['device_manufacturer'] = device.manufacturer
+            kwargs['device_model'] = device.model
+            kwargs['os'] = device.os_name
+            kwargs['os_version'] = device.os_version
+            kwargs['os_language'] = device.os_locale
+            if device.mobile_app:
+                kwargs['mobile_app'] = device.mobile_app
+                kwargs['package_name'] = device.mobile_app.package_name
+                kwargs['package_version'] = device.mobile_app.package_version
+        serializer.save(**kwargs)
+
+    def perform_update(self, serializer):
+        self.perform_create(serializer=serializer)
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -211,7 +259,7 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
 
 
 class UserViewSet(
-    CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet
+    CreateModelMixin, UpdateModelMixin, RetrieveModelMixin, GenericViewSet
 ):
     queryset = TigaUser.objects.all()
     serializer_class = UserSerializer
@@ -238,3 +286,19 @@ class PhotoViewSet(
 
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'
+
+class DeviceSerializerViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericMobileOnlyViewSet):
+    queryset = Device.objects.filter(device_id__isnull=False).exclude(device_id='').select_related('mobile_app')
+    serializer_class = DeviceSerializer
+
+    lookup_field = 'device_id'
+    lookup_url_kwarg = 'device_id'
+
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.request.method in ["PUT", "PATCH"]:
+            return DeviceUpdateSerializer
+        else:
+            return DeviceSerializer

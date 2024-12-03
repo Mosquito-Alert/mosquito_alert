@@ -19,13 +19,14 @@ from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo
 User = get_user_model()
 TEST_DATA_PATH = Path(Path(__file__).parent.absolute(), "test_data/")
 
+
 @pytest.fixture
 def user_password():
     return "testpassword123_tmp"
 
 @pytest.fixture
 def app_user(user_password):
-    user = TigaUser.objects.create(device_token="123456789")
+    user = TigaUser.objects.create()
     user.set_password(user_password)
     user.save(0)
     return user

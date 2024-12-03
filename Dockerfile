@@ -1,20 +1,26 @@
 # Use the official Ubuntu 20.04 image as a base
 FROM ubuntu:20.04
 
-# Update package list
-RUN apt-get update
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install prerequisites
-RUN apt-get install -y software-properties-common
+RUN apt-get update && apt-get install -y software-properties-common curl git
 
 # Add Deadsnakes PPA
 RUN add-apt-repository ppa:deadsnakes/ppa
 
-# Update package list again
-RUN apt-get update
+# Install Python 3.9
+RUN apt-get update && apt-get install -y python3.9 python3.9-dev
 
-# Install Python 3.8.10
-RUN apt-get install -y python3.8 python3-pip
+# Ensure python3 points to python3.9
+RUN ln -sf /usr/bin/python3.9 /usr/bin/python3
+
+# Install pip for Python 3.9
+RUN apt-get install -y python3-setuptools
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN python3.9 get-pip.py
+RUN rm get-pip.py
 
 # Install apt packages
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -26,14 +32,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     libpq-dev \
     # For matplotlib
     pkg-config libfreetype6-dev
-
-# Install dependencies
-#     setuptools<58.0.0 required for anyjson
-#     cython<3.0.0 required for the pyyaml version we are using (https://stackoverflow.com/questions/7496547/does-python-scipy-need-blas)
-#     pinned pip to version <24.1 because otherwise celery install fails
-RUN pip install --upgrade "setuptools<58.0.0" "wheel==0.40.0" "cython<3.0.0" "pip<24.1"
-# Solved bug when install scikit. Use same version as dev.pip
-RUN pip install numpy==1.23.1
 
 WORKDIR /app
 COPY . /app

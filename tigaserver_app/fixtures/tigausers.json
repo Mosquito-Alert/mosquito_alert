@@ -4,9 +4,8 @@
     "model": "tigaserver_app.tigauser",
     "fields": {
       "registration_time": "2017-06-26T01:38:41.782Z",
-      "device_token": null,
       "score": 1,
-      "profile": null
+      "locale": "en"
     }
   }
 ]

@@ -17,7 +17,7 @@ import calendar
 import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse, Device
 from tigacrafting.models import FavoritedReports
 from tigacrafting.report_queues import assign_crisis_report
 from tigacrafting.views import auto_annotate
@@ -1104,9 +1104,10 @@ def msg_ios(request):
                 body_html_en=link_url
             )
         )
-        push_message_id = notificaiton.send_to_user(user=this_user)
+        batch_response = notificaiton.send_to_user(user=this_user)
+        push_is_success = batch_response.success_count >= 0
 
-        return Response({'token': this_user.device_token, 'alert_message': alert_message, 'link_url':link_url, 'push_is_success': bool(push_message_id)})
+        return Response({'token': this_user.device_token, 'alert_message': alert_message, 'link_url':link_url, 'push_is_success': push_is_success})
 
     else:
         raise ParseError(detail='Invalid parameters')
@@ -1137,11 +1138,14 @@ def token(request):
     token = request.query_params.get('token', -1)
     user_id = request.query_params.get('user_id', -1)
     if( user_id != -1 and token != -1 ):
-        queryset = TigaUser.objects.all()
-        this_user = get_object_or_404(queryset, pk=user_id)
-        this_user.device_token = token
-        this_user.save()
-        return Response({'token' : token})
+        device = Device.objects.update_or_create(
+            user=get_object_or_404(TigaUser.objects.all(), pk=user_id),
+            registration_id=token,
+            defaults={
+                'active': True
+            }
+        )
+        return Response({'token' : device.registration_id})
     else:
         raise ParseError(detail='Invalid parameters')
 
@@ -1203,13 +1207,9 @@ def refresh_user_scores():
     queryset = TigaUser.objects.all()
     for user in queryset:
         score = summary.getScore(user.user_UUID)
-        if user.profile:
-            user.profile.score = score[0]
-            user.profile.save()
-        else:
-            if user.score != score[0]:
-                user.score = score[0]
-                user.save()
+        if user.score != score[0]:
+            user.score = score[0]
+            user.save()
 
 
 @api_view(['GET'])
@@ -1230,35 +1230,21 @@ def user_score(request):
     queryset = TigaUser.objects.all()
     user = get_object_or_404(queryset, pk=user_id)
     if request.method == 'GET':
-        if user.profile:
-            if user.profile.score == 0:
-                content = {"user_id": user_id, "score": 1, "score_label": score_label(1)}
-            else:
-                content = {"user_id": user_id, "score": user.profile.score, "score_label": score_label(user.profile.score)}
+        if user.score == 0:
+            content = {"user_id": user_id, "score": 1, "score_label": score_label(1)}
         else:
-            if user.score == 0:
-                content = {"user_id": user_id, "score": 1, "score_label": score_label(1)}
-            else:
-                content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
+            content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
     if request.method == 'POST':
         score = request.query_params.get('score', -1)
         if score == -1:
             raise ParseError(detail='score is mandatory')
         try:
-            if user.profile:
-                p = user.profile
-                p.score = int(score)
-                p.save()
-            else:
-                user.score = int(score)
-                user.save()
+            user.score = int(score)
+            user.save()
         except ValueError:
             raise ParseError(detail='Invalid score integer value')
-        if user.profile:
-            content = {"user_id": user_id, "score": user.profile.score, "score_label": score_label(user.profile.score)}
-        else:
-            content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
+        content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
         return Response(content)
 
 '''
@@ -1500,7 +1486,7 @@ def send_notifications(request):
         if recipients == 'all':
             topic = NotificationTopic.objects.get(topic_code='global')
             #if global, estimate is all users with token
-            notification_estimate = TigaUser.objects.exclude(device_token='').filter(device_token__isnull=False).count()
+            notification_estimate = UserSubscription.objects.filter(topic=topic, user__fcmdevice__active=True).count()
         elif "$" in recipients:
             ids_list = recipients.split('$')
             send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
@@ -1509,7 +1495,7 @@ def send_notifications(request):
             try:
                 topic = NotificationTopic.objects.get(topic_code=recipients)
                 #users subscribed to topic
-                notification_estimate = UserSubscription.objects.filter(topic=topic).count()
+                notification_estimate = UserSubscription.objects.filter(topic=topic, user__fcmdevice__active=True).count()
             except NotificationTopic.DoesNotExist:
                 notification_estimate = 1
                 send_to = [TigaUser.objects.get(pk=recipients)]
@@ -1527,22 +1513,18 @@ def send_notifications(request):
         if topic is not None:
             # send to topic
             try:
-                message_id = n.send_to_topic(topic=topic, push=push)
+                send_response = n.send_to_topic(topic=topic, push=push)
+                push_success = send_response.success
             except Exception:
                 pass
-            else:
-                push_success = bool(message_id)
         else:
             # send to recipient(s)
-            message_ids = []
             for recipient in send_to:
                 try:
-                    message_ids.append(
-                        n.send_to_user(user=recipient, push=push)
-                    )
+                    batch_response = n.send_to_user(user=recipient, push=push)
+                    push_success = batch_response.success_count >= 0
                 except Exception:
                     pass
-            push_success = bool(message_ids) and all(message_ids)
 
         results = {'non_push_estimate_num': notification_estimate, 'push_success': push_success}
         return Response(results)
@@ -1561,11 +1543,8 @@ def nearby_reports_no_dwindow(request):
 
         user = request.query_params.get('user', None)
         tigauser = None
-        user_uuids = None
         if user is not None:
             tigauser = get_object_or_404(TigaUser.objects.all(), pk=user)
-            if tigauser.profile is not None:
-                user_uuids = TigaUser.objects.filter(profile=tigauser.profile).values('user_UUID')
 
         radius = request.query_params.get('radius', 5000)
         try:
@@ -1613,10 +1592,7 @@ def nearby_reports_no_dwindow(request):
             .annotate(n_annotations=Count('expert_report_annotations'))\
             .filter(n_annotations__gte=3)
         if user is not None:
-            if tigauser.profile is None:
-                reports_adult = reports_adult.exclude(user=user)
-            else:
-                reports_adult = reports_adult.exclude(user__user_UUID__in=user_uuids)
+            reports_adult = reports_adult.exclude(user=user)
         if show_hidden == 0:
             reports_adult = reports_adult.non_deleted()
 
@@ -1627,10 +1603,7 @@ def nearby_reports_no_dwindow(request):
             .exclude(hide=True) \
             .filter(type='bite')
         if user is not None:
-            if tigauser.profile is None:
-                reports_bite = reports_bite.exclude(user=user)
-            else:
-                reports_bite = reports_bite.exclude(user__user_UUID__in=user_uuids)
+            reports_bite = reports_bite.exclude(user=user)
         if show_hidden == 0:
             reports_bite = reports_bite.non_deleted()
 
@@ -1641,10 +1614,7 @@ def nearby_reports_no_dwindow(request):
             .exclude(hide=True) \
             .filter(type='site')
         if user is not None:
-            if tigauser.profile is None:
-                reports_site = reports_site.exclude(user=user)
-            else:
-                reports_site = reports_site.exclude(user__user_UUID__in=user_uuids)
+            reports_site = reports_site.exclude(user=user)
         if show_hidden == 0:
             reports_site = reports_site.non_deleted()
 
@@ -1652,10 +1622,7 @@ def nearby_reports_no_dwindow(request):
 
 
         if user is not None:
-            if tigauser.profile is None:
-                user_reports = Report.objects.filter(user=user)
-            else:
-                user_reports = Report.objects.filter(user__user_UUID__in=user_uuids)
+            user_reports = Report.objects.filter(user=user)
             if show_hidden == 0:
                 user_reports = user_reports.non_deleted()
             all_reports = list(classified_reports_in_max_radius) + list(reports_bite) + list(reports_site) + list(user_reports)
@@ -1677,14 +1644,10 @@ def nearby_reports_no_dwindow(request):
 
         previous = current_page.previous_page_number() if current_page.has_previous() else None
 
-        if user_uuids is None:
-            if user is not None:
-                response = { "user_uuids": [user], "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
-            else:
-                response = {"count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
+        if user is not None:
+            response = { "user_uuids": [user], "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
         else:
-            user_uuids_flat = [x['user_UUID'] for x in user_uuids]
-            response = { "user_uuids": user_uuids_flat, "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
+            response = {"count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
 
         return Response(response)
 
@@ -2136,9 +2099,11 @@ def non_visible_reports(request):
 
 class OWCampaignsViewSet(ReadOnlyModelViewSet):
     serializer_class = OWCampaignsSerializer
+    queryset = OWCampaigns.objects.all()
 
     def get_queryset(self):
-        qs = OWCampaigns.objects.all()
+        qs = super().get_queryset()
+
         country_id = self.request.query_params.get('country_id', None)
         if country_id is not None:
             try:
@@ -2151,10 +2116,8 @@ class OWCampaignsViewSet(ReadOnlyModelViewSet):
 
 class OrganizationsPinViewSet(ReadOnlyModelViewSet):
     serializer_class = OrganizationPinsSerializer
+    queryset = OrganizationPin.objects.all()
 
-    def get_queryset(self):
-        qs = OrganizationPin.objects.all()
-        return qs
 
 
 @api_view(['POST'])

@@ -21,6 +21,8 @@ from tigaserver_app.models import (
     Photo,
     Fix,
     NotificationTopic,
+    Device,
+    MobileApp
 )
 
 from .fields import (
@@ -272,24 +274,6 @@ class SimplePhotoSerializer(serializers.ModelSerializer):
 
 
 class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
-    class DeviceSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Report
-            fields = ("manufacturer", "model", "os", "os_version", "os_language")
-            extra_kwargs = {
-                "manufacturer": {"source": "device_manufacturer"},
-                "model": {"source": "device_model"},
-            }
-
-    class PackageSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Report
-            fields = ("name", "version", "language")
-            extra_kwargs = {
-                "name": {"source": "package_name"},
-                "version": {"source": "package_version"},
-                "language": {"source": "app_language"},
-            }
 
     class LocationSerializer(serializers.ModelSerializer):
         point = PointField(required=True, allow_null=True)
@@ -349,8 +333,6 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
     received_at = serializers.DateTimeField(read_only=True, source="server_upload_time")
 
     location = LocationSerializer(source="*")
-    package = PackageSerializer(required=False, write_only=True, source="*")
-    device = DeviceSerializer(required=False, write_only=True, source="*")
     tags = TagListSerializerField(required=False, allow_empty=True)
 
     def get_created_at_local(self, obj) -> datetime:
@@ -371,8 +353,6 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             "location",
             "note",
             "tags",
-            "package",
-            "device",
             "published",
         )
         read_only_fields = (
@@ -496,13 +476,17 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     uuid = serializers.UUIDField(source="user_UUID", read_only=True)
+    language_iso = serializers.SerializerMethodField(help_text='ISO 639-1 code')
+
+    def get_language_iso(self, obj) -> str:
+        return obj.language_iso2
 
     class Meta:
         model = TigaUser
         fields = (
             "uuid",
             "registration_time",
-            "device_token",
+            "locale",
             "language_iso",
             "score",
             "last_score_update",
@@ -513,9 +497,7 @@ class UserSerializer(serializers.ModelSerializer):
             "last_score_update",
         )
         extra_kwargs = {
-            "device_token": {"write_only": True},
-            "score": {"source": "score_v2"},
-            "language_iso": {"source": "language_iso2"}
+            "score": {"source": "score_v2"}
         }
 
 class CreateUserSerializer(UserSerializer):
@@ -546,3 +528,100 @@ class PhotoSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "image_url": {"source": "photo"},
         }
+
+class MobileAppSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MobileApp
+        fields = ("package_name", "package_version")
+
+class DeviceSerializer(serializers.ModelSerializer):
+    class DeviceOsSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Device
+            fields = (
+                "name",
+                "version",
+                "locale",
+            )
+            extra_kwargs = {
+                "name": {"source": "os_name", "required": True, "allow_null": False},
+                "version": {"source": "os_version", "required": True, "allow_null": False},
+                "locale": {"source": "os_locale" }
+            }
+
+    mobile_app = MobileAppSerializer(required=False)
+    os = DeviceOsSerializer(source="*")
+    user_uuid = serializers.UUIDField(
+        source="user_id", allow_null=False, read_only=True
+    )
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    def validate(self, data):
+        mobile_app_data = data.pop("mobile_app", None)
+        # Create or retrieve the MobileApp instance
+        mobile_app_instance = None
+        if mobile_app_data:
+            mobile_app_instance, _ = MobileApp.objects.get_or_create(**mobile_app_data)
+        data["mobile_app"] = mobile_app_instance
+
+        return data
+
+    def create(self, validated_data):
+        # Extract the user and model from the data
+        user = validated_data.get('user')
+        model = validated_data.get('model')
+        device_id = validated_data.get('device_id')
+
+        # Check if there is a device with the same user, model, and device_id=None
+        # That is for the users that are migrating from the legacy API to this.
+        device = Device.objects.filter(user=user, model=model, device_id=None).first()
+        if device:
+            Device.objects.filter(user=user, model=model, device_id=device_id).delete()
+            # If device exists, update it
+            for attr, value in validated_data.items():
+                setattr(device, attr, value)
+            device.save()
+            return device
+
+        # If no matching device was found, create a new device
+        return super().create(validated_data)
+
+    class Meta:
+        model = Device
+        fields = (
+            "device_id",
+            "name",
+            "fcm_token",
+            "type",
+            "manufacturer",
+            "model",
+            "os",
+            "mobile_app",
+            "user_uuid",
+            "last_login",
+            "user",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = (
+            "created_at",
+            "updated_at",
+            "last_login",
+        )
+        extra_kwargs = {
+            "device_id": {"required": True, "allow_null": False },
+            "fcm_token": {"source": "registration_id", "write_only": True, "required": True, "allow_null": False },
+            "created_at": {"source": "date_created" },
+            "type": {"required": True, "allow_null": False },
+            "model": {"required": True, "allow_null": False },
+            "last_login": { "allow_null": True },
+        }
+
+class DeviceUpdateSerializer(DeviceSerializer):
+    class Meta(DeviceSerializer.Meta):
+        read_only_fields = DeviceSerializer.Meta.read_only_fields + (
+            "device_id",
+            "type",
+            "manufacturer",
+            "model"
+        )

@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from datetime import timedelta
+import jwt
 import pytest
 import time_machine
 
@@ -12,11 +13,13 @@ from rest_framework.test import APITestCase, APIClient
 
 from rest_framework_simplejwt.settings import api_settings
 
-from tigaserver_app.models import TigaUser, Report
+from tigaserver_app.models import TigaUser, Report, Device, MobileApp
 
+from api.auth.serializers import AppUserTokenObtainPairSerializer
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
+from api.tests.factories import create_report_object
 
 User = get_user_model()
 
@@ -29,6 +32,10 @@ def app_api_client(app_user):
 # TODO: automatic user subscription on new report.
 
 class AppAPIClient(APIClient):
+    def __init__(self, device: Device = None,  *args, **kwargs):
+        self.device = device
+        super().__init__(self, *args, **kwargs)
+
     def force_login(self, user, backend=None) -> None:
         self.logout()
         return super().force_login(user, backend)
@@ -37,8 +44,10 @@ class AppAPIClient(APIClient):
         if isinstance(user, User):
             return super()._login(user, backend)
         elif isinstance(user, TigaUser):
-            token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
-            token = token_class.for_user(user)
+            token = AppUserTokenObtainPairSerializer.get_token(
+                user=user,
+                device_id=self.device.device_id if self.device else None
+            )
             self.credentials(HTTP_AUTHORIZATION=f"Bearer {str(token.access_token)}")
         else:
             raise NotImplementedError
@@ -73,22 +82,29 @@ class BaseReportTest:
     def endpoint(self):
         raise NotImplementedError
 
-    def test_package_is_set_on_report_create(self, app_api_client, data_create_request):
+    def test_package_is_set_on_report_create(self, app_user, data_create_request):
         if self.POST_FORMAT == 'multipart':
             pytest.skip("Skipping test for multipart format")
-        # Testing here due its write_only field
+
+        # Testing here due its a field taken from the JWT token
+        app_user.locale = 'es'
+        app_user.save()
+        app_api_client = AppAPIClient(
+            device=Device.objects.create(
+                user=app_user,
+                device_id='unique_device_id',
+                mobile_app=MobileApp.objects.create(
+                    package_name='testapp',
+                    package_version=1234
+                )
+            )
+        )
+        app_api_client.force_login(user=app_user)
 
         response = app_api_client.post(
             self.endpoint,
             data={
                 **data_create_request,
-                **{
-                    'package': {
-                        'name': 'testapp',
-                        'version': 1234,
-                        'language': 'en'
-                    }
-                }
             },
             format=self.POST_FORMAT
         )
@@ -97,25 +113,30 @@ class BaseReportTest:
 
         assert report.package_name == 'testapp'
         assert report.package_version == 1234
-        assert report.app_language == 'en'
+        assert report.app_language == 'es'
 
-    def test_device_is_set_on_report_create(self, app_api_client, data_create_request):
+    def test_device_is_set_on_report_create(self, app_user, data_create_request):
         if self.POST_FORMAT == 'multipart':
             pytest.skip("Skipping test for multipart format")
-        # Testing here due its write_only field
+
+        # Testing here due its a field taken from the JWT token
+        app_api_client = AppAPIClient(
+            device=Device.objects.create(
+                user=app_user,
+                device_id='unique_device_id',
+                manufacturer='test_make',
+                model="test_model",
+                os_name="testOs",
+                os_version="testv123",
+                os_locale='es',
+            )
+        )
+        app_api_client.force_login(user=app_user)
+
         response = app_api_client.post(
             self.endpoint,
             data={
                 **data_create_request,
-                **{
-                    'device': {
-                        'manufacturer': 'test_make',
-                        'model': 'test_model',
-                        'os': 'testOs',
-                        'os_version': 'testv123',
-                        'os_language': 'testen'
-                    }
-                }
             },
             format=self.POST_FORMAT
         )
@@ -128,7 +149,7 @@ class BaseReportTest:
         assert report.device_model == 'test_model'
         assert report.os == 'testOs'
         assert report.os_version == 'testv123'
-        assert report.os_language == 'testen'
+        assert report.os_language == 'es'
 
     def test_delete_method_performs_soft_delete(self, app_api_client, report_object):
         # Delete
@@ -169,6 +190,7 @@ class TestObservationAPI(BaseReportTest):
     def report_object(self, app_user):
         return create_observation_object(user=app_user)
 
+@pytest.mark.django_db
 class TokenAPITest(APITestCase):
     @classmethod
     def setUpTestData(cls) -> None:
@@ -176,7 +198,7 @@ class TokenAPITest(APITestCase):
         cls.endpoint_refresh = cls.endpoint + 'refresh/'
 
     def setUp(self) -> None:
-        self.app_user = TigaUser.objects.create(device_token=123456)
+        self.app_user = TigaUser.objects.create()
         self.app_user.set_password('testpassword123_tmp')
         self.app_user.save()
 
@@ -208,7 +230,7 @@ class TokenAPITest(APITestCase):
 
     def test_user_last_login_is_not_updated_on_token_refresh(self):
         token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
-        
+
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
             token = token_class.for_user(self.app_user)
 
@@ -223,3 +245,296 @@ class TokenAPITest(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.app_user.refresh_from_db()
             self.assertIsNone(self.app_user.last_login)
+
+    def test_jwt_token_includes_device_id(self):
+        response = self.client.post(
+            self.endpoint,
+            data={
+                'uuid': self.app_user.pk,
+                'password': 'testpassword123_tmp',
+                'device_id': 'unique_id_for_device'
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        token = response.json()['access']
+        decoded = jwt.decode(
+            token,
+            algorithms=["HS256"],
+            key='dummy_secretkey'  # get from settings_dev
+        )
+        self.assertEqual(decoded['device_id'], 'unique_id_for_device')
+
+    def test_device_is_not_created_if_device_not_specified_on_login(self):
+        response = self.client.post(
+            self.endpoint,
+            data={
+                'uuid': self.app_user.pk,
+                'password': 'testpassword123_tmp',
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(Device.objects.filter(user=self.app_user).count(), 0)
+    
+    def test_device_is_not_created_if_device_is_voidon_login(self):
+        response = self.client.post(
+            self.endpoint,
+            data={
+                'uuid': self.app_user.pk,
+                'password': 'testpassword123_tmp',
+                'device_id': ''
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(Device.objects.filter(user=self.app_user).count(), 0)
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_device_is_created_if_not_exist_on_login(self):
+        response = self.client.post(
+            self.endpoint,
+            data={
+                'uuid': self.app_user.pk,
+                'password': 'testpassword123_tmp',
+                'device_id': 'unique_id_for_device'
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        device = Device.objects.get(user=self.app_user, device_id='unique_id_for_device')
+        self.assertIsNone(device.type)
+        self.assertEqual(device.date_created, timezone.now())
+        self.assertEqual(device.last_login, timezone.now())
+
+    def test_device_last_login_is_updated_on_token_create(self):
+        device = Device.objects.create(
+            user=self.app_user,
+            device_id='unique_id_for_device'
+        )
+        self.assertIsNone(device.last_login)
+        self.assertIsNotNone(device.date_created)
+        date_created = device.date_created
+
+        with time_machine.travel("2024-01-01 00:00:00", tick=False):
+            response = self.client.post(
+                self.endpoint,
+                data={
+                    'uuid': self.app_user.pk,
+                    'password': 'testpassword123_tmp',
+                    'device_id': 'unique_id_for_device'
+                }
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            device.refresh_from_db()
+            self.assertEqual(device.last_login, timezone.now())
+            self.assertEqual(device.date_created, date_created)
+
+    def test_jwt_token_includes_device_id_after_refresh(self):
+        response = self.client.post(
+            self.endpoint,
+            data={
+                'uuid': self.app_user.pk,
+                'password': 'testpassword123_tmp',
+                'device_id': 'unique_id_for_device'
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        refresh_token = response.json()['refresh']
+
+        response = self.client.post(
+            self.endpoint_refresh,
+            data={
+                'refresh': str(refresh_token),
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        token = response.json()['access']
+        decoded = jwt.decode(
+            token,
+            algorithms=["HS256"],
+            key='dummy_secretkey'  # get from settings_dev
+        )
+        self.assertEqual(decoded['device_id'], 'unique_id_for_device')
+
+    def test_device_last_login_is_not_updated_on_token_refresh(self):
+        device = Device.objects.create(
+            user=self.app_user,
+            device_id='unique_id_for_device'
+        )
+
+        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
+            response = self.client.post(
+                self.endpoint,
+                data={
+                    'uuid': self.app_user.pk,
+                    'password': 'testpassword123_tmp',
+                    'device_id': 'unique_id_for_device'
+                }
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            refresh_token = response.json()['refresh']
+
+            device.refresh_from_db()
+            last_login = device.last_login
+            self.assertEqual(last_login, timezone.now())
+
+            traveller.shift(timedelta(seconds=30))
+
+            response = self.client.post(
+                self.endpoint_refresh,
+                data={
+                    'refresh': str(refresh_token),
+                }
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            device.refresh_from_db()
+            self.assertEqual(device.last_login, last_login)
+
+    def test_device_is_set_to_logged_in_on_login_if_not_logged(self):
+        device = Device.objects.create(
+            user=self.app_user,
+            device_id='unique_id_for_device',
+            registration_id='fcm_token',
+            is_logged_in=False
+        )
+        response = self.client.post(
+            self.endpoint,
+            data={
+                'uuid': self.app_user.pk,
+                'password': 'testpassword123_tmp',
+                'device_id': 'unique_id_for_device'
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        device.refresh_from_db()
+        self.assertEqual(device.is_logged_in, True)
+
+    def test_device_is_set_to_not_logged_in_if_login_with_duplicated_device_id(self):
+        dummy_user = TigaUser.objects.create()
+        device = Device.objects.create(
+            user=dummy_user,
+            device_id='unique_id_for_device',
+            registration_id='fcm_token',
+            is_logged_in=True
+        )
+        # Login with same device_id but different user.
+        response = self.client.post(
+            self.endpoint,
+            data={
+                'uuid': self.app_user.pk,
+                'password': 'testpassword123_tmp',
+                'device_id': 'unique_id_for_device'
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        device.refresh_from_db()
+        self.assertEqual(device.is_logged_in, False)
+
+
+@pytest.mark.django_db
+class TestDeviceAPI:
+    endpoint = '/api/v1/devices/'
+
+    def test_device_is_set_to_inactive_if_new_duplicated_device_is_created(self, app_api_client):
+        dummy_user = TigaUser.objects.create()
+        device = Device.objects.create(
+            device_id='unique_id',
+            registration_id='fcm_unique_token',
+            user=dummy_user,
+            type='android',
+            model='test_model',
+            os_name='android',
+            os_version='32',
+            active=True
+        )
+
+        response = app_api_client.post(
+            self.endpoint,
+            data={
+                'device_id': 'another_unique_id',
+                'fcm_token': device.registration_id,
+                'type': 'ios',
+                'manufacturer': 'another_manufacturer',
+                'model': 'another_model',
+                'os': {
+                    'name': 'iOs',
+                    'version': 'another_version'
+                }
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        device.refresh_from_db()
+        assert not device.active
+
+    def test_inactive_device_is_set_to_active_on_registration_id_change(self, app_user, app_api_client):
+        device = Device.objects.create(
+            device_id='unique_id',
+            registration_id='fcm_unique_token',
+            user=app_user,
+            type='android',
+            model='test_model',
+            os_name='android',
+            os_version='32',
+            active=False,
+            is_logged_in=True
+        )
+        response = app_api_client.patch(
+            self.endpoint + f"{device.device_id}/",
+            data={
+                'fcm_token': 'fcm_unique_token2',
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        device.refresh_from_db()
+        assert device.active
+
+    def test_device_without_device_id_is_updated_on_create(self, app_user):
+        # The legacy API create devices from Report model, which does not set the device_id
+        report = create_report_object(user=app_user)
+        report.type = Report.TYPE_BITE
+        report.device_manufacturer = 'test_make'
+        report.device_model = 'test_model'
+        report.os = 'iOs'
+        report.os_version = 'testv123'
+        report.os_language = 'es'
+        report.save()
+
+        device = report.device
+        assert device
+        assert device.device_id is None
+        assert device.registration_id is None
+
+        # Need to set a deviec_token for the force_login
+        # But not saving.
+        device_pk = device.pk
+        device.device_id = 'unique_id'
+        app_api_client = AppAPIClient(device=device)
+        app_api_client.force_login(user=app_user)
+
+        device.refresh_from_db()
+        assert device.device_id is None
+
+        response = app_api_client.post(
+            self.endpoint,
+            data={
+                'device_id': 'unique_id',
+                'fcm_token': 'fcm_token',
+                'type': device.type,
+                'manufacturer': device.manufacturer,
+                'model': device.model,
+                'os': {
+                    'name': device.os_name,
+                    'version': device.os_version
+                }
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        device.refresh_from_db()
+        assert device.device_id == 'unique_id'
+        assert device.pk == device_pk
+        assert Device.objects.filter(user=app_user).count() == 1

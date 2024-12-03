@@ -114,14 +114,6 @@ def do_send_notification( uuid, category, language, number ):
     notification.save()
     notification.send_to_user(user=user)
 
-def get_uuid_tokens( uuids ):
-    users = TigaUser.objects.filter(user_UUID__in=uuids)
-    tokens = []
-    for u in users:
-        if u.device_token is not None and u.device_token != '':
-            tokens.append(u.device_token)
-    return tokens
-
 
 def send_notification_to( actual_file, category, language, number ):
     logging.debug("Extracting uuids from file {0}".format(actual_file))

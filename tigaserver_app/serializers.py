@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from typing import Optional
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
@@ -680,6 +681,12 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
 
 
 class TigaUserSerializer(serializers.ModelSerializer):
+
+    device_token = serializers.SerializerMethodField()
+
+    def get_device_token(self, obj) -> Optional[str]:
+        return obj.device_token
+
     class Meta:
         model = TigaUser
         fields = ('user_UUID','registration_time','device_token','score')

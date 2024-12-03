@@ -43,16 +43,6 @@ stages:
         tags:
           - tag1
           - tag2
-        package:
-          name: testapp
-          version: v123
-          language: english
-        device:
-          manufacturer: test_make
-          model: test model
-          os: testOs
-          os_version: v123
-          os_language: en
         event_environment: indoors
         event_moment: now
         head_bite_count: 2

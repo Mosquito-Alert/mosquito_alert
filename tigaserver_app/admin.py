@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
 from tigaserver_app.models import Notification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, OWCampaigns, OrganizationPin, NotificationTopic
-from rest_framework.authtoken.models import Token
+    Fix, Configuration, CoverageArea, OWCampaigns, OrganizationPin, NotificationTopic, MobileApp, Device
 import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
@@ -50,15 +49,6 @@ def export_full_csv_sc(modeladmin, request, queryset):
 export_full_csv_sc.short_description = u"Export Full Semi-Colon Separated Values"
 
 
-class MyTokenAdmin(admin.ModelAdmin):
-    list_display = ('key', 'user', 'created')
-    fields = ('user', 'key')
-    ordering = ('-created',)
-
-
-admin.site.unregister(Token)
-admin.site.register(Token, MyTokenAdmin)
-
 admin.site.disable_action('delete_selected')
 
 class ReportInline(admin.TabularInline):
@@ -68,13 +58,42 @@ class ReportInline(admin.TabularInline):
     show_change_link = True
     extra = 0
 
+class MobileAppAdmin(admin.ModelAdmin):
+    list_display = ('package_name', 'package_version', 'created_at')
+    fields = (
+        'package_name', 'package_version',
+        ('created_at', 'updated_at')
+    )
+    readonly_fields = ('created_at', 'updated_at')
+
+class DeviceInline(admin.StackedInline):
+    model = Device
+    fields = (
+        ('device_id', 'is_logged_in', 'last_login'),
+        ('registration_id', 'active'),
+        'type',
+        'mobile_app',
+        ('manufacturer', 'model'),
+        ('os_name', 'os_version'),
+        'os_locale',
+        ('date_created', 'updated_at'),
+    )
+    readonly_fields = (
+        'date_created',
+        'updated_at',
+        'is_logged_in',
+        'last_login'
+    )
+    extra = 0
+
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('user_UUID', 'registration_time', 'number_of_reports_uploaded', 'ios_user')
-    readonly_fields = ('user_UUID', 'registration_time', 'number_of_reports_uploaded', 'ios_user')
+    list_display = ('user_UUID', 'registration_time', 'score_v2')
+    fields = ('user_UUID', 'registration_time', 'locale', ('score_v2', 'last_score_update'))
+    readonly_fields = ('user_UUID', 'registration_time', 'score_v2', 'last_score_update')
     search_fields = ('user_UUID',)
     ordering = ('registration_time',)
     actions = [export_full_csv, export_full_csv_sc]
-    inlines = [ReportInline,]
+    inlines = [ReportInline, DeviceInline]
 
     def has_add_permission(self, request):
         return False
@@ -177,7 +196,9 @@ class ReportAdmin(SimpleHistoryAdmin):
             _("Other"),
             {
                 "fields": [
+                    ("mobile_app",),
                     ("package_name", "package_version", "app_language"),
+                    ("device",),
                     ("device_manufacturer", "device_model"),
                     ("os", "os_version", "os_language"),
                     "note",
@@ -446,6 +467,7 @@ class OrganizationPinAdmin(OSMGeoAdmin):
 
 
 admin.site.register(TigaUser, UserAdmin)
+admin.site.register(MobileApp, MobileAppAdmin)
 admin.site.register(Report, ReportAdmin)
 admin.site.register(Fix, FixAdmin)
 admin.site.register(Configuration, ConfigurationAdmin)

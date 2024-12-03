@@ -8,20 +8,12 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-  - parametrize:
-      key: device_token
-      vals:
-        - "123456789"
-        - null  # NOTE: will need to use !force_format_include not to cast to string
-        - ''
 
 
 stages:
   - name: Sign up without password must fail
     request:
       url: "{api_live_url}/{endpoint}/"
-      json:
-        device_token: !force_format_include '{device_token}'
       method: POST
     response:
       status_code: 400
@@ -30,7 +22,6 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       json:
         password: "tmppassword123"
-        device_token: !force_format_include '{device_token}'
       method: POST
     response:
       status_code: 201

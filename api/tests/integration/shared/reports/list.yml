@@ -17,7 +17,7 @@ stages:
         results:
           - uuid: "{published_object.pk}"
   - id: auth_without_perm_can_list_all
-    name: User without perm view per retrieve
+    name: User without perm view can list
     request:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
@@ -29,10 +29,10 @@ stages:
       json:
         count: 2
         results:
-          - uuid: "{published_object.pk}"
           - uuid: "{unpublished_object.pk}"
+          - uuid: "{published_object.pk}"
   - id: appuser_can_retrieve_published_and_owned
-    name: App user can retrieve
+    name: App user can list
     request:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
@@ -45,10 +45,10 @@ stages:
       json:
         count: 2
         results:
-          - uuid: "{published_object.pk}"
           - uuid: "{unpublished_object.pk}"
+          - uuid: "{published_object.pk}"
   - id: new_appuser_can_retrieve_published_and_owned
-    name: App user can retrieve
+    name: App user can list
     request:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"

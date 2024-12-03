@@ -3,7 +3,7 @@ import uuid
 
 # Create your tests here.
 from django.test import TestCase, override_settings
-from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse
+from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp
 from django.core.management import call_command
 from PIL import Image, ExifTags
 from PIL.ExifTags import TAGS, GPSTAGS
@@ -28,6 +28,7 @@ import urllib
 import json
 import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
+import time_machine
 
 import io
 import piexif
@@ -101,8 +102,10 @@ class PictureTestCase(APITestCase):
 class ReportEndpointTestCase(APITestCase):
     def setUp(self):
         t = TigaUser.objects.create(user_UUID="00000000-0000-0000-0000-000000000000")
-        t.device_token = "caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT"
-        t.save()
+        Device.objects.create(
+            user=t,
+            registration_id="caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT"
+        )
 
         user = User.objects.create_user("dummy", "dummy@test.com", "dummypassword")
         self.token = Token.objects.create(user=user)
@@ -511,6 +514,150 @@ class ReportEndpointTestCase(APITestCase):
             )
         )
 
+    def test_user_locale_is_updated_according_to_app_language(self):
+        user = TigaUser.objects.create(locale='en')
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "user": str(user.pk),
+                    "app_language": "es",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        user.refresh_from_db()
+
+        self.assertEqual(user.locale, 'es')
+
+    def test_mobile_app_fk_is_created_if_not_exist(self):
+        self.assertEqual(
+            MobileApp.objects.filter(package_name='testapp', package_version='100').count(),
+            0
+        )
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "package_name": "testapp",
+                    "package_version": "100",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        self.assertEqual(
+            MobileApp.objects.filter(package_name='testapp', package_version='100').count(),
+            1
+        )
+        mobile_app = MobileApp.objects.get(package_name='testapp', package_version='100')
+        self.assertEqual(mobile_app.package_name, 'testapp')
+        self.assertEqual(mobile_app.package_version, '100')
+
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+        self.assertEqual(report.mobile_app, mobile_app)
+
+    def test_mobile_app_fk_is_set_correctly_if_exist(self):
+        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='100')
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "package_name": "testapp",
+                    "package_version": "100",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+        self.assertEqual(report.mobile_app, mobile_app)
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_device_with_model_null_is_updated_on_new_report(self):
+        user = TigaUser.objects.create(locale='en')
+        device = Device.objects.create(
+            registration_id='fcm_random_token',
+            user=user
+        )
+        self.assertIsNone(device.type)
+        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='100')
+
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "user": str(user.pk),
+                    "device_manufacturer": "test_make",
+                    "device_model": "test_model",
+                    "os": "testOs",
+                    "os_version": "testVersion",
+                    "os_language": "es-ES",
+                    "package_name": "testapp",
+                    "package_version": "100",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        device.refresh_from_db()
+
+        self.assertEqual(device.manufacturer, "test_make")
+        self.assertEqual(device.model, "test_model")
+        self.assertEqual(device.os_name, "testOs")
+        self.assertEqual(device.os_version, "testVersion")
+        self.assertEqual(device.os_locale, "es-ES")
+        self.assertEqual(device.mobile_app, mobile_app)
+        self.assertEqual(device.is_logged_in, True)
+        self.assertEqual(device.last_login, timezone.now())
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_device_with_model_is_updated_on_new_report(self):
+        user = TigaUser.objects.create(locale='en')
+        device = Device.objects.create(
+            registration_id='fcm_random_token',
+            user=user,
+            model="test_model"
+        )
+        self.assertIsNone(device.type)
+        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='100')
+
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "user": str(user.pk),
+                    "device_manufacturer": "test_make",
+                    "device_model": "test_model",
+                    "os": "testOs",
+                    "os_version": "testVersion",
+                    "os_language": "es-ES",
+                    "package_name": "testapp",
+                    "package_version": "100",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        device.refresh_from_db()
+
+        self.assertEqual(device.manufacturer, "test_make")
+        self.assertEqual(device.model, "test_model")
+        self.assertEqual(device.os_name, "testOs")
+        self.assertEqual(device.os_version, "testVersion")
+        self.assertEqual(device.os_locale, "es-ES")
+        self.assertEqual(device.mobile_app, mobile_app)
+        self.assertEqual(device.is_logged_in, True)
+        self.assertEqual(device.last_login, timezone.now())
+
 
 class FixEndpointTestCase(APITestCase):
     def setUp(self):
@@ -620,8 +767,11 @@ class NotificationTestCase(APITestCase):
 
     def setUp(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
-        t.device_token = 'caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT'
-        t.save()
+        Device.objects.create(
+            user=t,
+            registration_id='caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT'
+        )
+
         self.regular_user = t
         non_naive_time = timezone.now()
         a = 1
@@ -988,7 +1138,7 @@ class NotificationTestCase(APITestCase):
         self.client.logout()
 
 class AnnotateCoarseTestCase(APITestCase):
-    fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigaprofile.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json']
+    fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json']
     def test_annotate_taken(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)

@@ -4,6 +4,8 @@ import django.conf.global_settings as DEFAULT_SETTINGS
 import pytz
 from datetime import datetime
 
+import firebase_admin
+from firebase_admin.credentials import Certificate
 
 """
 Django settings for tigaserver_project project.
@@ -71,7 +73,7 @@ INSTALLED_APPS = (
     'corsheaders',
     'simple_history',
     'imagekit',
-    'django_hosts'
+    'django_hosts',
 )
 
 '''
@@ -386,10 +388,25 @@ TAGGIT_CASE_INSENSITIVE=True
 ROOT_HOSTCONF = 'tigaserver_project.hosts'
 DEFAULT_HOST = 'webserver'
 
+# for fcm-django
+FCM_DJANGO_SETTINGS = {
+    "ONE_DEVICE_PER_USER": False,
+    "DELETE_INACTIVE_DEVICES": False,
+}
+FCM_DJANGO_FCMDEVICE_MODEL = "tigaserver_app.Device"
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
 try:
     from tigaserver_project.settings_local import *
 except ModuleNotFoundError:
     pass
+
+FIREBASE_APP = None
+if FIREBASE_SERVICE_ACCOUNT_CREDENTIAL:
+    FIREBASE_APP = firebase_admin.initialize_app(
+        credential=Certificate(FIREBASE_SERVICE_ACCOUNT_CREDENTIAL)
+    )
 
 # NOTE: Since STATIC_URL might change in settings_local
 # we are redifining all variables that depend on it.

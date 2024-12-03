@@ -26,6 +26,11 @@ class GenericViewSet(DRFGenericViewSet):
     parser_classes = (JSONParser, FormParser, MultiPartParser)
     renderer_classes = (JSONRenderer,)
 
+class GenericMobileOnlyViewSet(GenericViewSet):
+    authentication_classes = (
+        AppUserJWTAuthentication,
+    )
+
 class GenericNoMobileViewSet(GenericViewSet):
     authentication_classes = (
         SessionAuthentication,
