@@ -40,6 +40,7 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
+    - app_user_token
     - user_notification
   - parametrize:
       key: method
@@ -48,50 +49,37 @@ marks:
         - PATCH
 
 stages:
-  - id: login
-    name: Login app user using JWT
-    request:
-      url: "{api_live_url}/token/"
-      json:
-        uuid: "{app_user.pk}"
-        password: "{user_password}"
-      method: POST
-    response:
-      status_code: 200
-      save:
-        json:
-          token: 'access'
   - name: User with perm can update
     request:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       json:
-        seen: true
+        is_read: true
       method: "{method}"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
     response:
       status_code: 200
       json:
         id: !int "{user_notification.pk}"
-        expert_id: !anything
+        message:
+          title: !anystr
+          body: !anystr
+        is_read: true
         created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
-        title: !anystr
-        body: !anystr
-        seen: true
   - name: User with perm can update
     request:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       json:
-        seen: false
+        is_read: false
       method: "{method}"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
     response:
       status_code: 200
       strict:
         - json:off
       json:
-        seen: false
+        is_read: false
   - id: signup
     type: ref
   - id: login
@@ -116,6 +104,7 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
+    - app_user_token
     - user_notification
   - parametrize:
       key: method
@@ -124,51 +113,38 @@ marks:
         - PATCH
 
 stages:
-  - id: login
-    name: Login app user using JWT
-    request:
-      url: "{api_live_url}/token/"
-      json:
-        uuid: "{app_user.pk}"
-        password: "{user_password}"
-      method: POST
-    response:
-      status_code: 200
-      save:
-        json:
-          token: 'access'
   - name: Getting original values
     request:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       method: "GET"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
     response:
       status_code: 200
       save:
         json:
           original_id: id
-          original_expert_id: expert_id
           original_created_at: created_at
-          original_title: title
-          original_body: body
+          original_title: message.title
+          original_body: message.body
   - name: User with perm can list
     request:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       json:
-        seen: true
-        title: 'another title'
-        body: 'another body'
+        is_read: true
+        message:
+          title: 'another title'
+          body: 'another body'
         created_at: '123'
       method: "{method}"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
     response:
       status_code: 200
       json:
         id: !int "{original_id}"
-        expert_id: null # NOTE: fixture set it to None
         created_at: "{original_created_at}"
-        title: "{original_title}"
-        body: "{original_body}"
-        seen: true
+        message:
+          title: "{original_title}"
+          body: "{original_body}"
+        is_read: true

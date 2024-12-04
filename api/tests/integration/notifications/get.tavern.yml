@@ -12,7 +12,7 @@ marks:
     - token_user
 
 stages:
-  - name: Non auth user can not retrieve
+  - name: Anonymous user can not retrieve
     request:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       method: "GET"
@@ -61,37 +61,26 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
+    - app_user_token
     - user_notification
 
 stages:
-  - id: login
-    name: Login app user using JWT
-    request:
-      url: "{api_live_url}/token/"
-      json:
-        uuid: "{app_user.pk}"
-        password: "{user_password}"
-      method: POST
-    response:
-      status_code: 200
-      save:
-        json:
-          token: 'access'
   - name: App user can retrieve their notification
     request:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       method: "GET"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
     response:
       status_code: 200
       json:
         id: !int "{user_notification.pk}"
-        expert_id: !anything
+        message:
+          title: !anystr
+          body: !anystr
+        is_read: false
         created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
-        title: !anystr
-        body: !anystr
-        seen: false
+  # Create a new user
   - id: signup
     type: ref
   - id: login

@@ -67,7 +67,7 @@ def send_message_to_uuid(this_uuid, sender, survey_code):
 
     try:
         user = TigaUser.objects.get(pk=this_uuid)
-        user_language = user.language_iso2 if user.language_iso2 in SURVEY_TEXT_DEFAULT.keys() else 'en'
+        user_language = user.locale if user.locale in SURVEY_TEXT_DEFAULT.keys() else 'en'
 
         title_and_message_native = get_today_title_and_message(month,day,user_language)
         title_native = title_and_message_native['title']

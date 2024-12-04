@@ -8,6 +8,7 @@ from drf_spectacular.utils import (
     extend_schema_view,
     extend_schema,
     PolymorphicProxySerializer,
+    OpenApiResponse
 )
 
 from rest_framework import status
@@ -94,7 +95,11 @@ class FixViewSet(CreateModelMixin, GenericViewSet):
             },
             resource_type_field_name="receiver_type",
         ),
-        responses=CreateNotificationSerializer
+        responses={
+            200: OpenApiResponse(
+                response=CreateNotificationSerializer(many=True)
+            )
+        }
     )
 )
 class NotificationViewSet(
@@ -115,12 +120,18 @@ class NotificationViewSet(
         .all()
     )
 
+    @property
+    def pagination_class(self):
+        if self.request.method == "POST":
+            return None
+        return super().pagination_class
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        notification = serializer.save()
+        notifications = serializer.save()
 
-        response_serializer = CreateNotificationSerializer(notification, context=self.get_serializer_context())
+        response_serializer = CreateNotificationSerializer(notifications, context=self.get_serializer_context(), many=True)
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 

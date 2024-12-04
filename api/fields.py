@@ -13,6 +13,9 @@ from taggit.serializers import TagListSerializerField as OriginalTagListSerializ
 from timezone_field.utils import use_pytz_default
 from timezone_field.rest_framework import TimeZoneSerializerField
 
+from tigaserver_app.models import TigaUser
+
+
 class TimezoneAwareDateTimeField(serializers.DateTimeField):
     def to_internal_value(self, value):
         # Parse the datetime string into a datetime object
@@ -79,3 +82,24 @@ class TagListSerializerField(OriginalTagListSerializerField, serializers.ListFie
     # NOTE: the current django-taggit version uses CharField, which introduces an error 
     # on POST, getting char instead of a list of element.
     pass
+
+class LocalizedField(serializers.Serializer):
+    """
+    A custom serializer field that supports localization for a dynamic field name.
+    Allows calling with arguments such as 'title', 'message', max_length, help_text, etc.
+    """
+    def __init__(self, *args, **kwargs):
+        max_length = kwargs.pop('max_length', None)
+        super().__init__(*args, **kwargs)
+
+        self.REQUIRED_LANGUAGES = kwargs.get('required_languages', ['en'])
+
+        # Sort the languages alphabetically based on the language code
+        for code, name in sorted(TigaUser.AVAILABLE_LANGUAGES, key=lambda x: x[0]):
+            # Use max_length if provided and if the field is for 'title'
+            field_params = {
+                'max_length': max_length,
+                'required': code in self.REQUIRED_LANGUAGES,
+                'help_text': name
+            }
+            self.fields[code] = serializers.CharField(**field_params)

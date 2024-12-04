@@ -1,5 +1,5 @@
-from abc import abstractmethod
 from datetime import datetime
+from typing import Optional
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -30,7 +30,8 @@ from .fields import (
     WritableSerializerMethodField,
     IntegerDefaultField,
     TagListSerializerField,
-    TimeZoneSerializerChoiceField
+    TimeZoneSerializerChoiceField,
+    LocalizedField
 )
 
 User = get_user_model()
@@ -92,17 +93,47 @@ class FixSerializer(serializers.ModelSerializer):
 
 #### START NOTIFICATION SERIALIZERS ####
 class NotificationSerializer(serializers.ModelSerializer):
+    class NotificationMessageSerializer(serializers.ModelSerializer):
+        # Localized results
+        title = serializers.SerializerMethodField()
+        body = serializers.SerializerMethodField()
 
-    seen = WritableSerializerMethodField(
+        def get_title(self, obj) -> str:
+            if obj.notification_content is None:
+                return ""
+
+            language_code = None
+            user = self.context.get("request").user
+            if user and isinstance(user, TigaUser):
+                language_code = user.locale
+
+            return obj.notification_content.get_title(
+                language_code=language_code
+            )
+
+        def get_body(self, obj) -> str:
+            if obj.notification_content is None:
+                return ""
+
+            language_code = None
+            user = self.context.get("request").user
+            if user and isinstance(user, TigaUser):
+                language_code = user.locale
+
+            return obj.notification_content.get_body(
+                language_code=language_code
+            )
+        class Meta:
+            model = Notification
+            fields = ("title", "body")
+
+    message = NotificationMessageSerializer(source='*', read_only=True)
+    is_read = WritableSerializerMethodField(
         field_class=serializers.BooleanField,
         required=True
     )
 
-    # Localized results
-    title = serializers.SerializerMethodField(read_only=True)
-    body = serializers.SerializerMethodField(read_only=True)
-
-    def get_seen(self, obj) -> bool:
+    def get_is_read(self, obj) -> bool:
         user = self.context.get("request").user
         if not isinstance(user, TigaUser):
             return False
@@ -114,28 +145,13 @@ class NotificationSerializer(serializers.ModelSerializer):
             user=self.context.get("request").user
         ).exists() or (obj.user == user and obj.acknowledged)
 
-    def get_title(self, obj) -> str:
-        if obj.notification_content is None:
-            return ""
-
-        return obj.notification_content.get_title(
-            language_code=self.context.get("request").LANGUAGE_CODE
-        )
-
-    def get_body(self, obj) -> str:
-        if obj.notification_content is None:
-            return ""
-
-        return obj.notification_content.get_body(
-            language_code=self.context.get("request").LANGUAGE_CODE
-        )
 
     def update(self, instance, validated_data):
-        seen = validated_data.pop("seen", None)
+        is_read = validated_data.pop("is_read", None)
         instance = super().update(instance, validated_data)
 
-        if seen is not None:
-            if seen is True:
+        if is_read is not None:
+            if is_read is True:
                 instance.mark_as_seen_for_user(user=self.context.get("request").user)
             else:
                 instance.mark_as_unseen_for_user(user=self.context.get("request").user)
@@ -146,43 +162,61 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = (
             "id",
-            "expert_id",
-            "created_at",
-            "title",
-            "body",
-            "seen",
+            "message",
+            "is_read",
+            "created_at"
         )
         read_only_fields = (
             "created_at",
-            "title",
-            "body",
         )
         extra_kwargs = {
             "created_at": {"source": "date_comment"}
         }
 
 class CreateNotificationSerializer(serializers.ModelSerializer):
-
-    title_en = serializers.CharField(write_only=True)
-    body_en = serializers.CharField(write_only=True)
+    class CreateNotificationMessageSerializer(serializers.Serializer):
+        title = LocalizedField(
+            max_length=255,
+            help_text="Provide the message's title in all supported languages"
+        )
+        body = LocalizedField(
+            help_text="Provide the message's body in all supported languages"
+        )
+        class Meta:
+            fields = ("title", "body")
 
     created_at = serializers.DateTimeField(source="date_comment", read_only=True)
     expert = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
+    message = CreateNotificationMessageSerializer(
+        many=False,
+        write_only=True,
+        help_text='The message of the notification'
+    )
     receiver_type = serializers.ChoiceField(
-            choices=["user", "topic"],
-            write_only=True,
-            required=True
-        )
+        choices=["user", "topic"],
+        write_only=True,
+        required=True
+    )
 
     @transaction.atomic
-    def create(self, validated_data):
+    def create(self, validated_data, user: Optional[TigaUser] = None):
         # Pop receiver_type since is not used on any model
         del validated_data["receiver_type"]
 
+        message = validated_data.pop('message')
+        titles = message.pop('title')
+        bodies = message.pop('body')
+
         validated_data["notification_content"] = NotificationContent.objects.create(
-            title_en=validated_data.pop("title_en"),
-            body_html_en=validated_data.pop("body_en"),
+            title_en=titles.get("en"),
+            body_html_en=bodies.get("en"),
+            title_es=titles.get("es"),
+            body_html_es=bodies.get("en"),
+            title_ca=titles.get("ca"),
+            body_html_ca=bodies.get("ca"),
+            title_native=titles.get(user.locale) if user else None,
+            body_html_native=bodies.get(user.locale) if user else None,
+            native_locale=user.locale if user else None,
         )
 
         return super().create(validated_data=validated_data)
@@ -192,56 +226,72 @@ class CreateNotificationSerializer(serializers.ModelSerializer):
         fields = (
             "receiver_type",
             "id",
+            "message",
             "created_at",
-            "title_en",
-            "body_en",
             "expert"
         )
 
 class UserNotificationCreateSerializer(CreateNotificationSerializer):
-    user_uuid = serializers.UUIDField(write_only=True)
+    user_uuids = serializers.ListField(
+        child=serializers.UUIDField(),
+        required=True,
+        min_length=1,
+        write_only=True
+    )
+
+    def validate(self, data):
+        user_uuids = data.pop('user_uuids')
+        users = TigaUser.objects.filter(pk__in=user_uuids)
+        if users.count() != len(user_uuids):
+            raise serializers.ValidationError("Some users were not found.")
+        data["users"] = users
+        return data
 
     def create(self, validated_data):
-        user_uuid = validated_data.pop("user_uuid")
+        result = []
+        for user in validated_data.pop('users'):
+            instance = super().create(validated_data, user=user)
+            instance.send_to_user(user=user)
+            result.append(instance)
 
-        instance = super().create(validated_data)
-
-        if user_uuid:
-            instance.send_to_user(user=TigaUser.objects.get(pk=user_uuid))
-
-        return instance
+        return result
 
     class Meta(CreateNotificationSerializer.Meta):
         fields = CreateNotificationSerializer.Meta.fields + (
-            "user_uuid",
+            "user_uuids",
         )
 
 
 class TopicNotificationCreateSerializer(CreateNotificationSerializer):
-    topic_code = serializers.CharField(required=True, write_only=True)
+    topic_codes = serializers.ListField(
+        child=serializers.CharField(),
+        required=True,
+        min_length=1,
+        write_only=True
+    )
 
     def validate(self, data):
-        topic_code = data.pop("topic_code")
-        try:
-            data["topic"] = NotificationTopic.objects.get(topic_code=topic_code)
-        except NotificationTopic.DoesNotExist:
-            raise serializers.ValidationError("topic_code is not valid.")
-
+        topic_codes = data.pop('topic_codes')
+        topics = NotificationTopic.objects.filter(topic_code__in=topic_codes)
+        if topics.count() != len(topic_codes):
+            raise serializers.ValidationError("Some topics were not found.")
+        data["topics"] = topics
         return data
 
-    @transaction.atomic
     def create(self, validated_data):
-        topic = validated_data.pop("topic")
+        topics = validated_data.pop('topics')
 
+        result = []
         instance = super().create(validated_data)
+        result.append(instance)
 
-        if topic:
+        for topic in topics:
             instance.send_to_topic(topic=topic)
 
-        return instance
+        return result
 
     class Meta(CreateNotificationSerializer.Meta):
-        fields = CreateNotificationSerializer.Meta.fields + ("topic_code", )
+        fields = CreateNotificationSerializer.Meta.fields + ("topic_codes", )
 
 #### END NOTIFICATION SERIALIZERS ####
 

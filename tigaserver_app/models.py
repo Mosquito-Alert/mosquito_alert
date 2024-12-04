@@ -241,7 +241,7 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
 
     @property
     def language_iso2(self):
-        return Language.get(self.locale).language
+        return Language.get(self.locale).language.lower()
 
     @property
     def last_device(self) -> Optional['Device']:
@@ -319,7 +319,7 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
 
             # Subscribe user to the language selected.
             try:
-                language_topic = NotificationTopic.objects.get(topic_code=self.language_iso2)
+                language_topic = NotificationTopic.objects.get(topic_code=self.locale)
             except NotificationTopic.DoesNotExist:
                 pass
             else:
@@ -3308,6 +3308,11 @@ class NotificationContent(models.Model):
             # If no <body> tag is found, return text from the entire HTML document
             return soup.get_text(separator='\n', strip=True)
 
+    def save(self, *args, **kwargs):
+        if not (self.title_native and self.body_html_native):
+            self.native_locale = None
+        super().save(*args, **kwargs)
+
 class Notification(models.Model):
     report = models.ForeignKey('tigaserver_app.Report', null=True, blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.CASCADE, )
     # The field 'user' is kept for backwards compatibility with the map notifications. It only has meaningful content on MAP NOTIFICATIONS
@@ -3357,7 +3362,7 @@ class Notification(models.Model):
         )
 
         if push:
-            return obj.send_push(language_code=user.language_iso2)
+            return obj.send_push(language_code=user.locale)
 
 class AcknowledgedNotification(models.Model):
     user = models.ForeignKey(TigaUser, related_name="user_acknowledgements",help_text='User which has acknowledged the notification', on_delete=models.CASCADE, )
