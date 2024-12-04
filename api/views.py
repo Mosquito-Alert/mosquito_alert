@@ -20,7 +20,7 @@ from rest_framework.mixins import (
     DestroyModelMixin,
 )
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import Token
@@ -171,6 +171,12 @@ class BaseReportViewSet(
     filter_backends = (DjangoFilterBackend,)
 
     permission_classes = (ReportPermissions,)
+
+    def get_permissions(self):
+        if self.request and self.request.method in SAFE_METHODS:
+            return [AllowAny(),]
+
+        return super().get_permissions()
 
     def _get_device_from_jwt(self) -> Optional[Device]:
         if not self.request:
