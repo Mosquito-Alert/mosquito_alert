@@ -253,6 +253,7 @@ SPECTACULAR_SETTINGS = {
     'ENUM_NAME_OVERRIDES': {
         'MosquitoTypeEnum': 'tigaserver_app.models.Report.MOSQUITO_SPECIE_CHOICES',
         'ReportTypeEnum': 'tigaserver_app.models.Report.TYPE_CHOICES',
+        "DeviceTypeEnum": 'fcm_django.models.DeviceType',
         "ValidationErrorEnum": "drf_standardized_errors.openapi_serializers.ValidationErrorEnum.choices",
         "ClientErrorEnum": "drf_standardized_errors.openapi_serializers.ClientErrorEnum.choices",
         "ServerErrorEnum": "drf_standardized_errors.openapi_serializers.ServerErrorEnum.choices",
