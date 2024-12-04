@@ -13,8 +13,8 @@ def create_notification_content_finished_validation(report_annotation: ExpertRep
 
     # Set the preferred language if it is supported, otherwise default to English
     user_language_code = 'en'
-    if report_user.language_iso2:
-        user_language_code = report_user.language_iso2 if report_user.language_iso2 in dict(settings.LANGUAGES) else 'en'
+    if report_user.locale:
+        user_language_code = report_user.locale if report_user.locale in dict(settings.LANGUAGES) else 'en'
 
     # Initialize contexts for English and user's preferred language
     context_en = {}

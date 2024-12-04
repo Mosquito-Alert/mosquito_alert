@@ -7,25 +7,21 @@ marks:
   - usefixtures:
     - api_live_url
     - user_notification
+    - app_user_token
     - token_user_can_delete
 
 stages:
-  - name: Non auth users can not delete
+  - name: Anonymous users can not delete
     request:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       method: "DELETE"
     response:
       status_code: 403
-  # Perform auth for app user using JWT
-  - id: signup
-    type: ref
-  - id: login
-    type: ref
-  - name: Delete method return 403 for app users
+  - name: Delete method return 405 for app users
     request:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
       method: "DELETE"
     response:
       status_code: 405

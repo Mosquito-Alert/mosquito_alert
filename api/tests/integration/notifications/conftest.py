@@ -13,11 +13,11 @@ from tigaserver_app.models import (
 def model_class():
     return Notification
 
-
 @pytest.fixture
-def user_uuid(app_user):
-    return app_user.pk
-
+def italian_user(app_user):
+    app_user.locale = 'it'
+    app_user.save()
+    return app_user
 
 @pytest.fixture
 def topic():

@@ -15,8 +15,8 @@ def send_new_award_notification(award: 'tigaserver_app.models.Award') -> None:
     user = award.given_to
     # Set the preferred language if it is supported, otherwise default to English
     user_language_code = 'en'
-    if user.language_iso2:
-        user_language_code = user.language_iso2 if user.language_iso2 in dict(settings.LANGUAGES) else 'en'
+    if user.locale:
+        user_language_code = user.locale if user.locale in dict(settings.LANGUAGES) else 'en'
 
     # Initialize contexts for English and user's preferred language
     context_en = {}

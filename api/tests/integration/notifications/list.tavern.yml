@@ -52,11 +52,11 @@ stages:
         previous: null
         results:
           - id: !int "{user_notification.pk}"
-            expert_id: !anything
+            message:
+              title: !anystr
+              body: !anystr
+            is_read: false
             created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
-            title: !anystr
-            body: !anystr
-            seen: false
 ---
 
 test_name: User list only their notifications.
@@ -121,7 +121,7 @@ stages:
 
 ---
 
-test_name: Filter by seen
+test_name: Filter by is_read
 
 includes:
   - !include schema.yml
@@ -147,9 +147,11 @@ stages:
       save:
         json:
           token: 'access'
-  - name: App user list their notifications by seen
+  - name: App user list their notifications by is_read
     request:
-      url: "{api_live_url}/{endpoint}/?seen=true"
+      url: "{api_live_url}/{endpoint}/"
+      params:
+        is_read: True
       method: "GET"
       headers:
         Authorization: "Bearer {token}"
@@ -164,7 +166,7 @@ stages:
 
 ---
 
-test_name: Filter by unseen
+test_name: Filter by not is_read
 
 includes:
   - !include schema.yml
@@ -189,9 +191,11 @@ stages:
       save:
         json:
           token: 'access'
-  - name: App user list their notifications by unseen
+  - name: App user list their notifications by not is_read
     request:
-      url: "{api_live_url}/{endpoint}/?seen=false"
+      url: "{api_live_url}/{endpoint}/"
+      params:
+        is_read: False
       method: "GET"
       headers:
         Authorization: "Bearer {token}"

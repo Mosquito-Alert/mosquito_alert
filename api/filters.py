@@ -88,13 +88,13 @@ class BreedingSiteFilter(BaseReportWithPhotosFilter):
 
 
 class NotificationFilter(filters.FilterSet):
-    seen = filters.BooleanFilter(method="filter_seen")
+    is_read = filters.BooleanFilter(method="filter_is_read")
 
     order_by = filters.OrderingFilter(fields=(("date_comment", "created_at"),))
 
-    def filter_seen(self, queryset, name, value):
+    def filter_is_read(self, queryset, name, value):
         return queryset.seen_by_user(user=self.request.user, state=value)
 
     class Meta:
         model = Notification
-        fields = ("seen",)
+        fields = ("is_read",)

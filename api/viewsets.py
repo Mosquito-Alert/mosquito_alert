@@ -21,7 +21,12 @@ class GenericViewSet(DRFGenericViewSet):
         TokenAuthentication,
         AppUserJWTAuthentication,
     )
-    pagination_class = ResultsSetPagination
+    _pagination_class = ResultsSetPagination
+
+    @property
+    def pagination_class(self):
+        return self._pagination_class
+
     permission_classes = (UserObjectPermissions,)
     parser_classes = (JSONParser, FormParser, MultiPartParser)
     renderer_classes = (JSONRenderer,)

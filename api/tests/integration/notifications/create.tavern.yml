@@ -8,47 +8,78 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user_token
+    - token_user
   - parametrize:
       key:
         - receiver_type
-        - user_uuid
         - topic_code
       vals:
-        - ["user", "a8b018aa-742e-438b-8c58-e78c746abaa6", null]
-        - ["topic", null, 'global']
+        - ["user", null]
+        - ["topic", 'global']
 
 stages:
-  - id: signup
-    type: ref
-  - name: Non auth user can not create
+  - name: Anonymous user can not create
     request:
       url: "{api_live_url}/{endpoint}/"
       method: "POST"
-      json: &request_data
-        receiver_type: "{receiver_type}"
-        user_uuid: !force_format_include "{user_uuid}"
-        topic_code: !force_format_include "{topic_code}"
-        title_en: "english title"
-        body_en: "english body"
     response:
       status_code: 403
-  # App user can not create either
-  - id: login
-    type: ref
-  - name: App users can not create
+  - name: Auth users without perms can not create
     request:
       url: "{api_live_url}/{endpoint}/"
       method: "POST"
-      json:
-        <<: *request_data
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Token {token_user}"
+    response:
+      status_code: 403
+  - name: Mobile app users can not create
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {app_user_token}"
     response:
       status_code: 403
 
 --- 
 
-test_name: Create notification
+test_name: Create user notification
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - token_user_can_add
+
+stages:
+  - name: Create user notification using auth user with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        receiver_type: "user"
+        user_uuids:
+          - "{app_user.pk}"
+        message:
+          title:
+            en: "english title"
+          body:
+            en: "english body"
+      headers:
+        Authorization: "Token {token_user_can_add:s}"
+      method: "POST"
+    response:
+      status_code: 201
+      json:
+        - id: !anyint
+          created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+
+---
+
+test_name: Create topic notification
 
 includes:
   - !include schema.yml
@@ -61,34 +92,75 @@ marks:
     - topic
 
 stages:
-  - name: Create user notification using auth user with permissions
-    request:
-      url: "{api_live_url}/{endpoint}/"
-      json:
-        receiver_type: "user"
-        user_uuid: "{app_user.pk}"
-        title_en: "english title"
-        body_en: "english body"
-      headers:
-        Authorization: "Token {token_user_can_add:s}"
-      method: "POST"
-    response:
-      status_code: 201
-      json: &response_validation
-        id: !anyint
-        created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
   - name: Create topic notification using auth user with permissions
     request:
       url: "{api_live_url}/{endpoint}/"
       json:
         receiver_type: "topic"
-        topic_code: "{topic.topic_code}"
-        title_en: "english title"
-        body_en: "english body"
+        topic_codes:
+          - "{topic.topic_code}"
+        message:
+          title:
+            en: "english title"
+          body:
+            en: "english body"
       headers:
         Authorization: "Token {token_user_can_add:s}"
       method: "POST"
     response:
       status_code: 201
       json:
-        <<: *response_validation
+        - id: !anyint
+          created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+
+---
+
+test_name: User receives the notification in their language
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - italian_user
+    - app_user_token
+    - token_user_can_add
+
+stages:
+  - name: Create user notification
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        receiver_type: "user"
+        user_uuids:
+          - "{italian_user.pk}"
+        message:
+          title:
+            en: "english title"
+            it: "italian title"
+          body:
+            en: "english body"
+            it: "italian body"
+      headers:
+        Authorization: "Token {token_user_can_add}"
+      method: "POST"
+    response:
+      status_code: 201
+      save:
+        json:
+          notification_id: "[0].id"
+  - name: Check notification message is in italian
+    request:
+      url: "{api_live_url}/{endpoint}/{notification_id}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        message:
+          title: 'italian title'
+          body: 'italian body'
