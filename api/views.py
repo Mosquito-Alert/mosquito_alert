@@ -96,7 +96,7 @@ class FixViewSet(CreateModelMixin, GenericViewSet):
             resource_type_field_name="receiver_type",
         ),
         responses={
-            200: OpenApiResponse(
+            201: OpenApiResponse(
                 response=CreateNotificationSerializer(many=True)
             )
         }
