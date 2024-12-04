@@ -17,6 +17,7 @@ django-timezone-field==5.1
 djangorestframework-simplejwt==5.2.2
 drf-extra-fields==3.3.0
 drf-spectacular==0.27.1
+drf-standardized-errors==0.14.1
 django-simple-history==3.0.0
 django-taggit==2.1.0
 djangorestframework==3.12.3
