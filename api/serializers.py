@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Optional
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 
 from rest_framework import serializers
@@ -527,6 +526,14 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
 class UserSerializer(serializers.ModelSerializer):
     uuid = serializers.UUIDField(source="user_UUID", read_only=True)
     language_iso = serializers.SerializerMethodField(help_text='ISO 639-1 code')
+    username = serializers.SerializerMethodField()
+    is_guest = serializers.SerializerMethodField()
+
+    def get_is_guest(self, obj) -> bool:
+        return True
+
+    def get_username(self, obj) -> str:
+        return obj.get_username()
 
     def get_language_iso(self, obj) -> str:
         return obj.language_iso2
@@ -535,9 +542,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = TigaUser
         fields = (
             "uuid",
+            "username",
             "registration_time",
             "locale",
             "language_iso",
+            "is_guest",
             "score",
             "last_score_update",
         )
@@ -550,16 +559,6 @@ class UserSerializer(serializers.ModelSerializer):
             "score": {"source": "score_v2"}
         }
 
-class CreateUserSerializer(UserSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    def create(self, validated_data):
-        raw_password = validated_data.pop("password")
-        instance = super().create(validated_data)
-        instance.set_password(raw_password)
-        instance.save()
-        return instance
-    class Meta(UserSerializer.Meta):
-        fields = UserSerializer.Meta.fields + ("password",)
 
 class PhotoSerializer(serializers.ModelSerializer):
 

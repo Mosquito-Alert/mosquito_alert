@@ -1,0 +1,41 @@
+---
+
+test_name: Make sure non mobile users can not get_my_profile
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - app_user_token
+    - token_user_can_view
+
+stages:
+  - name: Anonymous user can not get user
+    request:
+      url: "{api_live_url}/me/"
+      method: GET
+    response:
+      status_code: 401
+  - name: Authorized user without permission can not get user even if they have view permissions.
+    request:
+      url: "{api_live_url}/me/"
+      method: GET
+      headers:
+        Authorization: 'Token {token_user_can_view}'
+    response:
+      status_code: 401
+  - name: Mobile user get their profile
+    request:
+      url: "{api_live_url}/me/"
+      method: GET
+      headers:
+        Authorization: 'Bearer {app_user_token}'
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        uuid: "{app_user.pk}"

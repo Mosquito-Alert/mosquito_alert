@@ -19,8 +19,6 @@ stages:
     id: anonymous_can_list_published_only
   - type: ref
     id: auth_without_perm_can_list_all
-  - type: ref
-    id: appuser_can_retrieve_published_and_owned
   # Creating a new appuser that does not own the object
   - id: signup
     type: ref
@@ -28,6 +26,30 @@ stages:
     type: ref
   - type: ref
     id: new_appuser_can_retrieve_published_and_owned
+
+---
+
+test_name: 'Common permission tests for breeding sites list and get_my_breeding_sites (inherits from report)'
+
+includes:
+  - !include '../shared/reports/list.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_object
+    - unpublished_object
+    - app_user_token
+  - parametrize:
+      key: endpoint
+      vals:
+        - "{endpoint}"
+        - "me/{endpoint}"
+
+stages:
+  - type: ref
+    id: appuser_can_retrieve_published_and_owned
 
 ---
 

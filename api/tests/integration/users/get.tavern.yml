@@ -1,5 +1,57 @@
 ---
 
+test_name: Make sure users can not get without permission
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - token_user
+
+stages:
+  - name: Anonymous user can not get user
+    request:
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
+      method: GET
+    response:
+      status_code: 403
+  - name: Authorized user without permission can not get user
+    request:
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
+      method: GET
+      headers:
+        Authorization: 'Token {token_user}'
+    response:
+      status_code: 403
+
+---
+
+test_name: Make sure users with permission can retrieve user
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - token_user_can_view
+
+stages:
+  - name: Authorized user without permission can not get user
+    request:
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
+      method: GET
+      headers:
+        Authorization: 'Token {token_user_can_view}'
+    response:
+      status_code: 200
+
+---
+
 test_name: Make sure users endpoint works
 
 includes:
@@ -8,38 +60,28 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user
+    - app_user_token
+    - token_user
 
 stages:
-  - id: signup
-    type: ref
-  - id: login
-    type: ref
-  - name: Get user fails on unauthorized user
-    request:
-      url: "{api_live_url}/{endpoint}/{user_uuid}/"
-      method: GET
-    response:
-      status_code: 403
   - name: Get user by authorized user
     request:
-      url: "{api_live_url}/{endpoint}/{user_uuid}/"
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: GET
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
     response:
       status_code: 200
       json: !force_format_include "{response_data_validation}"
-      save:
-        json:
-          first_user_uuid: uuid
   # Now simulate another user trying to access the first user data
   - id: signup
     type: ref
   - id: login
     type: ref
-  - name: Get user by unauthorized user
+  - name: Mobile user can not get others profile.
     request:
-      url: "{api_live_url}/{endpoint}/{first_user_uuid}/"
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: GET
       headers:
         Authorization: "Bearer {token}"

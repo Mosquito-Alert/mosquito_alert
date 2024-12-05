@@ -194,8 +194,9 @@ class TestObservationAPI(BaseReportTest):
 class TokenAPITest(APITestCase):
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.endpoint = '/api/v1/token/'
+        cls.endpoint = '/api/v1/auth/token/'
         cls.endpoint_refresh = cls.endpoint + 'refresh/'
+        cls.endpoint_verify = cls.endpoint + 'verify/'
 
     def setUp(self) -> None:
         self.app_user = TigaUser.objects.create()
@@ -209,7 +210,7 @@ class TokenAPITest(APITestCase):
         response = self.client.post(
             self.endpoint,
             data={
-                'uuid': self.app_user.pk,
+                'username': self.app_user.username,
                 'password': 'testpassword123_tmp',
             }
         )
@@ -226,6 +227,16 @@ class TokenAPITest(APITestCase):
         self.assertEqual(
             token.access_token.payload['exp'], 
             (timezone.now() + timedelta(minutes=5)).timestamp()
+        )
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_refresh_token_expires_after_1_day(self):
+        token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
+        token = token_class.for_user(self.app_user)
+
+        self.assertEqual(
+            token.payload['exp'],
+            (timezone.now() + timedelta(days=1)).timestamp()
         )
 
     def test_user_last_login_is_not_updated_on_token_refresh(self):
@@ -250,7 +261,7 @@ class TokenAPITest(APITestCase):
         response = self.client.post(
             self.endpoint,
             data={
-                'uuid': self.app_user.pk,
+                'username': self.app_user.username,
                 'password': 'testpassword123_tmp',
                 'device_id': 'unique_id_for_device'
             }
@@ -269,7 +280,7 @@ class TokenAPITest(APITestCase):
         response = self.client.post(
             self.endpoint,
             data={
-                'uuid': self.app_user.pk,
+                'username': self.app_user.username,
                 'password': 'testpassword123_tmp',
             }
         )
@@ -281,7 +292,7 @@ class TokenAPITest(APITestCase):
         response = self.client.post(
             self.endpoint,
             data={
-                'uuid': self.app_user.pk,
+                'username': self.app_user.username,
                 'password': 'testpassword123_tmp',
                 'device_id': ''
             }
@@ -295,7 +306,7 @@ class TokenAPITest(APITestCase):
         response = self.client.post(
             self.endpoint,
             data={
-                'uuid': self.app_user.pk,
+                'username': self.app_user.username,
                 'password': 'testpassword123_tmp',
                 'device_id': 'unique_id_for_device'
             }
@@ -320,7 +331,7 @@ class TokenAPITest(APITestCase):
             response = self.client.post(
                 self.endpoint,
                 data={
-                    'uuid': self.app_user.pk,
+                    'username': self.app_user.username,
                     'password': 'testpassword123_tmp',
                     'device_id': 'unique_id_for_device'
                 }
@@ -334,7 +345,7 @@ class TokenAPITest(APITestCase):
         response = self.client.post(
             self.endpoint,
             data={
-                'uuid': self.app_user.pk,
+                'username': self.app_user.username,
                 'password': 'testpassword123_tmp',
                 'device_id': 'unique_id_for_device'
             }
@@ -368,7 +379,7 @@ class TokenAPITest(APITestCase):
             response = self.client.post(
                 self.endpoint,
                 data={
-                    'uuid': self.app_user.pk,
+                    'username': self.app_user.username,
                     'password': 'testpassword123_tmp',
                     'device_id': 'unique_id_for_device'
                 }
@@ -402,7 +413,7 @@ class TokenAPITest(APITestCase):
         response = self.client.post(
             self.endpoint,
             data={
-                'uuid': self.app_user.pk,
+                'username': self.app_user.username,
                 'password': 'testpassword123_tmp',
                 'device_id': 'unique_id_for_device'
             }
@@ -423,7 +434,7 @@ class TokenAPITest(APITestCase):
         response = self.client.post(
             self.endpoint,
             data={
-                'uuid': self.app_user.pk,
+                'username': self.app_user.username,
                 'password': 'testpassword123_tmp',
                 'device_id': 'unique_id_for_device'
             }
@@ -432,6 +443,55 @@ class TokenAPITest(APITestCase):
         device.refresh_from_db()
         self.assertEqual(device.is_logged_in, False)
 
+    def test_access_token_verify_return_401_after_expiration(self):
+        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
+            token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
+            token = token_class.for_user(self.app_user)
+
+            # Access token
+            response = self.client.post(
+                self.endpoint_verify,
+                data={
+                    'token': str(token.access_token),
+                }
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+            traveller.shift(token.access_token.lifetime + timedelta(seconds=1))
+
+            # Access token
+            response = self.client.post(
+                self.endpoint_verify,
+                data={
+                    'token': str(token.access_token),
+                }
+            )
+            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_refresh_token_verify_return_401_after_expiration(self):
+        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
+            token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
+            token = token_class.for_user(self.app_user)
+
+            # Access token
+            response = self.client.post(
+                self.endpoint_verify,
+                data={
+                    'token': str(token),
+                }
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+            traveller.shift(token.lifetime + timedelta(seconds=1))
+
+            # Access token
+            response = self.client.post(
+                self.endpoint_verify,
+                data={
+                    'token': str(token),
+                }
+            )
+            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 @pytest.mark.django_db
 class TestDeviceAPI:

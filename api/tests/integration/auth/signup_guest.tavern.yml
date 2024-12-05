@@ -1,0 +1,44 @@
+---
+
+test_name: Sign up new guest user
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  - name: Sign up without password must fail
+    request:
+      url: "{api_live_url}/auth/signup/guest/"
+      method: POST
+    response:
+      status_code: 400
+  - name: Sign up
+    request:
+      url: "{api_live_url}/auth/signup/guest/"
+      json:
+        password: "tmppassword123"
+      method: POST
+    response:
+      status_code: 201
+      json:
+        username: !anystr
+
+
+---
+
+test_name: Test password min length is 8
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  - name: Sign up with short password should fail
+    request:
+      url: "{api_live_url}/auth/signup/guest/"
+      json:
+        password: "shortps"
+      method: POST
+    response:
+      status_code: 400

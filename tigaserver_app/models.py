@@ -251,6 +251,11 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
             return
 
     @property
+    def username(self):
+        # NOTE: needed for tavern tests
+        return self.get_username()
+
+    @property
     def device_token(self) -> Optional[str]:
         last_device = self.last_device
         if last_device:

@@ -203,7 +203,8 @@ MEDIA_URL = 'https://webserver.mosquitoalert.com/media/'
 MEDIA_ROOT = ''
 
 REST_FRAMEWORK = {
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "api.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
@@ -218,6 +219,13 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
     ),
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend',]
+}
+
+DRF_STANDARDIZED_ERRORS = {
+    "ALLOWED_ERROR_STATUS_CODES": ["400", "401", "403", "404", "429"],
+    "ERROR_SCHEMAS": {
+        "401": "api.error_serializers.ErrorResponse401Serializer"
+    }
 }
 
 SIMPLE_JWT = {
@@ -257,7 +265,7 @@ SPECTACULAR_SETTINGS = {
         "ValidationErrorEnum": "drf_standardized_errors.openapi_serializers.ValidationErrorEnum.choices",
         "ClientErrorEnum": "drf_standardized_errors.openapi_serializers.ClientErrorEnum.choices",
         "ServerErrorEnum": "drf_standardized_errors.openapi_serializers.ServerErrorEnum.choices",
-        "ErrorCode401Enum": "drf_standardized_errors.openapi_serializers.ErrorCode401Enum.choices",
+        "ErrorCode401Enum": "api.error_serializers.ErrorCode401Enum.choices",
         "ErrorCode403Enum": "drf_standardized_errors.openapi_serializers.ErrorCode403Enum.choices",
         "ErrorCode404Enum": "drf_standardized_errors.openapi_serializers.ErrorCode404Enum.choices",
         "ErrorCode405Enum": "drf_standardized_errors.openapi_serializers.ErrorCode405Enum.choices",
@@ -278,6 +286,8 @@ SPECTACULAR_SETTINGS = {
     },
     'REDOC_UI_SETTINGS': {
         'maxDisplayedEnumValues': '5',
+        'sortTagsAlphabetically': True,
+        'sortOperationsAlphabetically': True
     },
     'COMPONENT_SPLIT_REQUEST': True,
 }

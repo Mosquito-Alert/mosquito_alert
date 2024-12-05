@@ -6,17 +6,29 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user_token
+    - token_user_can_view
 
 stages:
-  - id: signup
-    type: ref
-  - id: login
-    type: ref
-  - name: List users must fail
+  - name: Anonymous users can not list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+    response:
+      status_code: 404
+  - name: Auth users can not list even with view perms
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view}"
+    response:
+      status_code: 404
+  - name: List users must fail for mobile auth users
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
       method: "GET"
     response:
-      status_code: 405
+      status_code: 404

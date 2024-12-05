@@ -19,8 +19,6 @@ stages:
     id: anonymous_can_list_published_only
   - type: ref
     id: auth_without_perm_can_list_all
-  - type: ref
-    id: appuser_can_retrieve_published_and_owned
   # Creating a new appuser that does not own the object
   - id: signup
     type: ref
@@ -28,6 +26,30 @@ stages:
     type: ref
   - type: ref
     id: new_appuser_can_retrieve_published_and_owned
+
+---
+
+test_name: 'Common permission tests for observations list and get_my_observations (inherits from report)'
+
+includes:
+  - !include '../shared/reports/list.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_object
+    - unpublished_object
+    - app_user_token
+  - parametrize:
+      key: endpoint
+      vals:
+        - "{endpoint}"
+        - "me/{endpoint}"
+
+stages:
+  - type: ref
+    id: appuser_can_retrieve_published_and_owned
 
 ---
 
@@ -56,8 +78,14 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user_token
     - published_object
     - published_observation_with_photo
+  - parametrize:
+      key: endpoint
+      vals:
+        - "{endpoint}"
+        - "me/{endpoint}"
 
 stages:
   - name: Filter by has_photos True
@@ -66,6 +94,8 @@ stages:
       method: "GET"
       params:
         has_photos: True
+      headers:
+        Authorization: 'Bearer {app_user_token}'
     response:
       status_code: 200
       strict:
@@ -80,6 +110,8 @@ stages:
       method: "GET"
       params:
         has_photos: False
+      headers:
+        Authorization: 'Bearer {app_user_token}'
     response:
       status_code: 200
       strict:

@@ -75,3 +75,11 @@ class ReportPermissions(UserObjectPermissions):
         if request.method in permissions.SAFE_METHODS:
             return True
         return super()._app_user_has_object_permission(request, view, obj)
+
+
+class MyReportPermissions(ReportPermissions):
+    def has_permission(self, request, view):
+        user = request.user
+        if user and user.is_authenticated and isinstance(user, TigaUser):
+            return super().has_permission(request=request, view=view)
+        return False

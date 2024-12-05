@@ -1,0 +1,21 @@
+---
+
+name: Common GET methods for reports-based objects for '/me'.
+
+stages:
+  - id: anonymous_can_not_get_my
+    name: Anonymous user can not get_my_
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: GET
+    response:
+      status_code: 401
+  - id: auth_with_perm_cannot_get_my
+    name: Authorized users can not get_my event with permissions
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: GET
+      headers:
+        Authorization: 'Token {token_user_can_view}'
+    response:
+      status_code: 401
