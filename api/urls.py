@@ -55,13 +55,13 @@ router.register(r"photos", PhotoViewSet)
 router.register(r"users", UserViewSet)
 
 token_obtain_view = TokenObtainPairView.as_view()
-token_obtain_view = extend_schema_view(post=extend_schema(operation_id="obtain_token"))(token_obtain_view)
+token_obtain_view = extend_schema_view(post=extend_schema(operation_id="auth_obtain_token"))(token_obtain_view)
 
 token_refresh_view = TokenRefreshView.as_view()
-token_refresh_view = extend_schema_view(post=extend_schema(operation_id="refresh_token"))(token_refresh_view)
+token_refresh_view = extend_schema_view(post=extend_schema(operation_id="auth_refresh_token"))(token_refresh_view)
 
 token_verify_view = TokenVerifyView.as_view()
-token_verify_view = extend_schema_view(post=extend_schema(operation_id="verify_token"))(token_verify_view)
+token_verify_view = extend_schema_view(post=extend_schema(operation_id="auth_verify_token"))(token_verify_view)
 
 api_urlpatterns = [
     path("auth/signup/guest/", GuestRegisterView.as_view(), name='guest-register'),

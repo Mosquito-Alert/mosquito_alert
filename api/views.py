@@ -158,7 +158,7 @@ class NotificationViewSet(
 @extend_schema_view(
     list=extend_schema(
         tags=['notifications'],
-        operation_id='get_my_notifications',
+        operation_id='notifications_list_mine',
         description="Get Current User's Notifications"
     )
 )
@@ -277,7 +277,7 @@ class BiteViewSet(BaseReportViewSet):
 @extend_schema_view(
     list=extend_schema(
         tags=['bites'],
-        operation_id='get_my_bites',
+        operation_id='bites_list_mine',
         description="Get Current User's Bites"
     )
 )
@@ -293,7 +293,7 @@ class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
 @extend_schema_view(
     list=extend_schema(
         tags=['breeding-sites'],
-        operation_id='get_my_breeding_sites',
+        operation_id='breeding_sites_list_mine',
         description="Get Current User's Breeding Sites"
     )
 )
@@ -309,7 +309,7 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
 @extend_schema_view(
     list=extend_schema(
         tags=['observations'],
-        operation_id='get_my_observations',
+        operation_id='observations_list_mine',
         description="Get Current User's Observations"
     )
 )
@@ -328,7 +328,7 @@ class UserViewSet(
 @extend_schema_view(
     retrieve=extend_schema(
         tags=['users'],
-        operation_id='get_my_profile',
+        operation_id='users_retrieve_mine',
         description="Get Current User's Profile"
     )
 )

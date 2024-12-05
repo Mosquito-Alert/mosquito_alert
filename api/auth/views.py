@@ -11,7 +11,7 @@ from .serializers import GuestRegistrationSerializer, PasswordChangeSerializer
 
 @extend_schema_view(
     post=extend_schema(
-        operation_id='signup_guest',
+        operation_id='auth_signup_guest',
     )
 )
 class GuestRegisterView(generics.CreateAPIView):
@@ -25,7 +25,7 @@ class PasswordChangeView(generics.CreateAPIView):
     serializer_class = PasswordChangeSerializer
 
     @extend_schema(
-        operation_id='change_password',
+        operation_id='auth_change_password',
         responses={
             200: PasswordChangeSerializer,
         }
