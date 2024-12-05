@@ -6,13 +6,12 @@ description:
 
 variables:
   user_password: "testpassword123_tmp"
-  accounts_login_path: 'en/accounts/login'
 
 stages:
   - id: signup
     name: Sign up
     request:
-      url: "{api_live_url}/users/"
+      url: "{api_live_url}/auth/signup/guest/"
       json:
         password: "{user_password}"
       method: POST
@@ -20,13 +19,13 @@ stages:
       status_code: 201
       save:
         json:
-          user_uuid: uuid
+          username: username
   - id: login
     name: Login app user using JWT
     request:
-      url: "{api_live_url}/token/"
+      url: "{api_live_url}/auth/token/"
       json:
-        uuid: "{user_uuid}"
+        username: "{username}"
         password: "{user_password}"
       method: POST
     response:

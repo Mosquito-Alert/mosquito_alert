@@ -1,6 +1,7 @@
 from typing import Optional
 
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
 
 from rest_framework import exceptions, serializers
@@ -9,23 +10,20 @@ from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.serializers import (
     TokenObtainSerializer,
     TokenObtainPairSerializer,
+    PasswordField
 )
 
 from tigaserver_app.models import TigaUser, Device
 
 
 class AppUserTokenObtainSerializer(TokenObtainSerializer):
-    uuid = serializers.UUIDField(write_only=True, required=True)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["device_id"] = serializers.CharField(required=False, write_only=True)
 
-        del self.fields[self.username_field]
-
     def validate(self, attrs):
         authenticate_kwargs = {
-            "uuid": attrs["uuid"],
+            "uuid": attrs[self.username_field],
             "password": attrs["password"],  # or None,
         }
         try:
@@ -56,7 +54,7 @@ class AppUserTokenObtainPairSerializer(
 ):
     @classmethod
     def get_token(self, user: TigaUser, device_id: Optional[str] = None) -> Token:
-        token = self.token_class.for_user(user)  # type: ignore
+        token = super().get_token(user)
 
         if device_id:
             # Add custom claims to the JWT token
@@ -83,3 +81,48 @@ class AppUserTokenObtainPairSerializer(
             self.device.save(update_fields=_update_fields)
 
         return data
+
+
+class GuestRegistrationSerializer(serializers.ModelSerializer):
+    # Using rest_framework_simplejwt not to have problems when
+    # getting the JWT Token
+    password = PasswordField(
+        min_length=8,
+        write_only=True,
+        required=True,
+        validators=[validate_password],
+    )
+
+    def create(self, validated_data):
+        raw_password = validated_data.pop("password")
+        instance = super().create(validated_data)
+        instance.set_password(raw_password)
+        instance.save()
+        return instance
+
+    class Meta:
+        model = TigaUser
+        fields = (
+            "username",
+            "password",
+        )
+        read_only_fields = (
+            "username",
+        )
+        extra_kwargs = {
+            "username": {"source": "user_UUID"},
+        }
+
+class PasswordChangeSerializer(serializers.ModelSerializer):
+    # Using rest_framework_simplejwt not to have problems when
+    # getting the JWT Token
+    password = PasswordField(
+        min_length=8,
+        write_only=True,
+        required=True,
+        validators=[validate_password],
+    )
+
+    class Meta:
+        model = TigaUser
+        fields = ('password',)

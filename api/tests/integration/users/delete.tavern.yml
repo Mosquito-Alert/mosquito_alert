@@ -6,17 +6,30 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user
+    - app_user_token
+    - token_user_can_delete
 
 stages:
-  - id: signup
-    type: ref
-  - id: login
-    type: ref
-  - name: Delete user must fail
+  - name: Anonymous users can not delete
     request:
-      url: "{api_live_url}/{endpoint}/{user_uuid}/"
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
+      method: "DELETE"
+    response:
+      status_code: 403
+  - name: Auth users can not delete even with delete perms
+    request:
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
+      method: "DELETE"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Token {token_user_can_delete}"
+    response:
+      status_code: 405
+  - name: Mobile users can not delete
+    request:
+      url: "{api_live_url}/{endpoint}/{app_user.pk}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
       method: "DELETE"
     response:
       status_code: 405

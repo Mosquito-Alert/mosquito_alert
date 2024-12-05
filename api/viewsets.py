@@ -5,8 +5,6 @@ from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework import permissions
 from rest_framework.renderers import JSONRenderer
 
-from drf_standardized_errors.handler import exception_handler
-from drf_standardized_errors.openapi import AutoSchema
 
 from .auth.authentication import AppUserJWTAuthentication
 from .permissions import UserObjectPermissions
@@ -19,7 +17,6 @@ class ResultsSetPagination(PageNumberPagination):
 
 
 class GenericViewSet(DRFGenericViewSet):
-    schema = AutoSchema()
 
     authentication_classes = (
         SessionAuthentication,
@@ -36,8 +33,6 @@ class GenericViewSet(DRFGenericViewSet):
     parser_classes = (JSONParser, FormParser, MultiPartParser)
     renderer_classes = (JSONRenderer,)
 
-    def get_exception_handler(self):
-        return exception_handler
 
 class GenericMobileOnlyViewSet(GenericViewSet):
     authentication_classes = (

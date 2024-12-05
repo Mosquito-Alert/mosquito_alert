@@ -1,22 +1,22 @@
 ---
-# TODO: check that it expire
+
 test_name: Make sure token is correct
 
 marks:
 - usefixtures:
   - api_live_url
+  - app_user
+  - user_password
 
 stages:
-  - id: signup
-    type: ref
   - id: get_jwt_token
     name: Get JWT Token
     request:
-      url: "{api_live_url}/token/"
+      url: "{api_live_url}/auth/token/"
       method: POST
       json:
-        uuid: "{user_uuid}"
-        password: "{user_password:s}"
+        username: "{app_user.username}"
+        password: "{user_password}"
     response:
       status_code: 200
       verify_response_with: &verify_jwt_token
@@ -35,7 +35,7 @@ stages:
   - id: refresh_jwt_token
     name: Refresh JWT Token
     request:
-      url: "{api_live_url}/token/refresh/"
+      url: "{api_live_url}/auth/token/refresh/"
       method: POST
       json:
         refresh: "{refresh_token}"
@@ -44,3 +44,24 @@ stages:
       verify_response_with:
         <<: *verify_jwt_token
 
+---
+
+test_name: Wrong credentials should return 400
+
+marks:
+- usefixtures:
+  - api_live_url
+  - app_user
+  - user_password
+
+stages:
+  - id: get_jwt_token
+    name: Get JWT Token
+    request:
+      url: "{api_live_url}/auth/token/"
+      method: POST
+      json:
+        username: "{app_user.username}"
+        password: "fake_{user_password}"
+    response:
+      status_code: 401

@@ -1,0 +1,22 @@
+# NOTE: most of the test are parametrized in list.tavern.yml
+
+---
+
+test_name: Make sure non mobile users can not get_my_breeding_sites
+
+includes:
+  - !include '../shared/reports/get_my.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - app_user_token
+    - token_user_can_view
+
+stages:
+  - type: ref
+    id: anonymous_can_not_get_my
+  - type: ref
+    id: auth_with_perm_cannot_get_my

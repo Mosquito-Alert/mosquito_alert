@@ -44,7 +44,6 @@ from .serializers import (
     PartnerSerializer,
     CampaignSerializer,
     UserSerializer,
-    CreateUserSerializer,
     FixSerializer,
     CountrySerializer,
     PhotoSerializer,
@@ -60,11 +59,10 @@ from .serializers import (
     TopicNotificationCreateSerializer,
     UserNotificationCreateSerializer,
 )
-from .permissions import NotificationObjectPermissions, ReportPermissions
+from .permissions import NotificationObjectPermissions, ReportPermissions, MyReportPermissions
 from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet
 
 User = get_user_model()
-
 
 class CampaignsViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     queryset = OWCampaigns.objects.all()
@@ -157,6 +155,16 @@ class NotificationViewSet(
 
         return qs
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['notifications'],
+        operation_id='get_my_notifications',
+        description="Get Current User's Notifications"
+    )
+)
+class MyNotificationViewSet(NotificationViewSet, GenericMobileOnlyViewSet):
+    def get_queryset(self):
+        return super().get_queryset().for_user(user=self.request.user)
 
 class PartnersViewSet(ReadOnlyModelViewSet, GenericViewSet):
     queryset = OrganizationPin.objects.all()
@@ -245,6 +253,13 @@ class BaseReportViewSet(
     def perform_destroy(self, instance):
         instance.soft_delete()
 
+class BaseMyReportViewSet(BaseReportViewSet, GenericMobileOnlyViewSet):
+    def get_permissions(self):
+        return [MyReportPermissions(),]
+
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+
 class BaseReportWithPhotosViewSet(BaseReportViewSet):
     def get_parsers(self):
         # Since photos are required on POST, only allow
@@ -257,43 +272,74 @@ class BiteViewSet(BaseReportViewSet):
     serializer_class = BiteSerializer
     filterset_class = BiteFilter
 
-    def get_queryset(self):
-        return super().get_queryset().filter(type=Report.TYPE_BITE)
+    queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_BITE)
+
+@extend_schema_view(
+    list=extend_schema(
+        tags=['bites'],
+        operation_id='get_my_bites',
+        description="Get Current User's Bites"
+    )
+)
+class MyBiteViewSet(BaseMyReportViewSet, BiteViewSet):
+    pass
 
 class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
     serializer_class = BreedingSiteSerializer
     filterset_class = BreedingSiteFilter
 
-    def get_queryset(self):
-        return super().get_queryset().filter(type=Report.TYPE_SITE)
+    queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_SITE)
+
+@extend_schema_view(
+    list=extend_schema(
+        tags=['breeding-sites'],
+        operation_id='get_my_breeding_sites',
+        description="Get Current User's Breeding Sites"
+    )
+)
+class MyBreedingSiteViewSet(BaseMyReportViewSet, BreedingSiteViewSet):
+    pass
 
 class ObservationViewSest(BaseReportWithPhotosViewSet):
     serializer_class = ObservationSerializer
     filterset_class = ObservationFilter
 
-    def get_queryset(self):
-        return super().get_queryset().filter(type=Report.TYPE_ADULT)
+    queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_ADULT)
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['observations'],
+        operation_id='get_my_observations',
+        description="Get Current User's Observations"
+    )
+)
+class MyObservationViewSest(BaseMyReportViewSet, ObservationViewSest):
+    pass
 
 class UserViewSet(
-    CreateModelMixin, UpdateModelMixin, RetrieveModelMixin, GenericViewSet
+    UpdateModelMixin, RetrieveModelMixin, GenericViewSet
 ):
     queryset = TigaUser.objects.all()
     serializer_class = UserSerializer
 
     lookup_url_kwarg = "uuid"
 
-    def get_permissions(self):
-        if self.request and self.request.method == "POST":
-            return [AllowAny(),]
 
-        return super().get_permissions()
+@extend_schema_view(
+    retrieve=extend_schema(
+        tags=['users'],
+        operation_id='get_my_profile',
+        description="Get Current User's Profile"
+    )
+)
+class MyUserViewSet(UserViewSet, GenericMobileOnlyViewSet):
+    def get_object(self):
+        user = self.request.user
+        # May raise a permission denied
+        self.check_object_permissions(self.request, user)
 
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CreateUserSerializer
-        else:
-            return UserSerializer
+        return user
+
 
 class PhotoViewSet(
     RetrieveModelMixin, GenericNoMobileViewSet
@@ -304,7 +350,7 @@ class PhotoViewSet(
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'
 
-class DeviceSerializerViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericMobileOnlyViewSet):
+class DeviceViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericMobileOnlyViewSet):
     queryset = Device.objects.filter(device_id__isnull=False).exclude(device_id='').select_related('mobile_app')
     serializer_class = DeviceSerializer
 

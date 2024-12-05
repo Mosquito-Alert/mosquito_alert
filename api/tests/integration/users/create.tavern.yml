@@ -1,6 +1,4 @@
----
-
-test_name: Make everybody can create users
+test_name: Make sure users can not create
 
 includes:
   - !include schema.yml
@@ -9,20 +7,10 @@ marks:
   - usefixtures:
     - api_live_url
 
-
 stages:
-  - name: Sign up without password must fail
+  - name: Create user does not exist
     request:
       url: "{api_live_url}/{endpoint}/"
-      method: POST
+      method: "POST"
     response:
-      status_code: 400
-  - name: Sign up
-    request:
-      url: "{api_live_url}/{endpoint}/"
-      json:
-        password: "tmppassword123"
-      method: POST
-    response:
-      status_code: 201
-      json: !force_format_include "{response_data_validation}"
+      status_code: 404

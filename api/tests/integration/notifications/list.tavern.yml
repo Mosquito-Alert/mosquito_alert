@@ -7,6 +7,13 @@ marks:
   - usefixtures:
     - api_live_url
     - token_user
+  - parametrize:
+      key:
+        - endpoint
+        - status_code
+      vals:
+        - ["{endpoint}", 403]
+        - ["me/{endpoint}", 401]
 
 stages:
   - name: Non auth user can not list
@@ -14,7 +21,7 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
     response:
-      status_code: 403
+      status_code: !int "{status_code}"
   - name: User without perm can not list
     request:
       url: "{api_live_url}/{endpoint}/"
@@ -22,7 +29,7 @@ stages:
       headers:
         Authorization: "Token {token_user:s}"
     response:
-      status_code: 403
+      status_code: !int "{status_code}"
 
 ---
 
@@ -57,9 +64,10 @@ stages:
               body: !anystr
             is_read: false
             created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+
 ---
 
-test_name: User list only their notifications.
+test_name: Mobile user gets only their notifications.
 
 includes:
   - !include schema.yml
@@ -67,31 +75,23 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - app_user
+    - app_user_token
     - user_notification
     - report_notification
     - topic_notification
+  - parametrize:
+      key: endpoint
+      vals:
+        - "{endpoint}"
+        - "me/{endpoint}"
 
 stages:
-  - id: login
-    name: Login app user using JWT
-    request:
-      url: "{api_live_url}/token/"
-      json:
-        uuid: "{app_user.pk}"
-        password: "{user_password}"
-      method: POST
-    response:
-      status_code: 200
-      save:
-        json:
-          token: 'access'
   - name: App user list their notifications
     request:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
     response:
       status_code: 200
       strict:
@@ -129,24 +129,16 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - app_user
+    - app_user_token
     - unseen_user_notification
     - seen_user_notification
+  - parametrize:
+      key: endpoint
+      vals:
+        - "{endpoint}"
+        - "me/{endpoint}"
 
 stages:
-  - id: login
-    name: Login app user using JWT
-    request:
-      url: "{api_live_url}/token/"
-      json:
-        uuid: "{app_user.pk}"
-        password: "{user_password}"
-      method: POST
-    response:
-      status_code: 200
-      save:
-        json:
-          token: 'access'
   - name: App user list their notifications by is_read
     request:
       url: "{api_live_url}/{endpoint}/"
@@ -154,7 +146,7 @@ stages:
         is_read: True
       method: "GET"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
     response:
       status_code: 200
       strict:
@@ -174,23 +166,15 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - app_user
+    - app_user_token
     - unseen_user_notification
+  - parametrize:
+      key: endpoint
+      vals:
+        - "{endpoint}"
+        - "me/{endpoint}"
 
 stages:
-  - id: login
-    name: Login app user using JWT
-    request:
-      url: "{api_live_url}/token/"
-      json:
-        uuid: "{app_user.pk}"
-        password: "{user_password}"
-      method: POST
-    response:
-      status_code: 200
-      save:
-        json:
-          token: 'access'
   - name: App user list their notifications by not is_read
     request:
       url: "{api_live_url}/{endpoint}/"
@@ -198,7 +182,7 @@ stages:
         is_read: False
       method: "GET"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
     response:
       status_code: 200
       strict:
