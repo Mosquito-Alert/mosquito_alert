@@ -527,6 +527,10 @@ class UserSerializer(serializers.ModelSerializer):
     uuid = serializers.UUIDField(source="user_UUID", read_only=True)
     language_iso = serializers.SerializerMethodField(help_text='ISO 639-1 code')
     username = serializers.SerializerMethodField()
+    is_guest = serializers.SerializerMethodField()
+
+    def get_is_guest(self, obj) -> bool:
+        return True
 
     def get_username(self, obj) -> str:
         return obj.get_username()
@@ -542,6 +546,7 @@ class UserSerializer(serializers.ModelSerializer):
             "registration_time",
             "locale",
             "language_iso",
+            "is_guest",
             "score",
             "last_score_update",
         )

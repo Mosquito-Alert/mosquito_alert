@@ -10,6 +10,7 @@ variables:
     username: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
     registration_time: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
     locale: !anything
+    is_guest: true
     language_iso: !anything
     score: !anyint
     last_score_update: null
