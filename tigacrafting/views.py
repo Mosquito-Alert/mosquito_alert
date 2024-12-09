@@ -1129,16 +1129,15 @@ def auto_annotate(
         category: Categories,
         validation_value: Optional[Literal[ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY, ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY]]
     ) -> ExpertReportAnnotation:
-    roger_annotation, _ = ExpertReportAnnotation.objects.get_or_create(
-        user=User.objects.get(username="super_reritja"),
+    ExpertReportAnnotation.create_auto_annotation(
         report=report,
-        defaults={
-            'category': category,
-            'validation_value': int(validation_value) if validation_value else None,
-            'validation_complete': True,
-            'validation_complete_executive': True,
-            'best_photo': report.photos.first(),
-        }
+        category=category,
+        validation_value=validation_value
+    )
+
+    roger_annotation = ExpertReportAnnotation.objects.get(
+        user__username="super_reritja",
+        report=report
     )
 
     send_finished_validation_notification(roger_annotation)
