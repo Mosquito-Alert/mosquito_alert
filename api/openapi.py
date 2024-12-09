@@ -1,8 +1,29 @@
+import re
+
 from drf_standardized_errors.handler import exception_handler as standardized_errors_handler
 from drf_standardized_errors.openapi import AutoSchema as StandarizedErrorsAutoSchema
 
 
 class AutoSchema(StandarizedErrorsAutoSchema):
+    def get_operation_id(self) -> str:
+        """Overriding needed when using the --remove-operation-id-prefix option in the code generator."""
+        tokenized_path = self._tokenize_path()
+        # ensure only alphanumeric characters exist
+        tokenized_path = [re.sub(r'\W+', '', t) for t in tokenized_path]
+
+        if self.method == 'GET' and self._is_list_view():
+            action = 'list'
+        else:
+            action = self.method_mapping[self.method.lower()]
+
+        if not tokenized_path:
+            tokenized_path.append('root')
+
+        if re.search(r'<drf_format_suffix\w*:\w+>', self.path_regex):
+            tokenized_path.append('formatted')
+
+        return '_'.join(tokenized_path + [action])
+
     def _should_add_error_response(self, responses: dict, status_code: str) -> bool:
         if (
             status_code == "400"

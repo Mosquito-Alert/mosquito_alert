@@ -284,9 +284,6 @@ class BiteViewSet(BaseReportViewSet):
 class MyBiteViewSet(BaseMyReportViewSet, BiteViewSet):
     pass
 
-@extend_schema(
-    tags=['breedingsites']
-)
 class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
     serializer_class = BreedingSiteSerializer
     filterset_class = BreedingSiteFilter
@@ -295,8 +292,8 @@ class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
 
 @extend_schema_view(
     list=extend_schema(
-        tags=['breedingsites'],
-        operation_id='breeding_sites_list_mine',
+        tags=['breeding-sites'],
+        operation_id='breedingsites_list_mine',
         description="Get Current User's Breeding Sites"
     )
 )
