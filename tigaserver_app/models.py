@@ -231,6 +231,9 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
 
     last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
 
+    last_location = models.PointField(null=True, blank=True, srid=4326)
+    last_location_update = models.DateTimeField(help_text="Last time location was updated", null=True, blank=True)
+
     locale = models.CharField(
         choices=AVAILABLE_LANGUAGES,
         max_length=16,
@@ -1871,6 +1874,13 @@ class Report(TimeZoneModelMixin, models.Model):
         _old_point = self.point
         self.point = self._get_point()
         self.timezone = self.get_timezone_from_coordinates()
+        if _old_point != self.point:
+            _last_location_update = self.user.last_location_update
+            _report_upload_time = self.server_upload_time or timezone.now()
+            if _last_location_update and _report_upload_time >= _last_location_update:
+                self.user.last_location = self.point
+                self.user.last_location_update = _report_upload_time
+                self.user.save()
 
         if self.app_language:
             self.app_language = standarize_language_tag(self.app_language)

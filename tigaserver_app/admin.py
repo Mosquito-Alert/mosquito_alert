@@ -88,8 +88,8 @@ class DeviceInline(admin.StackedInline):
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('user_UUID', 'registration_time', 'score_v2')
-    fields = ('user_UUID', 'registration_time', 'locale', ('score_v2', 'last_score_update'))
-    readonly_fields = ('user_UUID', 'registration_time', 'score_v2', 'last_score_update')
+    fields = ('user_UUID', 'registration_time', 'locale', ('score_v2', 'last_score_update'), ('last_location', 'last_location_update'))
+    readonly_fields = ('user_UUID', 'registration_time', 'score_v2', 'last_score_update', 'last_location', 'last_location_update')
     search_fields = ('user_UUID',)
     ordering = ('registration_time',)
     actions = [export_full_csv, export_full_csv_sc]
