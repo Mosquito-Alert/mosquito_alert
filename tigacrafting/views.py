@@ -1074,27 +1074,45 @@ def expert_report_complete(request):
     return Response(context)
 
 def get_reports_unfiltered_sites_embornal(reports_imbornal):
-    new_reports_unfiltered_sites_embornal = Report.objects.exclude(type='adult').filter(
-        version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
-        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time').all()
-    return new_reports_unfiltered_sites_embornal
+    return Report.objects.filter(
+        type=Report.TYPE_SITE,
+        breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN,
+        creation_time__year__gt=2014,
+    ).exclude(
+        note__icontains='#345'
+    ).has_photos().annotate(
+        n_annotations=Count('expert_report_annotations')
+    ).filter(
+        n_annotations=0
+    ).order_by('-server_upload_time')
 
 def get_reports_unfiltered_sites_other(reports_imbornal):
-    new_reports_unfiltered_sites_other = Report.objects.exclude(type='adult').exclude(
-        version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
-        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time').all()
-    return new_reports_unfiltered_sites_other
+    return Report.objects.filter(
+        type=Report.TYPE_SITE,
+        creation_time__year__gt=2014,
+    ).exclude(
+        models.Q(note__icontains='#345') |
+        models.Q(breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN)
+    ).has_photos().annotate(
+        n_annotations=Count('expert_report_annotations')
+    ).filter(
+        n_annotations=0
+    ).order_by('-server_upload_time')
 
 def get_reports_imbornal():
     return Report.objects.filter(breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN)
 
-def get_reports_unfiltered_adults_except_being_validated():
-    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
-    return new_reports_unfiltered_adults
-
 def get_reports_unfiltered_adults():
-    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).order_by('-server_upload_time')
-    return new_reports_unfiltered_adults
+    return Report.objects.filter(
+        creation_time__year__gt=2014,
+        type=Report.TYPE_ADULT
+    ).excldue(
+        note__icontains='#345'
+    ).has_photos().annotate(
+        n_annotations=Count('expert_report_annotations')
+    ).filter(
+        n_annotations__lt=3
+    ).order_by('-server_upload_time')
 
 def auto_annotate_notsure(report: Report) -> None:
     auto_annotate(
@@ -1235,47 +1253,47 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
             if aithr == '':
                 aithr = '0.75'
 
-        #new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-        new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
+        new_reports_unfiltered_qs = Report.objects.filter(
+            creation_time__year__gt=2014,
+        ).exclude(
+            note__icontains='#345'
+        ).non_deleted().has_photos().annotate(
+            n_annotations=Count('expert_report_annotations')
+        ).filter(
+            n_annotations=0
+        )
 
-        reports_imbornal = get_reports_imbornal()
-        new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-        new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-        new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-
-        #new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter( Q(ia_filter_1__lte=float(aithr)) | Q(ia_filter_1__isnull=True) )
-        new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter( ia_filter_1__lte=float(aithr) )
-
-        new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
-
-        #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
         if type == 'adult':
-            #new_reports_unfiltered = new_reports_unfiltered.exclude(type='site')
-            new_reports_unfiltered = new_reports_unfiltered_adults
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
+                type=Report.TYPE_ADULT,
+                ia_filter_1__lte=float(aithr)
+            )
         elif type == 'site':
-            #new_reports_unfiltered = new_reports_unfiltered.exclude(type='adult')
-            new_reports_unfiltered = new_reports_unfiltered_sites_embornal
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
+                type=Report.TYPE_SITE,
+                breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN
+            )
         elif type == 'site-o':
-            new_reports_unfiltered = new_reports_unfiltered_sites_other
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
+                type=Report.TYPE_SITE
+            ).exclude(
+                breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN
+            )
+
         if visibility == 'visible':
-            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(hide=False)
         elif visibility == 'hidden':
-            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(hide=True)
+
         if usr_note and usr_note != '':
-            new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(note__icontains=usr_note)
         if country and country != '' and country != 'all':
-            new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(country))
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(country__gid=int(country))
 
-        # new_reports_unfiltered = filter_reports(new_reports_unfiltered, False)
-        #
-        # new_reports_unfiltered = list(new_reports_unfiltered)
-
-        new_reports_unfiltered = new_reports_unfiltered.non_deleted()
-
-        # for r in new_reports_unfiltered:
-        #      print("{0} {1}".format(r.version_UUID, r.deleted))
-
-        paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
+        paginator = Paginator(
+            new_reports_unfiltered_qs.prefetch_related('photos').select_related('country').order_by('-server_upload_time'),
+            int(tasks_per_page)
+        )
         page = request.GET.get('page', 1)
         try:
             objects = paginator.page(page)
@@ -1283,7 +1301,8 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
             objects = paginator.page(1)
         except EmptyPage:
             objects = paginator.page(paginator.num_pages)
-        page_query = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
+        page_query = objects
+        page_query.ordered = True
         this_formset = PictureValidationFormSet(queryset=page_query)
         args['formset'] = this_formset
         args['objects'] = objects
@@ -1317,7 +1336,7 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
             type_readable = "All"
         args['type_readable'] = type_readable
         #n_query_records = new_reports_unfiltered.count()
-        n_query_records = len(new_reports_unfiltered)
+        n_query_records = new_reports_unfiltered_qs.count()
         args['n_query_records'] = n_query_records
         #args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
         range_list = [ n for n in range(5, 101, 5) ]
