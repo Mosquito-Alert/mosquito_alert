@@ -1106,7 +1106,7 @@ def get_reports_unfiltered_adults():
     return Report.objects.filter(
         creation_time__year__gt=2014,
         type=Report.TYPE_ADULT
-    ).excldue(
+    ).exclude(
         note__icontains='#345'
     ).has_photos().annotate(
         n_annotations=Count('expert_report_annotations')
