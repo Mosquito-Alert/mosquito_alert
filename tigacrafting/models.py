@@ -1,7 +1,8 @@
-import copy
+from typing import Optional, Literal
 
 from django.db import models
-from django.db.utils import IntegrityError
+
+from django.db import models
 from django.contrib.auth import get_user_model
 from datetime import datetime, timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -11,6 +12,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 import tigacrafting.html_utils as html_utils
 import pytz
+
+from .messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict, notsure_msg_dict
 
 User = get_user_model()
 
@@ -185,6 +188,8 @@ SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding s
 STATUS_CATEGORIES = ((1, 'public'), (0, 'flagged'), (-1, 'hidden'))
 
 class ExpertReportAnnotation(models.Model):
+    MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT = 3
+
     VALIDATION_CATEGORY_DEFINITELY = 2
     VALIDATION_CATEGORY_PROBABLY = 1
 
@@ -239,6 +244,87 @@ class ExpertReportAnnotation(models.Model):
                 if self.report.server_upload_time >= date_expiration:
                     return True
         return False
+
+    @classmethod
+    def _get_auto_message(cls, category: 'Categories', validation_value: int, locale: str = 'en') -> Optional[str]:
+        msg_dict = other_insect_msg_dict
+        if not category:
+            return msg_dict.get(locale)
+
+        if category.pk == 4:  # albopictus
+            msg_dict = albopictus_msg_dict if validation_value == cls.VALIDATION_CATEGORY_DEFINITELY else albopictus_probably_msg_dict
+        elif category.pk == 10:  # culex
+            msg_dict = culex_msg_dict
+        elif category.pk == 9:  # not sure
+            msg_dict = notsure_msg_dict
+
+        return msg_dict.get(locale)
+
+    @classmethod
+    def create_auto_annotation(cls, report: 'tigaserver_app.models.Report', category: 'Categories', validation_value: Optional[Literal[VALIDATION_CATEGORY_PROBABLY, VALIDATION_CATEGORY_DEFINITELY]] = None):
+        obj, _ = ExpertReportAnnotation.objects.update_or_create(
+            user=User.objects.get(username="innie"),
+            report=report,
+            defaults={
+                'validation_complete': True,
+                'simplified_annotation': False,
+                'best_photo': report.photos.first(),
+                'category': category,
+                'tiger_certainty_notes': 'auto',
+                'validation_value': int(validation_value) if validation_value else None,
+                'edited_user_notes': cls._get_auto_message(
+                    category=category,
+                    validation_value=int(validation_value) if validation_value else None,
+                    locale=report.user.locale
+                )
+            }
+        )
+        obj.create_replicas()
+        obj.create_super_expert_approval()
+
+    def create_replicas(self):
+        username_replicas = ["innie", "minnie", "manny"]
+
+        report_annotations = ExpertReportAnnotation.objects.filter(report=self.report).count()
+        if report_annotations >= self.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
+            return
+        num_missing_annotations = self.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - report_annotations
+
+        fieldnames = [
+            field.name for field in ExpertReportAnnotation._meta.fields if field.name not in ('id', 'user', 'report')
+        ]
+        obj_dict = {
+            fname: getattr(self, fname) for fname in fieldnames
+        }
+        for dummy_user in User.objects.filter(username__in=username_replicas).exclude(username=self.user.username)[:num_missing_annotations]:
+            ExpertReportAnnotation.objects.update_or_create(
+                user=dummy_user,
+                report=self.report,
+                defaults={
+                    **obj_dict,
+                    'tiger_certainty_category': self.tiger_certainty_category,
+                    'simplified_annotation': True,
+                    'tiger_certainty_notes': 'exec_auto' if self.validation_complete_executive else 'auto',
+                    'validation_complete': True,
+                    'validation_complete_executive': False,
+                    'best_photo': None,
+                    'edited_user_notes': "",
+                    'message_for_user': "",
+                    'revise': False
+                }
+            )
+
+    def create_super_expert_approval(self):
+        ExpertReportAnnotation.objects.update_or_create(
+            user=User.objects.get(username="super_reritja"),
+            report=self.report,
+            defaults={
+                'status': 1,  # public
+                'simplified_annotation': False,
+                'revise': False,
+                'validation_complete': True,
+            }
+        )
 
     # def get_photo_html_for_report_validation_wblood(self):
     #     #these_photos = Photo.objects.filter(report=self.report).visible()
@@ -414,6 +500,24 @@ class ExpertReportAnnotation(models.Model):
         result = '<span class="label label-default" style="background-color:' + ('red' if self.get_score() == 2 else ('orange' if self.get_score() == 1 else ('white' if self.get_score() == 0 else ('grey' if self.get_score() == -1 else 'black')))) + ';">' + self.get_category() + '</span>'
         return result
 
+    def _can_be_simplified(self) -> bool:
+        # If the user is the superexpert -> False
+        if self.user.userstat.is_superexpert():
+            return False
+
+        # If the user is the supervisor of that country -> False
+        if self.user.userstat.national_supervisor_of:
+            if self.user.userstat.national_supervisor_of == self.report.country:
+                return False
+
+        # Return False if no simplified_annotation found or if the objects to be
+        # created is suposed to be the last.
+        total_completed_annotations_qs = self.report.expert_report_annotations.all()
+        return (
+            total_completed_annotations_qs.filter(simplified_annotation=False).exists() or
+            total_completed_annotations_qs.count() < self.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1
+        )
+
     def save(self, *args, **kwargs):
         if not kwargs.pop('skip_lastmodified', False):
             self.last_modified = timezone.now()
@@ -427,38 +531,19 @@ class ExpertReportAnnotation(models.Model):
             if self.category.pk == 5: # aegypti
                 self.aegypti_certainty_category = 2
 
+        # On create only
+        if self._state.adding and not self.validation_complete:
+            self.simplified_annotation = self._can_be_simplified()
+
+        if self.simplified_annotation:
+            self.message_for_user = ""
+            self.best_photo = None
+
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
 
         if self.validation_complete and self.validation_complete_executive:
-            cloned_instance = copy.deepcopy(self)
-            cloned_instance.simplified_annotation = True
-            cloned_instance.tiger_certainty_notes = 'exec_auto'
-            cloned_instance.validation_complete = True
-            cloned_instance.validation_complete_executive = False
-            cloned_instance.best_photo = None
-            cloned_instance.edited_user_notes = "" 
-            cloned_instance.message_for_user = ""
-            cloned_instance.revise = False
-
-            for dummy_user in User.objects.filter(username__in=["innie", "minnie"]):
-                try:
-                    cloned_instance.pk = None
-                    cloned_instance.user = dummy_user
-                    cloned_instance.save()
-                except IntegrityError:
-                    # Case unique constraint raises
-                    pass
-
-            try:
-                ExpertReportAnnotation.objects.update_or_create(
-                    user=User.objects.get(username="super_reritja"),
-                    report=self.report,
-                    defaults={
-                        "validation_complete": True
-                    }
-                )
-            except User.DoesNotExist:
-                pass
+            self.create_replicas()
+            self.create_super_expert_approval()
 
     def delete(self, *args, **kwargs):
         if self.validation_complete_executive:

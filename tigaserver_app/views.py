@@ -27,7 +27,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Count
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance
-from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports,get_reports_unfiltered_adults_except_being_validated
+from tigacrafting.views import get_reports_imbornal,get_reports_unfiltered_sites_embornal,get_reports_unfiltered_sites_other,get_reports_unfiltered_adults,filter_reports
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
@@ -2294,18 +2294,6 @@ def annotate_coarse(request):
 def coarse_filter_reports(request):
     if request.method == 'GET':
 
-        new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
-        reports_imbornal = get_reports_imbornal()
-        # new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-        # new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-        # new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-        new_reports_unfiltered_sites = (Report.objects.filter(type='site')
-                                        .exclude(note__icontains='#345')
-                                        .exclude(photos=None).annotate(
-                                            n_annotations=Count('expert_report_annotations')
-                                        )
-                                        .filter(n_annotations=0).order_by('-creation_time').all())
-
         q = request.query_params.get("q", '')
         filter_params = get_filter_params_from_q(q)
         aithr = filter_params['aithr']
@@ -2318,29 +2306,40 @@ def coarse_filter_reports(request):
         limit = request.query_params.get("limit", 300)
         offset = request.query_params.get("offset", 1)
 
-        new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter(ia_filter_1__lte=float(aithr))
-
-        new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
+        new_reports_unfiltered_qs = Report.objects.filter(
+            creation_time__year__gt=2014,
+        ).exclude(
+            note__icontains='#345'
+        ).non_deleted().has_photos().annotate(
+            n_annotations=Count('expert_report_annotations')
+        ).filter(
+            n_annotations=0
+        )
 
         if type == 'adult':
-            new_reports_unfiltered = new_reports_unfiltered_adults
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
+                type=Report.TYPE_ADULT,
+                ia_filter_1__lte=float(aithr)
+            )
         elif type == 'site':
-            new_reports_unfiltered = new_reports_unfiltered_sites
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
+                type=Report.TYPE_SITE,
+                breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN
+            )
+
         if visibility == 'visible':
-            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(hide=False)
         elif visibility == 'hidden':
-            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(hide=True)
+
         if note != '':
-            new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=note)
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(note__icontains=note)
         if country and country != '' and country != 'all':
-            new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(country))
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(country__gid=int(country))
         elif country == 'all' and country_exclude != '':
-            new_reports_unfiltered = new_reports_unfiltered.exclude(country__gid=int(country_exclude))
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.exclude(country__gid=int(country_exclude))
 
-        new_reports_unfiltered = new_reports_unfiltered.non_deleted()
-
-        #results = new_reports_unfiltered.prefetch_related('photos','users')
-        results = new_reports_unfiltered.select_related('user').prefetch_related('photos')
+        results = new_reports_unfiltered_qs.select_related('user', 'country').prefetch_related('photos').order_by('-server_upload_time')
 
         try:
             paginator = Paginator(results, limit)

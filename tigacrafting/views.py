@@ -60,11 +60,6 @@ from django.utils import timezone
 
 #-----------------------------------#
 
-from .messages import culex_msg_dict as culex
-from .messages import albopictus_msg_dict as albopictus
-from .messages import albopictus_probably_msg_dict as albopictus_probably
-from .messages import notsure_msg_dict as notsure
-from .messages import other_insect_msg_dict as other_insect
 from .messaging import send_finished_validation_notification
 
 logger_notification = logging.getLogger('mosquitoalert.notification')
@@ -1079,27 +1074,45 @@ def expert_report_complete(request):
     return Response(context)
 
 def get_reports_unfiltered_sites_embornal(reports_imbornal):
-    new_reports_unfiltered_sites_embornal = Report.objects.exclude(type='adult').filter(
-        version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
-        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time').all()
-    return new_reports_unfiltered_sites_embornal
+    return Report.objects.filter(
+        type=Report.TYPE_SITE,
+        breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN,
+        creation_time__year__gt=2014,
+    ).exclude(
+        note__icontains='#345'
+    ).has_photos().annotate(
+        n_annotations=Count('expert_report_annotations')
+    ).filter(
+        n_annotations=0
+    ).order_by('-server_upload_time')
 
 def get_reports_unfiltered_sites_other(reports_imbornal):
-    new_reports_unfiltered_sites_other = Report.objects.exclude(type='adult').exclude(
-        version_UUID__in=reports_imbornal).exclude(note__icontains='#345').exclude(photos=None).annotate(
-        n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-creation_time').all()
-    return new_reports_unfiltered_sites_other
+    return Report.objects.filter(
+        type=Report.TYPE_SITE,
+        creation_time__year__gt=2014,
+    ).exclude(
+        models.Q(note__icontains='#345') |
+        models.Q(breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN)
+    ).has_photos().annotate(
+        n_annotations=Count('expert_report_annotations')
+    ).filter(
+        n_annotations=0
+    ).order_by('-server_upload_time')
 
 def get_reports_imbornal():
     return Report.objects.filter(breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN)
 
-def get_reports_unfiltered_adults_except_being_validated():
-    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
-    return new_reports_unfiltered_adults
-
 def get_reports_unfiltered_adults():
-    new_reports_unfiltered_adults = Report.objects.exclude(creation_time__year=2014).exclude(type='site').exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).order_by('-server_upload_time')
-    return new_reports_unfiltered_adults
+    return Report.objects.filter(
+        creation_time__year__gt=2014,
+        type=Report.TYPE_ADULT
+    ).excldue(
+        note__icontains='#345'
+    ).has_photos().annotate(
+        n_annotations=Count('expert_report_annotations')
+    ).filter(
+        n_annotations__lt=3
+    ).order_by('-server_upload_time')
 
 def auto_annotate_notsure(report: Report) -> None:
     auto_annotate(
@@ -1134,58 +1147,16 @@ def auto_annotate(
         category: Categories,
         validation_value: Optional[Literal[ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY, ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY]]
     ) -> ExpertReportAnnotation:
+    ExpertReportAnnotation.create_auto_annotation(
+        report=report,
+        category=category,
+        validation_value=validation_value
+    )
 
-    tiger_aegypti_cert_to_cat = {
-        "4": { "t": 2, "a": -2 }, #albopictus
-        "5": { "t": -2, "a": 2 }  #aegypti
-    }
-    try:
-        cats = tiger_aegypti_cert_to_cat[str(category.id)]
-    except KeyError:
-        cats = {"t": -2, "a": -2}
-    users = []
-    users.append(User.objects.get(username="innie"))
-    users.append(User.objects.get(username="minnie"))
-    users.append(User.objects.get(username="manny"))
-    super_reritja = User.objects.get(username="super_reritja")
-    photo = report.photos.first()
-    report_locale = report.app_language
-    if category.id == 4: #albopictus
-        if str(validation_value) == "2":
-            user_notes = albopictus.get(report_locale, albopictus['en'])
-        else:
-            user_notes = albopictus_probably.get(report_locale, albopictus_probably['en'])
-    elif category.id == 10: #culex
-        user_notes = culex.get(report_locale, culex['en'])
-    elif category.id == 9:  # not sure
-        user_notes = notsure.get(report_locale, notsure['en'])
-    else: #other_insect
-        user_notes = other_insect.get(report_locale, other_insect['en'])
-    for u in users:
-        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=u).exists():
-            new_annotation = ExpertReportAnnotation(report=report, user=u)
-            if u.username == 'innie':
-                new_annotation.edited_user_notes = user_notes
-                new_annotation.best_photo_id = photo.id
-                new_annotation.simplified_annotation = False
-            else:
-                new_annotation.simplified_annotation = True
-            new_annotation.tiger_certainty_notes = 'auto'
-            new_annotation.tiger_certainty_category = cats['t']
-            new_annotation.aegypti_certainty_category = cats['a']
-            new_annotation.status = 1
-            new_annotation.category = category
-            new_annotation.validation_complete = True
-            if category.specify_certainty_level:
-                new_annotation.validation_value = validation_value
-            new_annotation.save()
-    try:
-        roger_annotation = ExpertReportAnnotation.objects.get(user=super_reritja, report=report)
-    except ExpertReportAnnotation.DoesNotExist:
-        roger_annotation = ExpertReportAnnotation(user=super_reritja, report=report)
-
-    roger_annotation.validation_complete = True
-    roger_annotation.save()
+    roger_annotation = ExpertReportAnnotation.objects.get(
+        user__username="super_reritja",
+        report=report
+    )
 
     send_finished_validation_notification(roger_annotation)
 
@@ -1282,47 +1253,47 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
             if aithr == '':
                 aithr = '0.75'
 
-        #new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-        new_reports_unfiltered_adults = get_reports_unfiltered_adults_except_being_validated()
+        new_reports_unfiltered_qs = Report.objects.filter(
+            creation_time__year__gt=2014,
+        ).exclude(
+            note__icontains='#345'
+        ).non_deleted().has_photos().annotate(
+            n_annotations=Count('expert_report_annotations')
+        ).filter(
+            n_annotations=0
+        )
 
-        reports_imbornal = get_reports_imbornal()
-        new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-        new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-        new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-
-        #new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter( Q(ia_filter_1__lte=float(aithr)) | Q(ia_filter_1__isnull=True) )
-        new_reports_unfiltered_adults = new_reports_unfiltered_adults.filter( ia_filter_1__lte=float(aithr) )
-
-        new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
-
-        #new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains='#345').exclude(photos=None).annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')
         if type == 'adult':
-            #new_reports_unfiltered = new_reports_unfiltered.exclude(type='site')
-            new_reports_unfiltered = new_reports_unfiltered_adults
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
+                type=Report.TYPE_ADULT,
+                ia_filter_1__lte=float(aithr)
+            )
         elif type == 'site':
-            #new_reports_unfiltered = new_reports_unfiltered.exclude(type='adult')
-            new_reports_unfiltered = new_reports_unfiltered_sites_embornal
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
+                type=Report.TYPE_SITE,
+                breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN
+            )
         elif type == 'site-o':
-            new_reports_unfiltered = new_reports_unfiltered_sites_other
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
+                type=Report.TYPE_SITE
+            ).exclude(
+                breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN
+            )
+
         if visibility == 'visible':
-            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=True)
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(hide=False)
         elif visibility == 'hidden':
-            new_reports_unfiltered = new_reports_unfiltered.exclude(hide=False)
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(hide=True)
+
         if usr_note and usr_note != '':
-            new_reports_unfiltered = new_reports_unfiltered.filter(note__icontains=usr_note)
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(note__icontains=usr_note)
         if country and country != '' and country != 'all':
-            new_reports_unfiltered = new_reports_unfiltered.filter(country__gid=int(country))
+            new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(country__gid=int(country))
 
-        # new_reports_unfiltered = filter_reports(new_reports_unfiltered, False)
-        #
-        # new_reports_unfiltered = list(new_reports_unfiltered)
-
-        new_reports_unfiltered = new_reports_unfiltered.non_deleted()
-
-        # for r in new_reports_unfiltered:
-        #      print("{0} {1}".format(r.version_UUID, r.deleted))
-
-        paginator = Paginator(new_reports_unfiltered, int(tasks_per_page))
+        paginator = Paginator(
+            new_reports_unfiltered_qs.prefetch_related('photos').select_related('country').order_by('-server_upload_time'),
+            int(tasks_per_page)
+        )
         page = request.GET.get('page', 1)
         try:
             objects = paginator.page(page)
@@ -1330,7 +1301,8 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
             objects = paginator.page(1)
         except EmptyPage:
             objects = paginator.page(paginator.num_pages)
-        page_query = Report.objects.filter(version_UUID__in=[object.version_UUID for object in objects]).order_by('-creation_time')
+        page_query = objects
+        page_query.ordered = True
         this_formset = PictureValidationFormSet(queryset=page_query)
         args['formset'] = this_formset
         args['objects'] = objects
@@ -1364,7 +1336,7 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
             type_readable = "All"
         args['type_readable'] = type_readable
         #n_query_records = new_reports_unfiltered.count()
-        n_query_records = len(new_reports_unfiltered)
+        n_query_records = new_reports_unfiltered_qs.count()
         args['n_query_records'] = n_query_records
         #args['tasks_per_page_choices'] = range(5, min(100, n_query_records) + 1, 5)
         range_list = [ n for n in range(5, 101, 5) ]
