@@ -518,7 +518,7 @@ class ReportIdSerializer(serializers.ModelSerializer):
                    'location_choice', 'current_location_lon', 'current_location_lat', 'mission',
                    'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version',
                    'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide',
-                   'type','creation_time')
+                   'type','creation_time', 'timezone')
 
 
 class MapDataSerializer(serializers.ModelSerializer):
@@ -562,7 +562,7 @@ class MapDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        exclude = ('version_number', 'user', 'report_id', 'server_upload_time', 'phone_upload_time', 'version_time', 'location_choice', 'current_location_lon', 'current_location_lat', 'mission', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide')
+        exclude = ('version_number', 'user', 'report_id', 'server_upload_time', 'phone_upload_time', 'version_time', 'location_choice', 'current_location_lon', 'current_location_lat', 'mission', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide', 'timezone')
 
 
 class SiteMapSerializer(serializers.ModelSerializer):
@@ -576,7 +576,7 @@ class SiteMapSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        exclude = ('version_UUID', 'version_number', 'user', 'report_id', 'server_upload_time', 'phone_upload_time', 'version_time', 'location_choice', 'current_location_lon', 'current_location_lat', 'mission', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide')
+        exclude = ('version_UUID', 'version_number', 'user', 'report_id', 'server_upload_time', 'phone_upload_time', 'version_time', 'location_choice', 'current_location_lon', 'current_location_lat', 'mission', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide', 'timezone')
 
 
 class CoverageMapSerializer(serializers.ModelSerializer):
