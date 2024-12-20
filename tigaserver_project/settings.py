@@ -3,6 +3,8 @@ import tigaserver_project as project_module
 import django.conf.global_settings as DEFAULT_SETTINGS
 import pytz
 from datetime import datetime
+from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.gdal import DataSource
 
 import firebase_admin
 from firebase_admin.credentials import Certificate
@@ -36,6 +38,11 @@ DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ALLOWED_HOSTS = []
+
+OCEAN_GEOM = GEOSGeometry.from_ewkt(
+    DataSource(PROJECT_DIR  + '/ne_10m_ocean_b8km.gpkg')[0][1].geom.ewkt
+)
+POLAR_CIRCLE_LATITUDE = 66.5
 
 # Application definition
 

@@ -573,6 +573,7 @@ class MapDataSerializer(serializers.ModelSerializer):
             'type',
             'lon',
             'lat',
+            'location_is_masked',
             'movelab_annotation',
             'movelab_annotation_euro',
             'tiger_responses',
