@@ -1091,23 +1091,23 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
 
 ###############-------------------------------- FastUpload --------------------------------###############
 
-                            #print(f.cleaned_data)
-                            if f.cleaned_data['fastUpload']:
-                                #check that annotation does not exist, to avoid duplicates
-                                if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
-                                    ExpertReportAnnotation.create_super_expert_approval(report=report)
+                        #print(f.cleaned_data)
+                        if f.cleaned_data['fastUpload']:
+                            #check that annotation does not exist, to avoid duplicates
+                            if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
+                                ExpertReportAnnotation.create_super_expert_approval(report=report)
 ###############------------------------------ FI FastUpload --------------------------------###############
 
-                            if f.cleaned_data['other_species']:
-                                auto_annotate_other_species(report)
-                            if f.cleaned_data['probably_culex']:
-                                auto_annotate_culex(report)
-                            if f.cleaned_data['probably_albopictus']:
-                                auto_annotate_probably_albopictus(report)
-                            if f.cleaned_data['sure_albopictus']:
-                                auto_annotate_albopictus(report)
-                            if f.cleaned_data['not_sure']:
-                                auto_annotate_notsure(report)
+                        if f.cleaned_data['other_species']:
+                            auto_annotate_other_species(report)
+                        if f.cleaned_data['probably_culex']:
+                            auto_annotate_culex(report)
+                        if f.cleaned_data['probably_albopictus']:
+                            auto_annotate_probably_albopictus(report)
+                        if f.cleaned_data['sure_albopictus']:
+                            auto_annotate_albopictus(report)
+                        if f.cleaned_data['not_sure']:
+                            auto_annotate_notsure(report)
 
         page = request.POST.get('page')
         visibility = request.POST.get('visibility')

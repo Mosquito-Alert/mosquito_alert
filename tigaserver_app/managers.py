@@ -52,7 +52,7 @@ class ReportQuerySet(models.QuerySet):
         return self.filter(
             hide=False
         ).exclude(
-            note__icontains="#345"
+            tags__name="345"
         )
 
     def with_finished_validation(self, state: bool = True) -> QuerySet:
@@ -63,7 +63,8 @@ class ReportQuerySet(models.QuerySet):
             count=models.Count(1)
         ).filter(
             models.Q(count__gte=settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT) |
-            models.Q(validation_complete_executive=True),
+            models.Q(validation_complete_executive=True) |
+            (models.Q(user__groups__name="superexpert") & models.Q(revise=True))
         ).filter(report=models.OuterRef('pk'))
 
         return self.annotate(
@@ -80,7 +81,9 @@ class ReportQuerySet(models.QuerySet):
                     user__groups__name='superexpert',
                     validation_complete=True,
                     revise=True
-                ).order_by('-last_modified').values('status')[:1],
+                ).values('status').annotate(
+                    worst_superexpert_status=models.Min('status')
+                ).values('worst_superexpert_status')[:1],
                 output_field=models.IntegerField()
             ),
             worst_expert_status=models.Subquery(

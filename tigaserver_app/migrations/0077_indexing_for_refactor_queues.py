@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigaserver_app', '0074_add_report_location_is_masked'),
+        ('tigaserver_app', '0076_fix_device_indexes'),
     ]
 
     operations = [
