@@ -1261,6 +1261,12 @@ class Report(TimeZoneModelMixin, models.Model):
         return f"https://map.mosquitoalert.com/{self.pk}/en"
 
     @property
+    def is_expert_validated(self) -> bool:
+        if not self.type == Report.TYPE_ADULT:
+            return False
+        return Report.objects.with_finished_validation().filter(pk=self.pk).exists()
+
+    @property
     def response_html(self) -> str:
         these_responses = self.responses.all().order_by("question")
         result = ""
@@ -1337,14 +1343,7 @@ class Report(TimeZoneModelMixin, models.Model):
     # Custom properties related to annotations
     @property
     def movelab_annotation_euro(self) -> Optional[dict]:
-        expert_validated = ExpertReportAnnotation.objects.filter(
-            report=self, user__groups__name="expert", validation_complete=True
-        ).count() >= 3 or ExpertReportAnnotation.objects.filter(
-            report=self,
-            user__groups__name="superexpert",
-            validation_complete=True,
-            revise=True,
-        )
+        expert_validated = self.is_expert_validated
         if self.creation_time.year == 2014 and not expert_validated:
             if self.type == self.TYPE_ADULT:
                 max_movelab_annotation = (
@@ -1401,14 +1400,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
     @property
     def movelab_annotation(self) -> Optional[dict]:
-        expert_validated = ExpertReportAnnotation.objects.filter(
-            report=self, user__groups__name="expert", validation_complete=True
-        ).count() >= 3 or ExpertReportAnnotation.objects.filter(
-            report=self,
-            user__groups__name="superexpert",
-            validation_complete=True,
-            revise=True,
-        )
+        expert_validated = self.is_expert_validated
         if self.creation_time.year == 2014 and not expert_validated:
             if self.type == self.TYPE_ADULT:
                 max_movelab_annotation = (
@@ -1467,14 +1459,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
     @property
     def simplified_annotation(self) -> Optional[dict]:
-        if ExpertReportAnnotation.objects.filter(
-            report=self, user__groups__name="expert", validation_complete=True
-        ).count() >= 3 or ExpertReportAnnotation.objects.filter(
-            report=self,
-            user__groups__name="superexpert",
-            validation_complete=True,
-            revise=True,
-        ):
+        if self.is_expert_validated:
             result = {}
             if self.type == self.TYPE_ADULT:
                 classification = self.get_mean_combined_expert_adult_score()
@@ -2102,7 +2087,7 @@ class Report(TimeZoneModelMixin, models.Model):
             return True
         else:
             if self.cached_visible is None:
-                return (not self.photos.all().exists()) or ((ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3 or ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists()) and self.get_final_expert_status() == 1)
+                return (not self.photos.all().exists()) or (self.is_expert_validated and self.get_final_expert_status() == 1)
             else:
                 return self.cached_visible == 1
 
@@ -2358,7 +2343,7 @@ class Report(TimeZoneModelMixin, models.Model):
                 most_voted = superexpert_annotations[0].complex
             else:
                 most_voted = superexpert_annotations[0].category
-        elif expert_annotations.count() >= 3:
+        elif expert_annotations.count() >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
             most_voted = self.get_most_voted_category(expert_annotations)
         else:
             return "Unclassified"
@@ -2422,7 +2407,7 @@ class Report(TimeZoneModelMixin, models.Model):
                 most_voted = superexpert_annotations[0].complex
             else:
                 most_voted = superexpert_annotations[0].category
-        elif expert_annotations.count() >= 3:
+        elif expert_annotations.count() >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
             most_voted = self.get_most_voted_category(expert_annotations)
         else:
             try:
@@ -2655,7 +2640,7 @@ class Report(TimeZoneModelMixin, models.Model):
         return result
 
     def get_is_expert_validated(self):
-        return ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).count() >= 3
+        return self.is_expert_validated
 
     def get_tags_bootstrap_superexpert(self):
         result = ''
