@@ -236,17 +236,17 @@ print ('Coarse filter sites complete')
 
 
 # experimental paginated endpoint
-# for year in range(2014, this_year + 1):
-#     print (str(year))
-#     d = all_reports_internal(year)
-#     json_string = JSONRenderer().render(d)
-#     data = json.loads(json_string)
-#     accumulated_results = json.dumps(data)
+for year in range(2014, this_year + 1):
+    print (str(year))
+    d = all_reports_internal(year)
+    json_string = JSONRenderer().render(d)
+    data = json.loads(json_string)
+    accumulated_results = json.dumps(data)
 
-#     file = static_path + "all_reports" + str(year) + ".json"
-#     text_file = open(file, "w")
-#     text_file.write(accumulated_results)
-#     text_file.close()
+    file = static_path + "all_reports" + str(year) + ".json"
+    text_file = open(file, "w")
+    text_file.write(accumulated_results)
+    text_file.close()
 
 
 for year in range(2014, this_year + 1):
