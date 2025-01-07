@@ -529,7 +529,7 @@ for file in filenames:
                 else:
                     storm_drain_status = 'other'
 
-        single_report_map_url = 'http://' + server_url + '/es/single_report_map/' + bit['version_UUID']
+        single_report_map_url = 'https://' + server_url + '/es/single_report_map/' + bit['version_UUID']
 
         # kill conditions
         if bit['latest_version'] == True:
