@@ -236,17 +236,17 @@ print ('Coarse filter sites complete')
 
 
 # experimental paginated endpoint
-for year in range(2014, this_year + 1):
-    print (str(year))
-    d = all_reports_internal(year)
-    json_string = JSONRenderer().render(d)
-    data = json.loads(json_string)
-    accumulated_results = json.dumps(data)
+# for year in range(2014, this_year + 1):
+#     print (str(year))
+#     d = all_reports_internal(year)
+#     json_string = JSONRenderer().render(d)
+#     data = json.loads(json_string)
+#     accumulated_results = json.dumps(data)
 
-    file = static_path + "all_reports" + str(year) + ".json"
-    text_file = open(file, "w")
-    text_file.write(accumulated_results)
-    text_file.close()
+#     file = static_path + "all_reports" + str(year) + ".json"
+#     text_file = open(file, "w")
+#     text_file.write(accumulated_results)
+#     text_file.close()
 
 
 for year in range(2014, this_year + 1):
@@ -529,7 +529,7 @@ for file in filenames:
                 else:
                     storm_drain_status = 'other'
 
-        single_report_map_url = 'https://' + server_url + '/es/single_report_map/' + bit['version_UUID']
+        single_report_map_url = server_url + '/es/single_report_map/' + bit['version_UUID']
 
         # kill conditions
         if bit['latest_version'] == True:
