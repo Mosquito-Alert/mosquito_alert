@@ -1951,10 +1951,7 @@ package_filter = (
 @api_view(['GET'])
 def all_reports_paginated(request):
     if request.method == 'GET':
-        if conf.FAST_LOAD and conf.FAST_LOAD == True:
-            non_visible_report_id = []
-        else:
-            non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
         queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(
             version_UUID__in=non_visible_report_id).filter( package_filter )\
             .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
@@ -1977,10 +1974,7 @@ def all_reports_internal(year):
 @api_view(['GET'])
 def all_reports(request):
     if request.method == 'GET':
-        if conf.FAST_LOAD and conf.FAST_LOAD == True:
-            non_visible_report_id = []
-        else:
-            non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
         queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(
             version_UUID__in=non_visible_report_id).filter( package_filter )\
             .exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
@@ -2003,10 +1997,7 @@ def non_visible_reports_internal(year):
     unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
 
     # new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
-    if conf.FAST_LOAD and conf.FAST_LOAD == True:
-        non_visible_report_id = []
-    else:
-        non_visible_report_id = [report.version_UUID for report in
+    non_visible_report_id = [report.version_UUID for report in
                                  Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if
                                  not report.visible]
 
@@ -2040,10 +2031,7 @@ def non_visible_reports_paginated(request):
         unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
 
         # new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
-        if conf.FAST_LOAD and conf.FAST_LOAD == True:
-            non_visible_report_id = []
-        else:
-            non_visible_report_id = [report.version_UUID for report in
+        non_visible_report_id = [report.version_UUID for report in
                                      Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if
                                      not report.visible]
 
@@ -2079,10 +2067,7 @@ def non_visible_reports(request):
         unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
 
         # new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
-        if conf.FAST_LOAD and conf.FAST_LOAD == True:
-            non_visible_report_id = []
-        else:
-            non_visible_report_id = [report.version_UUID for report in
+        non_visible_report_id = [report.version_UUID for report in
                                      Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if
                                      not report.visible]
 

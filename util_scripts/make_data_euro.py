@@ -183,6 +183,7 @@ this_year = datetime.now().year
 #split_url = urlsplit(settings['STATIC_URL'])
 #server_url = split_url.scheme + "//" + split_url.netloc
 server_url = "https://webserver.mosquitoalert.com"
+static_path = settings.BASE_DIR + settings.STATIC_ROOT + '/'
 
 filenames = []
 
@@ -190,17 +191,18 @@ filenames = []
 # This block should only be uncommented running the script locally and with pregenerated map data files
 # #####################################################################################################
 
-filenames.append("/home/webuser/webapps/tigaserver/static/all_reports2014.json")
-filenames.append("/home/webuser/webapps/tigaserver/static/all_reports2015.json")
-filenames.append("/home/webuser/webapps/tigaserver/static/all_reports2016.json")
-filenames.append("/home/webuser/webapps/tigaserver/static/all_reports2017.json")
-filenames.append("/home/webuser/webapps/tigaserver/static/all_reports2018.json")
-filenames.append("/home/webuser/webapps/tigaserver/static/all_reports2019.json")
-filenames.append("/home/webuser/webapps/tigaserver/static/all_reports2020.json")
-filenames.append("/home/webuser/webapps/tigaserver/static/all_reports2021.json")
-filenames.append("/home/webuser/webapps/tigaserver/static/all_reports2022.json")
-filenames.append("/home/webuser/webapps/tigaserver/static/all_reports2023.json")
-filenames.append("/home/webuser/webapps/tigaserver/static/all_reports2024.json")
+filenames.append(static_path + "all_reports2014.json")
+filenames.append(static_path + "all_reports2015.json")
+filenames.append(static_path + "all_reports2016.json")
+filenames.append(static_path + "all_reports2017.json")
+filenames.append(static_path + "all_reports2018.json")
+filenames.append(static_path + "all_reports2019.json")
+filenames.append(static_path + "all_reports2020.json")
+filenames.append(static_path + "all_reports2021.json")
+filenames.append(static_path + "all_reports2022.json")
+filenames.append(static_path + "all_reports2023.json")
+filenames.append(static_path + "all_reports2024.json")
+filenames.append(static_path + "all_reports2025.json")
 filenames.append("/tmp/hidden_reports2014.json")
 filenames.append("/tmp/hidden_reports2015.json")
 filenames.append("/tmp/hidden_reports2016.json")
@@ -212,6 +214,7 @@ filenames.append("/tmp/hidden_reports2021.json")
 filenames.append("/tmp/hidden_reports2022.json")
 filenames.append("/tmp/hidden_reports2023.json")
 filenames.append("/tmp/hidden_reports2024.json")
+filenames.append("/tmp/hidden_reports2025.json")
 
 
 # FILE WRITING
@@ -240,7 +243,7 @@ for year in range(2014, this_year + 1):
     data = json.loads(json_string)
     accumulated_results = json.dumps(data)
 
-    file = "/home/webuser/webapps/tigaserver/static/all_reports" + str(year) + ".json"
+    file = static_path + "all_reports" + str(year) + ".json"
     text_file = open(file, "w")
     text_file.write(accumulated_results)
     text_file.close()
@@ -264,7 +267,7 @@ d = coverage_month_internal()
 json_string = JSONRenderer().render(d)
 data = json.loads(json_string)
 accumulated_results = json.dumps(data)
-text_file = open("/home/webuser/webapps/tigaserver/static/coverage_month_data.json", "w")
+text_file = open(static_path + "coverage_month_data.json", "w")
 text_file.write(accumulated_results)
 text_file.close()
 
@@ -849,10 +852,20 @@ UNION
 WITH DATA;
 """)
 
-cursor.execute("""grant select on map_aux_reports to epidata;""")
-cursor.execute("""grant select on map_aux_reports to culex;""")
-
 conn.commit()
+
+try:
+    cursor.execute("""grant select on map_aux_reports to epidata;""")
+    conn.commit()
+except psycopg2.errors.UndefinedObject:
+    conn.rollback()
+try:
+    cursor.execute("""grant select on map_aux_reports to culex;""")
+    conn.commit()
+except psycopg2.errors.UndefinedObject:
+    conn.rollback()
+
+
 
 cursor.close()
 conn.close()
