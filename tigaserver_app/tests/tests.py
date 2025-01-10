@@ -1557,3 +1557,67 @@ class ReportModelTest(TestCase):
         # Check if tags are correctly set by comparing tag names
         tag_names = list(report.tags.values_list('name', flat=True))
         self.assertEqual(sorted(tag_names), ['tag1', 'tag2'])
+
+    def test_report_above_artic_circle_should_be_marked_as_masked(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=0,
+            current_location_lat=67,
+        )
+        report.refresh_from_db()
+
+        self.assertTrue(report.location_is_masked)
+
+    def test_report_below_antartic_circle_should_be_marked_as_masked(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=0,
+            current_location_lat=-67,
+        )
+        report.refresh_from_db()
+
+        self.assertTrue(report.location_is_masked)
+
+    def test_report_in_the_ocean_should_be_marked_as_masked(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=0,
+            current_location_lat=0,
+        )
+        report.refresh_from_db()
+
+        self.assertTrue(report.location_is_masked)
+
+    def test_report_in_land_should_not_be_marked_as_masked(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
+        )
+        report.refresh_from_db()
+
+        self.assertFalse(report.location_is_masked)

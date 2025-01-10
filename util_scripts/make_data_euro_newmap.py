@@ -199,6 +199,13 @@ def move_hidden_adult_report_to_trash_layer(cursor):
         cursor.execute("""UPDATE map_aux_reports_newmap set private_webmap_layer='trash_layer' WHERE version_uuid=%s;""",
                        (uuid,))
 
+def move_masked_location_report_to_trash_layer(cursor):
+    cursor.execute("""select "version_UUID" from tigaserver_app_report where location_is_masked=True;""")
+    result = cursor.fetchall()
+    for row in result:
+        uuid = row[0]
+        cursor.execute("""UPDATE map_aux_reports set private_webmap_layer='trash_layer' WHERE version_uuid=%s;""",
+                       (uuid,))
 
 def add_photo_to_not_yet_filtered_adults(cursor):
     cursor.execute(
@@ -790,6 +797,7 @@ cursor.execute("""
 add_photo_to_unfiltered_sites(cursor)
 add_photo_to_not_yet_filtered_adults(cursor)
 move_hidden_adult_report_to_trash_layer(cursor)
+move_masked_location_report_to_trash_layer(cursor)
 
 cursor.execute(
     """UPDATE map_aux_reports_newmap set validation=1 where expert_validated=1;""")

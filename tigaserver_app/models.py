@@ -878,6 +878,7 @@ class Report(TimeZoneModelMixin, models.Model):
         null=True,
         help_text="The timezone corresponding to the GPS of the report."
     )
+    location_is_masked = models.BooleanField(default=False)
 
     deleted_at = models.DateTimeField(null=True, blank=True, editable=False, default=None)
 
@@ -1964,14 +1965,18 @@ class Report(TimeZoneModelMixin, models.Model):
                     )
                 )
 
-        if self.point and self.country:
-            nuts3 = self._get_nuts_is_in(levl_code=3)
-            if nuts3:
-                self.nuts_3 = nuts3.nuts_id
+        if self.point:
+            if self.country:
+                nuts3 = self._get_nuts_is_in(levl_code=3)
+                if nuts3:
+                    self.nuts_3 = nuts3.nuts_id
 
-            nuts2 = self._get_nuts_is_in(levl_code=2)
-            if nuts2:
-                self.nuts_2 = nuts2.nuts_id
+                nuts2 = self._get_nuts_is_in(levl_code=2)
+                if nuts2:
+                    self.nuts_2 = nuts2.nuts_id
+            else:
+                # Check if masked because of is in the ocean of out of the artic/antartic circle.
+                self.location_is_masked = settings.OCEAN_GEOM.contains(self.point) or abs(self.point.y) > settings.POLAR_CIRCLE_LATITUDE
 
         bite_fieldnames = [
             'head_bite_count',
