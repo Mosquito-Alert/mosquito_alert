@@ -90,10 +90,11 @@ def populate_report_history_table(apps, schema_editor):
         }
         report_versionable_kwargs[Report._meta.pk.name] = original_report.latest_pk
 
+        is_latest_version = original_report.pk == original_report.latest_pk
         # Create first history object
         histories.append(
             HistoricalReport(
-                #history_id=original_report.pk,
+                history_id=None if is_latest_version else original_report.pk,
                 history_date=original_report.server_upload_time,
                 history_type="+", # Create
                 history_user=original_report.user,
@@ -113,11 +114,12 @@ def populate_report_history_table(apps, schema_editor):
         # Create history modification of the reports
         # NOTE: There are cases from old versions where only 1 report is found with version_number = -1
         #       So, we will generate a CREATED history for them, and after it will set as delted.
-        is_single_deleted_report = edited_report.version_number == -1 and edited_report.pk == edited_report.latest_pk
+        is_latest_version = edited_report.pk == edited_report.latest_pk
+        is_single_deleted_report = edited_report.version_number == -1 and is_latest_version
         if is_single_deleted_report or edited_report.version_number != -1:
             histories.append(
                 HistoricalReport(
-                    history_id=None if is_single_deleted_report else edited_report.pk,
+                    history_id=None if is_latest_version else edited_report.pk,
                     history_date=edited_report.server_upload_time,
                     history_type="+" if is_single_deleted_report else "~", # Update
                     history_user=edited_report.user,
