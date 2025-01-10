@@ -23,6 +23,9 @@ def populate_tags(apps, schema_editor):
         # Add the hashtags as tags
         for tag in hashtags:
             tag = unidecode(tag)
+            # At least has one alphanumeric charater.
+            if not any(char.isalnum() for char in tag):
+                continue
             t, created = Tag.objects.get_or_create(
                 name__iexact=tag,
                 defaults={
