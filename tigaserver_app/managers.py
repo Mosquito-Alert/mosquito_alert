@@ -23,7 +23,6 @@ class ReportQuerySet(models.QuerySet):
         return self.deleted(state=False)
     
     def published(self, state: bool = True):
-        from .models import Report
         PRIVATE_LAYERS = [
             "breeding_site_not_yet_filtered",
             "conflict",
@@ -32,9 +31,8 @@ class ReportQuerySet(models.QuerySet):
         ]
         return self.non_deleted().filter(
             models.Q(
-                models.Q(type=Report.TYPE_BITE)
-                | ~models.Q(map_aux_report__private_webmap_layer__in=PRIVATE_LAYERS),
-                _negated=not state
+                map_aux_report__private_webmap_layer__in=PRIVATE_LAYERS,
+                _negated=state
             )
         )
 
