@@ -1250,7 +1250,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
     @cached_property
     def published(self) -> bool:
-        return hasattr(self, 'map_aux_report')
+        return Report.objects.published().filter(pk=self.pk).exists()
 
     @property
     def public_map_url(self) -> Optional[str]:
