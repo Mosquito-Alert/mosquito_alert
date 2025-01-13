@@ -1976,7 +1976,9 @@ class Report(TimeZoneModelMixin, models.Model):
                     self.nuts_2 = nuts2.nuts_id
             else:
                 # Check if masked because of is in the ocean of out of the artic/antartic circle.
-                self.location_is_masked = settings.OCEAN_GEOM.contains(self.point) or abs(self.point.y) > settings.POLAR_CIRCLE_LATITUDE
+                self.location_is_masked = self.point.y > settings.MAX_ALLOWED_LATITUDE \
+                    or self.point.y < settings.MIN_ALLOWED_LATITUDE \
+                    or settings.OCEAN_GEOM.contains(self.point)
 
         bite_fieldnames = [
             'head_bite_count',

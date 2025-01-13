@@ -1558,7 +1558,7 @@ class ReportModelTest(TestCase):
         tag_names = list(report.tags.values_list('name', flat=True))
         self.assertEqual(sorted(tag_names), ['tag1', 'tag2'])
 
-    def test_report_above_artic_circle_should_be_marked_as_masked(self):
+    def test_report_above_greenland_should_be_marked_as_masked(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
             report_id='1234',
@@ -1568,7 +1568,7 @@ class ReportModelTest(TestCase):
             type=Report.TYPE_ADULT,
             location_choice=Report.LOCATION_CURRENT,
             current_location_lon=0,
-            current_location_lat=67,
+            current_location_lat=84,
         )
         report.refresh_from_db()
 
@@ -1583,7 +1583,7 @@ class ReportModelTest(TestCase):
             version_time=timezone.now(),
             type=Report.TYPE_ADULT,
             location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=0,
+            current_location_lon=-63,
             current_location_lat=-67,
         )
         report.refresh_from_db()

@@ -42,7 +42,8 @@ ALLOWED_HOSTS = []
 OCEAN_GEOM = GEOSGeometry.from_ewkt(
     DataSource(PROJECT_DIR  + '/ne_10m_ocean_b8km.gpkg')[0][1].geom.ewkt
 )
-POLAR_CIRCLE_LATITUDE = 66.5
+MIN_ALLOWED_LATITUDE = -66.5
+MAX_ALLOWED_LATITUDE = 83
 
 # Application definition
 

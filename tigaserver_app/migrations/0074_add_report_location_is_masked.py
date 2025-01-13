@@ -3,7 +3,6 @@
 from django.conf import settings
 from django.db import migrations, models
 from django.db.models.expressions import Func
-from django.db.models.functions import Abs
 
 
 def populate_report_location_is_masked(apps, schema_editor):
@@ -16,12 +15,11 @@ def populate_report_location_is_masked(apps, schema_editor):
             function='ST_Y',
             output_field=models.FloatField()
         )
-    ).annotate(
-        latitude_abs=Abs('latitude')
     ).filter(
         models.Q(point__isnull=False) 
         & (
-            models.Q(latitude_abs__gt=settings.POLAR_CIRCLE_LATITUDE)
+            models.Q(latitude__gt=settings.MAX_ALLOWED_LATITUDE)
+            | models.Q(latitude__lt=settings.MIN_ALLOWED_LATITUDE)
             | models.Q(point__within=settings.OCEAN_GEOM)
         )
     ).update(
