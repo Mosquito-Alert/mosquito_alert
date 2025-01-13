@@ -31,8 +31,9 @@ class ReportQuerySet(models.QuerySet):
         ]
         return self.non_deleted().filter(
             models.Q(
-                map_aux_report__private_webmap_layer__in=PRIVATE_LAYERS,
-                _negated=state
+                models.Q(map_aux_report__isnull=False)
+                & ~models.Q(map_aux_report__private_webmap_layer__in=PRIVATE_LAYERS),
+                _negated=not state
             )
         )
 
