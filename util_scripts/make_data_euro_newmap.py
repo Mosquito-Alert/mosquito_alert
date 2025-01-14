@@ -204,7 +204,7 @@ def move_masked_location_report_to_trash_layer(cursor):
     result = cursor.fetchall()
     for row in result:
         uuid = row[0]
-        cursor.execute("""UPDATE map_aux_reports set private_webmap_layer='trash_layer' WHERE version_uuid=%s;""",
+        cursor.execute("""UPDATE map_aux_reports_newmap set private_webmap_layer='trash_layer' WHERE version_uuid=%s;""",
                        (uuid,))
 
 def add_photo_to_not_yet_filtered_adults(cursor):
