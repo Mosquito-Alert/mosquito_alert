@@ -705,12 +705,13 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-danger
 });
 
 function map_init_basic(map, lat, lon) {
-    const mosquito_icon_class = L.Icon.Default.extend({
-    options: {
-            iconUrl: iconurl
-        }
+    const mosquito_icon = L.icon({
+        iconUrl: iconurl,
+        iconSize: [25, 41], // Adjust the size of your icon
+        iconAnchor: [12, 41], // Point of the icon that corresponds to marker's location
+        popupAnchor: [1, -34], // Point where the popup opens relative to the iconAnchor
     });
-    const mosquito_icon = new mosquito_icon_class;
+
     L.marker([ lat, lon ], {icon: mosquito_icon}).addTo(map);
 }
 
