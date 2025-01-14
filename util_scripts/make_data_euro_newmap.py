@@ -2,8 +2,7 @@
 # !/usr/bin/env python
 import os, sys
 
-proj_path = os.path.abspath(os.path.dirname(__name__))
-#proj_path = "/home/webuser/webapps/tigaserver/"
+proj_path = "/home/webuser/webapps/tigaserver/"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings")
 sys.path.append(proj_path)
 
