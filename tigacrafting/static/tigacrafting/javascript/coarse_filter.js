@@ -402,11 +402,11 @@ function load_data(limit=300, offset=1, q=''){
 function single_picture_template(picture){
     return `
         <div class="picture_item">
-            <a class="preview" href="http://webserver.mosquitoalert.com${ picture.photo }" target="_blank">
+            <a class="preview" href="${ picture.photo }" target="_blank">
                 <img src="${ picture.small_url }">
-                <!--<img src="http://webserver.mosquitoalert.com${ picture.photo }" width="100" height="100">-->
+                <!--<img src="${ picture.photo }" width="100" height="100">-->
             </a>
-            <!--<img src="http://webserver.mosquitoalert.com${ picture.photo }" width="100" height="100" >-->
+            <!--<img src="${ picture.photo }" width="100" height="100" >-->
         </div>
     `;
 }
