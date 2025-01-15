@@ -189,7 +189,7 @@ this_year = datetime.now().year
 #split_url = urlsplit(settings['STATIC_URL'])
 #server_url = split_url.scheme + "//" + split_url.netloc
 server_url = "https://webserver.mosquitoalert.com"
-static_path = settings.BASE_DIR + settings.STATIC_ROOT + '/'
+static_path = settings.STATIC_ROOT + '/'
 
 filenames = []
 

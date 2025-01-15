@@ -314,7 +314,7 @@ this_year = datetime.now().year
 #headers = {'Authorization': config.params['auth_token']}
 #server_url = config.params['server_url']
 server_url = "https://webserver.mosquitoalert.com"
-static_path = settings.BASE_DIR + settings.STATIC_ROOT + '/'
+static_path =  settings.STATIC_ROOT + '/'
 
 filenames = []
 
