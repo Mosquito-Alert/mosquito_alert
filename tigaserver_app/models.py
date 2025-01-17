@@ -313,30 +313,31 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
                 [code for code, _ in self.AVAILABLE_LANGUAGES]
             ) or 'en'
 
-        if self._state.adding:
-            # Make sure user is subscribed to global topic
-            try:
-                global_topic = NotificationTopic.objects.get(topic_code='global')
-            except NotificationTopic.DoesNotExist:
-                pass
-            else:
-                UserSubscription.objects.get_or_create(
-                    user=self,
-                    topic=global_topic
-                )
+        result = super().save(*args, **kwargs)
 
-            # Subscribe user to the language selected.
-            try:
-                language_topic = NotificationTopic.objects.get(topic_code=self.locale)
-            except NotificationTopic.DoesNotExist:
-                pass
-            else:
-                UserSubscription.objects.get_or_create(
-                    user=self,
-                    topic=language_topic
-                )
+        # Make sure user is subscribed to global topic
+        try:
+            global_topic = NotificationTopic.objects.get(topic_code='global')
+        except NotificationTopic.DoesNotExist:
+            pass
+        else:
+            UserSubscription.objects.get_or_create(
+                user=self,
+                topic=global_topic
+            )
 
-        return super().save(*args, **kwargs)
+        # Subscribe user to the language selected.
+        try:
+            language_topic = NotificationTopic.objects.get(topic_code=self.locale)
+        except NotificationTopic.DoesNotExist:
+            pass
+        else:
+            UserSubscription.objects.get_or_create(
+                user=self,
+                topic=language_topic
+            )
+
+        return result
 
     class Meta:
         verbose_name = "user"

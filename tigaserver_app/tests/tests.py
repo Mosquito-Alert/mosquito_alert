@@ -1702,6 +1702,9 @@ class ApiUsersViewTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.mobile_user = User.objects.create_user(username='mobile_test')
+        # Needed to test user subscription does not raise.
+        cls.global_topic = NotificationTopic.objects.create(topic_code='global')
+        cls.language_topic = NotificationTopic.objects.create(topic_code='en')
 
     def test_POST_new_user(self):
         self.client.force_authenticate(user=self.mobile_user)
@@ -1722,6 +1725,14 @@ class ApiUsersViewTest(APITestCase):
         # Check the response JSON
         expected_response = {"user_UUID": str(new_user_uuid)}
         self.assertJSONEqual(response.content, expected_response)
+
+        user = TigaUser.objects.get(pk=str(new_user_uuid))
+
+        # Check if the user is subscribed to the global topic
+        self.assertTrue(UserSubscription.objects.filter(user=user, topic=self.global_topic).exists())
+
+        # Check if the user is subscribed to the language topic ('en')
+        self.assertTrue(UserSubscription.objects.filter(user=user, topic=self.language_topic).exists())
 
     def test_POST_new_user_without_providing_uuid_should_return_400(self):
         self.client.force_authenticate(user=self.mobile_user)
