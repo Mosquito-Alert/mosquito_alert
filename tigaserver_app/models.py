@@ -313,7 +313,11 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
                 [code for code, _ in self.AVAILABLE_LANGUAGES]
             ) or 'en'
 
-        if self._state.adding:
+        _is_adding = self._state.adding
+
+        result = super().save(*args, **kwargs)
+
+        if _is_adding:
             # Make sure user is subscribed to global topic
             try:
                 global_topic = NotificationTopic.objects.get(topic_code='global')
@@ -336,7 +340,7 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
                     topic=language_topic
                 )
 
-        return super().save(*args, **kwargs)
+        return result
 
     class Meta:
         verbose_name = "user"
