@@ -872,14 +872,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Score'
-  /api/users/:
+  /api/users/{uuid}:
     get:
-      operationId: listTigaUsers
+      operationId: tigaUser_retrieve
       parameters:
-      - name: user_UUID
-        required: false
-        in: query
-        description: user_UUID
+      - name: uuid
+        in: path
+        required: true
         schema:
           type: string
       responses:
@@ -887,18 +886,20 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  properties:
-                    user_UUID:
-                      type: string
-                      description: UUID randomly generated on phone to identify each
-                        unique user. Must be exactly 36 characters (32 hex digits
-                        plus 4 hyphens).
-                      maxLength: 36
-                  required:
+                type: object
+                properties:
+                  user_UUID:
+                    type: string
+                    format: uuid
+                    readOnly: true
+                    description: UUID randomly generated on phone to identify each
+                      unique user. Must be exactly 36 characters (32 hex digits
+                      plus 4 hyphens).
+                    maxLength: 36
+                required:
                   - user_UUID
           description: ''
+  /api/users/:
     post:
       operationId: createTigaUser
       summary: 'Creates a new tigauser'

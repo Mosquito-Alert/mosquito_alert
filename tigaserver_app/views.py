@@ -214,7 +214,7 @@ class UserFilter(filters.FilterSet):
         fields = ['user_UUID']
 
 # For production version, substitute WriteOnlyModelViewSet
-class UserViewSet(ReadWriteOnlyModelViewSet):
+class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """
 API endpoint for getting and posting user registration. The only information required is a 36 digit UUID generated on
 user's
