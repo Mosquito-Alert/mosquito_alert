@@ -3,23 +3,29 @@ from datetime import timedelta
 import jwt
 import pytest
 import time_machine
+import pytest
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.module_loading import import_string
 
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase, APIClient
 
 from rest_framework_simplejwt.settings import api_settings
 
-from tigaserver_app.models import TigaUser, Report, Device, MobileApp
+from tigacrafting.models import ExpertReportAnnotation
+from tigaserver_app.models import TigaUser, Report, Device, MobileApp, ObservationPrediction
 
 from api.auth.serializers import AppUserTokenObtainPairSerializer
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
 from api.tests.factories import create_report_object
+from api.tests.integration.photos.predictions.factories import create_photo_prediction
+
+from .utils import grant_permission_to_user
 
 User = get_user_model()
 
@@ -189,6 +195,57 @@ class TestObservationAPI(BaseReportTest):
     @pytest.fixture
     def report_object(self, app_user):
         return create_observation_object(user=app_user)
+
+@pytest.mark.django_db
+class TestObservationPredictionAPI:
+    @classmethod
+    def build_url(cls, observation):
+        return f"/api/v1/observations/{observation.pk}/prediction/"
+
+    @pytest.fixture
+    def permitted_user(self, user):
+        grant_permission_to_user(type='add', model_class=ObservationPrediction, user=user)
+        Token.objects.create(user=user)
+        return user
+
+    @pytest.fixture()
+    def api_client(self, permitted_user):
+        from rest_framework.test import APIClient
+
+        client = APIClient()
+        token = Token.objects.get(user=permitted_user)
+        client.credentials(HTTP_AUTHORIZATION=f"Token {str(token)}")
+        return client
+
+    @pytest.mark.parametrize("is_executive_validation", [False, True])
+    def test_is_execution_validation_False_does_not_create_annotations(self, api_client, adult_report, is_executive_validation):
+        annotations_qs = ExpertReportAnnotation.objects.filter(
+            report=adult_report
+        )
+
+        assert not annotations_qs.exists()
+
+        photo = adult_report.photos.first()
+        _ = create_photo_prediction(photo=photo)
+
+        response = api_client.post(
+            self.build_url(observation=adult_report),
+            data={
+                "ref_photo_uuid": photo.uuid,
+                "is_executive_validation": is_executive_validation
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        if is_executive_validation:
+            assert annotations_qs.count() == 4
+            assert annotations_qs.filter(
+                user__username='aima',
+                validation_complete_executive=True
+            ).count() == 1
+        else:
+            assert not annotations_qs.exists()
 
 @pytest.mark.django_db
 class TokenAPITest(APITestCase):

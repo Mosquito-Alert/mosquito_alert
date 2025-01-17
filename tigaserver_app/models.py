@@ -16,12 +16,17 @@ from typing import Optional, Union
 import uuid
 
 from django.conf import settings
-from django.contrib.auth.models import User, AbstractBaseUser, AnonymousUser
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance as DistanceMeasure
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Count, Q
+from django.db.models.base import ModelBase
+from django.db.models.functions import Coalesce
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
@@ -51,6 +56,7 @@ from .mixins import TimeZoneModelMixin
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
+User = get_user_model()
 
 ACHIEVEMENT_10_REPORTS = 'achievement_10_reports'
 ACHIEVEMENT_20_REPORTS = 'achievement_20_reports'
@@ -890,17 +896,6 @@ class Report(TimeZoneModelMixin, models.Model):
     nuts_2 = models.CharField(max_length=4, null=True, blank=True)
     nuts_3 = models.CharField(max_length=5, null=True, blank=True)
 
-    ia_filter_1 = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="Value ranging from -1.0 to 1.0 positive values indicate possible insect, negative values indicate spam(non-insect)",
-    )
-    ia_filter_2 = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="Score for best classified image. 0 indicates not classified, 1.xx indicates classified with score xx, 2.xx classified with alert with score xx.",
-    )
-
     tags = TaggableManager(
         through=UUIDTaggedItem,
         blank=True,
@@ -1145,8 +1140,6 @@ class Report(TimeZoneModelMixin, models.Model):
             'version_time',
             'deleted_at',
             'hide',
-            'ia_filter_1',
-            'ia_filter_2',
             'cached_visible',
             'package_name',
             'device_manufacturer',
@@ -3066,7 +3059,6 @@ def make_image_uuid(path):
     return wrapper
 '''
 
-
 BLOOD_GENRE = (('male', 'Male'), ('female', 'Female'), ('fblood', 'Female blood'), ('fgravid', 'Female gravid'), ('fgblood', 'Female gravid + blood'), ('dk', 'Dont know') )
 
 class Photo(models.Model):
@@ -3544,22 +3536,195 @@ class OrganizationPin(models.Model):
     page_url = models.URLField(help_text='URL link to the organization page')
 
 
-class IAScore(models.Model):
-    report = models.ForeignKey('tigaserver_app.Report', related_name='report_iascore', help_text='Report which the score refers to.', on_delete=models.CASCADE, )
-    photo = models.ForeignKey('tigaserver_app.Photo', related_name='photo_iascore', help_text='Photo to which the score refers to', on_delete=models.CASCADE, )
-    f1_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 1, class 1')
-    f1_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 1, class 2')
-    f2_c1 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 1')
-    f2_c2 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 2')
-    f2_c3 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 3')
-    f2_c4 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 4')
-    f2_c5 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 5')
-    f2_c6 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 6')
-    f2_c7 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 7')
-    f2_c8 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 8')
-    f2_c9 = models.FloatField(blank=True, null=True, help_text='Score for filter 2, class 9')
-    x_tl = models.IntegerField(default=0, help_text="photo bounding box coordinates top left x")
-    x_br = models.IntegerField(default=0, help_text="photo bounding box coordinates bottom right x")
-    y_tl = models.IntegerField(default=0, help_text="photo bounding box coordinates top left y")
-    y_br = models.IntegerField(default=0, help_text="photo bounding box coordinates bottom right y")
+class PhotoClassifierScoresMeta(ModelBase):
+    CLASS_FIELDNAMES_CHOICES = [
+        ('ae_albopictus', "Aedes albopictus"),
+        ('ae_aegypti', "Aedes aegypti"),
+        ('ae_japonicus', "Aedes japonicus"),
+        ('ae_koreicus', "Aedes koreicus"),
+        ('culex', "Culex (s.p)"),
+        ('anopheles', "Anopheles (s.p.)"),
+        ('culiseta', "Culiseta (s.p.)"),
+        ('other_species', "Ohter species"),
+        ('not_sure', "Unidentifiable")
+    ]
+    CLASS_UNCLASSIFIED = "not_sure"
+    CLASS_FIELD_SUFFIX = "_score"
 
+    def __new__(cls, name, bases, attrs, **kwargs):
+        # Dynamically create FloatFields for each classifier result
+        for fname, value in cls.CLASS_FIELDNAMES_CHOICES:
+            # Apply suffix to the field names (will be overridden in subclasses)
+            field_name = f'{fname}{cls.CLASS_FIELD_SUFFIX or ""}'
+            attrs[field_name] = models.FloatField(
+                validators=[
+                    MinValueValidator(0.0),
+                    MaxValueValidator(1.0)
+                ],
+                help_text=f"Score value for the class {value}"
+            )
+        return super().__new__(cls, name, bases, attrs, **kwargs)
+
+class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
+
+    CLASSIFIER_VERSION_CHOICES = [
+        ('v2023.1', 'v2023.1'),
+        ('v2024.1', 'v2024.1'),
+        ('v2025.1', 'v2025.1'),
+    ]
+
+    PREDICTED_CLASS_TO_CATEGORY = {
+            'ae_aegypti': 5,
+            'ae_albopictus': 4,
+            'anopheles': 2,
+            'culex': 10,
+            'culiseta': 2,
+            'ae_japonicus': 6,
+            'ae_koreicus': 7,
+            'other_species': 2,
+            'not_sure': 9,
+        }
+
+    PREDICTED_CLASS_TO_OTHERSPECIES = {
+        'anopheles': 101,
+        'culiseta': 103
+    }
+
+    @classmethod
+    def get_score_fieldnames(cls):
+        return [fname + cls.CLASS_FIELD_SUFFIX for fname, _ in cls.CLASS_FIELDNAMES_CHOICES]
+
+    photo = models.OneToOneField(Photo, primary_key=True, related_name='prediction', help_text='Photo to which the score refers to', on_delete=models.CASCADE, limit_choices_to={"report__type": Report.TYPE_ADULT})
+
+    classifier_version = models.CharField(max_length=16, choices=CLASSIFIER_VERSION_CHOICES)
+
+    insect_confidence = models.FloatField(
+        validators=[
+            MinValueValidator(0.0),
+            MaxValueValidator(1.0)
+        ],
+        help_text='Insect confidence'
+    )
+
+    predicted_class = models.CharField(max_length=32, choices=PhotoClassifierScoresMeta.CLASS_FIELDNAMES_CHOICES, default=PhotoClassifierScoresMeta.CLASS_UNCLASSIFIED)
+    threshold_deviation = models.FloatField(
+        validators=[
+            MinValueValidator(-1.0),
+            MaxValueValidator(1.0)
+        ],
+    )
+
+    x_tl = models.PositiveIntegerField(help_text="photo bounding box coordinates top left x")
+    x_br = models.PositiveIntegerField(help_text="photo bounding box coordinates bottom right x")
+    y_tl = models.PositiveIntegerField(help_text="photo bounding box coordinates top left y")
+    y_br = models.PositiveIntegerField(help_text="photo bounding box coordinates bottom right y")
+
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True, editable=False)
+
+    @property
+    def category_id(self):
+        return self.PREDICTED_CLASS_TO_CATEGORY.get(self.predicted_class)
+
+    @property
+    def otherspecies_id(self):
+        return self.PREDICTED_CLASS_TO_OTHERSPECIES.get(self.predicted_class)
+
+    def clean(self):
+        # Get the linked photo dimensions
+        try:
+            width, height = self.photo.photo.width, self.photo.photo.height
+        except FileNotFoundError:
+            width = height = None
+
+        # Check if x_br is greater than the photo width
+        if width is not None and self.x_br > width:
+            raise ValidationError("Bottom right x-coordinate (x_br) cannot exceed the width of the photo.")
+
+        # Check if y_br is greater than the photo height
+        if height is not None and self.y_br > height:
+            raise ValidationError("Bottom right y-coordinate (y_br) cannot exceed the height of the photo.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+
+        super().save(*args, **kwargs)
+
+        try:
+            # On update update expert report annotation.
+            ObservationPrediction.objects.get(photo_prediction=self).update_expert_annotation()
+        except ObservationPrediction.DoesNotExist:
+            pass
+
+    class Meta:
+        constraints = [
+            # Ensure x_tl is less than or equal to x_br
+            models.CheckConstraint(
+                check=Q(x_tl__lte=models.F('x_br')),
+                name='x_tl_less_equal_x_br'
+            ),
+            # Ensure y_tl is less than or equal to y_br
+            models.CheckConstraint(
+                check=Q(y_tl__lte=models.F('y_br')),
+                name='y_tl_less_equal_y_br'
+            ),
+        ]
+
+class ObservationPrediction(models.Model):
+
+    report = models.OneToOneField(Report, primary_key=True, related_name='prediction', on_delete=models.CASCADE, limit_choices_to={"report__type": Report.TYPE_ADULT})
+    photo_prediction = models.OneToOneField(PhotoPrediction, on_delete=models.CASCADE)
+
+    expert_annotation = models.ForeignKey(
+        ExpertReportAnnotation, null=True, blank=True,
+        on_delete=models.SET_NULL,
+        help_text='Linked expert annotation created after setting this prediction to be used a executive validation.'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True, editable=False)
+
+    def _get_public_message(self):
+        public_message = f"Our AI identified the mosquito in this photo as {self.photo_prediction.get_predicted_class_display()}. Thanks for participating!"
+        if self.photo_prediction.predicted_class == PhotoPrediction.CLASS_UNCLASSIFIED:
+            public_message = "Our AI has processed this image but it is not confident enough to identify the mosquito species (the score is below our threshold of confidence). Still, your observation is very useful. Thanks for participating!"
+
+        return public_message
+
+    def create_executive_expert_annotation(self):
+        # AI can only create if nobody has validated..
+        if ExpertReportAnnotation.objects.filter(report=self.report).exists():
+            return
+
+        self.expert_annotation = ExpertReportAnnotation.objects.create(
+            user=User.objects.get(username='aima'),
+            report=self.report,
+            best_photo=self.photo_prediction.photo,
+            category_id=self.photo_prediction.category_id,
+            other_species=self.photo_prediction.otherspecies_id,
+            validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY,
+            validation_complete=True,
+            validation_complete_executive=True,
+            simplified_annotation=False,
+            status=1,  # Force public
+            edited_user_notes=self._get_public_message(),
+        )
+        self.save()
+
+    def update_expert_annotation(self):
+        if not self.expert_annotation:
+            return
+
+        expert_annotation = self.expert_annotation
+
+        expert_annotation.best_photo=self.photo_prediction.photo
+        expert_annotation.category_id=self.photo_prediction.category_id
+        expert_annotation.other_species=self.photo_prediction.otherspecies_id
+        expert_annotation.edited_user_notes=self._get_public_message()
+        expert_annotation.save()
+
+    def delete(self, *args, **kwargs):
+        if self.expert_annotation:
+            self.expert_annotation.delete()
+
+        return super().delete(*args, **kwargs)

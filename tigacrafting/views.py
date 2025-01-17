@@ -1266,7 +1266,7 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
         if type == 'adult':
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
                 type=Report.TYPE_ADULT,
-                ia_filter_1__lte=float(aithr)
+                insect_confidence__lte=float(aithr)
             )
         elif type == 'site':
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(

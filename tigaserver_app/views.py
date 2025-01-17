@@ -2305,7 +2305,7 @@ def coarse_filter_reports(request):
         if type == 'adult':
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
                 type=Report.TYPE_ADULT,
-                ia_filter_1__lte=float(aithr)
+                insect_confidence__lte=float(aithr)
             )
         elif type == 'site':
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(

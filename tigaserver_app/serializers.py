@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Optional
+from typing import Optional, Union
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
@@ -769,10 +769,16 @@ class CoarseReportSerializer(serializers.ModelSerializer):
     note = serializers.ReadOnlyField()
     country = EuropeCountrySimpleSerializer(many=False)
     site_cat = serializers.SerializerMethodField(method_name='get_site_cat')
-    ia_filter_1 = serializers.ReadOnlyField()
+    insect_confidence = serializers.SerializerMethodField()
     hide = serializers.ReadOnlyField()
     lat = serializers.ReadOnlyField()
     lon = serializers.ReadOnlyField()
+
+    def get_insect_confidence(self, obj) -> Union[float, None]:
+        if not obj.prediction:
+            return None
+
+        return obj.prediction.photo_prediction.insect_confidence
 
     def get_site_cat(self,obj):
         return obj.site_cat
@@ -782,4 +788,4 @@ class CoarseReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        fields = ('photos', 'version_UUID', 'report_id', 'creation_time', 'type', 'note', 'point', 'country', 'site_cat', 'ia_filter_1', 'hide', 'user_id', 'lat', 'lon')
+        fields = ('photos', 'version_UUID', 'report_id', 'creation_time', 'type', 'note', 'point', 'country', 'site_cat', 'insect_confidence', 'hide', 'user_id', 'lat', 'lon')

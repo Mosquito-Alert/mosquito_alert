@@ -1,7 +1,7 @@
 from django.urls import path, re_path, include
 
-from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+from rest_framework_nested import routers
 
 from drf_spectacular.settings import spectacular_settings
 from drf_spectacular.utils import extend_schema, extend_schema_view

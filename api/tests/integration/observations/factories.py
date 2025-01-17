@@ -25,3 +25,4 @@ def create_observation_object(user: TigaUser, is_published: bool = False) -> Rep
         )
 
     return report
+

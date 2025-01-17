@@ -420,7 +420,7 @@ function single_report_template(report){
     const pictures = pictures_template(report.photos);
     const report_country_name = report.country == null ? 'No country' : report.country.name_engl;
     const site_cat = report.site_cat == 0 ? 'storm_drain' : 'other';
-    const ia_value = report.ia_filter_1 == null || report.type == 'site' ? 'N/A' : Math.round(report.ia_filter_1 * 100) / 100;
+    const ia_value = report.prediction.photo_prediction.insect_confidence == null || report.type == 'site' ? 'N/A' : Math.round(report.prediction.photo_prediction.insect_confidence * 100) / 100;
     const adult_additional_button_class = report.type == 'site' || report.hide == true ? 'hide_button' : '';
     const hide_additional_button_class = report.hide == true ? 'hide_button' : '';
     const show_additional_button_class = report.hide == true ? '' : 'hide_button';
@@ -448,7 +448,7 @@ function single_report_template(report){
                         </div>
                         <div id="header_ia_${ report.version_UUID }" class="header_ia">
                             <div id="ia_label_${ report.version_UUID }">IA Value ${ ia_value }</div>
-                            <div id="ia${ report.version_UUID }" data-ia-value="${ report.ia_filter_1 }" data-type="${ report.type }" data-id="${ report.version_UUID }" class="ia_graph ${report.type}" style=""></div>
+                            <div id="ia${ report.version_UUID }" data-ia-value="${ report.prediction.photo_prediction.insect_confidence }" data-type="${ report.type }" data-id="${ report.version_UUID }" class="ia_graph ${report.type}" style=""></div>
                         </div>
                         <div class="header_visibility">
                             <div id="visibility_${report.version_UUID}" class="${visibility_class}"></div>
@@ -769,7 +769,7 @@ $('#country_select').on('change', function(){
 });
 
 $( "#slider" ).slider({
-    min: -1,
+    min: 0,
     max: 1.05,
     step: 0.05,
     slide: function( event, ui ) {

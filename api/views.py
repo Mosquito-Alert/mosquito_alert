@@ -12,7 +12,9 @@ from drf_spectacular.utils import (
 )
 
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
@@ -20,9 +22,9 @@ from rest_framework.mixins import (
     UpdateModelMixin,
     DestroyModelMixin,
 )
-from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, SAFE_METHODS
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import Token
 
@@ -35,6 +37,8 @@ from tigaserver_app.models import (
     Report,
     Fix,
     Notification,
+    PhotoPrediction,
+    ObservationPrediction,
     Photo,
     Device
 )
@@ -47,6 +51,8 @@ from .serializers import (
     FixSerializer,
     CountrySerializer,
     PhotoSerializer,
+    PhotoPredictionSerializer,
+    ObservationPredictionSerializer,
     ObservationSerializer,
     BiteSerializer,
     BreedingSiteSerializer,
@@ -192,6 +198,14 @@ class BaseReportViewSet(
     permission_classes = (ReportPermissions,)
 
     def get_permissions(self):
+        # Check if the request is for an action
+        if self.action and hasattr(self, self.action):
+            action_method = getattr(self, self.action)
+            if action_method and hasattr(action_method, 'kwargs'):
+                action_permissions = action_method.kwargs.get('permission_classes')
+                if action_permissions:
+                    return [permission() for permission in action_permissions]
+
         if self.request and self.request.method in SAFE_METHODS:
             return [AllowAny(),]
 
@@ -261,12 +275,7 @@ class BaseMyReportViewSet(BaseReportViewSet, GenericMobileOnlyViewSet):
         return super().get_queryset().filter(user=self.request.user)
 
 class BaseReportWithPhotosViewSet(BaseReportViewSet):
-    def get_parsers(self):
-        # Since photos are required on POST, only allow
-        # parasers that allow files.
-        if self.request and self.request.method == 'POST':
-            return [MultiPartParser(), FormParser()]
-        return super().get_parsers()
+    pass
 
 class BiteViewSet(BaseReportViewSet):
     serializer_class = BiteSerializer
@@ -306,6 +315,40 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_ADULT)
 
+    @action(
+        detail=True,
+        methods=['GET', 'POST', 'DELETE'],
+        authentication_classes=GenericNoMobileViewSet.authentication_classes,
+        permission_classes=GenericNoMobileViewSet.permission_classes,
+        parser_classes=GenericViewSet.parser_classes,
+        serializer_class=ObservationPredictionSerializer,
+        queryset=ObservationPrediction.objects.all(),
+        lookup_field='report__pk',
+        filter_backends=[]
+    )
+    def prediction(self, request, uuid=None):
+        if request.method == 'GET':
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        elif request.method == 'POST':
+            serializer = self.get_serializer(data=request.data)
+            serializer.context['report__pk'] = uuid
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self._get_location_header(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        elif request.method == 'DELETE':
+            instance = self.get_object()
+            instance.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def _get_location_header(self, data):
+        try:
+            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        except (TypeError, KeyError):
+            return {}
+
 @extend_schema_view(
     list=extend_schema(
         tags=['observations'],
@@ -341,6 +384,7 @@ class MyUserViewSet(UserViewSet, GenericMobileOnlyViewSet):
         return user
 
 
+
 class PhotoViewSet(
     RetrieveModelMixin, GenericNoMobileViewSet
 ):
@@ -349,6 +393,41 @@ class PhotoViewSet(
 
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'
+
+    @action(
+        detail=True,
+        methods=['GET', 'POST', 'DELETE'],
+        authentication_classes=GenericNoMobileViewSet.authentication_classes,
+        permission_classes=GenericNoMobileViewSet.permission_classes,
+        parser_classes=GenericViewSet.parser_classes,
+        serializer_class=PhotoPredictionSerializer,
+        queryset=PhotoPrediction.objects.all(),
+        lookup_field='photo__uuid',
+        filter_backends=[]
+    )
+    def prediction(self, request, uuid=None):
+        if request.method == 'GET':
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        elif request.method == 'POST':
+            serializer = self.get_serializer(data=request.data)
+            serializer.context['photo__uuid'] = uuid
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self._get_location_header(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        elif request.method == 'DELETE':
+            instance = self.get_object()
+            instance.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def _get_location_header(self, data):
+        try:
+            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        except (TypeError, KeyError):
+            return {}
+
 
 class DeviceViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericMobileOnlyViewSet):
     queryset = Device.objects.filter(device_id__isnull=False).exclude(device_id='').select_related('mobile_app')
