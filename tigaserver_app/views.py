@@ -1138,11 +1138,12 @@ def token(request):
     token = request.query_params.get('token', -1)
     user_id = request.query_params.get('user_id', -1)
     if( user_id != -1 and token != -1 ):
-        device, created = Device.objects.update_or_create(
+        device, _ = Device.objects.update_or_create(
             user=get_object_or_404(TigaUser.objects.all(), pk=user_id),
             registration_id=token,
             defaults={
-                'active': True
+                'active': True,
+                'is_logged_in': True
             }
         )
         return Response({'token' : device.registration_id})

@@ -1621,3 +1621,40 @@ class ReportModelTest(TestCase):
         report.refresh_from_db()
 
         self.assertFalse(report.location_is_masked)
+
+
+class ApiTokenViewTest(APITestCase):
+    ENDPOINT = '/api/token/'
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.mobile_user = User.objects.create_user(username='mobile_test')
+        cls.tiga_user = TigaUser.objects.create()
+
+    def test_post_fcm_token(self):
+        self.client.force_authenticate(user=self.mobile_user)
+
+        fcm_token = 'randomFCMtoken_test'
+
+        # Define the query parameters
+        query_params = {'user_id': self.tiga_user.pk, 'token': fcm_token}
+        # Construct the URL with query parameters
+        url = self.ENDPOINT + '?' + '&'.join(f'{key}={value}' for key, value in query_params.items())
+
+        # Make the POST request
+        response = self.client.post(url, format='json')
+
+        # Assert response status code or other checks
+        self.assertEqual(response.status_code, 200)
+
+        # Check the response JSON
+        expected_response = {"token": fcm_token}
+        self.assertJSONEqual(response.content, expected_response)
+
+        # Check that exist an active Device for the user with the registartion_id
+        device = Device.objects.get(
+            user=self.tiga_user,
+            registration_id=fcm_token
+        )
+        self.assertTrue(device.active)
+        self.assertTrue(device.is_logged_in)
