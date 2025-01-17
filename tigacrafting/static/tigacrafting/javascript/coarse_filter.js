@@ -1,4 +1,4 @@
-const ask_confirmation = true;
+const ask_confirmation = false;
 
 function make_site(report_id, type){
     hide_adult_buttons(report_id);
