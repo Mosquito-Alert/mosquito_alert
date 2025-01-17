@@ -51,14 +51,7 @@ def custom_render_notification(sent_notification, recipìent, locale):
 
 class UserSerializer(serializers.ModelSerializer):
 
-    def validate_user_UUID(self, attrs):
-        """
-        Check that the user_UUID has exactly 36 characters.
-        """
-        value = attrs
-        if len(str(value)) != 36:
-            raise serializers.ValidationError("Make sure user_UUID is EXACTLY 36 characters.")
-        return attrs
+    user_UUID = serializers.UUIDField(required=True)
 
     class Meta:
         model = TigaUser
