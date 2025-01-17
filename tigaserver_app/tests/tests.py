@@ -15,7 +15,7 @@ from tigaserver_app.models import TigaUser, Report, Photo, Fix
 from tigacrafting.models import FavoritedReports
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
 from django.urls import reverse
 import io
 from rest_framework import status
@@ -1696,15 +1696,14 @@ class TigaUserModelTest(TestCase):
         _ = TigaUser.objects.create(locale=locale)
 
 
-class ApiUsersViewTest(APITestCase):
+class ApiUsersViewTest(APITransactionTestCase):
     ENDPOINT = '/api/users/'
 
-    @classmethod
-    def setUpTestData(cls):
-        cls.mobile_user = User.objects.create_user(username='mobile_test')
+    def setUp(self):
+        self.mobile_user = User.objects.create_user(username='mobile_test')
         # Needed to test user subscription does not raise.
-        cls.global_topic = NotificationTopic.objects.create(topic_code='global')
-        cls.language_topic = NotificationTopic.objects.create(topic_code='en')
+        self.global_topic = NotificationTopic.objects.create(topic_code='global')
+        self.language_topic = NotificationTopic.objects.create(topic_code='en')
 
     def test_POST_new_user(self):
         self.client.force_authenticate(user=self.mobile_user)
