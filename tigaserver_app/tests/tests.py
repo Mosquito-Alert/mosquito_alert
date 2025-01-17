@@ -3,7 +3,7 @@ import uuid
 
 # Create your tests here.
 from django.test import TestCase, override_settings
-from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp
+from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp, UserSubscription
 from django.core.management import call_command
 from PIL import Image, ExifTags
 from PIL.ExifTags import TAGS, GPSTAGS
@@ -1658,3 +1658,89 @@ class ApiTokenViewTest(APITestCase):
         )
         self.assertTrue(device.active)
         self.assertTrue(device.is_logged_in)
+
+
+class TigaUserModelTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.global_topic = NotificationTopic.objects.create(topic_code='global')
+
+    def test_create_new_user_subscribe_to_global_topic(self):
+        tiga_user = TigaUser.objects.create()
+
+        subscription_to_global_topic = UserSubscription.objects.filter(
+            user=tiga_user,
+            topic=self.global_topic
+        )
+
+        self.assertTrue(subscription_to_global_topic.exists())
+
+    def test_create_new_user_subscribe_to_locale_topic(self):
+        locale = 'es'
+        spanish_topic = NotificationTopic.objects.create(topic_code=locale)
+        tiga_user = TigaUser.objects.create(locale=locale)
+
+        subscription_to_spanish_topic = UserSubscription.objects.filter(
+            user=tiga_user,
+            topic=spanish_topic
+        )
+
+        self.assertTrue(subscription_to_spanish_topic.exists())
+
+    def test_create_new_with_non_existing_notification_topic_locale_do_not_raise(self):
+        locale = 'es'
+
+        # Ensure Notification topic for locale does not exist
+        NotificationTopic.objects.filter(topic_code=locale).delete()
+
+        _ = TigaUser.objects.create(locale=locale)
+
+
+class ApiUsersViewTest(APITestCase):
+    ENDPOINT = '/api/users/'
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.mobile_user = User.objects.create_user(username='mobile_test')
+
+    def test_POST_new_user(self):
+        self.client.force_authenticate(user=self.mobile_user)
+        new_user_uuid = uuid.uuid4()
+
+        request_payload = {
+            'user_UUID': str(new_user_uuid)  # The mobile is setting the user uuid.
+        }
+        response = self.client.post(
+            self.ENDPOINT,
+            request_payload,
+            format="json",
+        )
+
+        # Check the status code
+        self.assertEqual(response.status_code, 201)
+
+        # Check the response JSON
+        expected_response = {"user_UUID": str(new_user_uuid)}
+        self.assertJSONEqual(response.content, expected_response)
+
+    def test_POST_new_user_without_providing_uuid_should_return_400(self):
+        self.client.force_authenticate(user=self.mobile_user)
+        response = self.client.post(
+            self.ENDPOINT,
+            format="json",
+        )
+        # Check the status code
+        self.assertEqual(response.status_code, 400)
+
+    def test_POST_new_user_providing_non_uuid_should_return_400(self):
+        self.client.force_authenticate(user=self.mobile_user)
+        request_payload = {
+            'user_UUID': 'random_text'
+        }
+        response = self.client.post(
+            self.ENDPOINT,
+            request_payload,
+            format="json",
+        )
+        # Check the status code
+        self.assertEqual(response.status_code, 400)
