@@ -482,7 +482,8 @@ class NearbyReportSerializer(serializers.ModelSerializer):
             "user",
             "mission",
             "country",
-            "session"
+            "session",
+            "simplified_annotation"
         )
 
 
