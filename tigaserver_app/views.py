@@ -1143,7 +1143,8 @@ def token(request):
             registration_id=token,
             defaults={
                 'active': True,
-                'is_logged_in': True
+                'is_logged_in': True,
+                'last_login': timezone.now()
             }
         )
         return Response({'token' : device.registration_id})
