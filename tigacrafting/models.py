@@ -276,7 +276,7 @@ class ExpertReportAnnotation(models.Model):
                     category=category,
                     validation_value=int(validation_value) if validation_value else None,
                     locale=report.user.locale
-                )
+                ) or ""
             }
         )
         obj.create_replicas()
