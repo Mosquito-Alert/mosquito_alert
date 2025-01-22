@@ -658,6 +658,160 @@ class ReportEndpointTestCase(APITestCase):
         self.assertEqual(device.is_logged_in, True)
         self.assertEqual(device.last_login, timezone.now())
 
+    def test_POST_with_not_valid_version_number_raise_400(self):
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "version_number": -2,
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_POST_without_version_number_raise_400(self):
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "version_number": None,
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_POST_without_version_UUID_raise_400(self):
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "version_UUID": None,
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_POST_with_version_number_0_create_new_reports(self):
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+        self.assertEqual(report.version_number, 0)
+
+    def test_POST_with_version_number_0_raise_409_if_report_with_same_version_UUID_exists(self):
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 409)
+
+    def test_POST_with_version_number_1_update_existing_report(self):
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "version_number": 0,
+                    "location_choice": "current",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "version_number": 1,
+                    "location_choice": "selected",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+        self.assertEqual(report.version_number, 0)
+        self.assertEqual(report.location_choice, "selected")
+
+    def test_POST_with_version_number_neg1_soft_delete_existing_report(self):
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+        self.assertFalse(report.deleted)
+
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "version_number": -1,
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        report.refresh_from_db()
+        self.assertTrue(report.deleted)
+
+    def test_POST_with_version_number_not0_raise_404_if_report_not_found(self):
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "report_id": "test",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "version_number": 1,
+                    "report_id": "test2",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 404)
 
 class FixEndpointTestCase(APITestCase):
     def setUp(self):
