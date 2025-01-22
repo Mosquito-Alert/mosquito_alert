@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import mixins, GenericAPIView
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
@@ -316,8 +316,25 @@ the server map (although it will still be retained internally).
         # - CREATE: Case version_number == 0
         # - UPDATE: Case version_number > 0
         # - DELETE: Case version_number == -1
-
         version_number = request.data.get('version_number')
+        version_UUID = request.data.get('version_UUID')
+
+        # Validate version_number and version_UUID
+        if version_number is None or version_UUID is None:
+            return Response(
+                {"error": "version_number and version_UUID are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if version_number < -1:
+            raise ValidationError({'version_number': 'Invalid version number provided.'})
+
+        # Handle case when version_number is 0 and report already exists
+        if version_number == 0 and Report.objects.filter(pk=version_UUID).exists():
+            return Response(
+                {"error": "Object with this PK already exists."},
+                status=status.HTTP_409_CONFLICT
+            )
 
         instance = None
         if version_number != 0:
@@ -337,23 +354,23 @@ the server map (although it will still be retained internally).
             # May raise a permission denied
             self.check_object_permissions(self.request, instance)
 
-        # NOTE: Always return 201
-        # See: https://github.com/Mosquito-Alert/Mosquito-Alert-Mobile-App/blob/6c5993a230a86f958c8dca8bcfef2994a6b93ebe/lib/api/api.dart#L381
-        result_status = status.HTTP_201_CREATED
-        if version_number >= 0:
+        if version_number == -1:
+            self.perform_destroy(instance=instance)
+            serializer = self.get_serializer(instance)
+        elif version_number >= 0:
             serializer = self.get_serializer(instance, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-        if version_number == -1:
-            instance.soft_delete()
-            serializer = self.get_serializer(instance)
-
         result_data = serializer.data
         result_headers = self.get_success_headers(serializer.data)
 
-        return Response(data=result_data, status=result_status, headers=result_headers)
+        # NOTE: Always return 201
+        # See: https://github.com/Mosquito-Alert/Mosquito-Alert-Mobile-App/blob/6c5993a230a86f958c8dca8bcfef2994a6b93ebe/lib/api/api.dart#L381
+        return Response(data=result_data, status=status.HTTP_201_CREATED, headers=result_headers)
 
+    def perform_destroy(self, instance):
+        instance.soft_delete()
 
 # For production version, substitute WriteOnlyModelViewSet
 class PhotoViewSet(ReadWriteOnlyModelViewSet):
