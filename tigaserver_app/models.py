@@ -265,17 +265,20 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
             return last_device.registration_id
 
     def __unicode__(self):
-        return self.user_UUID
+        return str(self.user_UUID)
+
+    def __str__(self):
+        return str(self.user_UUID)
 
     def get_identicon(self):
-        file_path = settings.MEDIA_ROOT + "/identicons/" + self.user_UUID + ".png"
+        file_path = settings.MEDIA_ROOT + "/identicons/" + str(self.user_UUID) + ".png"
         if not os.path.exists(file_path):
             generator = pydenticon.Generator(5, 5, foreground=settings.IDENTICON_FOREGROUNDS)
-            identicon_png = generator.generate(self.user_UUID, 200, 200, output_format="png")
+            identicon_png = generator.generate(str(self.user_UUID), 200, 200, output_format="png")
             f = open(file_path, "wb")
             f.write(identicon_png)
             f.close()
-        return settings.MEDIA_URL + "identicons/" + self.user_UUID + ".png"
+        return settings.MEDIA_URL + "identicons/" + str(self.user_UUID) + ".png"
 
     def update_score(self, commit: bool = True) -> None:
         # NOTE: placing import here due to circular import
