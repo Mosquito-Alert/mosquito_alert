@@ -21,6 +21,7 @@ from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance as DistanceMeasure
+from django.db import transaction
 from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -523,14 +524,14 @@ class Device(AbstractFCMDevice):
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=['registration_id'],
+                fields=['active', 'registration_id'],
                 name='unique_active_registration_id',
-                condition=models.Q(active=True) & ~models.Q(registration_id=None) & ~models.Q(registration_id__exact=''),
+                condition=models.Q(active=True, registration_id__isnull=False) & ~models.Q(registration_id__exact=''),
             ),
             models.UniqueConstraint(
-                fields=['device_id'],
+                fields=['is_logged_in', 'device_id'],
                 name='unique_is_logged_in_device_id',
-                condition=models.Q(is_logged_in=True) & ~models.Q(device_id=None) & ~models.Q(device_id__exact=''),
+                condition=models.Q(is_logged_in=True, device_id__isnull=False) & ~models.Q(device_id__exact=''),
             ),
             models.UniqueConstraint(
                 fields=['user', 'device_id'],
@@ -1869,6 +1870,7 @@ class Report(TimeZoneModelMixin, models.Model):
         p = GEOSGeometry(wkt_point.format(self.lon, self.lat), srid=4326)
         return p
 
+    @transaction.atomic
     def save(self, *args, **kwargs):
         # Forcing self.version_number to be either 0 or -1
         self.version_number = 0 if self.version_number >= 0 else -1
@@ -1907,51 +1909,59 @@ class Report(TimeZoneModelMixin, models.Model):
                     package_version=self.package_version
                 )
             # Update device according to the information provided in the report.
-            try:
-                # Try to update the device created in /token/ legacy api
-                # which creates a device with empty fields, except for registration_id.
+            with transaction.atomic():
+                # Try to find an existing device with model=self.device_model or fallback to the last model=None
                 device = Device.objects.filter(
                     user=self.user,
+                    model=self.device_model or '',
+                ).select_for_update().order_by('-last_login').first() or Device.objects.filter(
+                    user=self.user,
                     model__isnull=True,
-                    date_created__lte=self.server_upload_time or timezone.now()
-                ).latest('date_created')
-                device.type={
+                    is_logged_in=True,
+                    pk__in=models.Subquery(
+                        Device.objects.filter(
+                            user=models.OuterRef('user'),
+                        ).order_by('-last_login').values('pk')[:1]
+                    )
+                ).select_for_update().first()
+
+                if device:
+                    # Handle registration_id transfer if an active, newer device exists
+                    loggedin_active_devices_qs = Device.objects.filter(
+                        user=self.user,
+                        active=True,
+                        model__isnull=True,
+                        last_login__gt=device.last_login or timezone.now()
+                    ).exclude(pk=device.pk)
+                    if last_loggedin_active_device := loggedin_active_devices_qs.order_by('-last_login').first():
+                        device.registration_id = last_loggedin_active_device.registration_id
+                        Report.objects.filter(device__in=loggedin_active_devices_qs).update(
+                            device=device
+                        )
+                        loggedin_active_devices_qs.delete()
+                else:
+                    # If still no device exists, create a new one
+                    device = Device(user=self.user)
+
+                # Update the device fields
+                device.manufacturer = self.device_manufacturer
+                device.model = self.device_model
+                device.type = {
                     'android': 'android',
                     'ipados': 'ios',
                     'ios': 'ios',
-                    'iphone os': 'ios'
-                }.get(self.os.lower() if self.os else None)
-                device.manufacturer = self.device_manufacturer
-                device.model = self.device_model
+                    'iphone os': 'ios',
+                    '': None  # Mapping for empty or None value
+                }.get(self.os.lower() if self.os else '')
                 device.os_name = self.os
                 device.os_version = self.os_version
                 device.os_locale = self.os_language
                 device.mobile_app = self.mobile_app
                 device.is_logged_in = True
-                device.last_login = self.server_upload_time or timezone.now()
+                device.active = True
+                device.last_login = timezone.now()
+
                 device.save()
-            except Device.DoesNotExist:
-                # Create a new Device.
-                device, _ = Device.objects.update_or_create(
-                    user=self.user,
-                    model=self.device_model,
-                    type={
-                        'android': 'android',
-                        'ipados': 'ios',
-                        'ios': 'ios',
-                        'iphone os': 'ios'
-                    }.get(self.os.lower() if self.os else None),
-                    defaults={
-                        'is_logged_in': True,
-                        'last_login': self.server_upload_time or timezone.now(),
-                        'manufacturer': self.device_manufacturer,
-                        'model': self.device_model,
-                        'os_name': self.os,
-                        'os_version': self.os_version,
-                        'os_locale': self.os_language,
-                        'mobile_app': self.mobile_app
-                    }
-                )
 
             self.device = device
 

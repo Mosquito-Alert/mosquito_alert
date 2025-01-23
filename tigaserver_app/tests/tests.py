@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 
 # Create your tests here.
@@ -104,6 +104,8 @@ class ReportEndpointTestCase(APITestCase):
         t = TigaUser.objects.create(user_UUID="00000000-0000-0000-0000-000000000000")
         Device.objects.create(
             user=t,
+            active=True,
+            is_logged_in=True,
             registration_id="caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT"
         )
 
@@ -580,13 +582,58 @@ class ReportEndpointTestCase(APITestCase):
         self.assertEqual(report.mobile_app, mobile_app)
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_device_is_created_if_not_exist_on_new_report(self):
+        user = TigaUser.objects.create(locale='en')
+
+        self.assertEqual(Device.objects.filter(user=user).count(), 0)
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "user": str(user.pk),
+                    "device_manufacturer": "test_make",
+                    "device_model": "test_model",
+                    "os": "testOs",
+                    "os_version": "testVersion",
+                    "os_language": "es-ES",
+                    "package_name": "testapp",
+                    "package_version": "100",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+        device = Device.objects.get(user=report.user)
+
+        self.assertEqual(device.manufacturer, "test_make")
+        self.assertEqual(device.model, "test_model")
+        self.assertEqual(device.os_name, "testOs")
+        self.assertEqual(device.os_version, "testVersion")
+        self.assertEqual(device.os_locale, "es-ES")
+        self.assertEqual(device.mobile_app, report.mobile_app)
+        self.assertEqual(device.is_logged_in, True)
+        self.assertEqual(device.last_login, timezone.now())
+
+        self.assertIsNone(device.registration_id)
+        self.assertEqual(device.active, False)
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_device_with_model_null_is_updated_on_new_report(self):
         user = TigaUser.objects.create(locale='en')
+        fcm_token = 'fcm_random_token'
+        # This is a device that was created using /api/token/ endpoint
         device = Device.objects.create(
-            registration_id='fcm_random_token',
-            user=user
+            registration_id=fcm_token,
+            user=user,
+            model=None,
+            active=True,
+            is_logged_in=True,
+            last_login=timezone.now()-timedelta(days=1)
         )
-        self.assertIsNone(device.type)
+        self.assertIsNone(device.model)
         mobile_app = MobileApp.objects.create(package_name='testapp', package_version='100')
 
         response = self.client.post(
@@ -615,8 +662,10 @@ class ReportEndpointTestCase(APITestCase):
         self.assertEqual(device.os_version, "testVersion")
         self.assertEqual(device.os_locale, "es-ES")
         self.assertEqual(device.mobile_app, mobile_app)
-        self.assertEqual(device.is_logged_in, True)
+        self.assertTrue(device.is_logged_in)
+        self.assertTrue(device.active)
         self.assertEqual(device.last_login, timezone.now())
+        self.assertEqual(device.registration_id, fcm_token)
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_device_with_model_is_updated_on_new_report(self):
@@ -624,7 +673,10 @@ class ReportEndpointTestCase(APITestCase):
         device = Device.objects.create(
             registration_id='fcm_random_token',
             user=user,
-            model="test_model"
+            model="test_model",
+            active=True,
+            is_logged_in=True,
+            last_login=timezone.now()-timedelta(days=1)
         )
         self.assertIsNone(device.type)
         mobile_app = MobileApp.objects.create(package_name='testapp', package_version='100')
@@ -923,6 +975,8 @@ class NotificationTestCase(APITestCase):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
         Device.objects.create(
             user=t,
+            active=True,
+            is_logged_in=True,
             registration_id='caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT'
         )
 
@@ -1776,6 +1830,178 @@ class ReportModelTest(TestCase):
 
         self.assertFalse(report.location_is_masked)
 
+    def test_device_is_deleted_on_save_failure(self):
+        self.assertEqual(Device.objects.all().count(), 0)
+        user = TigaUser.objects.create()
+        report = Report.objects.create(
+            user=user,
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
+            device_manufacturer="test_make",
+            device_model="test_model",
+            os="testOs",
+            os_version="testVersion",
+            os_language="es-ES",
+        )
+        self.assertEqual(Device.objects.all().count(), 1)
+
+        device = Device.objects.get(user=user)
+        self.assertEqual(device.history.all().count(), 1)
+
+        with self.assertRaises(IntegrityError) as context:
+            # Trying to create a new report with the same PK, which will raise.
+            _ = Report.objects.create(
+                pk=report.pk,
+                user=user,
+                report_id='1235',
+                phone_upload_time=timezone.now(),
+                creation_time=timezone.now(),
+                version_time=timezone.now(),
+                type=Report.TYPE_ADULT,
+                location_choice=Report.LOCATION_CURRENT,
+                current_location_lon=41,
+                current_location_lat=2,
+                device_manufacturer=report.device_manufacturer,
+                device_model=report.device_model,
+                os=report.os,
+                os_version="testVersion2",
+                os_language=report.os_language,
+            )
+
+        device.refresh_from_db()
+        self.assertEqual(device.os_version, "testVersion")
+        self.assertEqual(device.history.all().count(), 1)
+
+    def test_mobile_app_is_deleted_on_save_failure(self):
+        self.assertEqual(MobileApp.objects.all().count(), 0)
+        user = TigaUser.objects.create()
+        report = Report.objects.create(
+            user=user,
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
+            package_name="testapp",
+            package_version="100",
+        )
+        self.assertEqual(MobileApp.objects.all().count(), 1)
+
+        mobile_app = MobileApp.objects.get(package_name=report.package_name, package_version=report.package_version)
+
+        with self.assertRaises(IntegrityError) as context:
+            # Trying to create a new report with the same PK, which will raise.
+            _ = Report.objects.create(
+                pk=report.pk,
+                user=user,
+                report_id='1235',
+                phone_upload_time=timezone.now(),
+                creation_time=timezone.now(),
+                version_time=timezone.now(),
+                type=Report.TYPE_ADULT,
+                location_choice=Report.LOCATION_CURRENT,
+                current_location_lon=41,
+                current_location_lat=2,
+                package_name=report.package_name,
+                package_version="101",
+            )
+
+        mobile_app.refresh_from_db()
+        self.assertEqual(mobile_app.package_version, "100")
+
+    def test_device_is_updated_if_previous_model_exist_and_new_model_None_also(self):
+        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
+            user = TigaUser.objects.create()
+            device = Device.objects.create(
+                user=user,
+                model="test_model",
+                registration_id="fcm_token",
+                active=True,
+                is_logged_in=True,
+                last_login=timezone.now() - timedelta(days=1)
+            )
+            _ = Report.objects.create(
+                user=user,
+                report_id='1234',
+                phone_upload_time=timezone.now(),
+                creation_time=timezone.now(),
+                version_time=timezone.now(),
+                type=Report.TYPE_ADULT,
+                location_choice=Report.LOCATION_CURRENT,
+                current_location_lon=41,
+                current_location_lat=2,
+                device_manufacturer="test_make",
+                device_model="test_model",
+                os="testOs",
+                os_version="testVersion",
+                os_language="es-ES",
+            )
+
+            device.refresh_from_db()
+            self.assertEqual(device.model, "test_model")
+            self.assertEqual(device.last_login, timezone.now())
+
+            traveller.shift(timedelta(days=1))
+
+            # This would be a post to /api/token/ endpoint.
+            device_model_null = Device.objects.create(
+                user=user,
+                model=None,
+                registration_id="new_fcm_token",
+                active=True,
+                is_logged_in=True,
+                last_login=timezone.now() - timedelta(minutes=1)
+            )
+
+            device_model_null2 = Device.objects.create(
+                user=user,
+                model=None,
+                registration_id="new_fcm_token2",
+                active=True,
+                is_logged_in=True,
+                last_login=timezone.now()
+            )
+
+            # Creating a new report with the same previous model
+            _ = Report.objects.create(
+                user=user,
+                report_id='1235',
+                phone_upload_time=timezone.now(),
+                creation_time=timezone.now(),
+                version_time=timezone.now(),
+                type=Report.TYPE_ADULT,
+                location_choice=Report.LOCATION_CURRENT,
+                current_location_lon=41,
+                current_location_lat=2,
+                device_manufacturer="test_make",
+                device_model="test_model",
+                os="testOs",
+                os_version="testVersion",
+                os_language="es-ES",
+            )
+
+            device.refresh_from_db()
+            self.assertEqual(device.model, "test_model")
+            self.assertEqual(device.last_login, timezone.now())
+            self.assertEqual(device.registration_id,'new_fcm_token2')
+
+            self.assertRaises(
+                Device.DoesNotExist,
+                device_model_null.refresh_from_db
+            )
+            self.assertRaises(
+                Device.DoesNotExist,
+                device_model_null2.refresh_from_db
+            )
 
 class ApiTokenViewTest(APITestCase):
     ENDPOINT = '/api/token/'
@@ -1785,7 +2011,8 @@ class ApiTokenViewTest(APITestCase):
         cls.mobile_user = User.objects.create_user(username='mobile_test')
         cls.tiga_user = TigaUser.objects.create()
 
-    def test_post_fcm_token(self):
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_post_fcm_token_creates_new_device_if_no_device_exist(self):
         self.client.force_authenticate(user=self.mobile_user)
 
         fcm_token = 'randomFCMtoken_test'
@@ -1812,6 +2039,42 @@ class ApiTokenViewTest(APITestCase):
         )
         self.assertTrue(device.active)
         self.assertTrue(device.is_logged_in)
+        self.assertEqual(device.last_login, timezone.now())
+        self.assertIsNone(device.model)
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_post_fcm_token_updates_device_with_same_registration_id(self):
+        self.client.force_authenticate(user=self.mobile_user)
+
+        fcm_token = 'randomFCMtoken_test'
+
+        device = Device.objects.create(
+            user=self.tiga_user,
+            registration_id=fcm_token,
+            active=True,
+            is_logged_in=True,
+            last_login=timezone.now() - timedelta(days=1)
+        )
+
+        # Define the query parameters
+        query_params = {'user_id': self.tiga_user.pk, 'token': fcm_token}
+        # Construct the URL with query parameters
+        url = self.ENDPOINT + '?' + '&'.join(f'{key}={value}' for key, value in query_params.items())
+
+        # Make the POST request
+        response = self.client.post(url, format='json')
+        # Assert response status code or other checks
+        self.assertEqual(response.status_code, 200)
+
+
+        self.assertEqual(Device.objects.filter(user=self.tiga_user).count(), 1)
+        # Check that exist an active Device for the user with the registartion_id
+        device.refresh_from_db()
+
+        self.assertEqual(device.registration_id, fcm_token)
+        self.assertTrue(device.active)
+        self.assertTrue(device.is_logged_in)
+        self.assertEqual(device.last_login, timezone.now())
 
 
 class TigaUserModelTest(TestCase):
