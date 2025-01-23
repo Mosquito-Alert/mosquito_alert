@@ -9,10 +9,10 @@ class RawImageFile(ImageFile.ImageFile):
         try:
             # when Pillow starts supporting 16-bit multichannel images change `convert_hdr_to_8bit` to False
             raw = rawpy.imread(self.fp)
+            array = raw.postprocess()
         except Exception as exception:
             raise SyntaxError(str(exception)) from None
         # raw = rawpy.imread(self.fp)
-        array = raw.postprocess()
 
         # size in pixels (width, height)
         self._size = (array.shape[1], array.shape[0])
