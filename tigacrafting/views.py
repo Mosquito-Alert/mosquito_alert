@@ -489,7 +489,7 @@ def predefined_messages(request):
 
 
 def update_pending_data(country):
-    country.pending_crisis_reports = Report.objects.queued().filter(country=country).count()
+    country.pending_crisis_reports = IdentificationTask.objects.backlog().filter(report__country=country).count()
     country.last_crisis_report_n_update = timezone.now()
     country.save()
 
@@ -533,8 +533,7 @@ def report_expiration(request, country_id=None):
     if not this_user.userstat.is_superexpert():
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
-    lock_period = settings.ENTOLAB_LOCK_PERIOD
-    qs = ExpertReportAnnotation.objects.blocked(days=lock_period)
+    qs = IdentificationTask.objects.blocked()
 
     country = None
     if country_id is not None:
@@ -542,14 +541,14 @@ def report_expiration(request, country_id=None):
         qs = qs.filter(report__country=country)
 
     data_dict = {}
-    for annotation in qs.select_related('user').iterator():
-        if annotation.user.username not in data_dict:
-            data_dict[annotation.user.username] = []
+    for task in qs.select_related('assignee').iterator():
+        if task.assignee.username not in data_dict:
+            data_dict[task.assignee.username] = []
 
-        data_dict[annotation.user.username].append(
+        data_dict[task.assignee.username].append(
             {
-                'annotation': annotation,
-                'days': (timezone.now() - annotation.created).days
+                'report_uuid': task.report_id,
+                'days': (timezone.now() - task.created_at).days
             }
         )
 
@@ -644,29 +643,25 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         load_new_reports = request.GET.get('load_new_reports', load_new_reports)
         edit_mode = request.GET.get('edit_mode', edit_mode)
 
-        # TODO: filter by adults?
-        report_qs = Report.objects.filter(
-            type=Report.TYPE_ADULT
-        )
+        task_qs = IdentificationTask.objects
 
         spain_country = EuropeCountry.objects.spain()
         if loc == 'spain':
-            report_qs = report_qs.filter(country=spain_country)
+            task_qs = task_qs.filter(report__country=spain_country)
         elif loc == 'europe':
-            report_qs = report_qs.filter(
-                country__isnull=False
+            task_qs = task_qs.filter(
+                report__country__isnull=False
             ).exclude(
-                country=spain_country
+                report__country=spain_country
             )
 
-        public_final_reports = report_qs.filter_by_status(status=ExpertReportAnnotation.STATUS_PUBLIC)
-        flagged_final_reports = report_qs.filter_by_status(status=ExpertReportAnnotation.STATUS_FLAGGED)
-        hidden_final_reports = report_qs.filter_by_status(status=ExpertReportAnnotation.STATUS_HIDDEN)
+        public_final_reports = task_qs.done().filter(is_safe=True).values('report_id')
+        flagged_final_reports = task_qs.filter(status=IdentificationTask.Status.FLAGGED).values('report_id')
+        hidden_final_reports = task_qs.done().filter(is_safe=False).values('report_id')
 
         if load_new_reports == 'T' or this_user_is_superexpert:
             this_user.userstat.assign_reports()
 
-        user_assigned_reports = report_qs.filter(expert_report_annotations__user=this_user)
         if this_user_is_expert:
             if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not pending or pending == 'na'):
                 pending = 'pending'
@@ -677,33 +672,30 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not checked or checked == 'na'):
                 checked = 'unchecked'
 
-            # NOTE: dict where status is key and count is value
-            report_status_count_qs = user_assigned_reports.annotate_final_status().values('final_status').annotate(count=models.Count(1))
-            report_status_count = {
-                item['final_status']: item['count'] 
-                for item in report_status_count_qs
-            }
-            args['n_flagged'] = report_status_count.get(ExpertReportAnnotation.STATUS_FLAGGED, 0)
-            args['n_hidden'] = report_status_count.get(ExpertReportAnnotation.STATUS_HIDDEN, 0)
-            args['n_public'] = report_status_count.get(ExpertReportAnnotation.STATUS_PUBLIC, 0)
+            user_tasks = task_qs.filter(
+                models.Exists(
+                    ExpertReportAnnotation.objects.filter(
+                        user=this_user,
+                        identification_task=models.OuterRef('pk'),
+                        validation_complete=True
+                    )
+                )
+            )
+            args['n_flagged'] = user_tasks.filter(status=IdentificationTask.Status.FLAGGED).count()
+            args['n_hidden'] = user_tasks.done().filter(is_safe=False).count()
+            args['n_public'] = user_tasks.done().filter(is_safe=True).count()
 
-            report_user_stats_qs = user_assigned_reports.values(
-                'expert_report_annotations__validation_complete',
-                'expert_report_annotations__revise'
-            ).annotate(
-                validation_complete=models.F('expert_report_annotations__validation_complete'),
-                revise=models.F('expert_report_annotations__revise'),
-                total_count=models.Count(1)
-            ).values('validation_complete', 'revise', 'total_count')
-            report_user_stats = list(report_user_stats_qs)
+            user_report_annotations = ExpertReportAnnotation.objects.filter(
+                user=this_user,
+                identification_task__in=user_tasks,
+            )
+            args['n_unchecked'] = user_report_annotations.filter(validation_complete=False).count()
+            args['n_confirmed'] = user_report_annotations.filter(validation_complete=True, revise=False).count()
+            args['n_revised'] = user_report_annotations.filter(validation_complete=True, revise=True).count()
 
-            args['n_unchecked'] = sum(item['total_count'] for item in report_user_stats if item['validation_complete'] is False)
-            args['n_confirmed'] = sum(item['total_count'] for item in report_user_stats if item['validation_complete'] is True and item['revise'] is False)
-            args['n_revised'] = sum(item['total_count'] for item in report_user_stats if item['validation_complete'] is True and item['revise'] is True)
-
-            args['n_loc_spain'] = user_assigned_reports.filter(country=spain_country).count()
-            args['n_loc_europe'] = user_assigned_reports.filter(country__isnull=False).exclude(country=spain_country).count()
-            args['n_loc_all'] = user_assigned_reports.count()
+            args['n_loc_spain'] = user_tasks.filter(report__country=spain_country).count()
+            args['n_loc_europe'] = user_tasks.filter(report__country__isnull=False).exclude(report__country=spain_country).count()
+            args['n_loc_all'] = user_tasks.count()
 
 
         all_annotations = this_user.expert_report_annotations.all()
@@ -882,7 +874,7 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
             reports = Report.objects.filter(linked_id=linked_id)
             n_reports = 1
         else:
-            reports = Report.objects.queueable().filter(type=Report.TYPE_ADULT).order_by('-server_upload_time')
+            reports = Report.objects.filter(identification_task__isnull=False).order_by('-server_upload_time')
             n_reports = len(reports)
 
         paginator = Paginator(reports, int(reports_per_page))
@@ -978,23 +970,46 @@ def expert_report_complete(request):
     return Response(context)
 
 def get_reports_unfiltered_sites_embornal(reports_imbornal):
-    return Report.objects.queueable().unassigned().filter(
+    return Report.objects.filter(
         type=Report.TYPE_SITE,
-        breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN
+        breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN,
+        creation_time__year__gt=2014,
+    ).exclude(
+        note__icontains='#345'
+    ).has_photos().annotate(
+        n_annotations=Count('expert_report_annotations')
+    ).filter(
+        n_annotations=0
     ).order_by('-server_upload_time')
 
 def get_reports_unfiltered_sites_other(reports_imbornal):
-    return Report.objects.queueable().unassigned().filter(
-        type=Report.TYPE_SITE
+    return Report.objects.filter(
+        type=Report.TYPE_SITE,
+        creation_time__year__gt=2014,
     ).exclude(
-        breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN
+        models.Q(note__icontains='#345') |
+        models.Q(breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN)
+    ).has_photos().annotate(
+        n_annotations=Count('expert_report_annotations')
+    ).filter(
+        n_annotations=0
     ).order_by('-server_upload_time')
 
 def get_reports_imbornal():
     return Report.objects.filter(breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN)
 
 def get_reports_unfiltered_adults():
-    return Report.objects.filter(type=Report.TYPE_ADULT).in_progress().order_by('-server_upload_time')
+    return Report.objects.filter(
+        type=Report.TYPE_ADULT,
+        identification_task__isnull=False
+    ).filter(
+        models.Exists(
+            IdentificationTask.objects.filter(
+                report=models.OuterRef('pk')
+            ).closed(),
+            negated=True
+        )
+    ).order_by('-server_upload_time')
 
 def auto_annotate_notsure(report: Report) -> None:
     auto_annotate(
@@ -1131,7 +1146,15 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
         if aithr == '':
             aithr = '0.75'
 
-    reports_qs = Report.objects.queueable().unassigned().order_by('-server_upload_time')
+    reports_qs = Report.objects.filter(
+        creation_time__year__gt=2014,
+    ).exclude(
+        note__icontains='#345'
+    ).non_deleted().has_photos().annotate(
+        n_annotations=Count('expert_report_annotations')
+    ).filter(
+        n_annotations=0
+    ).order_by('-server_upload_time')
 
     if type == 'adult':
         type_readable = "Adults"

@@ -2269,7 +2269,15 @@ def coarse_filter_reports(request):
         limit = request.query_params.get("limit", 300)
         offset = request.query_params.get("offset", 1)
 
-        new_reports_unfiltered_qs = Report.objects.queueable().unassigned().order_by('-server_upload_time')
+        new_reports_unfiltered_qs = Report.objects.filter(
+            creation_time__year__gt=2014,
+        ).exclude(
+            note__icontains='#345'
+        ).non_deleted().has_photos().annotate(
+            n_annotations=Count('expert_report_annotations')
+        ).filter(
+            n_annotations=0
+        ).order_by('-server_upload_time')
 
         if type == 'adult':
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(

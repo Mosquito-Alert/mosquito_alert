@@ -40,7 +40,7 @@ from timezone_field import TimeZoneField
 from taggit.managers import TaggableManager
 from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
-from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories
+from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, IdentificationTask, Complex
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
@@ -48,7 +48,6 @@ from .fields import ProcessedImageField
 from .managers import ReportManager, PhotoManager, NotificationManager, DeviceManager, EuropeCountryManager
 from .messaging import send_new_award_notification
 from .mixins import TimeZoneModelMixin
-from .managers import ReportManager, EuropeCountryManager
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 logger_notification = logging.getLogger('mosquitoalert.notification')
@@ -1264,7 +1263,9 @@ class Report(TimeZoneModelMixin, models.Model):
     def is_expert_validated(self) -> bool:
         if not self.type == Report.TYPE_ADULT:
             return False
-        return Report.objects.with_finished_validation().filter(pk=self.pk).exists()
+
+        identification_task = getattr(self, "identification_task", None)
+        return identification_task.is_done if identification_task else False
 
     @property
     def response_html(self) -> str:
@@ -1999,10 +2000,25 @@ class Report(TimeZoneModelMixin, models.Model):
 
         self.user.update_score()
 
+        if self.hide:
+            _identification_task = getattr(self, "identification_task", None)
+            if _identification_task:
+                _identification_task.status = IdentificationTask.Status.ARCHIVED
+                _identification_task.save()
+
+        if self.type != self.TYPE_ADULT or self.flipped_to != self.TYPE_ADULT:
+            # Case flipped.
+            IdentificationTask.objects.filter(report=self).delete()
+
     def soft_delete(self):
         self.deleted_at = timezone.now()
         self.version_number = -1
         self.save_without_historical_record()
+
+        _identification_task = getattr(self, "identification_task", None)
+        if _identification_task:
+            _identification_task.status = IdentificationTask.Status.ARCHIVED
+            _identification_task.save()
 
     def restore(self):
         self.deleted_at = None
@@ -2087,7 +2103,7 @@ class Report(TimeZoneModelMixin, models.Model):
             return True
         else:
             if self.cached_visible is None:
-                return (not self.photos.all().exists()) or (self.is_expert_validated and self.get_final_expert_status() == 1)
+                return (not self.photos.all().exists()) or (self.is_expert_validated and self.get_final_expert_status() == ExpertReportAnnotation.STATUS_PUBLIC)
             else:
                 return self.cached_visible == 1
 
@@ -2270,30 +2286,6 @@ class Report(TimeZoneModelMixin, models.Model):
                 else:
                     return get_translated_species_name(locale,untranslated_category)
 
-    def get_most_voted_category(self, expert_annotations):
-        most_frequent_item, most_frequent_count = None, 0
-        n_blanks = 0
-        blank_category = None
-        score_table = {}
-        for anno in expert_annotations:
-            item = anno.category if anno.complex is None else anno.complex
-            if item.__class__.__name__ == 'Categories' and item.id == 9:
-                blank_category = item
-                n_blanks += 1
-                pass
-            else:
-                score_table[item] = score_table.get(item,0) + 1
-                if score_table[item] >= most_frequent_count:
-                    most_frequent_count, most_frequent_item = score_table[item], item
-        if n_blanks == len(expert_annotations):
-            return blank_category
-        else:
-            for key in score_table:
-                score = score_table[key]
-                if key != most_frequent_item and score >= most_frequent_count:
-                    return None  # conflict
-        return most_frequent_item
-
     def get_score_for_category_or_complex(self, category):
         superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category=category)
         expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True, category=category)
@@ -2314,53 +2306,25 @@ class Report(TimeZoneModelMixin, models.Model):
             return 1
         #return mean_score
 
-    def get_html_color_for_label(self):
-        label = self.get_final_combined_expert_category_euro()
-        return html_utils.get_html_color_for_label(label)
+    def get_html_color_for_label(self) -> str:
+        identification_task = getattr(self, "identification_task", None)
 
-    # if superexpert has opinion then
-    #   if more than 1 superexpert has opinion then
-    #       consensuate superexpert opinion
-    #       return consensuate opinion
-    #   else just one expert has opinion then
-    #       return superexpert opinion
-    # else, check if more than 3 experts said something then
-    #   if at least 3 experts have opinion then
-    #       consensuate expert opinion
-    #       return consensuate opinion
-    #   else not yet validated
-    #       return not yet validated
-    # else no one has opinion then
-    #   return not yet validated
-    def get_final_combined_expert_category_euro(self):
-        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True,revise=True, category__isnull=False)
-        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, category__isnull=False)
-        most_voted = None
-        if superexpert_annotations.count() > 1:
-            most_voted = self.get_most_voted_category(superexpert_annotations)
-        elif superexpert_annotations.count() == 1:
-            if superexpert_annotations[0].category.id == 8:
-                most_voted = superexpert_annotations[0].complex
-            else:
-                most_voted = superexpert_annotations[0].category
-        elif expert_annotations.count() >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
-            most_voted = self.get_most_voted_category(expert_annotations)
-        else:
-            return "Unclassified"
-        if most_voted is None:
-            return "Conflict"
-        else:
-            if most_voted.__class__.__name__ == 'Categories':
-                if most_voted.specify_certainty_level == True:
-                    score = self.get_score_for_category_or_complex(most_voted)
-                    if score == 2:
-                        return "Definitely " + most_voted.name
-                    else:
-                        return "Probably " + most_voted.name
-                else:
-                    return most_voted.name
-            elif most_voted.__class__.__name__ == 'Complex':
-                return most_voted.description
+        if not identification_task:
+            return "black"
+        if identification_task.status == IdentificationTask.Status.CONFLICT:
+            return "#00FFFF; border:1px solid #000; color:black"
+        return html_utils.get_html_color_for_label(
+            taxon=identification_task.taxon,
+            confidence=identification_task.confidence
+        )
+
+    def get_final_combined_expert_category_euro(self) -> Optional[str]:
+        identification_task = getattr(self, "identification_task", None)
+        if not identification_task:
+            return None
+
+        taxon_name = identification_task.taxon.name if identification_task.taxon else None
+        return "{} ({})".format(taxon_name, identification_task.confidence_label)
 
     # This is just a formatter of get_final_combined_expert_category_euro_struct. Takes the exact same output and makes it
     # template friendly, also adds explicit ids for category and complex
@@ -2390,8 +2354,6 @@ class Report(TimeZoneModelMixin, models.Model):
         return json.dumps(retval)
 
     def get_final_combined_expert_category_euro_struct(self):
-        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category__isnull=False)
-        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, category__isnull=False)
         retval = {
             'category' : None,
             'complex': None,
@@ -2399,38 +2361,20 @@ class Report(TimeZoneModelMixin, models.Model):
             'conflict': False,
             'in_progress': False
         }
-        most_voted = None
-        if superexpert_annotations.count() > 1:
-            most_voted = self.get_most_voted_category(superexpert_annotations)
-        elif superexpert_annotations.count() == 1:
-            if superexpert_annotations[0].category.id == 8:
-                most_voted = superexpert_annotations[0].complex
-            else:
-                most_voted = superexpert_annotations[0].category
-        elif expert_annotations.count() >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
-            most_voted = self.get_most_voted_category(expert_annotations)
-        else:
-            try:
-                most_voted = Categories.objects.get(name='Unclassified')
-                retval['in_progress'] = True
-            except Categories.DoesNotExist:
-                pass
+        identification_task = getattr(self, "identification_task", None)
+        if not identification_task:
+            return retval
 
-        if most_voted is None:
-            retval['conflict'] = True
-        else:
-            if most_voted.__class__.__name__ == 'Categories':
-                retval['category'] = most_voted
-                if most_voted.specify_certainty_level == True:
-                    score = self.get_score_for_category_or_complex(most_voted)
-                    retval['value'] = score
-            elif most_voted.__class__.__name__ == 'Complex':
-                retval['complex'] = most_voted
-                try:
-                    retval['category'] = Categories.objects.get(pk=8)
-                except Categories.DoesNotExist:
-                    pass
-        return retval
+        not_sure_category = Categories.objects.filter(pk=9).first()  # Category "Not sure"
+        content_object = identification_task.taxon.content_object if identification_task.taxon else not_sure_category
+
+        return {
+            'category' : content_object if isinstance(content_object, Categories) else None,
+            'complex': content_object if isinstance(content_object, Complex) else None,
+            'value': identification_task.validation_value,
+            'conflict': identification_task.status == IdentificationTask.Status.CONFLICT,
+            'in_progress': identification_task.status == IdentificationTask.Status.OPEN
+        }
 
     def get_mean_combined_expert_adult_score(self):
         status = self.get_mean_expert_adult_classification_data()
@@ -2617,20 +2561,18 @@ class Report(TimeZoneModelMixin, models.Model):
         else:
             return -3
 
-    def get_final_expert_status(self):
-        finished_annotations = self.expert_report_annotations.filter(validation_complete=True)
+    def get_final_expert_status(self) -> int:
+        identification_task = getattr(self, "identification_task", None)
 
-        super_expert_annotations = finished_annotations.filter(user__groups__name='superexpert', revise=True)
-        super_expert_status = super_expert_annotations.aggregate(min_status=models.Min('status'))
+        if not identification_task:
+            return ExpertReportAnnotation.STATUS_PUBLIC
 
-        if super_expert_status['min_status'] is not None:
-            return super_expert_status['min_status']
+        if identification_task.status == IdentificationTask.Status.FLAGGED:
+            return ExpertReportAnnotation.STATUS_FLAGGED
+        elif identification_task.is_done:
+            return ExpertReportAnnotation.STATUS_PUBLIC if identification_task.is_safe else ExpertReportAnnotation.STATUS_HIDDEN
 
-        expert_status = finished_annotations.filter(user__groups__name='expert').aggregate(min_status=models.Min('status'))
-        if expert_status['min_status'] is not None:
-            return expert_status['min_status']
-
-        return 1
+        return ExpertReportAnnotation.STATUS_PUBLIC
 
     def get_final_expert_status_text(self):
         return dict(ExpertReportAnnotation.STATUS_CATEGORIES)[self.get_final_expert_status()]
@@ -2706,15 +2648,6 @@ class Report(TimeZoneModelMixin, models.Model):
                 result.append(ano.user.username)
         return '+'.join(result)
 
-    def get_expert_recipients_names(self):
-        result = []
-
-        for ano in self.expert_report_annotations.exclude(user__groups__name='superexpert').select_related("user"):
-            result.append(
-                ano.user.get_full_name() or ano.user.username
-            )
-        return '+'.join(result)
-
     def get_who_has_bootstrap(self):
         result = []
         for ano in self.expert_report_annotations.all().select_related("user"):
@@ -2724,82 +2657,25 @@ class Report(TimeZoneModelMixin, models.Model):
         return ' '.join(result)
 
     def get_final_photo_url_for_notification(self):
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
-            super_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, best_photo__isnull=False).values_list('best_photo', flat=True)
-            if super_photos:
-                winning_photo_id = Counter(super_photos).most_common()[0][0]
-                if winning_photo_id:
-                    winning_photo = Photo.objects.filter(pk=winning_photo_id)
-                    if winning_photo and winning_photo.count() > 0:
-                        return Photo.objects.get(pk=winning_photo_id).get_medium_url()
-            return None
-        else:
-            expert_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, best_photo__isnull=False).values_list('best_photo', flat=True)
-            if expert_photos:
-                winning_photo_id = Counter(expert_photos).most_common()[0][0]
-                if winning_photo_id:
-                    winning_photo = Photo.objects.filter(pk=winning_photo_id)
-                    if winning_photo and winning_photo.count() > 0:
-                        return Photo.objects.get(pk=winning_photo_id).get_medium_url()
-            else:
-                if self.get_first_visible_photo() is not None:
-                    return self.get_first_visible_photo().get_medium_url()
-            return None
+        identification_task = getattr(self, "identification_task", None)
+        photo = None
+        if identification_task:
+            photo = identification_task.photo
+        elif self.n_visible_photos > 0:
+            photo = self.get_first_visible_photo()
+
+        return photo.get_medium_url() if photo else None
 
     def get_first_visible_photo(self):
         return self.visible_photos.first()
 
     def get_final_photo_html(self):
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
-            super_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True, best_photo__isnull=False).values_list('best_photo', flat=True)
-            if super_photos.count() > 0:
-                winning_photo_id = Counter(super_photos).most_common()[0][0]
-                if winning_photo_id:
-                    winning_photo = Photo.objects.filter(pk=winning_photo_id)
-                    if winning_photo and winning_photo.count() > 0:
-                        return Photo.objects.get(pk=winning_photo_id)
-            else:
-                expert_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True,best_photo__isnull=False).values_list('best_photo', flat=True)
-                if expert_photos.count() > 0:
-                    winning_photo_id = Counter(expert_photos).most_common()[0][0]
-                    if winning_photo_id:
-                        winning_photo = Photo.objects.filter(pk=winning_photo_id)
-                        if winning_photo and winning_photo.count() > 0:
-                            return Photo.objects.get(pk=winning_photo_id)
-                else:
-                    photos = self.visible_photos.order_by('-id')
-                    if photos and len(photos) > 0:
-                        return photos[0]
-            return None
-        else:
-            expert_photos = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True, best_photo__isnull=False).values_list('best_photo', flat=True)
-            if expert_photos.count() > 0:
-                winning_photo_id = Counter(expert_photos).most_common()[0][0]
-                if winning_photo_id:
-                    winning_photo = Photo.objects.filter(pk=winning_photo_id)
-                    if winning_photo and winning_photo.count() > 0:
-                        return Photo.objects.get(pk=winning_photo_id)
-            else:
-                photos = self.visible_photos.order_by('-id')
-                if photos and len(photos) > 0:
-                    return photos[0]
-            return None
+        identification_task = getattr(self, "identification_task", None)
+        return identification_task.photo if identification_task else None
 
     def get_final_public_note(self):
-        if ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exists():
-            super_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(edited_user_notes='').values_list('edited_user_notes', flat=True)
-            if super_notes:
-                winning_note = Counter(super_notes).most_common()[0][0]
-                if winning_note:
-                    return winning_note
-            return None
-        else:
-            expert_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(edited_user_notes='').values_list('edited_user_notes', flat=True)
-            if expert_notes:
-                winning_note = Counter(expert_notes).most_common()[0][0]
-                if winning_note:
-                    return winning_note
-            return None
+        identification_task = getattr(self, "identification_task", None)
+        return identification_task.public_note if identification_task else None
 
     def get_final_note_to_user_html(self):
         notes = None
@@ -3169,6 +3045,15 @@ class Photo(models.Model):
     user = property(get_user)
     date = property(get_date)
 
+    def save(self, *args, **kwargs):
+
+        _is_adding = self._state.adding
+
+        super().save(*args, **kwargs)
+
+        if _is_adding and self.report.type == Report.TYPE_ADULT:
+            if not IdentificationTask.objects.filter(report=self.report).exists():
+                IdentificationTask.create_for_report(report=self.report)
 
 class Fix(TimeZoneModelMixin, models.Model):
     """

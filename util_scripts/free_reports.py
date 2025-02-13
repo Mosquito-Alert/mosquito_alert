@@ -12,22 +12,13 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
-from tigaserver_app.models import Report, ExpertReportAnnotation
-from django.db.models import Count
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation
 
-
-def free_report(report):
-    ExpertReportAnnotation.objects.filter(report=report).delete()
 
 def free_reports(number=10):
-    reports = Report.objects.queueable().with_finished_validation(state=False).filter(type='adult').order_by('-server_upload_time')
-    i = 0
-    for r in reports:
-        free_report(r)
-        print("Freeing report {0}, created on {1}".format(r.pk, r.creation_time))
-        i +=1
-        if i >= number:
-            print("Reached limit")
-            break
+    for task in IdentificationTask.objects.ongoing().order_by('-created_at')[:number]:
+        print("Freeing report {0} created on {1}".format(task.report_id, task.created_at.pk))
+        for annotation in ExpertReportAnnotation.objects.filter(identification_task=task):
+            annotation.delete()
 
 free_reports()
