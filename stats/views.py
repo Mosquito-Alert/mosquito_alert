@@ -155,10 +155,11 @@ def workload_available_reports(request):
             user_ids_arr = user_ids_string_to_int_array(user_ids_str)
             if len(user_ids_arr) > 0:
                 user_id_filter = user_ids_arr
-        current_pending = Report.objects.queued().unassigned()
-        current_progress = Report.objects.in_progress()
+        current_pending = IdentificationTask.objects.annotating()
+        current_progress = IdentificationTask.objects.ongoing()
 
-        overall_pending = ExpertReportAnnotation.objects.filter(user__id__in=user_id_filter).filter(validation_complete=False)
+        overall_pending = IdentificationTask.objects.annotating().filter(assignee__pk__in=user_id_filter)
+
         data = { 'current_pending_n' : current_pending.count(), 'current_progress_n' : current_progress.count(), 'overall_pending': overall_pending.count()}
         return Response(data)
 
@@ -768,29 +769,39 @@ def global_assignments(request):
     if not (is_national_supervisor or is_super_expert):
         return HttpResponse("You need to be logged in as superexpert or be a national supervisor to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
-    report_qs = Report.objects
+    task_qs = IdentificationTask.objects
     if is_national_supervisor:
         # Only allow stats from its country
-        report_qs = report_qs.filter(country=this_user.userstat.national_supervisor_of)
+        task_qs = task_qs.filter(report__country=this_user.userstat.national_supervisor_of)
 
-    n_unassigned = report_qs.queued().unassigned().in_supervisor_exclusivity_period(state=False).values('country').annotate(
-        total_count=Count(1)
+    n_unassigned = task_qs.new().in_exclusivity_period(False).annotate(
+        country=models.F('report__country')
+    ).values('country').annotate(
+        total_count=models.Count(1)
     ).values('country','total_count')
 
-    n_in_exclusivity_period = report_qs.queued().in_supervisor_exclusivity_period(state=True).values('country').annotate(
-        total_count=Count(1)
+    n_in_exclusivity_period = task_qs.in_exclusivity_period().annotate(
+        country=models.F('report__country')
+    ).values('country').annotate(
+        total_count=models.Count(1)
     ).values('country','total_count')
 
-    n_progress = report_qs.in_progress().values('country').annotate(
-        total_count=Count(1)
+    n_progress = task_qs.ongoing().annotate(
+        country=models.F('report__country')
+    ).values('country').annotate(
+        total_count=models.Count(1)
     ).values('country','total_count')
 
-    n_pending = report_qs.with_pending_validation_to_finish().values('country').annotate(
-        total_count=Count(1)
+    n_pending = task_qs.annotating().annotate(
+        country=models.F('report__country')
+    ).values('country').annotate(
+        total_count=models.Count(1)
     ).values('country','total_count')
 
-    n_blocked = report_qs.with_blocked_validations().values('country').annotate(
-        total_count=Count(1)
+    n_blocked = task_qs.blocked().annotate(
+        country=models.F('report__country')
+    ).values('country').annotate(
+        total_count=models.Count(1)
     ).values('country','total_count')
 
     # Create a dictionary to store merged data
@@ -846,32 +857,35 @@ def global_assignments_list(request, country_code=None, status=None):
         country = get_object_or_404(EuropeCountry, iso3_code=country_code)
         countryName = country.name_engl
 
-    qs = Report.objects.filter(country=country)
+    qs = IdentificationTask.objects.filter(report__country=country)
 
     if status == 'pending':
-        qs = qs.with_pending_validation_to_finish()
+        qs = qs.annotating()
         title = 'Pending'
     elif status == 'unassigned':
-        qs = qs.queued().unassigned()
+        qs = qs.new().in_exclusivity_period(False)
         title = 'Unassigned'
     elif status == 'progress':
-        qs = qs.in_progress()
+        qs = qs.ongoing()
         title = 'In progress'
     elif status == 'reserved':
-        qs = qs.queued().in_supervisor_exclusivity_period(state=True)
+        qs = qs.in_exclusivity_period()
         title = 'Reserved for national supervisors'
     else:
         return HttpResponse('status not found.')
 
     result = []
-    for obj in qs.order_by('-server_upload_time').prefetch_related('expert_report_annotations').iterator():
-        names = obj.get_expert_recipients_names()
+    for obj in qs.order_by('-created_at').prefetch_related('expert_report_annotations').iterator():
+        names = []
+        for annotation in obj.expert_report_annotations.all():
+            names.append(
+                annotation.user.get_full_name() or annotation.user.username
+            )
 
-        expNames = names.split("+")
-        expNamesJoined = ' / '.join(expNames)
+        expNamesJoined = ' / '.join(names)
         result.append(
             {
-                'idReports': obj.pk,
+                'idReports': obj.report_id,
                 'experts': expNamesJoined,
             }
         )

@@ -90,9 +90,9 @@
                     </div>
                     <div class="panel-body">
                         <ul class="list-group">
-                        {% for annotation in key.1 %}
+                        {% for obj in key.1 %}
                             <li class="list-group-item">
-                                <button class="btn btn-info delete-report" title="Unblock this single report" data-report-id="{{ annotation.annotation.report.version_UUID }}" data-user="{{ key.0 }}" type="button"><span class="glyphicon glyphicon-remove"></span></button> <b>Report</b> <a target="_blank" href="/experts/status/reports/?version_uuid={{ annotation.annotation.report.version_UUID }}"><span class="label label-default">{{ annotation.annotation.report.version_UUID }}</span></a> <b>Days</b> <span class="label label-default">{{ annotation.days }}</span>
+                                <button class="btn btn-info delete-report" title="Unblock this single report" data-report-id="{{ obj.report_uuid }}" data-user="{{ key.0 }}" type="button"><span class="glyphicon glyphicon-remove"></span></button> <b>Report</b> <a target="_blank" href="/experts/status/reports/?version_uuid={{ obj.report_uuid }}"><span class="label label-default">{{ obj.report_uuid }}</span></a> <b>Days</b> <span class="label label-default">{{ obj.days }}</span>
                             </li>
                         {% endfor %}
                         </ul>

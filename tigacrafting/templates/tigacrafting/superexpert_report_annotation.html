@@ -130,12 +130,12 @@
 
 {% block report_title_status_row %}
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <a role="button" data-toggle="collapse" href="#current_status_collapse{{ form.instance.id }}"
                aria-expanded="false" aria-controls="current_status_collapse{{ form.instance.id }}"><i class="fa fa-plus-square-o"></i></a>
             {{ form.instance.report.get_final_expert_status_bootstrap | safe }}
             <!-- %EURO_SWITCH% -->
-            <strong>Current Status:</strong> {% include "tigacrafting/score_label_euro.html" with text=form.instance.report.get_final_combined_expert_category_euro color=form.instance.report.get_html_color_for_label %}
+            <strong>Current Identification:</strong> {% include "tigacrafting/score_label_euro.html" with text=form.instance.report.get_final_combined_expert_category_euro color=form.instance.report.get_html_color_for_label %}
 
             <div class="collapse" id="current_status_collapse{{ form.instance.id }}">
                 <div class="well">
@@ -174,7 +174,10 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
+            <strong>Status </strong> {{ form.instance.identification_task.get_status_display | upper }}
+        </div>
+        <div class="col-md-4">
             <strong>Tags </strong> {{ form.instance.report.get_tags_bootstrap_superexpert | safe }}
         </div>
     </div>
