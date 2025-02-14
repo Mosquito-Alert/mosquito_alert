@@ -11,7 +11,8 @@ from tigacrafting.views import must_be_autoflagged
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
-from django.db.models import Count, Q
+from django.db import IntegrityError
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 from operator import attrgetter
 from tigacrafting.messaging import send_finished_validation_notification
