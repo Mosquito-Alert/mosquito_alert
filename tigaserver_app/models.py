@@ -45,7 +45,7 @@ import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
 from .fields import ProcessedImageField
-from .managers import ReportManager, PhotoManager, NotificationManager, DeviceManager
+from .managers import ReportManager, PhotoManager, NotificationManager, DeviceManager, EuropeCountryManager
 from .messaging import send_new_award_notification
 from .mixins import TimeZoneModelMixin
 
@@ -675,6 +675,8 @@ class EuropeCountry(models.Model):
 
     pending_crisis_reports = models.IntegerField(blank=True, null=True, help_text='Number of reports in country assignable to non-supervisors')
     last_crisis_report_n_update = models.DateTimeField(help_text="Last time count was updated", null=True, blank=True)
+
+    objects = EuropeCountryManager()
 
     class Meta:
         managed = True
