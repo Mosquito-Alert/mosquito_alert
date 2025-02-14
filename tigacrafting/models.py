@@ -284,7 +284,36 @@ class ExpertReportAnnotation(models.Model):
             }
         )
         obj.create_replicas()
-        obj.create_super_expert_approval()
+        cls.create_super_expert_approval(report=report)
+
+    @classmethod
+    def create_super_expert_approval(cls, report: 'tigaserver_app.models.Report'):
+        from tigaserver_app.models import Report
+
+        if report.type == Report.TYPE_ADULT:
+            ExpertReportAnnotation.objects.update_or_create(
+                user=User.objects.get(pk=25),  # "super_reritja"
+                report=report,
+                defaults={
+                    'status': 1,  # public
+                    'simplified_annotation': False,
+                    'revise': False,
+                    'validation_complete': True,
+                }
+            )
+        elif report.type == Report.TYPE_SITE:
+            ExpertReportAnnotation.objects.update_or_create(
+                user=User.objects.get(pk=24),  # "super_movelab"
+                report=report,
+                defaults={
+                    'best_photo': report.photos.first(),
+                    'site_certainty_notes': 'auto',
+                    'status': 1,  # public
+                    'simplified_annotation': False,
+                    'revise': True,
+                    'validation_complete': True,
+                }
+            )
 
     def create_replicas(self):
         username_replicas = ["innie", "minnie", "manny"]
@@ -317,18 +346,6 @@ class ExpertReportAnnotation(models.Model):
                     'revise': False
                 }
             )
-
-    def create_super_expert_approval(self):
-        ExpertReportAnnotation.objects.update_or_create(
-            user=User.objects.get(username="super_reritja"),
-            report=self.report,
-            defaults={
-                'status': 1,  # public
-                'simplified_annotation': False,
-                'revise': False,
-                'validation_complete': True,
-            }
-        )
 
     # def get_photo_html_for_report_validation_wblood(self):
     #     #these_photos = Photo.objects.filter(report=self.report).visible()
@@ -547,7 +564,7 @@ class ExpertReportAnnotation(models.Model):
 
         if self.validation_complete and self.validation_complete_executive:
             self.create_replicas()
-            self.create_super_expert_approval()
+            self.create_super_expert_approval(report=self.report)
 
     def delete(self, *args, **kwargs):
         if self.validation_complete_executive:
@@ -557,7 +574,7 @@ class ExpertReportAnnotation(models.Model):
                 validation_complete_executive=False
             ).filter(
                 models.Q(user__username__in=["innie", "minnie"]) 
-                | models.Q(user__username="super_reritja", revise=False)
+                | models.Q(user__pk=25, revise=False)   # pk 25 = "super_reritja"
             ).delete()
 
         return super().delete(*args, **kwargs)

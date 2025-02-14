@@ -2262,13 +2262,7 @@ def quick_upload_report(request):
             return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
         super_movelab = User.objects.get(pk=24)
         if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
-            new_annotation = ExpertReportAnnotation(report=report, user=super_movelab)
-            photo = report.photos.first()
-            new_annotation.site_certainty_notes = 'auto'
-            new_annotation.best_photo_id = photo.id
-            new_annotation.validation_complete = True
-            new_annotation.revise = True
-            new_annotation.save()
+            ExpertReportAnnotation.create_super_expert_approval(report=report)
             return Response(data={'message': 'success', 'opcode': 0}, status=status.HTTP_200_OK)
         else:
             return Response(data={'message': 'success', 'opcode': 1}, status=status.HTTP_200_OK)
