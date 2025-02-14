@@ -1,13 +1,18 @@
 # Create your tests here.
+from abc import ABC, abstractmethod
+import pytest
+from unittest.mock import PropertyMock, patch
+
 from django.test import TestCase
 from django.utils.translation import activate, deactivate, gettext as _
 from tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
-from tigacrafting.models import UserStat, ExpertReportAnnotation, Categories, Complex
+from tigacrafting.models import UserStat, ExpertReportAnnotation, Categories, Complex, OtherSpecies, Taxon
 from tigacrafting.views import must_be_autoflagged
 from django.contrib.auth.models import User, Group
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.db.models import Count, Q
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 from operator import attrgetter
 from tigacrafting.messaging import send_finished_validation_notification
 import tigaserver_project.settings as conf
@@ -1264,3 +1269,192 @@ class NewReportAssignment(TestCase):
         n_european = generic_assignments.exclude(report__country__gid=17).exclude(report__country__isnull=True).count()
         self.assertTrue(n_european == 1,"Expert should be 1 european report, has been assigned {0}".format(n_european))
         # print( generic_assignments.exclude(report__country__gid=17).exclude(report__country__isnull=True).first().report.country.name_engl )
+
+@pytest.mark.django_db
+class BaseTestTaxonRelationModel(ABC):
+    model = None  # This must be defined in subclasses
+
+    @classmethod
+    @abstractmethod
+    def create_obj(cls):
+        raise NotImplementedError
+
+    # fields
+    def test_taxa_should_return_None_if_no_taxon_linked(self):
+        obj = self.create_obj()
+        assert obj.taxa.first() is None
+
+    def test_taxa_should_return_taxon_if_linked(self, taxon_root):
+        obj = self.create_obj()
+        obj.taxa.set([taxon_root,])
+
+        assert obj.taxa.first() == taxon_root
+        assert taxon_root.content_object == obj
+
+
+class TestCategoriesModel(BaseTestTaxonRelationModel):
+    model = Categories
+
+    @classmethod
+    def create_obj(self):
+        return Categories.objects.create(
+            name='test'
+        )
+
+class TestComplexModel(BaseTestTaxonRelationModel):
+    model = Complex
+
+    @classmethod
+    def create_obj(self):
+        return Complex.objects.create(
+            description='test'
+        )
+
+class TestOtherSpeciesModel(BaseTestTaxonRelationModel):
+    model = OtherSpecies
+
+    @classmethod
+    def create_obj(self):
+        return OtherSpecies.objects.create(
+            name='test'
+        )
+
+@pytest.mark.django_db
+class TestTaxonModel:
+
+    # classmethods
+    def test_get_root_return_root_node(self, taxon_root):
+        assert Taxon.get_root() == taxon_root
+
+    def test_get_root_return_None_if_root_node_does_not_exist(self):
+        Taxon.objects.all().delete()
+
+        assert Taxon.get_root() is None
+
+    # fields
+    def test_rank_can_not_be_null(self):
+        assert not Taxon._meta.get_field("rank").null
+
+    def test_rank_can_not_be_blank(self):
+        assert not Taxon._meta.get_field("rank").blank
+
+    def test_name_can_not_be_null(self):
+        assert not Taxon._meta.get_field("name").null
+
+    def test_name_can_not_be_blank(self):
+        assert not Taxon._meta.get_field("name").blank
+
+    def test_name_max_length_is_32(self):
+        assert Taxon._meta.get_field("name").max_length == 32
+
+    def test_common_name_can_be_null(self):
+        assert Taxon._meta.get_field("common_name").null
+
+    def test_common_name_can_not_be_blank(self):
+        assert Taxon._meta.get_field("common_name").blank
+
+    def test_common_name_max_length_is_64(self):
+        assert Taxon._meta.get_field("common_name").max_length == 64
+
+    # properties
+    def test_node_order_by_name(self):
+        assert Taxon.node_order_by == ["name"]
+
+    def test_is_specie_must_be_true_for_taxon_with_rank_species_complex_or_higher(self):
+        obj = Taxon(
+            rank=Taxon.TaxonomicRank.SPECIES_COMPLEX
+        )
+
+        assert obj.is_specie
+
+        obj.rank = Taxon.TaxonomicRank.SPECIES_COMPLEX.value - 1
+
+        assert not obj.is_specie
+
+    # methods
+    @pytest.mark.parametrize(
+        "name, expected_result, is_specie",
+        [
+            ("dumMy StrangE nAme", "Dummy strange name", True),
+            ("dumMy StrangE nAme", "dumMy StrangE nAme", False),
+        ],
+    )
+    def test_name_is_capitalized_on_save_only_for_species(self, name, expected_result, is_specie, taxon_root):
+        with patch(
+            f"{Taxon.__module__}.{Taxon.__name__}.is_specie", new_callable=PropertyMock
+        ) as mocked_is_specie:
+            mocked_is_specie.return_value = is_specie
+            obj = taxon_root.add_child(name=name, rank=taxon_root.rank + 1)
+
+            assert obj.name == expected_result
+
+    def test_tree_is_ordered_by_name_on_parent_change(self, taxon_root):
+        z_child = taxon_root.add_child(name="z", rank=Taxon.TaxonomicRank.GENUS)
+        b_child = z_child.add_child(name="b", rank=Taxon.TaxonomicRank.SPECIES)
+        a_child = taxon_root.add_child(name="a", rank=Taxon.TaxonomicRank.SPECIES)
+        # NOTE: Need to refresh since last move changes the object.
+        # See: https://django-treebeard.readthedocs.io/en/latest/caveats.html#raw-queries
+        z_child.refresh_from_db()
+
+        assert frozenset(Taxon.objects.all()) == frozenset([taxon_root, a_child, z_child, b_child])
+
+        # Change parent
+        a_child.move(z_child)
+
+        assert frozenset(Taxon.objects.all()) == frozenset([taxon_root, z_child, a_child, b_child])
+
+    def test_raise_when_rank_higher_than_parent_rank(self, taxon_root):
+        taxon_specie = taxon_root.add_child(
+            name='specie',
+            rank=Taxon.TaxonomicRank.SPECIES
+        )
+        with pytest.raises(ValidationError):
+            taxon_specie.add_child(
+                rank=Taxon.TaxonomicRank.CLASS,
+                name='class'
+            )
+
+    # meta
+    def test_unique_name_rank_constraint(self, taxon_root):
+        taxon_root.add_child(
+            name="Same Name",
+            rank=Taxon.TaxonomicRank.SPECIES,
+        )
+
+        with pytest.raises(IntegrityError):
+            # Create duplicate children name
+            taxon_root.add_child(
+                name="Same Name",
+                rank=Taxon.TaxonomicRank.SPECIES,
+            )
+
+    def test_unique_root_constraint(self, taxon_root):
+        with pytest.raises(IntegrityError):
+            Taxon.add_root(name="", rank=taxon_root.rank)
+
+    def test_unique_content_type_object_id_constraint(self, taxon_root):
+        content_type = ContentType.objects.first()
+        object_id = 1
+
+        taxon = taxon_root.add_child(
+            name="Same Name",
+            rank=Taxon.TaxonomicRank.SPECIES,
+            content_type=content_type,
+            object_id=object_id
+        )
+        with pytest.raises(IntegrityError):
+            taxon_root.add_child(
+            name=taxon.name + " test",
+            rank=Taxon.TaxonomicRank.SPECIES,
+            content_type=content_type,
+            object_id=object_id
+        )
+
+    def test__str__(self, taxon_root):
+        taxon = taxon_root.add_child(
+            name="Aedes Albopictus",
+            rank=Taxon.TaxonomicRank.SPECIES
+        )
+
+        expected_result = "Aedes albopictus [Species]"
+        assert taxon.__str__() == expected_result
