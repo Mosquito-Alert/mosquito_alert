@@ -12,6 +12,7 @@ from tigacrafting.views import must_be_autoflagged
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
+from django.db import IntegrityError
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from tigacrafting.messaging import send_finished_validation_notification
@@ -283,11 +284,14 @@ class NewReportAssignment(TestCase):
                 type='adult',
             )
             r.save()
+
+            #queryset update - trick to override the auto_now_add in server upload time. If this is not done, it defaults to current timestamp
+            Report.objects.filter(pk=r.pk).update(server_upload_time=two_weeks_ago)
+            r.refresh_from_db()
+
             p = Photo.objects.create(report=r, photo='./testdata/splash.png')
             p.save()
             a = a + 1
-        #queryset update - trick to override the auto_now_add in server upload time. If this is not done, it defaults to current timestamp
-        Report.objects.all().update(server_upload_time=two_weeks_ago)
 
         a = 1
         while a < 4:
@@ -1024,15 +1028,17 @@ class NewReportAssignment(TestCase):
             type='adult',
         )
         r.save()
+        # queryset update - trick to override the auto_now_add in server upload time. If this is not done, it defaults to current timestamp
+        Report.objects.filter(pk=r.pk).update(server_upload_time=two_weeks_ago)
+
+        r.refresh_from_db()
+
         p = Photo.objects.create(report=r, photo='./testdata/splash.png')
         p.save()
-        # queryset update - trick to override the auto_now_add in server upload time. If this is not done, it defaults to current timestamp
-        Report.objects.all().update(server_upload_time=two_weeks_ago)
 
         #Manually assign report to NS. Has been assigned report but report outdated remained long time in assigned not resolved queue...
         ns_user = User.objects.get(username='expert_5_eu')
-        new_annotation = ExpertReportAnnotation(report=r, user=ns_user)
-        new_annotation.save()
+        r.identification_task.assign_to_user(user=ns_user)
 
         #Now assign reports to Faroes native. Should receive report with uuid 1
         faroes_native_regular_user = User.objects.get(username='expert_9_eu')

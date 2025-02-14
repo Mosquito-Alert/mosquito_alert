@@ -63,7 +63,7 @@ def create_identification_tasks(apps, schema_editor):
                 report=report,
                 photo_id=report.first_photo_pk,
                 created_at=report.server_upload_time,
-                exclusivty_end=report.server_upload_time + timedelta(days=report.exclusivity_days)
+                exclusivity_end=report.server_upload_time + timedelta(days=report.exclusivity_days)
             )
         )
     IdentificationTask.objects.bulk_create(
@@ -96,7 +96,7 @@ class Migration(migrations.Migration):
                 ('public_note', models.TextField(blank=True, editable=False, null=True)),
                 ('total_annotations', models.PositiveSmallIntegerField(default=0, editable=False)),
                 ('total_finished_annotations', models.PositiveSmallIntegerField(default=0, editable=False)),
-                ('exclusivty_end', models.DateTimeField(blank=True, null=True, db_index=True)),
+                ('exclusivity_end', models.DateTimeField(blank=True, null=True, db_index=True)),
                 ('confidence', models.FloatField(default=0.0, editable=False)),
                 ('created_at', models.DateTimeField()),
                 ('updated_at', models.DateTimeField(auto_now=True)),

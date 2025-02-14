@@ -168,18 +168,18 @@ class IdentificationTask(models.Model):
             return None
 
         # If report country has NS assigned.
-        exclusivty_end = None
+        exclusivity_end = None
         if country:= report.country:
             country_has_ns = UserStat.objects.filter(national_supervisor_of=country).exists()
             if country_has_ns:
-                exclusivty_end = report.server_upload_time + timedelta(
+                exclusivity_end = report.server_upload_time + timedelta(
                     days=country.national_supervisor_report_expires_in
                 )
 
         return self.objects.create(
             report=report,
             photo=report.photos.first(),
-            exclusivty_end=exclusivty_end
+            exclusivity_end=exclusivity_end
         )
 
     class Status(models.TextChoices):
@@ -198,6 +198,7 @@ class IdentificationTask(models.Model):
     report = models.OneToOneField('tigaserver_app.Report', primary_key=True, related_name='identification_task', on_delete=models.CASCADE, limit_choices_to={'type': 'adult'})
     photo = models.ForeignKey('tigaserver_app.Photo', related_name='identification_tasks', on_delete=models.CASCADE, editable=False)
 
+    # TODO: remove assignee? allow multiple assignation at once?
     assignee = models.ForeignKey(User, related_name='assigned_identification_tasks', on_delete=models.SET_NULL, null=True, blank=True)
 
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN, db_index=True)
@@ -210,7 +211,7 @@ class IdentificationTask(models.Model):
     total_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # total experts
     total_finished_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # when validation_complete = True (only for experts)
 
-    exclusivty_end = models.DateTimeField(null=True, blank=True, db_index=True)
+    exclusivity_end = models.DateTimeField(null=True, blank=True, db_index=True)
 
     taxon = models.ForeignKey('Taxon', on_delete=models.PROTECT, null=True, blank=True, editable=False)
     confidence = models.FloatField(default=0.0, editable=False)
@@ -242,7 +243,7 @@ class IdentificationTask(models.Model):
 
     @property
     def in_exclusivty_period(self):
-        return self.exclusivty_end and timezone.now() < self.exclusivty_end
+        return self.exclusivity_end and timezone.now() < self.exclusivity_end
 
     @property
     def is_done(self) -> bool:
@@ -901,7 +902,8 @@ class ExpertReportAnnotation(models.Model):
         result = super().delete(*args, **kwargs)
 
         if identification_task:
-            identification_task.assignee = None
+            if identification_task.assignee == self.user:
+                identification_task.assignee = None
             identification_task.refresh()
 
         return result
