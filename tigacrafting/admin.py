@@ -110,7 +110,7 @@ class IdentificationTaskAdmin(admin.ModelAdmin):
     fields = (
         ("report", "photo", "created_at", "updated_at"),
         ("assignee", "status", "is_safe", "is_reviewed"),
-        ("exclusivty_end", "in_exclusivty_period"),
+        ("exclusivity_end", "in_exclusivty_period"),
         ("total_annotations", "total_finished_annotations"),
         ("taxon", "confidence"),
         ("public_note",)

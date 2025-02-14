@@ -35,7 +35,9 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     national_supervisor_of=models.OuterRef('report__country')
                 )
             )
-        ).order_by("-in_supervised_country", "-created_at")
+        #NOTE: ordering by report__server_upload_time instead of the created_at from IdentificationTask.
+        #      To be discussed. Keeping like this for legacy reasons now.
+        ).order_by("-in_supervised_country", "-report__server_upload_time")
 
         # Start pioritization:
         # Summary:
@@ -201,10 +203,22 @@ class IdentificationTaskQuerySet(models.QuerySet):
     # SUPPORTING QUERYSETS
     def in_exclusivity_period(self, state: bool = True) -> QuerySet:
         from .models import IdentificationTask
-        return self.filter(
-            exclusivty_end__gt=timezone.now(),
-            status=IdentificationTask.Status.OPEN,
-        ).supervisor_has_annotated(state=not state)
+
+        qs = self.filter(
+            status=IdentificationTask.Status.OPEN
+        ).annotate(
+            supervisor_has_annotated=models.Exists(
+                IdentificationTask.objects.supervisor_has_annotated().filter(pk=models.OuterRef('pk'))
+            )
+        )
+
+        return qs.filter(
+            models.Q(
+                models.Q(exclusivity_end__gt=timezone.now())
+                & models.Q(supervisor_has_annotated=False),
+                _negated=not state
+            )
+        )
 
     def supervisor_has_annotated(self, state: bool = True) -> QuerySet:
         from .models import ExpertReportAnnotation, UserStat
@@ -257,6 +271,11 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
     def assignable(self) -> QuerySet:
         from .models import IdentificationTask
+
+        return self.filter(
+            status=IdentificationTask.Status.OPEN,
+            total_annotations__lt=settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT
+        )
 
         return self.filter(
             status=IdentificationTask.Status.OPEN,
