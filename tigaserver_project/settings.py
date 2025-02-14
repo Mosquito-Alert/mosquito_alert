@@ -53,6 +53,7 @@ MAX_ALLOWED_LATITUDE = 83
 # )
 
 INSTALLED_APPS = (
+    'modeltranslation', # NOTE: must be before admin
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -83,6 +84,7 @@ INSTALLED_APPS = (
     'imagekit',
     'django_hosts',
     'drf_standardized_errors',
+    'treebeard',
 )
 
 '''
@@ -181,6 +183,9 @@ LANGUAGES = (
     ('tr', _('Turkish')),
     ('zh-cn', _('Chinese')),
 )
+
+# Django modeltranslations
+MODELTRANSLATION_LANGUAGES = ('en', 'es', 'ca')
 
 # generate locale files
 # ./manage.py makemessages -l en

@@ -1,15 +1,19 @@
 from typing import Optional, Literal
 
-from django.db import models
-
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth import get_user_model
 from datetime import datetime, timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from treebeard.mp_tree import MP_Node
+
 import tigacrafting.html_utils as html_utils
 import pytz
 
@@ -688,6 +692,8 @@ class Categories(models.Model):
     name = models.TextField('Name of the classification category', help_text='Usually a species category. Can also be other/special case values')
     specify_certainty_level = models.BooleanField(default=False, help_text='Indicates if for this row a certainty level must be supplied')
 
+    taxa = GenericRelation('tigacrafting.Taxon')
+
     def __str__(self):
         return self.name
 
@@ -695,14 +701,135 @@ class Categories(models.Model):
 class Complex(models.Model):
     description = models.TextField('Name of the complex category', help_text='This table is reserved for species combinations')
 
+    taxa = GenericRelation('tigacrafting.Taxon')
+
+    def __str__(self):
+        return self.description
+
 
 class OtherSpecies(models.Model):
     name = models.TextField('Name of other species', help_text='List of other, not controlled species')
     category = models.TextField('Subcategory of other species', blank=True, help_text='The subcategory of other species, i.e. Other insects, Culicidae')
     ordering = models.IntegerField('Auxiliary help to tweak list ordering', blank=True, null=True)
 
+    taxa = GenericRelation('tigacrafting.Taxon')
+
     def __str__(self):
         return self.name
+
+
+class Taxon(MP_Node):
+    @classmethod
+    def get_root(cls) -> Optional['Taxon']:
+        return cls.get_root_nodes().first()
+
+    class TaxonomicRank(models.IntegerChoices):
+        # DOMAIN = 0, _("Domain")
+        # KINGDOM = 10, _("Kingdom")
+        # PHYLUM = 20, _("Phylum")
+        CLASS = 30, _("Class")
+        # Translators: Comes from TaxonomicRank
+        ORDER = 40, _("Order")
+        FAMILY = 50, _("Family")
+        GENUS = 60, _("Genus")
+        SUBGENUS = 61, _("Subgenus")
+        SPECIES_COMPLEX = 70, _("Species complex")
+        SPECIES = 71, _("Species")
+
+    # Relations
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE, null=True, blank=True,
+        limit_choices_to={
+            'app_label': 'tigacrafting',
+            'model__in': (Categories._meta.model_name, Complex._meta.model_name, OtherSpecies._meta.model_name)
+        }
+    )
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey("content_type", "object_id")
+
+    # Attributes - Mandatory
+    rank = models.PositiveSmallIntegerField(choices=TaxonomicRank.choices)
+    name = models.CharField(max_length=32, unique=True)
+    is_relevant = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Indicates if this taxon is relevant for the application. Will be shown first."
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Attributes - Optional
+    common_name = models.CharField(max_length=64, null=True, blank=True)
+
+    # Object Manager
+    # Custom Properties
+    node_order_by = ['name']
+
+    @property
+    def is_specie(self):
+        return self.rank >= self.TaxonomicRank.SPECIES_COMPLEX
+
+    @property
+    def parent(self):
+        return self.get_parent()
+
+    # Methods
+    def clean_rank_field(self):
+        if not self.parent:
+            return
+
+        if self.rank <= self.parent.rank:
+            raise ValidationError("Child taxon must have a higher rank than their parent.")
+
+    def _clean_custom_fields(self, exclude=None) -> None:
+        if exclude is None:
+            exclude = []
+
+        errors = {}
+        if "rank" not in exclude:
+            try:
+                self.clean_rank_field()
+            except ValidationError as e:
+                errors["rank"] = e.error_list
+
+        if errors:
+            raise ValidationError(errors)
+
+    def clean_fields(self, exclude=None) -> None:
+        super().clean_fields(exclude=exclude)
+        self._clean_custom_fields(exclude=exclude)
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.name = self.name.strip()
+
+        if self.name and self.is_specie:
+            # Capitalize only first letter
+            self.name = self.name.capitalize()
+
+        self._clean_custom_fields()
+
+        super().save(*args, **kwargs)
+
+    # Meta and String
+    class Meta:
+        verbose_name = _("taxon")
+        verbose_name_plural = _("taxa")
+        constraints = [
+            models.UniqueConstraint(fields=["name", "rank"], name="unique_name_rank"),
+            models.UniqueConstraint(fields=["depth"], condition=models.Q(depth=1), name="unique_root"),
+            models.UniqueConstraint(
+                fields=["content_type", "object_id"],
+                condition=models.Q(content_type__isnull=False, object_id__isnull=False),
+                name="unique_content_type_object_id"
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["content_type", "object_id"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.name} [{self.get_rank_display()}]"
 
 
 class FavoritedReports(models.Model):

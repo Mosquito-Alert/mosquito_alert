@@ -1,9 +1,14 @@
 from django.contrib import admin
-from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, UserStat
+from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, UserStat, Taxon
 from tigaserver_app.models import NutsEurope
 import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
+from django.utils.translation import gettext_lazy as _
+
+from treebeard.admin import TreeAdmin
+from treebeard.forms import movenodeform_factory
+from modeltranslation.admin import TranslationAdmin
 
 
 def export_full_csv(modeladmin, request, queryset):
@@ -79,6 +84,20 @@ class UserStatAdmin(admin.ModelAdmin):
             kwargs["queryset"] = NutsEurope.objects.all().order_by('europecountry__name_engl','name_latn')
         return super(UserStatAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
+@admin.register(Taxon)
+class TaxonAdmin(TreeAdmin, TranslationAdmin):
+    search_fields = ("name",)
+    list_display = ("name", "rank", "common_name", 'content_object', 'is_relevant')
+    list_filter = ("rank",)
+
+    # For TreeAdmin
+    form = movenodeform_factory(Taxon)
+
+    fieldsets = [
+        (_("Node position"), {"fields": ("_position", "_ref_node_id")}),
+        (_("Basic information"), {"fields": ("rank", ("name", "is_relevant"), "common_name")}),
+        (_("Old tables relationship"), {"fields": ("content_type", "object_id")})
+    ]
 
 admin.site.register(MoveLabAnnotation, MoveLabAnnotationAdmin)
 admin.site.register(ExpertReportAnnotation, ExpertReportAnnotationAdmin)
