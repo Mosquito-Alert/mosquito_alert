@@ -41,7 +41,7 @@ def get_global_queue_regular_user(this_user):
     current_pending = ExpertReportAnnotation.objects.filter(user=this_user).filter(validation_complete=False).filter(report__type='adult').count()
     my_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__type='adult').values('report').distinct()
 
-    new_reports_unfiltered = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(version_UUID__in=my_reports).exclude(photos__isnull=True).exclude(hide=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=max_given)
+    new_reports_unfiltered = Report.objects.filter(type='adult').exclude(pk__in=my_reports).queueable().with_finished_validation(state=False)
 
     bounding_boxes = EuropeCountry.objects.filter(is_bounding_box=True)
 

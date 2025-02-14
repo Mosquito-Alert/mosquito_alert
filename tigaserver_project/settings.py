@@ -401,8 +401,6 @@ SHOW_USER_AGREEMENT_ENTOLAB = False
 
 SITE_ID = 1
 
-# number of days after a report is considered blocked
-ENTOLAB_LOCK_PERIOD = 14
 
 # FCM Notification settings
 DRY_RUN_PUSH = True
@@ -432,6 +430,15 @@ FCM_DJANGO_SETTINGS = {
 FCM_DJANGO_FCMDEVICE_MODEL = "tigaserver_app.Device"
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
+# Entolab
+MAX_N_OF_PENDING_REPORTS = 5
+MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT = 3
+DEFAULT_EXPIRATION_DAYS = 14
+# number of days after a report is considered blocked
+ENTOLAB_LOCK_PERIOD = 14
+
+ADDITIONAL_EMAIL_RECIPIENTS = []
 
 try:
     from tigaserver_project.settings_local import *

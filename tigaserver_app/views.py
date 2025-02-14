@@ -18,8 +18,7 @@ import json
 from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse, Device
-from tigacrafting.models import FavoritedReports
-from tigacrafting.report_queues import assign_crisis_report
+from tigacrafting.models import FavoritedReports, UserStat
 from tigacrafting.views import auto_annotate
 from math import ceil
 from taggit.models import Tag
@@ -825,12 +824,11 @@ def crisis_report_assign(request, user_id=None, country_id=None):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     if country_id is None:
         return Response(status=status.HTTP_400_BAD_REQUEST)
-    user = get_object_or_404(User.objects.all(), pk=user_id)
+    userstat = get_object_or_404(UserStat.objects.all(), pk=user_id)
     country = get_object_or_404(EuropeCountry.objects.all(), pk=country_id)
-    retval = assign_crisis_report(user, country)
-    user.userstat.last_emergency_mode_grab = country
-    user.userstat.save()
-    return Response(data=retval, status=status.HTTP_200_OK)
+
+    userstat.assign_crisis_report(country=country)
+    return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -1172,13 +1170,12 @@ def token(request):
 @api_view(['GET'])
 @cache_page(60 * 5)
 def report_stats(request):
-    user_id = request.query_params.get('user_id', -1)
-    if user_id == -1:
-        r_count = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).count()
-    else:
-        user_reports = Report.objects.filter(user__user_UUID=user_id).filter(type='adult')
-        r_count = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(version_UUID__in=user_reports).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).count()
-    content = {'report_count' : r_count}
+    user_id = request.query_params.get('user_id', None)
+
+    qs = Report.objects.with_finished_validation()
+    if user_id:
+        qs = qs.filter(user=user_id)
+    content = {'report_count' : qs.count()}
     return Response(content)
 
 
@@ -1601,44 +1598,22 @@ def nearby_reports_no_dwindow(request):
         data = cursor.fetchall()
         flattened_data = [element for tupl in data for element in tupl]
 
-        reports_adult = Report.objects.exclude(cached_visible=0)\
-            .filter(version_UUID__in=flattened_data)\
-            .exclude(creation_time__year=2014)\
-            .exclude(note__icontains="#345")\
-            .exclude(hide=True)\
-            .exclude(photos__isnull=True)\
-            .filter(type='adult')\
-            .annotate(n_annotations=Count('expert_report_annotations'))\
-            .filter(n_annotations__gte=3)
-        if user is not None:
-            reports_adult = reports_adult.exclude(user=user)
-        if show_hidden == 0:
-            reports_adult = reports_adult.non_deleted()
+        reports_qs = Report.objects.browsable().filter(
+            version_UUID__in=flattened_data
+        ).exclude(
+            cached_visible=0
+        )
 
-        reports_bite = Report.objects.exclude(cached_visible=0)\
-            .filter(version_UUID__in=flattened_data)\
-            .exclude(creation_time__year=2014)\
-            .exclude(note__icontains="#345")\
-            .exclude(hide=True) \
-            .filter(type='bite')
         if user is not None:
-            reports_bite = reports_bite.exclude(user=user)
+            reports_qs = reports_qs.exclude(user=user)
         if show_hidden == 0:
-            reports_bite = reports_bite.non_deleted()
+            reports_qs = reports_qs.non_deleted()
 
-        reports_site = Report.objects.exclude(cached_visible=0)\
-            .filter(version_UUID__in=flattened_data)\
-            .exclude(creation_time__year=2014)\
-            .exclude(note__icontains="#345")\
-            .exclude(hide=True) \
-            .filter(type='site')
-        if user is not None:
-            reports_site = reports_site.exclude(user=user)
-        if show_hidden == 0:
-            reports_site = reports_site.non_deleted()
+        reports_adult = reports_qs.filter(type=Report.TYPE_ADULT).with_finished_validation()
+        reports_bite = reports_qs.filter(type=Report.TYPE_BITE)
+        reports_site = reports_qs.filter(type=Report.TYPE_SITE)
 
         classified_reports_in_max_radius = filter(lambda x: x.show_on_map, reports_adult)
-
 
         if user is not None:
             user_reports = Report.objects.filter(user=user)
@@ -1703,16 +1678,13 @@ def nearby_reports_fast(request):
         data = cursor.fetchall()
         flattened_data = [element for tupl in data for element in tupl]
 
-        reports = Report.objects.exclude(cached_visible=0)\
-            .filter(version_UUID__in=flattened_data)\
-            .exclude(creation_time__year=2014)\
-            .exclude(note__icontains="#345")\
-            .exclude(hide=True)\
-            .exclude(photos__isnull=True)\
-            .filter(type='adult')\
-            .annotate(n_annotations=Count('expert_report_annotations'))\
-            .filter(n_annotations__gte=3)\
-            .exclude(creation_time__lte=date_n_days_ago)
+        reports = Report.objects.browsable().with_finished_validation().filter(
+            type=Report.TYPE_ADULT,
+            version_UUID__in=flattened_data,
+        ).exclude(
+            cached_visible=0,
+            server_upload_time__lte=date_n_days_ago
+        )
 
         classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports)
 
@@ -1832,7 +1804,10 @@ def nearby_reports(request):
 
         center_point_4326 = GEOSGeometry('SRID=4326;POINT(' + center_buffer_lon + ' ' + center_buffer_lat + ')')
 
-        all_reports = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
+        all_reports = Report.objects.browsable().with_finished_validation().filter(
+            type=Report.TYPE_ADULT,
+            server_upload_time__gt=date_N_days_ago
+        )
         reports_in_max_radius = all_reports.filter(point__distance_lt=(center_point_4326,Distance(m=MAX_SEARCH_RADIUS)))
         classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,reports_in_max_radius)
         dst = distance_matrix(center_point_4326,classified_reports_in_max_radius)
@@ -1861,71 +1836,59 @@ def nearby_reports(request):
         '''
 
 def send_unblock_email(name, email):
-    lock_period = settings.ENTOLAB_LOCK_PERIOD
-    send_to = copy.copy(settings.ADDITIONAL_EMAIL_RECIPIENTS)
-    send_to.append(email)
+
+    send_to = (settings.ADDITIONAL_EMAIL_RECIPIENTS or []) + [email]
+
     subject = 'MOSQUITO ALERT - blocked report release warning'
     plaintext = get_template('tigaserver_app/report_release/report_release_template')
     context = {
         'name': name,
-        'n_days': lock_period
+        'n_days': settings.ENTOLAB_LOCK_PERIOD
     }
     text_content = plaintext.render(context)
     email = EmailMessage(subject, text_content, to=send_to)
     email.send(fail_silently=True)
 
 
+def delete_annotations_and_notify(annotations_qs):
+    recipients = []
+    for obj in annotations_qs.select_related('user'):
+        if obj.user.email is not None and obj.user.email != '':
+            recipients.append(obj.user)
+
+        obj.delete()
+
+    for r in set(recipients):
+        name = r.first_name if r.first_name != '' else r.username
+        email = r.email
+        send_unblock_email(name, email)
+
+
 @api_view(['DELETE'])
 def clear_blocked_all(request):
     if request.method == 'DELETE':
-        lock_period = settings.ENTOLAB_LOCK_PERIOD
-        superexperts = User.objects.filter(groups__name='superexpert')
-        annos = ExpertReportAnnotation.objects.filter(validation_complete=False).exclude(user__in=superexperts).order_by('user__username', 'report')
-        to_delete = []
-        recipients = []
-        for anno in annos:
-            elapsed = (datetime.now(timezone.utc) - anno.created).days
-            if elapsed > lock_period:
-                to_delete.append(anno.id)
-                if anno.user.email is not None and anno.user.email != '':
-                    if anno.user not in recipients:
-                        recipients.append(anno.user)
-        ExpertReportAnnotation.objects.filter(id__in=to_delete).delete()
-        for r in recipients:
-            name = r.first_name if r.first_name != '' else r.username
-            email = r.email
-            send_unblock_email( name, email )
+        delete_annotations_and_notify(
+            annotations_qs=ExpertReportAnnotation.objects.blocked()
+        )
+
         return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['DELETE'])
 def clear_blocked(request, username, report=None):
-    lock_period = settings.ENTOLAB_LOCK_PERIOD
     if request.method == 'DELETE':
         if username is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        user = get_object_or_404(User.objects.all(), username=username)
-        actual_report = None
-        if report is not None:
-            actual_report = get_object_or_404(Report.objects.all(), pk=report)
-        if report is not None:
-            annotations_for_user = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False).filter(report=actual_report)
-        else:
-            annotations_for_user = ExpertReportAnnotation.objects.filter(user=user).filter(validation_complete=False)
-        to_delete = []
-        recipients = []
-        for anno in annotations_for_user:
-            elapsed = (datetime.now(timezone.utc) - anno.created).days
-            if elapsed > lock_period:
-                to_delete.append(anno.id)
-                if anno.user.email is not None and anno.user.email != '':
-                    if anno.user not in recipients:
-                        recipients.append(anno.user)
-        ExpertReportAnnotation.objects.filter(id__in=to_delete).delete()
-        for r in recipients:
-            name = r.first_name if r.first_name != '' else r.username
-            email = r.email
-            send_unblock_email( name, email )
+        user = get_object_or_404(User, username=username)
+
+        annotations_qs = user.userstat.pending_annotations.blocked()
+
+        if report:
+            annotations_qs.filter(report=get_object_or_404(Report, pk=report))
+
+        delete_annotations_and_notify(
+            annotations_qs=annotations_qs
+        )
 
         return Response(status=status.HTTP_200_OK)
 
@@ -2285,6 +2248,8 @@ def annotate_coarse(request):
         category = get_object_or_404(Categories, pk=category_id)
         if validation_value == '' or not category.specify_certainty_level:
             validation_value = None
+        else:
+            validation_value = int(validation_value)
         annotation = auto_annotate(report, category, validation_value)
         return Response(data={'message':'success', 'opcode': 0}, status=status.HTTP_200_OK)
 
@@ -2304,15 +2269,7 @@ def coarse_filter_reports(request):
         limit = request.query_params.get("limit", 300)
         offset = request.query_params.get("offset", 1)
 
-        new_reports_unfiltered_qs = Report.objects.filter(
-            creation_time__year__gt=2014,
-        ).exclude(
-            note__icontains='#345'
-        ).non_deleted().has_photos().annotate(
-            n_annotations=Count('expert_report_annotations')
-        ).filter(
-            n_annotations=0
-        )
+        new_reports_unfiltered_qs = Report.objects.queueable().unassigned().order_by('-server_upload_time')
 
         if type == 'adult':
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(

@@ -3,26 +3,20 @@ from abc import ABC, abstractmethod
 import pytest
 from unittest.mock import PropertyMock, patch
 
+from datetime import timedelta
 from django.test import TestCase
 from django.utils.translation import activate, deactivate, gettext as _
 from tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
-from tigacrafting.models import UserStat, ExpertReportAnnotation, Categories, Complex, OtherSpecies, Taxon
+from tigacrafting.models import ExpertReportAnnotation, Categories, Complex, OtherSpecies, Taxon
 from tigacrafting.views import must_be_autoflagged
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.core.exceptions import ValidationError
-from operator import attrgetter
 from tigacrafting.messaging import send_finished_validation_notification
 import tigaserver_project.settings as conf
 from django.utils import timezone
-import pytz
-from tigacrafting.report_queues import *
-
-###                 HELPER STUFF                ########################################################################
-
-BCN_BB = {'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610}
 
 
 def user_summary(user):
@@ -549,6 +543,9 @@ class NewReportAssignment(TestCase):
             p.save()
             a = a + 1
 
+        # NOTE: report queue filters by server_upload_time
+        Report.objects.all().update(server_upload_time=non_naive_time)
+
     def create_small_region_team(self):
         spain_group = Group.objects.create(name='eu_group_spain')
         spain_group.save()
@@ -714,16 +711,7 @@ class NewReportAssignment(TestCase):
         self.create_report_pool()
         # they are all regular users but ...
         for this_user in User.objects.exclude(id=24):
-            if this_user.userstat.is_superexpert():
-                assign_superexpert_reports(this_user)
-            else:
-                if this_user.userstat.is_bb_user():
-                    assign_bb_reports(this_user)
-                else:
-                    if this_user.userstat.is_national_supervisor():
-                        assign_reports_to_national_supervisor(this_user)
-                    else:  # is regular user
-                        assign_reports_to_regular_user(this_user)
+            this_user.userstat.assign_reports()
         for r in Report.objects.all():
             annos = ExpertReportAnnotation.objects.filter(report=r)
             if annos.count() == 3:
@@ -746,16 +734,7 @@ class NewReportAssignment(TestCase):
         self.create_report_pool()
 
         for this_user in User.objects.exclude(id=24):
-            if this_user.userstat.is_superexpert():
-                assign_superexpert_reports(this_user)
-            else:
-                if this_user.userstat.is_bb_user():
-                    assign_bb_reports(this_user)
-                else:
-                    if this_user.userstat.is_national_supervisor():
-                        assign_reports_to_national_supervisor(this_user)
-                    else:  # is regular user
-                        assign_reports_to_regular_user(this_user)
+            this_user.userstat.assign_reports()
 
         #get all national supervisors
         for this_user in User.objects.filter(userstat__national_supervisor_of__isnull=False):
@@ -847,16 +826,7 @@ class NewReportAssignment(TestCase):
         c = EuropeCountry.objects.get(pk=23) #France
         report = create_report(0, "1", t, c)
         for this_user in User.objects.exclude(id=24):
-            if this_user.userstat.is_superexpert():
-                assign_superexpert_reports(this_user)
-            else:
-                if this_user.userstat.is_bb_user():
-                    assign_bb_reports(this_user)
-                else:
-                    if this_user.userstat.is_national_supervisor():
-                        assign_reports_to_national_supervisor(this_user)
-                    else:  # is regular user
-                        assign_reports_to_regular_user(this_user)
+            this_user.userstat.assign_reports()
         # There should be three assignations
         n = ExpertReportAnnotation.objects.all().count()
         self.assertTrue( n == 3, "There should be {0} annotations, {1} found".format( 3, n ) )
@@ -879,16 +849,7 @@ class NewReportAssignment(TestCase):
         # we create an austrian report, with current time. That means it's locked by ns
         report = create_report(0, "1", t, c)
         for this_user in User.objects.exclude(id=24):
-            if this_user.userstat.is_superexpert():
-                assign_superexpert_reports(this_user)
-            else:
-                if this_user.userstat.is_bb_user():
-                    assign_bb_reports(this_user)
-                else:
-                    if this_user.userstat.is_national_supervisor():
-                        assign_reports_to_national_supervisor(this_user)
-                    else:  # is regular user
-                        assign_reports_to_regular_user(this_user)
+            this_user.userstat.assign_reports()
         # There should be ONE assignation
         n = ExpertReportAnnotation.objects.all().count()
         self.assertTrue(n == 1, "There should be {0} annotations, {1} found".format(1, n))
@@ -898,16 +859,7 @@ class NewReportAssignment(TestCase):
         ns_validation.save()
         # Now report it's validated AND NO LONGER LOCKED, reassign
         for this_user in User.objects.exclude(id=24):
-            if this_user.userstat.is_superexpert():
-                assign_superexpert_reports(this_user)
-            else:
-                if this_user.userstat.is_bb_user():
-                    assign_bb_reports(this_user)
-                else:
-                    if this_user.userstat.is_national_supervisor():
-                        assign_reports_to_national_supervisor(this_user)
-                    else:  # is regular user
-                        assign_reports_to_regular_user(this_user)
+            this_user.userstat.assign_reports()
         n = ExpertReportAnnotation.objects.all().count()
         # it should now be assigned to 3 experts (ns, and two regulars)
         self.assertTrue(n == 3, "There should be {0} annotations, {1} found".format(1, n))
@@ -928,13 +880,13 @@ class NewReportAssignment(TestCase):
         self.create_outdated_report_pool()
         # assign reports to regular user. All assigned reports should be from isle of man
         user = User.objects.get(pk=10)
-        assign_reports_to_regular_user(user)
+        user.userstat.assign_reports()
         # user should have been assigned 2 outdated reports
         assigned_reports = ExpertReportAnnotation.objects.filter(user=user)
         self.assertTrue( assigned_reports.count() == 2, "User {0} has been assigned {1} reports, should have been assigned {2}".format( user.username, assigned_reports.count(), 5 ) )
 
         national_supervisor_isleofman = User.objects.get(pk=3)
-        assign_reports_to_national_supervisor(national_supervisor_isleofman)
+        national_supervisor_isleofman.userstat.assign_reports()
         server_upload_time_first_report = ExpertReportAnnotation.objects.filter(user=national_supervisor_isleofman).order_by('id')[0].report.server_upload_time
         server_upload_time_first_report_str = server_upload_time_first_report.strftime('%Y-%m-%d')
         self.assertTrue( server_upload_time_first_report_str == timezone.now().strftime('%Y-%m-%d'), "Server upload time of first assigned report should be {0}, is {1}".format( timezone.now().strftime('%Y-%m-%d'), server_upload_time_first_report_str ) )
@@ -984,25 +936,8 @@ class NewReportAssignment(TestCase):
         self.create_stlouis_team()
         self.create_stlouis_report_pool()
 
-        number_of_assignments_to_regular_user = 0
-        number_of_assignments_to_bb_stlouis = 0
-
         for this_user in User.objects.exclude(id__in=[24,25]):
-            if this_user.userstat.is_superexpert():
-                assign_superexpert_reports(this_user)
-            else:
-                if this_user.userstat.is_bb_user():
-                    assign_bb_reports(this_user)
-                    number_of_assignments_to_bb_stlouis += 1
-                else:
-                    if this_user.userstat.is_national_supervisor():
-                        assign_reports_to_national_supervisor(this_user)
-                    else:  # is regular user
-                        assign_reports_to_regular_user(this_user)
-                        number_of_assignments_to_regular_user += 1
-
-        self.assertEqual( number_of_assignments_to_regular_user, 2, "Assigned reports to regular users {0} times, should be 2".format( number_of_assignments_to_regular_user ) )
-        self.assertEqual( number_of_assignments_to_bb_stlouis, 3, "Assigned reports to bb stlouis users {0} times, should be 3".format( number_of_assignments_to_bb_stlouis ) )
+            this_user.userstat.assign_reports()
 
         #all stlouis experts id=2,3,4 should be assigned 5 reports
         for i in [2, 3, 4]:
@@ -1101,7 +1036,7 @@ class NewReportAssignment(TestCase):
 
         #Now assign reports to Faroes native. Should receive report with uuid 1
         faroes_native_regular_user = User.objects.get(username='expert_9_eu')
-        assign_reports_to_regular_user(faroes_native_regular_user)
+        faroes_native_regular_user.userstat.assign_reports()
 
         #should have been assigned the Faroes report, since the report is outdated and therefore no longer blocked by NS
         n_assigned_to_faroes_user = ExpertReportAnnotation.objects.filter(user=faroes_native_regular_user).filter(report=r).count()
@@ -1185,16 +1120,7 @@ class NewReportAssignment(TestCase):
         self.assertTrue(users[0].id == 3, "First expert to be assigned should be eu, is not")
 
         for this_user in users:
-            if this_user.userstat.is_superexpert():
-                assign_superexpert_reports(this_user)
-            else:
-                if this_user.userstat.is_bb_user():
-                    assign_bb_reports(this_user)
-                else:
-                    if this_user.userstat.is_national_supervisor():
-                        assign_reports_to_national_supervisor(this_user)
-                    else:  # is regular user
-                        assign_reports_to_regular_user(this_user)
+            this_user.userstat.assign_reports()
 
         # All reports assigned to catalan expert should be from Catalonia
         catalan = User.objects.get(pk=1)
@@ -1239,16 +1165,7 @@ class NewReportAssignment(TestCase):
         self.assertTrue(users.count() == 2, "There should be 2 experts, there are {0}".format(users.count()))
 
         for this_user in users:
-            if this_user.userstat.is_superexpert():
-                assign_superexpert_reports(this_user)
-            else:
-                if this_user.userstat.is_bb_user():
-                    assign_bb_reports(this_user)
-                else:
-                    if this_user.userstat.is_national_supervisor():
-                        assign_reports_to_national_supervisor(this_user)
-                    else:  # is regular user
-                        assign_reports_to_regular_user(this_user)
+            this_user.userstat.assign_reports()
 
         extremadura = NutsEurope.objects.get(name_latn='Extremadura')
         extremaduran = User.objects.get(pk=1)
