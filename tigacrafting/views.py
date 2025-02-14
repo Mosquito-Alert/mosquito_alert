@@ -1154,7 +1154,7 @@ def auto_annotate(
     )
 
     roger_annotation = ExpertReportAnnotation.objects.get(
-        user__username="super_reritja",
+        user__pk=25,  # "super_reritja"
         report=report
     )
 
@@ -1210,13 +1210,7 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
                             if f.cleaned_data['fastUpload']:
                                 #check that annotation does not exist, to avoid duplicates
                                 if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
-                                    new_annotation = ExpertReportAnnotation(report=report, user=super_movelab)
-                                    photo = report.photos.first()
-                                    new_annotation.site_certainty_notes = 'auto'
-                                    new_annotation.best_photo_id = photo.id
-                                    new_annotation.validation_complete = True
-                                    new_annotation.revise = True
-                                    new_annotation.save()
+                                    ExpertReportAnnotation.create_super_expert_approval(report=report)
 ###############------------------------------ FI FastUpload --------------------------------###############
 
                             if f.cleaned_data['other_species']:

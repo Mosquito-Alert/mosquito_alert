@@ -30,27 +30,21 @@ def load_fast_track_ids():
         return []
     return content
 
-def auto_validate(report,dryRun,auto_validation_user):
+def auto_validate(report,dryRun):
     if dryRun:
         logging.info(
             "Dry run - Auto validating report {0}, elapsed days {1}".format(report.version_UUID, elapsed_days))
     else:
         logging.info("Auto validating report {0}, elapsed days {1}".format(report.version_UUID, elapsed_days))
     if not dryRun:
-        photo = report.photos.first()
-        new_annotation = ExpertReportAnnotation(report=report, user=auto_validation_user)
-        new_annotation.site_certainty_notes = 'auto'
-        new_annotation.best_photo_id = photo.id
-        new_annotation.validation_complete = True
-        new_annotation.revise = True
-        new_annotation.save()
+        ExpertReportAnnotation.create_super_expert_approval(report=report)
 
 # validation user is super_movelab
 args = sys.argv
 dryRun = False
 if len(args) > 1 and args[1] == 'dryrun':
     dryRun = True
-auto_validation_user = User.objects.get(pk=24)
+
 # we use datetimes with time zone info
 now = datetime.utcnow().replace(tzinfo=pytz.utc)
 logname = "/home/webuser/webapps/data_preprocessing/auto-validation-" + now.strftime("%d-%m-%Y") + ".log"
@@ -88,10 +82,10 @@ for report in new_reports_unfiltered_sites:
     elapsed_hours = elapsed_minutes / 60
     elapsed_days = elapsed_hours / 24.0
     if elapsed_days >= 2:
-        auto_validate(report,dryRun,auto_validation_user)
+        auto_validate(report,dryRun)
     elif report.version_UUID in fast_track:
         logging.info("Auto validating " + report.version_UUID + " through fast track")
-        auto_validate(report, dryRun, auto_validation_user)
+        auto_validate(report, dryRun)
     else:
         if dryRun:
             logging.info(
