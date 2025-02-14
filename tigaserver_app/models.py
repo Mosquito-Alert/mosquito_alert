@@ -1201,7 +1201,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
     @property
     def is_spain(self) -> bool:
-        return self.country is None or self.country.gid == 17
+        return self.country == EuropeCountry.objects.spain()
 
     @property
     def language(self) -> str:
