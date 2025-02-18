@@ -85,6 +85,7 @@ INSTALLED_APPS = (
     'django_hosts',
     'drf_standardized_errors',
     'treebeard',
+    "django_lifecycle_checks",
 )
 
 '''

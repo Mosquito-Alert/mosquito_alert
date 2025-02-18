@@ -7,7 +7,7 @@ from datetime import timedelta
 from django.test import TestCase
 from django.utils.translation import activate, deactivate, gettext as _
 from tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
-from tigacrafting.models import ExpertReportAnnotation, Categories, Complex, OtherSpecies, Taxon
+from tigacrafting.models import ExpertReportAnnotation, Categories, Complex, OtherSpecies, Taxon, IdentificationTask
 from tigacrafting.views import must_be_autoflagged
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
@@ -15,7 +15,6 @@ from django.utils import timezone
 from django.db import IntegrityError
 from django.db.models import Q
 from django.core.exceptions import ValidationError
-from tigacrafting.messaging import send_finished_validation_notification
 import tigaserver_project.settings as conf
 from django.utils import timezone
 
@@ -1086,7 +1085,6 @@ class NewReportAssignment(TestCase):
                                                                      validation_complete=True, revise=True,
                                                                      validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
                 anno_reritja.save()
-                send_finished_validation_notification(anno_reritja)
                 nc = NotificationContent.objects.order_by('-id').first()
                 # native title should be in the same language as the report
                 activate(locale)
@@ -1095,6 +1093,11 @@ class NewReportAssignment(TestCase):
                 deactivate()
                 # we do this to avoid triggering the unique(user_id,report_id) constraint
                 anno_reritja.delete()
+
+                # Setting identification task to open again.
+                identification_task = r.identification_task
+                identification_task.status = IdentificationTask.Status.OPEN
+                identification_task.save()
 
 
     def test_spanish_regionalization(self):

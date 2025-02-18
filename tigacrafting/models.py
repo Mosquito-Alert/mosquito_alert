@@ -13,6 +13,9 @@ from django.utils.translation import gettext_lazy as _
 from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+from django_lifecycle.conditions import WhenFieldValueChangesTo
+from django_lifecycle import LifecycleModel, hook, AFTER_SAVE
 from treebeard.mp_tree import MP_Node
 
 import tigacrafting.html_utils as html_utils
@@ -27,9 +30,9 @@ def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
 
 def get_confidence_label(value: float) -> str:
     if value >= 0.9:
-        return _('Definitely')
+        return _('species_value_confirmed')
     elif value >= 0.7:
-        return _('Probably')
+        return _('species_value_possible')
     else:
         return _('Not sure')
 
@@ -161,7 +164,7 @@ class CrowdcraftingResponse(models.Model):
     def __unicode__(self):
         return str(self.id)
 
-class IdentificationTask(models.Model):
+class IdentificationTask(LifecycleModel):
     @classmethod
     def create_for_report(self, report):
         if not report.photos.exists() or not report.type=='adult':
@@ -198,8 +201,11 @@ class IdentificationTask(models.Model):
     report = models.OneToOneField('tigaserver_app.Report', primary_key=True, related_name='identification_task', on_delete=models.CASCADE, limit_choices_to={'type': 'adult'})
     photo = models.ForeignKey('tigaserver_app.Photo', related_name='identification_tasks', on_delete=models.CASCADE, editable=False)
 
-    # TODO: remove assignee? allow multiple assignation at once?
-    assignee = models.ForeignKey(User, related_name='assigned_identification_tasks', on_delete=models.SET_NULL, null=True, blank=True)
+    assignees = models.ManyToManyField(
+        User,
+        through="tigacrafting.ExpertReportAnnotation",
+        through_fields=("identification_task", "user"),
+    )
 
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN, db_index=True)
     is_reviewed = models.BooleanField(default=False, editable=False, db_index=True) # Reviewed by superexpert.
@@ -207,6 +213,7 @@ class IdentificationTask(models.Model):
     is_safe = models.BooleanField(default=False, editable=False, help_text="Indicates if the content is safe for publication.")
 
     public_note = models.TextField(null=True, blank=True, editable=False)
+    message_for_user = models.TextField(null=True, blank=True, editable=False)
 
     total_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # total experts
     total_finished_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # when validation_complete = True (only for experts)
@@ -222,12 +229,12 @@ class IdentificationTask(models.Model):
     objects = IdentificationTaskManager()
 
     @property
-    def confidence_label(self):
+    def confidence_label(self) -> str:
         return get_confidence_label(value=self.confidence)
 
     # LEGACY
     @property
-    def validation_value(self):
+    def validation_value(self) -> int:
         if not self.taxon:
             return
 
@@ -242,7 +249,7 @@ class IdentificationTask(models.Model):
         return ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
 
     @property
-    def in_exclusivty_period(self):
+    def in_exclusivty_period(self) -> bool:
         return self.exclusivity_end and timezone.now() < self.exclusivity_end
 
     @property
@@ -253,16 +260,18 @@ class IdentificationTask(models.Model):
         """Helper function to update attributes from an annotation."""
         self.photo_id = annotation.best_photo_id
         self.public_note = annotation.edited_user_notes
+        self.message_for_user = annotation.message_for_user
         self.taxon = annotation.taxon
         self.confidence = annotation.confidence
         self.is_safe = annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
         self.status = default_status
 
-    @transaction.atomic
     def assign_to_user(self, user: User) -> None:
         """Assign the task to a user."""
-        self.assignee = user
-        self.save()
+
+        # NOTE: do not use self.assignees.add. The 'through' model
+        #       will be created using bulk_create, so it won't call
+        #       save().
 
         ExpertReportAnnotation.objects.get_or_create(
             report=self.report,
@@ -300,10 +309,6 @@ class IdentificationTask(models.Model):
                 annotated_qs = annotated_qs.order_by('-vote_count')
 
             return annotated_qs.values_list(field_name, flat=True).first()
-
-            return qs.values(field_name).annotate(
-                vote_count=models.Count(1)
-            ).order_by('-vote_count').values_list(field_name, flat=True).first()
 
         def get_final_classification() -> tuple[Optional['Taxon'], float]:
             """
@@ -400,14 +405,6 @@ class IdentificationTask(models.Model):
             if finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists():
                 self.status = self.Status.FLAGGED
 
-            # Check if any report is blocking.
-            # blocking_annotations_qs = experts_annotations_qs.filter(
-            #     validation_complete=False,
-            #     created__lte=timezone.now() - timedelta(days=settings.ENTOLAB_LOCK_PERIOD)
-            # )
-            # if blocking_annotations_qs.exists():
-            #     self.status = self.Status.BLOCKED
-
         # Ensure photo_id is updated and save the instance
         self.photo_id = self.photo_id or current_photo_id
         self.updated_at = timezone.now()
@@ -418,27 +415,30 @@ class IdentificationTask(models.Model):
         if self.report.deleted or self.report.hide:
             self.status = self.Status.ARCHIVED
 
-        last_unfinished_annotation = self.expert_report_annotations.filter(validation_complete=False).order_by('-last_modified').first()
-        if self.status in self.CLOSED_STATUS:
-            self.assignee = None
-        elif last_unfinished_annotation:
-            self.assignee = last_unfinished_annotation.user
-        else:
-            self.assignee = None
-
         if commit:
             # Save the updated instance
             # NOTE: do not force saving only certain fields, as it may cause inconsistencies.
             self.save()
 
+    @hook(
+        AFTER_SAVE,
+        condition=WhenFieldValueChangesTo(
+            'status',
+            value=Status.DONE
+        ),
+    )
+    def on_done(self):
+        from .messaging import send_finished_identification_task_notification
+        send_finished_identification_task_notification(
+            identification_task=self,
+            as_user=User.objects.filter(pk=25).first()
+        )
+
     def save(self, *args, **kwargs):
         if self.report.deleted or self.report.hide:
             self.status = self.Status.ARCHIVED
 
-        if self.status in self.CLOSED_STATUS:
-            self.assignee = None
-        else:
-            # Only can be public if it in a closed state.
+        if not self.status in self.CLOSED_STATUS:
             self.is_safe = False
 
         return super().save(*args, **kwargs)
@@ -902,8 +902,6 @@ class ExpertReportAnnotation(models.Model):
         result = super().delete(*args, **kwargs)
 
         if identification_task:
-            if identification_task.assignee == self.user:
-                identification_task.assignee = None
             identification_task.refresh()
 
         return result

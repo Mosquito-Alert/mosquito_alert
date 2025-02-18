@@ -154,41 +154,6 @@ def get_icon_for_blood_genre(blood_genre) -> str:
             #return blood_genre_table['dk']
             return ''
 
-def get_translated_species_name(locale,untranslated_species) -> str:
-    current_locale = 'en'
-    for l in settings.LANGUAGES:
-        if locale==l[0]:
-            current_locale = locale
-    translation.activate(current_locale)
-    translations_table_species_name = {
-        "Unclassified": _("species_unclassified"),
-        "Other species": _("species_other"),
-        "Aedes albopictus": _("species_albopictus"),
-        "Aedes aegypti": _("species_aegypti"),
-        "Aedes japonicus": _("species_japonicus"),
-        "Aedes koreicus": _("species_koreicus"),
-        "Complex": _("species_complex"),
-        "Not sure": _("species_notsure"),
-        "Culex sp.": _("species_culex")
-    }
-    retval = translations_table_species_name.get(untranslated_species, "Unknown")
-    translation.deactivate()
-    return str(retval)
-
-def get_translated_value_name(locale, untranslated_value) -> str:
-    current_locale = 'en'
-    for l in settings.LANGUAGES:
-        if locale == l[0]:
-            current_locale = locale
-    translation.activate(current_locale)
-    translations_table_value_name = {
-        1: _("species_value_possible"),
-        2: _("species_value_confirmed")
-    }
-    retval = translations_table_value_name.get(untranslated_value, "Unknown")
-    translation.deactivate()
-    return str(retval)
-
 
 class RankingData(models.Model):
     user_uuid = models.CharField(max_length=36, primary_key=True, help_text='User identifier uuid')
@@ -2006,7 +1971,7 @@ class Report(TimeZoneModelMixin, models.Model):
                 _identification_task.status = IdentificationTask.Status.ARCHIVED
                 _identification_task.save()
 
-        if self.type != self.TYPE_ADULT or self.flipped_to != self.TYPE_ADULT:
+        if self.type != self.TYPE_ADULT or (self.flipped_to and self.flipped_to != self.TYPE_ADULT):
             # Case flipped.
             IdentificationTask.objects.filter(report=self).delete()
 
@@ -2259,32 +2224,6 @@ class Report(TimeZoneModelMixin, models.Model):
             status['aegypti_final_score'] = mean_score
 
         return status
-
-    def get_final_combined_expert_category_public_map_euro(self, locale):
-        classification = self.get_final_combined_expert_category_euro_struct()
-        # retval = {
-        #     'category': None,
-        #     'complex': None,
-        #     'value': None,
-        #     'conflict': False,
-        #     'in_progress': False
-        # }
-        if classification['category'] is not None:
-            c = classification['category']
-            untranslated_category = c.name
-            if c.id == 8:
-                if classification['complex'] is not None:
-                    complex = classification['complex']
-                    untranslated_complex = complex.description
-                    return untranslated_complex
-                else:
-                    return "N/A"
-            else:
-                if c.specify_certainty_level == True:
-                    untranslated_certainty = classification['value']
-                    return get_translated_species_name(locale,untranslated_category) + " - " + get_translated_value_name(locale,untranslated_certainty)
-                else:
-                    return get_translated_species_name(locale,untranslated_category)
 
     def get_score_for_category_or_complex(self, category):
         superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category=category)

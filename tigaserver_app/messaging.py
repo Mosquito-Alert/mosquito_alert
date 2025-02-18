@@ -29,13 +29,8 @@ def send_new_award_notification(award: 'tigaserver_app.models.Award') -> None:
 
         # Add picture link if available
         picture_url = report.get_final_photo_url_for_notification()
-        if not picture_url:
-            pic = report.get_first_visible_photo()
-            if pic:
-                picture_url = pic.get_medium_url()
-
-            if picture_url:
-                context_en['picture_link'] = context_native['picture_link'] = picture_url
+        if picture_url:
+            context_en['picture_link'] = context_native['picture_link'] = picture_url
 
     # Add XP earning
     award_xp = award.special_award_xp if award.special_award_xp else (award.category.xp_points if award.category else 0)

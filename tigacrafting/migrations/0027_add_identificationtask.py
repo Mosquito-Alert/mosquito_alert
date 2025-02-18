@@ -90,10 +90,11 @@ class Migration(migrations.Migration):
             fields=[
                 ('report', models.OneToOneField(limit_choices_to={'type': 'adult'}, on_delete=django.db.models.deletion.CASCADE, primary_key=True, related_name='identification_task', serialize=False, to='tigaserver_app.report')),
                 ('status', models.CharField(choices=[('open', 'Open'), ('conflict', 'Conflict'), ('flagged', 'Flagged'), ('review', 'Review'), ('done', 'Done'), ('archived', 'Archived')], db_index=True, default='open', max_length=16)),
-                ('assignee', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='assigned_identification_tasks', to=settings.AUTH_USER_MODEL)),
+                ('assignees', models.ManyToManyField(through='tigacrafting.ExpertReportAnnotation', to=settings.AUTH_USER_MODEL)),
                 ('is_reviewed', models.BooleanField(default=False, editable=False, db_index=True)),
                 ('is_safe', models.BooleanField(default=False, editable=False, help_text='Indicates if the content is safe for publication.')),
                 ('public_note', models.TextField(blank=True, editable=False, null=True)),
+                ('message_for_user', models.TextField(blank=True, editable=False, null=True)),
                 ('total_annotations', models.PositiveSmallIntegerField(default=0, editable=False)),
                 ('total_finished_annotations', models.PositiveSmallIntegerField(default=0, editable=False)),
                 ('exclusivity_end', models.DateTimeField(blank=True, null=True, db_index=True)),

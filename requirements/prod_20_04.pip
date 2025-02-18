@@ -18,6 +18,7 @@ djangorestframework-simplejwt==5.2.2
 drf-extra-fields==3.3.0
 drf-spectacular==0.27.1
 drf-standardized-errors==0.14.1
+django-lifecycle==1.2.4
 django-simple-history==3.0.0
 django-taggit==2.1.0
 django-treebeard==4.6.1

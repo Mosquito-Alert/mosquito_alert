@@ -14,7 +14,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
-from tigacrafting.views import filter_reports
 from tigaserver_project import settings
 import json
 import datetime
@@ -155,10 +154,14 @@ def workload_available_reports(request):
             user_ids_arr = user_ids_string_to_int_array(user_ids_str)
             if len(user_ids_arr) > 0:
                 user_id_filter = user_ids_arr
-        current_pending = IdentificationTask.objects.annotating()
+        current_pending = IdentificationTask.objects.new()
         current_progress = IdentificationTask.objects.ongoing()
 
-        overall_pending = IdentificationTask.objects.annotating().filter(assignee__pk__in=user_id_filter)
+        overall_pending = ExpertReportAnnotation.objects.filter(
+            identification_task__isnull=False,
+            validation_complete=False,
+            user__pk__in=user_id_filter
+        )
 
         data = { 'current_pending_n' : current_pending.count(), 'current_progress_n' : current_progress.count(), 'overall_pending': overall_pending.count()}
         return Response(data)

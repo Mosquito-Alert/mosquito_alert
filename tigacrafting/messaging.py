@@ -1,15 +1,20 @@
+from typing import Optional
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.template.exceptions import TemplateDoesNotExist
-from django.utils.html import escape
 from django.utils.translation import activate, deactivate, gettext as _
 
 from tigaserver_app.models import Notification, NotificationContent
 
-from .models import ExpertReportAnnotation
+from .models import IdentificationTask
 
-def create_notification_content_finished_validation(report_annotation: ExpertReportAnnotation, commit: bool = True) -> NotificationContent:
-    report_user = report_annotation.report.user
+User = get_user_model()
+
+
+def create_notification_content_finished_validation(identification_task: IdentificationTask, commit: bool = True) -> NotificationContent:
+    report_user = identification_task.report.user
 
     # Set the preferred language if it is supported, otherwise default to English
     user_language_code = 'en'
@@ -21,37 +26,19 @@ def create_notification_content_finished_validation(report_annotation: ExpertRep
     context_native = {}
 
     # Add picture link if available
-    picture_url = report_annotation.report.get_final_photo_url_for_notification()
+    picture_url = identification_task.photo.get_medium_url()
     if picture_url:
         context_en['picture_link'] = context_native['picture_link'] = picture_url
 
-    # Include expert note, either from current annotation or a related one
-    expert_note = report_annotation.edited_user_notes or ExpertReportAnnotation.objects.filter(
-        report=report_annotation.report,
-        simplified_annotation=False,
-        edited_user_notes__isnull=False
-    ).exclude(
-        pk=report_annotation.pk,
-        edited_user_notes=""
-    ).values_list('edited_user_notes', flat=True).first()
-    if expert_note:
-        context_en['expert_note'] = context_native['expert_note'] = expert_note
+    context_en['expert_note'] = context_native['expert_note'] = identification_task.public_note
 
     # Include any specific message for the user
-    if report_annotation.message_for_user:
-        context_en['message_for_user'] = context_native['message_for_user'] = report_annotation.message_for_user
-
-    # Validation category handling with language-specific sanitization
-    def get_sanitized_validation_category(language_code):
-        category = report_annotation.report.get_final_combined_expert_category_public_map_euro(language_code)
-        return escape(category).encode('ascii', 'xmlcharrefreplace').decode('utf-8')
-
-    context_en['validation_category'] = get_sanitized_validation_category('en')
-    context_native['validation_category'] = get_sanitized_validation_category(user_language_code)
+    if identification_task.message_for_user:
+        context_en['message_for_user'] = context_native['message_for_user'] = identification_task.message_for_user
 
     # Add map link if report is published
-    if report_annotation.report.published:
-        map_url = report_annotation.report.public_map_url
+    if identification_task.report.published:
+        map_url = identification_task.report.public_map_url
         context_en['map_link'] = context_native['map_link'] = map_url
 
     # Function for rendering HTML body based on language template
@@ -65,13 +52,19 @@ def create_notification_content_finished_validation(report_annotation: ExpertRep
     body_html_en = render_body_html('en', context_en)
     body_html_native = render_body_html(user_language_code, context_native)
 
+    taxon_name = identification_task.taxon.name if identification_task.taxon else ''
+
     # Set the language to the user's preference
     activate(user_language_code)
     title_native = _("your_picture_has_been_validated_by_an_expert")
+    # NOTE: confidence_label is translatable
+    context_native['validation_category'] = "{} ({})".format(taxon_name, identification_task.confidence_label)
 
     # Get the message in English
     activate('en')
     title_en = _("your_picture_has_been_validated_by_an_expert")
+    # NOTE: confidence_label is translatable
+    context_en['validation_category'] = "{} ({})".format(taxon_name, identification_task.confidence_label)
 
     deactivate()
 
@@ -87,10 +80,10 @@ def create_notification_content_finished_validation(report_annotation: ExpertRep
 
     return notification_content
 
-def send_finished_validation_notification(report_annotation: ExpertReportAnnotation) -> None:
+def send_finished_identification_task_notification(identification_task: IdentificationTask, as_user: Optional[User] = None) -> None:
     notification = Notification.objects.create(
-        report=report_annotation.report,
-        expert=report_annotation.user,
-        notification_content=create_notification_content_finished_validation(report_annotation=report_annotation)
+        report=identification_task.report,
+        expert=as_user,
+        notification_content=create_notification_content_finished_validation(identification_task=identification_task)
     )
-    notification.send_to_user(user=report_annotation.report.user)
+    notification.send_to_user(user=identification_task.report.user)
