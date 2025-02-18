@@ -19,7 +19,6 @@ from operator import attrgetter
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, MissionSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, SiteMapSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, ReportIdSerializer, UserAddressSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Mission, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse, Device
 from tigacrafting.models import FavoritedReports, UserStat
-from tigacrafting.views import auto_annotate
 from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -1329,7 +1328,7 @@ def custom_render_sent_notifications(queryset, acknowledged_queryset, locale):
             'topic': sent_notif.sent_to_topic.topic_code if sent_notif.sent_to_topic is not None else None,
             'user_score': sent_notif.sent_to_user.score if sent_notif.sent_to_user is not None else None,
             'user_score_label': score_label(sent_notif.sent_to_user.score) if sent_notif.sent_to_user is not None else None,
-            'expert_id': notification.expert.id,
+            'expert_id': notification.expert.id if notification.expert else None,
             'date_comment': notification.date_comment,
             'expert_comment': expert_comment,
             'expert_html': expert_html,
@@ -1868,7 +1867,7 @@ def delete_annotations_and_notify(annotations_qs):
 def clear_blocked_all(request):
     if request.method == 'DELETE':
         delete_annotations_and_notify(
-            annotations_qs=ExpertReportAnnotation.objects.blocked()
+            annotations_qs=ExpertReportAnnotation.objects.stale()
         )
 
         return Response(status=status.HTTP_200_OK)
@@ -1881,7 +1880,7 @@ def clear_blocked(request, username, report=None):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         user = get_object_or_404(User, username=username)
 
-        annotations_qs = user.userstat.pending_annotations.blocked()
+        annotations_qs = user.userstat.pending_annotations.stale()
 
         if report:
             annotations_qs.filter(report=get_object_or_404(Report, pk=report))
@@ -2250,7 +2249,13 @@ def annotate_coarse(request):
             validation_value = None
         else:
             validation_value = int(validation_value)
-        annotation = auto_annotate(report, category, validation_value)
+
+        ExpertReportAnnotation.create_auto_annotation(
+            report=report,
+            category=category,
+            validation_value=validation_value
+        )
+
         return Response(data={'message':'success', 'opcode': 0}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])

@@ -69,12 +69,13 @@ class ExpertReportAnnotationInlineAdmin(admin.StackedInline):
     ordering = ('last_modified',)
     fields = (
         'user',
-        ('validation_complete', 'simplified_annotation', 'validation_complete_executive', 'revise'),
+        ('validation_complete', 'revise'),
+        ('validation_complete_executive', 'simplified_annotation'),
         ('category', 'complex', 'other_species', 'validation_value'),
         ("taxon", "confidence"),
         'status',
         'best_photo',
-        'edited_user_notes',
+        ('edited_user_notes', 'message_for_user'),
         ('created', 'last_modified')
     )
     def get_readonly_fields(self, request, obj=None):
@@ -97,7 +98,7 @@ class ExpertReportAnnotationInlineAdmin(admin.StackedInline):
 @admin.register(IdentificationTask)
 class IdentificationTaskAdmin(admin.ModelAdmin):
     search_fields = ("report", "taxon__name")
-    list_display = ("report", "assignee", "status", "is_safe", "is_reviewed", 'total_annotations', 'total_finished_annotations', 'taxon', 'confidence', 'created_at')
+    list_display = ("report", "status", "is_safe", "is_reviewed", 'total_annotations', 'total_finished_annotations', 'taxon', 'confidence', 'created_at')
     list_filter = (
         "status",
         ("is_safe", admin.BooleanFieldListFilter),
@@ -108,13 +109,15 @@ class IdentificationTaskAdmin(admin.ModelAdmin):
     )
     ordering = ('-created_at',)
     fields = (
-        ("report", "photo", "created_at", "updated_at"),
-        ("assignee", "status", "is_safe", "is_reviewed"),
+        ("report", "photo"),
+        ("created_at", "updated_at"),
+        ("status", "is_safe", "is_reviewed"),
         ("exclusivity_end", "in_exclusivty_period"),
         ("total_annotations", "total_finished_annotations"),
         ("taxon", "confidence"),
-        ("public_note",)
+        ("public_note", "message_for_user")
     )
+
     def get_readonly_fields(self, request, obj=None):
         # Make all fields read-only by getting the model's fields dynamically
         return [field.name for field in self.model._meta.fields] + ['in_exclusivty_period']

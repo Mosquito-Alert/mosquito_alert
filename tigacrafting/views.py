@@ -58,8 +58,6 @@ from django.utils import timezone
 
 #-----------------------------------#
 
-from .messaging import send_finished_validation_notification
-
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
 
@@ -541,16 +539,17 @@ def report_expiration(request, country_id=None):
         qs = qs.filter(report__country=country)
 
     data_dict = {}
-    for task in qs.select_related('assignee').iterator():
-        if task.assignee.username not in data_dict:
-            data_dict[task.assignee.username] = []
+    for task in qs.prefetch_related('assignees').iterator():
+        for user in task.assignees.all():
+            if user.username not in data_dict:
+                data_dict[user.username] = []
 
-        data_dict[task.assignee.username].append(
-            {
-                'report_uuid': task.report_id,
-                'days': (timezone.now() - task.created_at).days
-            }
-        )
+            data_dict[user.username].append(
+                {
+                    'report_uuid': task.report_id,
+                    'days': (timezone.now() - task.created_at).days
+                }
+            )
 
     sorted_data = sorted(data_dict.items(), key=lambda x: x[1][0]['days'], reverse=True)
 
@@ -614,8 +613,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                         one_form.status = 0
                     one_form.save()
                     f.save_m2m()
-                    if(this_user_is_reritja and one_form.validation_complete == True):
-                        send_finished_validation_notification(one_form)
                     if auto_flag:
                         autoflag_others(one_form.id)
             else:
@@ -1012,55 +1009,35 @@ def get_reports_unfiltered_adults():
     ).order_by('-server_upload_time')
 
 def auto_annotate_notsure(report: Report) -> None:
-    auto_annotate(
+    ExpertReportAnnotation.create_auto_annotation(
         report=report,
         category=Categories.objects.get(pk=9),
         validation_value=None
     )
 
 def auto_annotate_probably_albopictus(report: Report) -> None:
-    auto_annotate(
+    ExpertReportAnnotation.create_auto_annotation(
         report=report,
         category=Categories.objects.get(pk=4),
         validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
     )
 
 def auto_annotate_albopictus(report: Report) -> None:
-    auto_annotate(
+    ExpertReportAnnotation.create_auto_annotation(
         report=report,
         category=Categories.objects.get(pk=4),
         validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY
     )
 
 def auto_annotate_culex(report: Report) -> None:
-    auto_annotate(
+    ExpertReportAnnotation.create_auto_annotation(
         report=report,
         category=Categories.objects.get(pk=10),
         validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
     )
 
-def auto_annotate(
-        report: Report,
-        category: Categories,
-        validation_value: Optional[Literal[ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY, ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY]]
-    ) -> ExpertReportAnnotation:
-    ExpertReportAnnotation.create_auto_annotation(
-        report=report,
-        category=category,
-        validation_value=validation_value
-    )
-
-    roger_annotation = ExpertReportAnnotation.objects.get(
-        user__pk=25,  # "super_reritja"
-        report=report
-    )
-
-    send_finished_validation_notification(roger_annotation)
-
-    return roger_annotation
-
 def auto_annotate_other_species(report: Report) -> None:
-    auto_annotate(
+    ExpertReportAnnotation.create_auto_annotation(
         report=report,
         category=Categories.objects.get(pk=2),
         validation_value=None

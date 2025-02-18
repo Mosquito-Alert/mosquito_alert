@@ -161,20 +161,21 @@ class IdentificationTaskQuerySet(models.QuerySet):
     def blocked(self, days: int = settings.ENTOLAB_LOCK_PERIOD)  -> QuerySet:
         from .models import ExpertReportAnnotation
 
-        return self.ongoing().filter(
+        return self.ongoing().assignable(False).filter(
             models.Exists(
-                ExpertReportAnnotation.objects.stale().filter(
+                ExpertReportAnnotation.objects.stale(days=days).filter(
                     identification_task=models.OuterRef('pk'),
-                    user=models.OuterRef('assignee')
+                ).exclude(
+                    user__groups__name='superexpert'
                 )
             )
-        ).exclude(
-            assignee__groups__name='superexpert',
         )
 
     def annotating(self) -> QuerySet:
         "Being actively labeled by experts."
-        return self.ongoing().assigned()
+        return self.ongoing().exclude(
+            total_annotations=models.F('total_finished_annotations')
+        )
 
     def to_review(self) -> QuerySet:
         "Annotations completed, waiting for reviewer"
@@ -259,27 +260,16 @@ class IdentificationTaskQuerySet(models.QuerySet):
             user_has_annotated=state
         )
 
-    def assigned(self, state: bool = True, user: Optional[User] = None) -> QuerySet:
-        qs = self.filter(
-            assignee__isnull=not state,
-        )
-
-        if user:
-            qs = qs.filter(assignee=user)
-
-        return qs
-
-    def assignable(self) -> QuerySet:
+    def assignable(self, state: bool = True) -> QuerySet:
         from .models import IdentificationTask
 
         return self.filter(
-            status=IdentificationTask.Status.OPEN,
-            total_annotations__lt=settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT
+            models.Q(
+                status=IdentificationTask.Status.OPEN,
+                total_annotations__lt=settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT,
+                _negated=not state
+            )
         )
-
-        return self.filter(
-            status=IdentificationTask.Status.OPEN,
-        ).assigned(state=False)
 
 IdentificationTaskManager = models.Manager.from_queryset(IdentificationTaskQuerySet)
 
@@ -291,17 +281,6 @@ class ExpertReportAnnotationQuerySet(models.QuerySet):
         return self.filter(
             validation_complete=False,
             created__lt=timezone.now() - timedelta(days=days),
-        )
-
-    def blocked(self, days: int = settings.ENTOLAB_LOCK_PERIOD) -> QuerySet:
-        from .models import IdentificationTask
-        return self.filter(
-            identification_task__in=models.Subquery(
-                IdentificationTask.objects.blocked(days=days).filter(
-                    assignee=models.OuterRef('user'),
-                    pk=models.OuterRef('identification_task')
-                )
-            )
         )
 
 ExpertReportAnnotationManager = models.Manager.from_queryset(ExpertReportAnnotationQuerySet)
