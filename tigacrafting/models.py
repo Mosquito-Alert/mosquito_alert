@@ -167,7 +167,8 @@ class CrowdcraftingResponse(models.Model):
 class IdentificationTask(LifecycleModel):
     @classmethod
     def create_for_report(self, report):
-        if not report.photos.exists() or not report.type=='adult':
+        from tigaserver_app.models import Report
+        if not report.photos.exists() or not report.type==Report.TYPE_ADULT:
             return None
 
         # If report country has NS assigned.
