@@ -8,6 +8,27 @@ from django.db.models.query import QuerySet
 from django.utils import timezone
 
 class IdentificationTaskQuerySet(models.QuerySet):
+    """
+    QuerySet for IdentificationTask model providing querysets to filter tasks based on their 
+    annotation lifecycle, user role, and assignment rules.
+
+    Available querysets:
+    - `new()`: Retrieves tasks that have never been assigned and are not yet in the annotation process.
+    - `backlog(user)`: Retrieves tasks awaiting assignment but part of the annotation cycle, prioritizing based on user attributes.
+    - `ongoing()`: Retrieves tasks that have entered the annotation cycle and have at least one annotation.
+    - `blocked(days)`: Retrieves tasks that are ongoing but blocked due to inactivity of annotators.
+    - `annotating()`: Retrieves tasks currently being annotated but not yet fully completed.
+    - `to_review()`: Retrieves tasks that have completed annotations but require review.
+    - `closed()`: Retrieves tasks that have been finalized and closed.
+    - `done(state)`: Retrieves tasks marked as done, with the ability to toggle negation.
+
+    The `backlog` method is particularly complex as it prioritizes tasks based on user role:
+    - Bounding Box users are assigned tasks from their native country.
+    - European users prioritize tasks from their own country, then general European tasks.
+    - Spanish users prioritize tasks from their NUTS2 region, then Spain, then Europe.
+    - National supervisors can access tasks under exclusivity periods for their assigned country.
+    """
+
     # STAGES QUERYSETS
     def new(self) -> QuerySet:
         """Never assigned, not yet in the annotation process."""
