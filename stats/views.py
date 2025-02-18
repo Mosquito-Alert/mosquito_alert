@@ -158,10 +158,9 @@ def workload_available_reports(request):
         current_progress = IdentificationTask.objects.ongoing()
 
         overall_pending = ExpertReportAnnotation.objects.filter(
-            identification_task__isnull=False,
-            validation_complete=False,
-            user__pk__in=user_id_filter
-        )
+            user__pk__in=user_id_filter,
+            identification_task__isnull=False
+        ).completed(False)
 
         data = { 'current_pending_n' : current_pending.count(), 'current_progress_n' : current_progress.count(), 'overall_pending': overall_pending.count()}
         return Response(data)

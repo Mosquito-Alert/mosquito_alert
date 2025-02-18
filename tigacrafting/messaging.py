@@ -30,7 +30,8 @@ def create_notification_content_finished_validation(identification_task: Identif
     if picture_url:
         context_en['picture_link'] = context_native['picture_link'] = picture_url
 
-    context_en['expert_note'] = context_native['expert_note'] = identification_task.public_note
+    if identification_task.public_note:
+        context_en['expert_note'] = context_native['expert_note'] = identification_task.public_note
 
     # Include any specific message for the user
     if identification_task.message_for_user:
