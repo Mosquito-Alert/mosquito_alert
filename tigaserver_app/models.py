@@ -1972,7 +1972,6 @@ class Report(TimeZoneModelMixin, models.Model):
                 _identification_task.save()
 
         if self.type != self.TYPE_ADULT or (self.flipped_to and self.flipped_to != self.TYPE_ADULT):
-            # Case flipped.
             IdentificationTask.objects.filter(report=self).delete()
 
     def soft_delete(self):
