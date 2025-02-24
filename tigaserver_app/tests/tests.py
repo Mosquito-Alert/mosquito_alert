@@ -2171,3 +2171,19 @@ class ApiUsersViewTest(APITransactionTestCase):
         )
         # Check the status code
         self.assertEqual(response.status_code, 400)
+
+    def test_GET_list_users_with_filter(self):
+        self.client.force_authenticate(user=self.mobile_user)
+
+        tigauser = TigaUser.objects.create()
+        filter_params = {
+            'user_UUID': str(tigauser.pk)[:10]
+        }
+        response = self.client.get(
+            self.ENDPOINT,
+            filter_params,
+            format="json",
+        )
+        # Check the status code
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]["user_UUID"], str(tigauser.pk))
