@@ -49,10 +49,6 @@ def create_notification_content_finished_validation(identification_task: Identif
         except TemplateDoesNotExist:
             return render_to_string('tigacrafting/validation_message_template_en.html', context).replace('&amp;', '&')
 
-    # Render HTML bodies
-    body_html_en = render_body_html('en', context_en)
-    body_html_native = render_body_html(user_language_code, context_native)
-
     taxon_name = identification_task.taxon.name if identification_task.taxon else ''
 
     # Set the language to the user's preference
@@ -68,6 +64,10 @@ def create_notification_content_finished_validation(identification_task: Identif
     context_en['validation_category'] = "{} ({})".format(taxon_name, identification_task.confidence_label)
 
     deactivate()
+
+    # Render HTML bodies
+    body_html_en = render_body_html('en', context_en)
+    body_html_native = render_body_html(user_language_code, context_native)
 
     notification_content = NotificationContent(
         native_locale=user_language_code,

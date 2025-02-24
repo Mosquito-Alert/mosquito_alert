@@ -6,6 +6,7 @@ from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
 from django.utils.translation import gettext_lazy as _
 
+from admin_numeric_filter.admin import NumericFilterModelAdmin, SliderNumericFilter
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 from modeltranslation.admin import TranslationAdmin
@@ -96,14 +97,15 @@ class ExpertReportAnnotationInlineAdmin(admin.StackedInline):
         return False
 
 @admin.register(IdentificationTask)
-class IdentificationTaskAdmin(admin.ModelAdmin):
+class IdentificationTaskAdmin(NumericFilterModelAdmin):
     search_fields = ("report", "taxon__name")
-    list_display = ("report", "status", "is_safe", "is_reviewed", 'total_annotations', 'total_finished_annotations', 'taxon', 'confidence', 'created_at')
+    list_display = ("report", "status", "is_safe", 'total_annotations', 'total_finished_annotations', 'taxon', 'confidence', 'created_at')
     list_filter = (
         "status",
         ("is_safe", admin.BooleanFieldListFilter),
-        ("is_reviewed", admin.BooleanFieldListFilter),
         'total_finished_annotations',
+        ('confidence', SliderNumericFilter),
+        ('uncertainty', SliderNumericFilter),
         ('taxon', admin.RelatedOnlyFieldListFilter),
         ('report__country', admin.RelatedOnlyFieldListFilter)
     )
@@ -111,16 +113,19 @@ class IdentificationTaskAdmin(admin.ModelAdmin):
     fields = (
         ("report", "photo"),
         ("created_at", "updated_at"),
-        ("status", "is_safe", "is_reviewed"),
+        ("status", "is_safe"),
         ("exclusivity_end", "in_exclusivty_period"),
         ("total_annotations", "total_finished_annotations"),
-        ("taxon", "confidence"),
-        ("public_note", "message_for_user")
+        ("revision_type", "reviewed_at"),
+        ("taxon", "confidence_label", "confidence"),
+        ("agreement", "uncertainty"),
+        "public_note",
+        "message_for_user"
     )
 
     def get_readonly_fields(self, request, obj=None):
         # Make all fields read-only by getting the model's fields dynamically
-        return [field.name for field in self.model._meta.fields] + ['in_exclusivty_period']
+        return [field.name for field in self.model._meta.fields] + ['in_exclusivty_period', "confidence_label"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('report__country', 'taxon', 'photo')

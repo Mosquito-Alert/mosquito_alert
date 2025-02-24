@@ -86,6 +86,7 @@ INSTALLED_APPS = (
     'drf_standardized_errors',
     'treebeard',
     "django_lifecycle_checks",
+    "admin_numeric_filter"
 )
 
 '''

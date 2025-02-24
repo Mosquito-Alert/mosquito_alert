@@ -1,14 +1,20 @@
-from typing import List, Optional, Literal
+from collections import defaultdict, Counter
+from decimal import Decimal, localcontext
+import math
+import numbers
+from typing import List, Optional, Literal, Dict, Any, Tuple
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction
 from django.contrib.auth import get_user_model
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
@@ -17,6 +23,7 @@ from django.dispatch import receiver
 from django_lifecycle.conditions import WhenFieldValueChangesTo
 from django_lifecycle import LifecycleModel, hook, AFTER_SAVE
 from treebeard.mp_tree import MP_Node
+from scipy.stats import entropy
 
 import tigacrafting.html_utils as html_utils
 
@@ -28,10 +35,11 @@ User = get_user_model()
 def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
     return float(n_yes - n_no)/n_total
 
-def get_confidence_label(value: float) -> str:
+def get_confidence_label(value: numbers.Number) -> str:
+    value = float(value)
     if value >= 0.9:
         return _('species_value_confirmed')
-    elif value >= 0.7:
+    elif value >= 0.5:
         return _('species_value_possible')
     else:
         return _('Not sure')
@@ -166,7 +174,7 @@ class CrowdcraftingResponse(models.Model):
 
 class IdentificationTask(LifecycleModel):
     @classmethod
-    def create_for_report(self, report):
+    def create_for_report(self, report) -> Optional['IdentificationTask']:
         from tigaserver_app.models import Report
         if not report.photos.exists() or not report.type==Report.TYPE_ADULT:
             return None
@@ -186,6 +194,155 @@ class IdentificationTask(LifecycleModel):
             exclusivity_end=exclusivity_end
         )
 
+    @classmethod
+    def get_taxon_consensus(
+            cls,
+            annotations: List['ExpertReportAnnotation'],
+            min_confidence: float = 0.5
+        ) -> Tuple[Optional['Taxon'], Decimal, float, float]:
+        """
+        Determines the most probable taxon based on expert annotations, calculating confidence,
+        uncertainty, and agreement using a taxonomic hierarchy. Confidence is propagated from leaves
+        to parents, and uncertainty is measured using normalized entropy.
+
+        Parameters:
+            annotations (List['ExpertReportAnnotation']): List of expert annotations, each containing a taxon and its confidence level.
+            min_confidence (float): Minimum confidence threshold to consider a taxon as final.
+
+        Returns:
+            Tuple[Optional['Taxon'], float, float, float]:
+                - Most probable taxon (or None if unclassified).
+                - Associated confidence score.
+                - Normalized entropy (uncertainty measure).
+                - Agreement score (proportion of annotations agreeing with the selected taxon).
+        """
+        def distribute_confidence_leaves(taxon: Taxon, confidence: Decimal) -> None:
+            """
+            Distributes the given confidence value to the leaf taxa under the provided taxon.
+            If the taxon is a leaf itself, the confidence is added directly. Otherwise, the
+            confidence is distributed evenly among its leaves.
+            """
+            if taxon.is_leaf():
+                taxon_leaves_confidence[taxon] += confidence
+                return
+
+            # TODO: distribute first to children instead of directly to leaves?
+            taxon_leaves_qs = taxon.get_leaves()
+            num_leaves = taxon_leaves_qs.count()
+            for taxon_leaf in taxon_leaves_qs.iterator():
+                taxon_leaves_confidence[taxon_leaf] += confidence/num_leaves
+
+        def propagate_confidence_up(taxon_confidence: defaultdict[Decimal]) -> defaultdict[Decimal]:
+            """
+            Propagates confidence values upwards from leaves to their parent taxa recursively.
+
+            Parameters:
+                taxon_confidence (defaultdict): A dictionary with taxa as keys and their corresponding confidence values.
+
+            Returns:
+                defaultdict: The propagated confidence values for each taxon.
+            """
+            parent_confidence = defaultdict(Decimal)
+            for taxon, confidence in taxon_confidence.items():
+                if t_parent:=taxon.parent:
+                    parent_confidence[t_parent] += confidence
+            if parent_confidence:
+                # Recursively aggregate parent confidence values
+                return defaultdict(
+                    Decimal,
+                    Counter(taxon_confidence) + Counter(propagate_confidence_up(parent_confidence))
+                )
+            return taxon_confidence
+
+        def calculate_norm_entropy(probabilities: List[numbers.Number]) -> float:
+            """Computes normalized entropy of the given probability distribution."""
+            # Cast the probabilities list to a list of floats
+            probabilities = [float(p) for p in probabilities]
+
+            # If there's only one probability, there is no uncertainty (entropy = 0)
+            # math.log2(1) = 0 -> would raise in the division (denominator)
+            if len(probabilities) <= 1:
+                return 0.0
+            return entropy(probabilities, base=2) / math.log2(len(probabilities))
+
+        # Step 1: Handle edge cases where no annotations are available.
+        if not annotations:
+            # Unclassified. No annotations yet.
+            return None, 0.0, 1.0, 0.0
+
+        total_annotations = len(annotations)
+        annotations_with_taxon = [annotation for annotation in annotations if annotation.taxon]
+
+        if not annotations_with_taxon:
+            # Unclassified. Not an insect.
+            return None, 1.0, 0.0, 1.0
+
+        num_annotations_with_taxon = len(annotations_with_taxon)
+        total_null_annotations = total_annotations - num_annotations_with_taxon
+
+        # Step 2: Initialize data structures.
+        taxon_leaves_confidence = defaultdict(Decimal)
+        taxon_agreement = defaultdict(float)
+        taxon_agreement[None] =  total_null_annotations/total_annotations
+
+        # Step 3: Aggregate confidences.
+        for annotation in annotations_with_taxon:
+            taxon, confidence = annotation.taxon, Decimal(str(annotation.confidence))
+            taxon_agreement[taxon] += 1/total_annotations
+
+            # Distribute given confidence to leaves.
+            distribute_confidence_leaves(taxon=taxon, confidence=confidence)
+
+            # Distribute remaining confidence among sibling leaves.
+            remaining_confidence = 1 - confidence
+            if remaining_confidence > 0:
+                # Getting siblings from the same rank group.
+                siblings_qs = taxon.get_sibling_leaves_in_rank_group()
+                num_siblings = siblings_qs.count()
+                for sibling in siblings_qs:
+                    distribute_confidence_leaves(
+                        taxon=sibling,
+                        confidence=remaining_confidence/num_siblings
+                    )
+
+        # Step 4: Propagate confidence up the taxonomy.
+        aggregated_confidence = propagate_confidence_up(taxon_leaves_confidence)
+        with localcontext() as ctx:
+            ctx.prec = cls._meta.get_field('confidence').max_digits
+
+            normalized_confidence = {
+                taxon: confidence / num_annotations_with_taxon
+                for taxon, confidence in aggregated_confidence.items()
+            }
+
+        # Step 5: Select the best taxon above the confidence threshold.
+        valid_taxa = [
+            (taxon, conf) for taxon, conf in normalized_confidence.items()
+            if conf >= float(min_confidence)
+        ]
+
+        if not valid_taxa:
+            # No taxa meet the minimum confidence threshold.
+            return None, 0.0, 1.0, 0.0
+
+        result_taxon, result_confidence = max(
+            valid_taxa,
+            # NOTE: until we don't have a full taxonomy tree, use agreement first.
+            key=lambda item: (taxon_agreement.get(item[0], 0), item[0].rank, item[1])
+            #key=lambda item: (item[0].rank_group, taxon_agreement.get(item[0], 0), item[1])
+        )
+        result_agreement = taxon_agreement.get(result_taxon, 0)
+
+        # Step 6: Calculate uncertainty (normalized entropy).
+        # For the probability distribution we will only consider the leaves of the rank group.
+        sibling_pks = result_taxon.get_sibling_leaves_in_rank_group().values_list('pk', flat=True)
+        probabilities = [result_confidence] + [
+            confidence for taxon, confidence in normalized_confidence.items() if taxon.pk in sibling_pks
+        ]
+        norm_entropy = calculate_norm_entropy(probabilities)
+        return result_taxon, result_confidence, norm_entropy, result_agreement
+
+
     class Status(models.TextChoices):
         # OPEN STATUS
         OPEN = 'open', _('Open')
@@ -196,6 +353,10 @@ class IdentificationTask(LifecycleModel):
         # DONE STATUS
         DONE = 'done', _('Done')
         ARCHIVED = 'archived', _('Archived')  # For soft-deleted reports or hidden
+
+    class Revision(models.TextChoices):
+        AGREE = 'agree', _("Agreed with experts")
+        OVERWRITE = 'overwrite', _("Overwritten")
 
     CLOSED_STATUS = [Status.DONE, Status.ARCHIVED]
 
@@ -209,7 +370,6 @@ class IdentificationTask(LifecycleModel):
     )
 
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN, db_index=True)
-    is_reviewed = models.BooleanField(default=False, editable=False, db_index=True) # Reviewed by superexpert.
 
     is_safe = models.BooleanField(default=False, editable=False, help_text="Indicates if the content is safe for publication.")
 
@@ -219,10 +379,19 @@ class IdentificationTask(LifecycleModel):
     total_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # total experts
     total_finished_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # when validation_complete = True (only for experts)
 
-    exclusivity_end = models.DateTimeField(null=True, blank=True, db_index=True)
+    exclusivity_end = models.DateTimeField(null=True, blank=True, editable=False, db_index=True)
+
+    # Revision
+    revision_type = models.CharField(max_length=16, choices=Revision.choices, default=None, editable=False, blank=True, null=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True, editable=False)
 
     taxon = models.ForeignKey('Taxon', on_delete=models.PROTECT, null=True, blank=True, editable=False)
-    confidence = models.FloatField(default=0.0, editable=False)
+    confidence = models.DecimalField(
+        max_digits=7, decimal_places=6, default=Decimal("0"), editable=False,
+        validators=[MinValueValidator(Decimal("0")), MaxValueValidator(Decimal("1"))]
+    )
+    uncertainty = models.FloatField(default=1.0, editable=False, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    agreement = models.FloatField(default=0, editable=False, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
 
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
@@ -245,7 +414,7 @@ class IdentificationTask(LifecycleModel):
         if not self.taxon.content_object.specify_certainty_level:
             return
 
-        if self.confidence >= 0.9:
+        if self.confidence >= Decimal('0.9'):
             return ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY
         return ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
 
@@ -257,13 +426,18 @@ class IdentificationTask(LifecycleModel):
     def is_done(self) -> bool:
         return self.status == self.Status.DONE
 
-    def _update_from_annotation(self, annotation, default_status):
+    @property
+    def is_reviewed(self) -> bool:
+        return bool(self.reviewed_at)
+
+    def _update_from_annotation(self, annotation: 'ExpertReportAnnotation', default_status: str) -> None:
         """Helper function to update attributes from an annotation."""
         self.photo_id = annotation.best_photo_id
         self.public_note = annotation.edited_user_notes
         self.message_for_user = annotation.message_for_user
-        self.taxon = annotation.taxon
-        self.confidence = annotation.confidence
+        self.taxon, self.confidence, self.uncertainty, self.agreement = self.get_taxon_consensus(
+            annotations=[annotation,]
+        )
         self.is_safe = annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
         self.status = default_status
 
@@ -280,23 +454,35 @@ class IdentificationTask(LifecycleModel):
             user=user
         )
 
-    def refresh(self, commit: bool = True):
-        def get_most_voted_field(field_name: str, tie_break_field: Optional[str] = None) -> Optional[str]:
+    def refresh(self, force: bool = False, commit: bool = True) -> None:
+        def get_most_voted_field(
+                field_name: str,
+                discard_nulls: bool = True,
+                discard_blanks: bool = True,
+                tie_break_field: Optional[str] = None,
+                lookup_filter: Optional[Dict[str, Any]] = None
+            ) -> Optional[str]:
             """
             Get the most voted value for a specific field from finished expert annotations.
             In case of a tie, use the tie_break_field (if provided) to resolve the tie.
             """
             # Get the model of the queryset
-            model = finished_experts_annotations_qs.model
-            qs = finished_experts_annotations_qs.filter(
-                **{f'{field_name}__isnull': False}
-            )
+            qs = finished_experts_annotations_qs
+            if discard_nulls:
+                qs = finished_experts_annotations_qs.filter(
+                    **{f'{field_name}__isnull': False}
+                )
 
-            # Check the field type
-            field = model._meta.get_field(field_name)
-            # Only exclude empty strings for CharField or TextField
-            if isinstance(field, (models.CharField, models.TextField)):
-                qs = qs.exclude(**{f'{field_name}__exact': ''})
+            if discard_blanks:
+                model = finished_experts_annotations_qs.model
+                # Check the field type
+                field = model._meta.get_field(field_name)
+                # Only exclude empty strings for CharField or TextField
+                if isinstance(field, (models.CharField, models.TextField)):
+                    qs = qs.exclude(**{f'{field_name}__exact': ''})
+
+            if lookup_filter:
+                qs = qs.filter(**lookup_filter)
 
             # Annotate with vote count
             annotated_qs = qs.values(field_name).annotate(
@@ -311,60 +497,17 @@ class IdentificationTask(LifecycleModel):
 
             return annotated_qs.values_list(field_name, flat=True).first()
 
-        def get_final_classification() -> tuple[Optional['Taxon'], float]:
-            """
-            Determine the final classification based on the most voted taxon and its confidence.
-            """
-            most_voted_taxon_pk = get_most_voted_field(
-                field_name='taxon_id',
-                tie_break_field=models.F('taxon__depth').desc(nulls_last=True)
-            )
-            if not most_voted_taxon_pk:
-                # Unclassified. Not an insect.
-                return None, 1.0
-
-            most_voted_taxon = Taxon.objects.get(pk=most_voted_taxon_pk)
-
-            # Consider the most voted taxon and its ancestors
-            num_valid_votes = finished_experts_annotations_qs.filter(
-                models.Q(taxon=most_voted_taxon)
-                | models.Q(
-                    taxon__in=most_voted_taxon.get_ancestors()
-                )
-            ).count()
-
-            total_annotators = finished_experts_annotations_qs.filter(taxon__isnull=False).count()
-            agreement_ratio = num_valid_votes / total_annotators if total_annotators > 0 else 0
-
-            # Ensure at least 60% of the annotators agree on the taxon
-            if total_annotators == 0 or agreement_ratio < 0.6:
-                return None, 0.0
-
-            # TODO: discuss which of the two to apply.
-            # Ensure at least 2 experts agree on the taxon
-            # agreement_count = finished_experts_annotations_qs.filter(taxon=most_voted_taxon).count()
-            # if agreement_count < 2:
-            #     return None, 0.0
-
-            # Calculate average confidence for the most voted taxon
-            taxon_confidence = finished_experts_annotations_qs.filter(taxon=most_voted_taxon).aggregate(
-                models.Avg('confidence')
-            )['confidence__avg']
-
-            return most_voted_taxon, taxon_confidence
-
         # Querysets for expert annotations
         experts_annotations_qs = self.expert_report_annotations.filter(user__groups__name='expert').exclude(user__groups__name='superexpert')
         finished_experts_annotations_qs = experts_annotations_qs.filter(validation_complete=True)
 
         # Find executive and superexpert annotations
         executive_annotation = finished_experts_annotations_qs.filter(validation_complete_executive=True).order_by('-last_modified').first()
-        superexpert_annotation = self.expert_report_annotations.filter(validation_complete=True, user__groups__name='superexpert').order_by('-last_modified').first()
+        superexpert_annotation = self.expert_report_annotations.filter(validation_complete=True, user__groups__name='superexpert').order_by('-revise', '-last_modified').first()
 
         # Update task statistics
         self.total_annotations = experts_annotations_qs.count()
         self.total_finished_annotations = finished_experts_annotations_qs.count()
-        self.is_reviewed = bool(superexpert_annotation)
 
         current_photo_id = self.photo_id
         if superexpert_annotation and superexpert_annotation.revise:
@@ -373,44 +516,76 @@ class IdentificationTask(LifecycleModel):
                 annotation=superexpert_annotation,
                 default_status=self.Status.DONE
             )
-        elif executive_annotation:
-            # Case 2: Executive validation
-            default_status = (
-                self.Status.FLAGGED if executive_annotation.status == ExpertReportAnnotation.STATUS_FLAGGED 
-                else self.Status.REVIEW
-            )
-            self._update_from_annotation(
-                annotation=executive_annotation,
-                default_status=default_status
-            )
-        elif superexpert_annotation or self.total_finished_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
-            # Case 3: Sufficient annotations for final decision
-            if finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists():
-                self.status = self.Status.FLAGGED
-            else:
-                self.photo_id = get_most_voted_field(field_name='best_photo')
-                self.public_note = get_most_voted_field(field_name='edited_user_notes')
-                self.is_safe = get_most_voted_field(field_name='status') == ExpertReportAnnotation.STATUS_PUBLIC
-                self.taxon, self.confidence = get_final_classification()
-
-                max_confidence = max(
-                    finished_experts_annotations_qs.exclude(taxon=self.taxon).values_list('confidence', flat=True),
-                    default=0.0
+        elif not self.is_reviewed or force:
+            # TODO: ensure annotations are before superexpert revision -> pending, there are annotations that not meet this requirement.
+            if executive_annotation:
+                # Case 2: Executive validation
+                default_status = (
+                    self.Status.FLAGGED if executive_annotation.status == ExpertReportAnnotation.STATUS_FLAGGED 
+                    else self.Status.REVIEW
                 )
-                if not self.taxon and self.confidence < max_confidence:
+                self._update_from_annotation(
+                    annotation=executive_annotation,
+                    default_status=default_status
+                )
+            elif self.total_finished_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
+                # Case 3: Sufficient annotations for final decision
+                taxon, confidence, uncertainty, agreement = self.get_taxon_consensus(
+                    annotations=list(finished_experts_annotations_qs)
+                )
+                if uncertainty > 0.92:
+                    self.taxon = Taxon.get_root()
+                    self.confidence = Decimal('1.0')
+                    self.uncertainty = 1.0
+                    self.agreement = 0.0
                     self.status = self.Status.CONFLICT
                 else:
-                    self.status = self.Status.REVIEW
-        elif self.total_finished_annotations < self.total_annotations:
-            # Check for flagged annotations
-            if finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists():
-                self.status = self.Status.FLAGGED
+                    self.taxon = taxon
+                    self.confidence = confidence
+                    self.uncertainty = uncertainty
+                    self.agreement = agreement
+
+                    if finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists():
+                        self.status = self.Status.FLAGGED
+                    else:
+                        self.status = self.Status.REVIEW
+
+                if self.taxon:
+                    taxon_filter = {
+                        'taxon__in': Taxon.get_tree(parent=self.taxon)
+                    }
+                else:
+                    taxon_filter = {
+                        'taxon__isnull': True
+                    }
+                self.photo_id = get_most_voted_field(field_name='best_photo', lookup_filter=taxon_filter)
+                self.public_note = get_most_voted_field(field_name='edited_user_notes', lookup_filter=taxon_filter)
+                self.is_safe = get_most_voted_field(field_name='status') == ExpertReportAnnotation.STATUS_PUBLIC
+            elif self.total_finished_annotations < self.total_annotations:
+                # Check for flagged annotations
+                if finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists():
+                    self.status = self.Status.FLAGGED
+            else:
+                # Back to defaults. e.g: when ExpertReportAnnotation delete
+                self.public_note = None
+                self.message_for_user = None
+                self.taxon = None
+                self.confidence = self._meta.get_field('confidence').default
+                self.uncertainty = self._meta.get_field('uncertainty').default
+                self.agreement = self._meta.get_field('agreement').default
+                self.is_safe = self._meta.get_field('is_safe').default
 
         # Ensure photo_id is updated and save the instance
         self.photo_id = self.photo_id or current_photo_id
-        self.updated_at = timezone.now()
 
         if superexpert_annotation:
+            self.reviewed_at = superexpert_annotation.last_modified
+            self.revision_type = self.Revision.OVERWRITE if superexpert_annotation.revise else self.Revision.AGREE
+        else:
+            self.reviewed_at = None
+            self.revision_type = None
+
+        if self.is_reviewed:
             self.status = self.Status.DONE
 
         if self.report.deleted or self.report.hide:
@@ -428,7 +603,7 @@ class IdentificationTask(LifecycleModel):
             value=Status.DONE
         ),
     )
-    def on_done(self):
+    def on_done(self) -> None:
         from .messaging import send_finished_identification_task_notification
         send_finished_identification_task_notification(
             identification_task=self,
@@ -443,6 +618,23 @@ class IdentificationTask(LifecycleModel):
             self.is_safe = False
 
         return super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(total_finished_annotations__lte=models.F('total_annotations')),
+                name='total_finished_annotations_lte_total_annotations'
+            ),
+            models.CheckConstraint(
+                check=models.Q(confidence__range=(Decimal("0"), Decimal("1"))),
+                name="%(app_label)s_%(class)s_confidence_between_0_and_1",
+            ),
+            models.CheckConstraint(
+                check=models.Q(uncertainty__range=(0, 1)),
+                name="%(app_label)s_%(class)s_uncertainty_between_0_and_1",
+            )
+        ]
+
 
 class Annotation(models.Model):
     user = models.ForeignKey('auth.User', related_name='annotations', on_delete=models.PROTECT, )
@@ -518,13 +710,17 @@ class ExpertReportAnnotation(models.Model):
     validation_complete_executive = models.BooleanField(default=False, db_index=True, help_text='Available only to national supervisor. Causes the report to be completely validated, with the final classification decided by the national supervisor')
 
     taxon = models.ForeignKey('tigacrafting.Taxon', null=True, blank=True, on_delete=models.PROTECT)
-    confidence = models.FloatField(default=0.0)
+    confidence = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
 
     objects = ExpertReportAnnotationManager()
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['user', 'report'], name='unique_assignation')
+            models.UniqueConstraint(fields=['user', 'report'], name='unique_assignation'),
+            models.CheckConstraint(
+                check=models.Q(confidence__gte=0) & models.Q(confidence__lte=1),
+                name='expertreportannotation_confidence_between_0_and_1'
+            )
         ]
 
     def is_superexpert(self):
@@ -775,7 +971,7 @@ class ExpertReportAnnotation(models.Model):
         else:
             return -3
 
-    def get_html_color_for_label(self):
+    def get_html_color_for_label(self) -> str:
         return html_utils.get_html_color_for_label(
             taxon=self.taxon,
             confidence=self.confidence
@@ -805,12 +1001,12 @@ class ExpertReportAnnotation(models.Model):
 
     def _get_confidence(self) -> float:
         if self.validation_value == self.VALIDATION_CATEGORY_DEFINITELY:
-            return 1
+            return 1.0
         elif self.validation_value == self.VALIDATION_CATEGORY_PROBABLY:
             return 0.75
         else:
             if taxon := self._get_taxon():
-                return 1 if taxon.rank < Taxon.TaxonomicRank.SPECIES_COMPLEX else 0.75
+                return 1.0 if taxon.rank < Taxon.TaxonomicRank.SPECIES_COMPLEX else 0.75
 
             return 0.0
 
@@ -903,7 +1099,7 @@ class ExpertReportAnnotation(models.Model):
         result = super().delete(*args, **kwargs)
 
         if identification_task:
-            identification_task.refresh()
+            identification_task.refresh(force=True)
 
         return result
 
@@ -1090,6 +1286,28 @@ class Taxon(MP_Node):
     def get_root(cls) -> Optional['Taxon']:
         return cls.get_root_nodes().first()
 
+    @classmethod
+    def get_leaves_in_rank_group(cls, rank: int) -> models.QuerySet['Taxon']:
+        rank_group = cls._convert_rank_to_rank_group(rank=rank)
+        next_rank_group = rank_group + cls.RANK_GROUP_STEP
+        return Taxon.objects.filter(
+            rank__gte=rank_group,
+            rank__lt=next_rank_group
+        ).exclude(
+            models.Exists(
+                Taxon.objects.filter(
+                    path__startswith=models.OuterRef('path'),
+                    depth__gt=models.OuterRef('depth'),
+                    rank__lt=next_rank_group
+                )
+            )
+        )
+
+    @classmethod
+    def _convert_rank_to_rank_group(cls, rank: int) -> int:
+        # Round down to the nearest multiple of 10
+        return (rank // cls.RANK_GROUP_STEP) * cls.RANK_GROUP_STEP
+
     class TaxonomicRank(models.IntegerChoices):
         # DOMAIN = 0, _("Domain")
         # KINGDOM = 10, _("Kingdom")
@@ -1102,6 +1320,8 @@ class Taxon(MP_Node):
         SUBGENUS = 61, _("Subgenus")
         SPECIES_COMPLEX = 70, _("Species complex")
         SPECIES = 71, _("Species")
+
+    RANK_GROUP_STEP = TaxonomicRank.ORDER - TaxonomicRank.CLASS
 
     # Relations
     content_type = models.ForeignKey(
@@ -1136,9 +1356,41 @@ class Taxon(MP_Node):
     def is_specie(self):
         return self.rank >= self.TaxonomicRank.SPECIES_COMPLEX
 
-    @property
-    def parent(self):
+    @cached_property
+    def parent(self) -> Optional['Taxon']:
         return self.get_parent()
+
+    @property
+    def prev_rank_group(self) -> int:
+        return self.rank_group - self.RANK_GROUP_STEP
+
+    @property
+    def next_rank_group(self) -> int:
+        return self.rank_group + self.RANK_GROUP_STEP
+
+    @property
+    def rank_group(self) -> int:
+        return self._convert_rank_to_rank_group(rank=self.rank)
+
+    def get_leaves(self) -> models.QuerySet['Taxon']:
+        return self.get_descendants().filter(numchild=0)
+
+    def get_parent_in_prev_rank_group(self) -> Optional['Taxon']:
+        return self.get_ancestors().filter(rank=self.prev_rank_group).order_by('depth').first()
+
+    def get_children_leaves_in_rank_group(self) -> models.QuerySet['Taxon']:
+        return Taxon.get_leaves_in_rank_group(rank=self.next_rank_group).filter(
+            path__startswith=self.path
+        )
+
+    def get_sibling_leaves_in_rank_group(self) -> models.QuerySet['Taxon']:
+        parent_rank_group = self.get_parent_in_prev_rank_group()
+        if not parent_rank_group:
+            return Taxon.objects.none()
+
+        return parent_rank_group.get_children_leaves_in_rank_group().exclude(
+            path__startswith=self.path
+        )
 
     # Methods
     def clean_rank_field(self):
