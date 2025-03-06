@@ -3478,7 +3478,10 @@ class SentNotification(models.Model):
             android=AndroidConfig(
                 notification=AndroidNotification(
                     click_action='FLUTTER_NOTIFICATION_CLICK'
-                )
+                ),
+                # NOTE: priority high is needed to show notification when the app is in foreground.
+                # see https://firebase.google.com/docs/cloud-messaging/flutter/receive#foreground_and_notification_messages
+                priority='high'
             )
         )
 
