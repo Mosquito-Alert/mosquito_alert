@@ -81,10 +81,10 @@ def create_notification_content_finished_validation(identification_task: Identif
 
     return notification_content
 
-def send_finished_identification_task_notification(identification_task: IdentificationTask, as_user: Optional[User] = None) -> None:
+def send_finished_identification_task_notification(identification_task: IdentificationTask, from_user: Optional[User] = None) -> None:
     notification = Notification.objects.create(
         report=identification_task.report,
-        expert=as_user,
+        expert=from_user,
         notification_content=create_notification_content_finished_validation(identification_task=identification_task)
     )
     notification.send_to_user(user=identification_task.report.user)

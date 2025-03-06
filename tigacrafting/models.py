@@ -607,7 +607,7 @@ class IdentificationTask(LifecycleModel):
         from .messaging import send_finished_identification_task_notification
         send_finished_identification_task_notification(
             identification_task=self,
-            as_user=User.objects.filter(pk=25).first()
+            from_user=User.objects.filter(pk=25).first()
         )
 
     def save(self, *args, **kwargs):
