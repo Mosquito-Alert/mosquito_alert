@@ -404,7 +404,7 @@ class IdentificationTask(LifecycleModel):
 
     # LEGACY
     @property
-    def validation_value(self) -> int:
+    def validation_value(self) -> Optional[int]:
         if not self.taxon:
             return
 
@@ -419,7 +419,7 @@ class IdentificationTask(LifecycleModel):
         return ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
 
     @property
-    def in_exclusivty_period(self) -> bool:
+    def in_exclusivity_period(self) -> bool:
         return self.exclusivity_end and timezone.now() < self.exclusivity_end
 
     @property
@@ -522,7 +522,7 @@ class IdentificationTask(LifecycleModel):
                 # Case 2: Executive validation
                 default_status = (
                     self.Status.FLAGGED if executive_annotation.status == ExpertReportAnnotation.STATUS_FLAGGED 
-                    else self.Status.REVIEW
+                    else self.Status.DONE
                 )
                 self._update_from_annotation(
                     annotation=executive_annotation,
@@ -547,6 +547,9 @@ class IdentificationTask(LifecycleModel):
 
                     if finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists():
                         self.status = self.Status.FLAGGED
+                    elif self.agreement == 0 and finished_experts_annotations_qs.filter(taxon__is_relevant=True).exists():
+                        # All experts has choosen different things.
+                        self.status = self.Status.CONFLICT
                     else:
                         self.status = self.Status.REVIEW
 
@@ -632,6 +635,10 @@ class IdentificationTask(LifecycleModel):
             models.CheckConstraint(
                 check=models.Q(uncertainty__range=(0, 1)),
                 name="%(app_label)s_%(class)s_uncertainty_between_0_and_1",
+            ),
+            models.CheckConstraint(
+                check=models.Q(agreement__range=(0, 1)),
+                name="%(app_label)s_%(class)s_agreement_between_0_and_1",
             )
         ]
 
@@ -685,7 +692,7 @@ class ExpertReportAnnotation(models.Model):
     user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
     report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations', on_delete=models.CASCADE, )
     # NOTE: identification_task is nullable due to legacy. There are annotations to sites.
-    identification_task = models.ForeignKey(IdentificationTask, null=True, blank=True, related_name='expert_report_annotations', on_delete=models.CASCADE)
+    identification_task = models.ForeignKey(IdentificationTask, null=True, blank=True, editable=False, related_name='expert_report_annotations', on_delete=models.CASCADE)
     tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
     aegypti_certainty_category = models.IntegerField('Aegypti Certainty', choices=AEGYPTI_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows an Aedes aegypti')
     tiger_certainty_notes = models.TextField('Internal Species Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
@@ -733,7 +740,7 @@ class ExpertReportAnnotation(models.Model):
     def is_on_ns_executive_validation_period(self):
         if not self.identification_task:
             return False
-        return self.identification_task.in_exclusivty_period
+        return self.identification_task.in_exclusivity_period
 
     @property
     def confidence_label(self):
@@ -781,6 +788,9 @@ class ExpertReportAnnotation(models.Model):
         from tigaserver_app.models import Report
 
         if report.type == Report.TYPE_ADULT:
+            # TODO: at some point, superexpert should not auto-review. Remove all
+            #       annotations from superexpert that are revise=False and are in
+            #       a ExpertReportAnnotation that are replicas or executive validation.
             ExpertReportAnnotation.objects.update_or_create(
                 user=User.objects.get(pk=25),  # "super_reritja"
                 report=report,
@@ -1070,7 +1080,8 @@ class ExpertReportAnnotation(models.Model):
             self.message_for_user = ""
             self.best_photo = None
 
-        self.identification_task = IdentificationTask.objects.filter(report=self.report).first()
+        if not self.identification_task or str(self.identification_task.pk) != str(self.report.pk):
+            self.identification_task = IdentificationTask.objects.filter(report=self.report).first()
         self.taxon = self._get_taxon()
         self.confidence = self._get_confidence()
 
@@ -1081,6 +1092,7 @@ class ExpertReportAnnotation(models.Model):
             self.create_super_expert_approval(report=self.report)
 
         if self.identification_task:
+            self.identification_task.refresh_from_db()
             self.identification_task.refresh()
 
     def delete(self, *args, **kwargs):
@@ -1340,7 +1352,7 @@ class Taxon(MP_Node):
     is_relevant = models.BooleanField(
         default=False,
         db_index=True,
-        help_text="Indicates if this taxon is relevant for the application. Will be shown first."
+        help_text="Indicates if this taxon is relevant for the application. Will be shown first and will set task to conflict if final taxon is not this."
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

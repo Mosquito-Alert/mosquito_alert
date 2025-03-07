@@ -301,7 +301,7 @@ class ExpertReportAnnotationQuerySet(models.QuerySet):
     def stale(self, days: int = settings.ENTOLAB_LOCK_PERIOD) -> QuerySet:
         return self.filter(
             validation_complete=False,
-            created__lt=timezone.now() - timedelta(days=days),
+            created__lte=timezone.now() - timedelta(days=days),
         )
 
 ExpertReportAnnotationManager = models.Manager.from_queryset(ExpertReportAnnotationQuerySet)

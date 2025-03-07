@@ -1,9 +1,16 @@
 # Create your tests here.
 from abc import ABC, abstractmethod
+from contextlib import nullcontext as does_not_raise
+from decimal import Decimal
+import math
 import pytest
-from unittest.mock import PropertyMock, patch
+from scipy.stats import entropy
+import time_machine
+from unittest.mock import PropertyMock, patch, MagicMock
+import uuid
 
 from datetime import timedelta
+from django.conf import settings
 from django.test import TestCase
 from django.utils.translation import activate, deactivate, gettext as _
 from tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
@@ -1257,6 +1264,16 @@ class TestTaxonModel:
 
         assert Taxon.get_root() is None
 
+    def test_get_leaves_in_rank_group(self, taxon_root):
+        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        species = genus.add_child(name='species', rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = genus.add_child(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
+        species_1 = species_complex.add_child(name='species 1', rank=Taxon.TaxonomicRank.SPECIES)
+        species_2 = species_complex.add_child(name='species 2', rank=Taxon.TaxonomicRank.SPECIES)
+
+        assert frozenset(Taxon.get_leaves_in_rank_group(Taxon.TaxonomicRank.SPECIES_COMPLEX)) == frozenset([species, species_1, species_2])
+        assert frozenset(Taxon.get_leaves_in_rank_group(Taxon.TaxonomicRank.GENUS)) == frozenset([genus])
+
     # fields
     def test_rank_can_not_be_null(self):
         assert not Taxon._meta.get_field("rank").null
@@ -1297,7 +1314,86 @@ class TestTaxonModel:
 
         assert not obj.is_specie
 
+    def test_prev_rank_group(self):
+        genus = Taxon(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        species = Taxon(name='species', rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = Taxon(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
+
+        assert genus.prev_rank_group == Taxon.TaxonomicRank.FAMILY
+        assert species.prev_rank_group == Taxon.TaxonomicRank.GENUS
+        assert species_complex.prev_rank_group == Taxon.TaxonomicRank.GENUS
+
+    def test_next_rank_group(self):
+        genus = Taxon(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        assert genus.next_rank_group == Taxon.TaxonomicRank.SPECIES_COMPLEX
+
+    def test_rank_group(self):
+        species = Taxon(name='species', rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = Taxon(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
+
+        assert species.rank_group == Taxon.TaxonomicRank.SPECIES_COMPLEX
+        assert species_complex.rank_group == Taxon.TaxonomicRank.SPECIES_COMPLEX
+
     # methods
+    def test_get_leaves(self, taxon_root):
+        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        species = genus.add_child(name='species', rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = genus.add_child(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
+        species_1 = species_complex.add_child(name='species 1', rank=Taxon.TaxonomicRank.SPECIES)
+        species_2 = species_complex.add_child(name='species 2', rank=Taxon.TaxonomicRank.SPECIES)
+
+        assert frozenset(genus.get_leaves()) == frozenset([species, species_1, species_2])
+        assert frozenset(species_complex.get_leaves()) == frozenset([species_1, species_2])
+
+    def test_get_parent_in_prev_rank_group(self, taxon_root):
+        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        species = genus.add_child(name='species', rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = genus.add_child(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
+        species_1 = species_complex.add_child(name='species 1', rank=Taxon.TaxonomicRank.SPECIES)
+        species_2 = species_complex.add_child(name='species 2', rank=Taxon.TaxonomicRank.SPECIES)
+
+        # Regular parent
+        assert species.get_parent_in_prev_rank_group() == genus
+        assert species_complex.get_parent_in_prev_rank_group() == genus
+
+        # Bypassing their parent, and going to previous rank group parent.
+        assert species_1.get_parent_in_prev_rank_group() == genus
+        assert species_2.get_parent_in_prev_rank_group() == genus
+
+    def test_get_children_leaves_in_rank_group(self, taxon_root):
+        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        species = genus.add_child(name='species', rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = genus.add_child(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
+        species_1 = species_complex.add_child(name='species 1', rank=Taxon.TaxonomicRank.SPECIES)
+        species_2 = species_complex.add_child(name='species 2', rank=Taxon.TaxonomicRank.SPECIES)
+
+        genus_1 = taxon_root.add_child(name='genus 1', rank=Taxon.TaxonomicRank.GENUS)
+        species_1_1 = genus_1.add_child(name='species 1 1', rank=Taxon.TaxonomicRank.SPECIES)
+
+        assert frozenset(genus.get_children_leaves_in_rank_group()) == frozenset([species, species_1, species_2])
+        assert frozenset(genus_1.get_children_leaves_in_rank_group()) == frozenset([species_1_1])
+        assert frozenset(species_complex.get_children_leaves_in_rank_group()) == frozenset([])
+        assert frozenset(species.get_children_leaves_in_rank_group()) == frozenset([])
+
+    def test_get_sibling_leaves_in_rank_group(self, taxon_root):
+        family = taxon_root.add_child(name='family', rank=Taxon.TaxonomicRank.FAMILY)
+        genus = family.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        species = genus.add_child(name='species', rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = genus.add_child(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
+        species_1 = species_complex.add_child(name='species 1', rank=Taxon.TaxonomicRank.SPECIES)
+        species_2 = species_complex.add_child(name='species 2', rank=Taxon.TaxonomicRank.SPECIES)
+
+        genus_1 = family.add_child(name='genus 1', rank=Taxon.TaxonomicRank.GENUS)
+        species_1_1 = genus_1.add_child(name='species 1 1', rank=Taxon.TaxonomicRank.SPECIES)
+
+        assert frozenset(species_complex.get_sibling_leaves_in_rank_group()) == frozenset([species])
+        assert frozenset(species.get_sibling_leaves_in_rank_group()) == frozenset([species_1, species_2])
+
+        assert frozenset(species_1.get_sibling_leaves_in_rank_group()) == frozenset([species, species_2])
+        assert frozenset(species_2.get_sibling_leaves_in_rank_group()) == frozenset([species, species_1])
+
+        assert frozenset(genus.get_sibling_leaves_in_rank_group()) == frozenset([genus_1])
+
     @pytest.mark.parametrize(
         "name, expected_result, is_specie",
         [
@@ -1384,3 +1480,764 @@ class TestTaxonModel:
 
         expected_result = "Aedes albopictus [Species]"
         assert taxon.__str__() == expected_result
+
+
+@pytest.mark.django_db
+class TestExpertReportAnnotationModel:
+    def test_taxon_field_can_be_null(self):
+        assert ExpertReportAnnotation._meta.get_field("taxon").null
+
+    def test_confidence_field_default_is_0(self):
+        assert ExpertReportAnnotation._meta.get_field("confidence").default == 0
+
+    @pytest.mark.parametrize(
+        "value, expected_raise",
+        [
+            (0, does_not_raise()),
+            (1, does_not_raise()),
+            (0.5, does_not_raise()),
+            (-0.1, pytest.raises(IntegrityError)),
+            (1.1, pytest.raises(IntegrityError)),
+        ]
+    )
+    def test_confidence_raise_if_not_between_0_and_1(self, user, adult_report, value, expected_raise):
+        obj = ExpertReportAnnotation.objects.create(user=user, report=adult_report)
+
+        # Need to force update, because save() sets the confidence automatically
+        with expected_raise:
+            ExpertReportAnnotation.objects.filter(pk=obj.pk).update(confidence=value)
+
+    # properties
+    @pytest.mark.parametrize(
+        "confidence_value, expected_result",
+        [
+            (0, _('Not sure')),
+            (0.49, _('Not sure')),
+            (0.5, _('species_value_possible')),
+            (0.75, _('species_value_possible')),
+            (0.89, _('species_value_possible')),
+            (0.9, _('species_value_confirmed')),
+            (1, _('species_value_confirmed')),
+        ]
+    )
+    def test_confidence_label(self, confidence_value, expected_result):
+        obj = ExpertReportAnnotation(confidence=confidence_value)
+        assert obj.confidence_label == expected_result
+
+    def test_userstat_grabbed_reports_is_incremented_on_create(self, user, adult_report):
+        userstat = user.userstat
+        assert userstat.grabbed_reports == 0
+
+        _ = ExpertReportAnnotation.objects.create(user=user, report=adult_report)
+
+        userstat.refresh_from_db()
+
+        assert userstat.grabbed_reports == 1
+
+    def test_taxon_is_set_on_create(self, taxon_root, user, adult_report):
+        category = Categories.objects.create(name="test")
+        taxon = taxon_root.add_child(name="test", rank=Taxon.TaxonomicRank.SPECIES, content_object=category)
+
+        obj = ExpertReportAnnotation.objects.create(category=category, user=user, report=adult_report)
+        assert obj.taxon == taxon
+
+    @pytest.mark.parametrize(
+        "value, expected_result",
+        [
+            (None, 0),
+            (ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY, 0.75),
+            (ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY, 1)
+        ]
+    )
+    def test_confidence_is_set_on_create(self, user, adult_report, value, expected_result):
+        obj = ExpertReportAnnotation.objects.create(validation_value=value, user=user, report=adult_report)
+        assert obj.confidence == expected_result
+
+    def test_identification_task_is_set_on_create(self, user, identification_task):
+        obj = ExpertReportAnnotation.objects.create(user=user, report=identification_task.report)
+
+        assert obj.identification_task == identification_task
+
+    def test_identification_task_is_called_to_refresh_on_create(self, user, identification_task):
+        with patch.object(IdentificationTask, 'refresh') as mocked_refresh:
+            _ = ExpertReportAnnotation.objects.create(user=user, report=identification_task.report)
+
+            # Check if refresh() was called
+            mocked_refresh.assert_called_once()
+
+    def test_identification_task_is_called_to_refresh_on_save(self, user, identification_task):
+        obj = ExpertReportAnnotation.objects.create(user=user, report=identification_task.report)
+
+        with patch.object(obj.identification_task, "refresh") as mocked_refresh:
+            obj.save()
+
+            mocked_refresh.assert_called_once()
+
+    def test_identification_task_is_called_to_refresh_on_delete(self, user, identification_task):
+        obj = ExpertReportAnnotation.objects.create(user=user, report=identification_task.report)
+
+        with patch.object(obj.identification_task, "refresh") as mocked_refresh:
+            obj.delete()
+
+            mocked_refresh.assert_called_once()
+
+@pytest.mark.django_db
+class TestIdentificationTaskModel:
+    # classmethods
+    @pytest.mark.parametrize('report_type', [Report.TYPE_BITE, Report.TYPE_SITE])
+    def test_create_for_report_should_return_None_if_not_adult_report(self, _report, report_type):
+        report = _report
+        report.type = report_type
+        report.save()
+
+        result = IdentificationTask.create_for_report(report=report)
+        assert result is None
+
+    def test_create_for_report_should_return_None_if_report_has_no_photos(self, adult_report):
+        assert frozenset(adult_report.photos.all()) is frozenset([])
+
+        result = IdentificationTask.create_for_report(report=adult_report)
+        assert result is None
+
+    def test_create_for_report_in_supervised_country_should_return_task_with_exclusivity_end_date(self, user_national_supervisor, _adult_report):
+        country = user_national_supervisor.userstat.national_supervisor_of
+
+        report = _adult_report
+        report.save()
+
+        assert report.country == country
+
+        # Creating a photo will auto create a new IdentificationTask. Delete it and force manual.
+        _ = Photo.objects.create(report=report, photo='./testdata/splash.png')
+        IdentificationTask.objects.filter(report=report).delete()
+
+        obj = IdentificationTask.create_for_report(report=report)
+
+        assert obj is not None
+        assert obj.exclusivity_end == report.server_upload_time + timedelta(days=10)
+
+    def test_get_taxon_consensus_empty_annotations(self):
+        result = IdentificationTask.get_taxon_consensus([], min_confidence=0.5)
+        assert result == (None, 0.0, 1.0, 0.0)
+
+    def test_get_taxon_consensus_no_taxon(self):
+        """Test when annotations have no taxon."""
+        annotations = [
+            MagicMock(spec=ExpertReportAnnotation, taxon=None, confidence=0.7),
+            MagicMock(spec=ExpertReportAnnotation, taxon=None, confidence=0.5)
+        ]
+        result = IdentificationTask.get_taxon_consensus(annotations, min_confidence=0.5)
+        assert result == (None, 1.0, 0.0, 1.0)
+
+    def test_get_taxon_consensus_below_confidence_threshold(self, taxon_root):
+        """Test when the annotations have taxons, but no taxon meets the minimum confidence threshold."""
+        annotations = [
+            MagicMock(spec=ExpertReportAnnotation, taxon=taxon_root, confidence=0.3),
+            MagicMock(spec=ExpertReportAnnotation, taxon=taxon_root, confidence=0.2)
+        ]
+        result = IdentificationTask.get_taxon_consensus(annotations, min_confidence=0.5)
+        assert result == (None, 0.0, 1.0, 0.0)
+
+    def test_get_taxon_consensus_valid_annotations(self, taxon_root):
+        """Test when valid annotations exist and meet the confidence threshold."""
+        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        specie_1 = genus.add_child(name='specie 1', rank=Taxon.TaxonomicRank.SPECIES)
+        specie_2 = genus.add_child(name='specie 2', rank=Taxon.TaxonomicRank.SPECIES)
+
+        annotations = [
+            MagicMock(spec=ExpertReportAnnotation, taxon=specie_1, confidence=0.75),
+            MagicMock(spec=ExpertReportAnnotation, taxon=specie_1, confidence=1)
+        ]
+
+        result = IdentificationTask.get_taxon_consensus(annotations, min_confidence=0.5)
+        assert result[0] == specie_1
+        assert result[1] == 0.875
+        assert result[2] == entropy([0.875, 0.125], base=2) / math.log2(2)
+        assert result[3] == 1
+
+    # fields
+    def test_report_field_is_primary_key(self):
+        assert IdentificationTask._meta.get_field("report").primary_key
+
+    def test_status_is_db_index(self):
+        assert IdentificationTask._meta.get_field("status").db_index
+
+    def test_status_is_set_to_OPEN_as_default(self):
+        assert IdentificationTask._meta.get_field("status").default == IdentificationTask.Status.OPEN
+
+    def test_is_safe_is_False_default(self):
+        assert IdentificationTask._meta.get_field("is_safe").default == False
+
+    def test_public_note_is_nullable(self):
+        assert IdentificationTask._meta.get_field("public_note").null
+
+    def test_message_for_user_is_nullable(self):
+        assert IdentificationTask._meta.get_field("message_for_user").null
+
+    def test_total_annotations_is_0_default(self):
+        assert IdentificationTask._meta.get_field("total_annotations").default == 0
+
+    def test_total_finished_annotations_is_0_default(self):
+        assert IdentificationTask._meta.get_field("total_finished_annotations").default == 0
+
+    def test_exclusivity_end_is_nullable(self):
+        assert IdentificationTask._meta.get_field("exclusivity_end").null
+
+    def test_exclusivity_end_is_db_index(self):
+        assert IdentificationTask._meta.get_field("exclusivity_end").db_index
+
+    def test_revision_type_is_nullable(self):
+        assert IdentificationTask._meta.get_field("revision_type").null
+
+    def test_revision_type_is_None_default(self):
+        assert IdentificationTask._meta.get_field("revision_type").default == None
+
+    def test_reviewed_at_is_nullable(self):
+        assert IdentificationTask._meta.get_field("reviewed_at").null
+
+    def test_taxon_is_nullable(self):
+        assert IdentificationTask._meta.get_field("taxon").null
+
+    def test_confidence_is_decimal_0_default(self):
+        assert IdentificationTask._meta.get_field("confidence").default == Decimal('0')
+
+    def test_uncertainty_is_float_1_default(self):
+        assert IdentificationTask._meta.get_field("uncertainty").default == 1.0
+
+    def test_agreement_is_float_0_default(self):
+        assert IdentificationTask._meta.get_field("agreement").default == 0.0
+
+    def test_created_at_is_auto_now_add(self):
+        assert IdentificationTask._meta.get_field("created_at").auto_now_add
+
+    def test_updated_at_is_auto_now(self):
+        assert IdentificationTask._meta.get_field("updated_at").auto_now
+
+    # properties
+    def test_in_exclusivity_period(self):
+        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
+            obj = IdentificationTask(
+                exclusivity_end=timezone.now() + timedelta(days=1)
+            )
+
+            assert obj.in_exclusivity_period
+
+            traveller.shift(timedelta(days=1))
+
+            assert not obj.in_exclusivity_period
+
+    @pytest.mark.parametrize(
+        "value, expected_result",
+        [
+            (IdentificationTask.Status.OPEN, False),
+            (IdentificationTask.Status.CONFLICT, False),
+            (IdentificationTask.Status.FLAGGED, False),
+            (IdentificationTask.Status.REVIEW, False),
+            (IdentificationTask.Status.ARCHIVED, False),
+            (IdentificationTask.Status.DONE, True),
+        ]
+    )
+    def test_is_done(self, value, expected_result):
+        obj = IdentificationTask(status=value)
+        assert obj.is_done == expected_result
+
+    @pytest.mark.parametrize(
+        "reviewed_datetime, expected_result",
+        [
+            (timezone.now(), True),
+            (None, False),
+        ]
+    )
+    def test_is_reviewed(self, reviewed_datetime, expected_result):
+        obj = IdentificationTask(reviewed_at=reviewed_datetime)
+        assert obj.is_reviewed == expected_result
+
+    # methods
+    def test_assign_to_user_creates_expert_report_annotation(self, user, identification_task):
+        annotations_qs = ExpertReportAnnotation.objects.filter(
+            report=identification_task.report
+        )
+        assert annotations_qs.count() == 0
+
+        identification_task.assign_to_user(user=user)
+
+        assert annotations_qs.count() == 1
+
+        annotation = annotations_qs.get(user=user)
+        assert annotation.validation_complete == False
+
+    # constraints
+    @pytest.mark.parametrize(
+        "total_annotations, total_finished_annotations, expected_raise",
+        [
+            (0, 0, does_not_raise()),
+            (1, 1, does_not_raise()),
+            (2, 1, does_not_raise()),
+            (0, 1, pytest.raises(IntegrityError)),
+            (1, 2, pytest.raises(IntegrityError)),
+        ]
+    )
+    def test_total_finished_annotations_must_be_lte_total_annotations(self, identification_task, total_annotations, total_finished_annotations, expected_raise):
+        with expected_raise:
+            identification_task.total_annotations = total_annotations
+            identification_task.total_finished_annotations = total_finished_annotations
+            identification_task.save()
+
+    @pytest.mark.parametrize(
+        "value, expected_raise",
+        [
+            (Decimal('0'), does_not_raise()),
+            (Decimal('0.5'), does_not_raise()),
+            (Decimal('1'), does_not_raise()),
+            (Decimal('-0.1'), pytest.raises(IntegrityError)),
+            (Decimal('1.1'), pytest.raises(IntegrityError)),
+        ]
+    )
+    def test_confidence_between_decimal0_decimal1(self, identification_task, value, expected_raise):
+        with expected_raise:
+            identification_task.confidence = value
+            identification_task.save()
+
+    @pytest.mark.parametrize(
+        "value, expected_raise",
+        [
+            (0, does_not_raise()),
+            (0.5, does_not_raise()),
+            (1, does_not_raise()),
+            (-0.1, pytest.raises(IntegrityError)),
+            (1.1, pytest.raises(IntegrityError)),
+        ]
+    )
+    def test_uncertainty_between_float0_float1(self, identification_task, value, expected_raise):
+        with expected_raise:
+            identification_task.uncertainty = value
+            identification_task.save()
+
+    @pytest.mark.parametrize(
+        "value, expected_raise",
+        [
+            (0, does_not_raise()),
+            (0.5, does_not_raise()),
+            (1, does_not_raise()),
+            (-0.1, pytest.raises(IntegrityError)),
+            (1.1, pytest.raises(IntegrityError)),
+        ]
+    )
+    def test_agreement_between_float0_float1(self, identification_task, value, expected_raise):
+        with expected_raise:
+            identification_task.agreement = value
+            identification_task.save()
+
+@pytest.mark.django_db
+class TestIdentificationTaskFlow:
+    def _add_annotation(self, identification_task: IdentificationTask, validation_complete: bool = True, **kwargs) -> ExpertReportAnnotation:
+        expert_group, _ = Group.objects.get_or_create(name='expert')
+        user_expert = User.objects.create(
+            username=str(uuid.uuid4())
+        )
+        user_expert.groups.add(expert_group)
+
+        return ExpertReportAnnotation.objects.create(
+            report=identification_task.report,
+            user=user_expert,
+            validation_complete=validation_complete,
+            **kwargs
+        )
+
+    def _add_revision(self, identification_task: IdentificationTask, overwrite: bool = False, validation_complete: bool = True, **kwargs) -> ExpertReportAnnotation:
+        superexpert_group, _ = Group.objects.get_or_create(name='superexpert')
+        user_expert = User.objects.create(
+            username=str(uuid.uuid4())
+        )
+        user_expert.groups.add(superexpert_group)
+
+        return ExpertReportAnnotation.objects.create(
+            report=identification_task.report,
+            user=user_expert,
+            revise=overwrite,
+            validation_complete=validation_complete,
+            **kwargs
+        )
+
+    # triggers from Report
+    def test_identification_task_is_created_on_adult_report_creation_with_photos(self, adult_report):
+        identification_task_qs = IdentificationTask.objects.filter(report=adult_report)
+        assert identification_task_qs.count() == 0
+
+        # Creating photo for the report
+        _ = Photo.objects.create(report=adult_report, photo='./testdata/splash.png')
+        assert identification_task_qs.count() == 1
+
+    def test_identification_task_status_should_be_archive_after_report_is_hidden(self, identification_task):
+        assert identification_task.status == IdentificationTask.Status.OPEN
+
+        report = identification_task.report
+        report.hide = True
+        report.save()
+
+        identification_task.refresh_from_db()
+        assert identification_task.status == IdentificationTask.Status.ARCHIVED
+
+    def test_identification_task_status_should_be_archive_after_report_is_soft_deleted(self, identification_task):
+        assert identification_task.status == IdentificationTask.Status.OPEN
+
+        report = identification_task.report
+        report.soft_delete()
+
+        identification_task.refresh_from_db()
+        assert identification_task.status == IdentificationTask.Status.ARCHIVED
+
+    def test_identification_task_status_should_be_deleted_after_report_deletion(self, identification_task):
+        assert identification_task.status == IdentificationTask.Status.OPEN
+
+        report = identification_task.report
+        report.delete()
+
+        assert IdentificationTask.objects.filter(pk=identification_task.pk).count() == 0
+
+    # manager
+    def test_objects_new_return_never_assigned_tasks(self, identification_task):
+        assert identification_task.status == IdentificationTask.Status.OPEN
+        assert identification_task.assignees.count() == 0
+
+        assert frozenset(IdentificationTask.objects.new()) == frozenset([identification_task])
+
+    def test_objects_ongoing(self, identification_task):
+        assert identification_task.status == IdentificationTask.Status.OPEN
+        assert identification_task.assignees.count() == 0
+
+        self._add_annotation(identification_task=identification_task)
+
+        assert frozenset(IdentificationTask.objects.ongoing()) == frozenset([identification_task])
+
+    def test_objects_blocked(self, identification_task):
+        assert identification_task.status == IdentificationTask.Status.OPEN
+        assert identification_task.assignees.count() == 0
+
+        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
+            self._add_annotation(identification_task=identification_task, validation_complete=False)
+
+            traveller.shift(timedelta(days=15))
+
+            # Still assignable, not blocked yet.
+            assert IdentificationTask.objects.blocked(days=15).count() == 0
+
+            self._add_annotation(identification_task=identification_task, validation_complete=True)
+            self._add_annotation(identification_task=identification_task, validation_complete=True)
+
+            # Now it's blocked. Fully assigned but the only missing annotations is not complete.
+            assert frozenset(IdentificationTask.objects.blocked(days=15)) == frozenset([identification_task])
+
+    def test_objects_annotating(self, identification_task):
+        assert identification_task.status == IdentificationTask.Status.OPEN
+        assert identification_task.assignees.count() == 0
+
+        annotation = self._add_annotation(identification_task=identification_task, validation_complete=False)
+
+        assert frozenset(IdentificationTask.objects.annotating()) == frozenset([identification_task])
+
+        annotation.validation_complete = True
+        annotation.save()
+
+        assert IdentificationTask.objects.annotating().count() == 0
+
+    def test_objects_to_review(self, identification_task):
+        assert identification_task.status == IdentificationTask.Status.OPEN
+        assert identification_task.assignees.count() == 0
+
+        for _ in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT):
+            self._add_annotation(identification_task=identification_task)
+
+        assert frozenset(IdentificationTask.objects.to_review()) == frozenset([identification_task])
+
+    @pytest.mark.parametrize("status_value", IdentificationTask.CLOSED_STATUS)
+    def test_objects_closed(self, identification_task, status_value):
+        identification_task.status = status_value
+        identification_task.save()
+        assert frozenset(IdentificationTask.objects.closed()) == frozenset([identification_task])
+
+    @pytest.mark.parametrize("is_overwrite", [True, False])
+    def test_objects_done(self, identification_task, is_overwrite):
+        assert identification_task.status == IdentificationTask.Status.OPEN
+        assert identification_task.assignees.count() == 0
+
+        for _ in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT):
+            self._add_annotation(identification_task=identification_task)
+
+        self._add_revision(identification_task=identification_task, overwrite=is_overwrite)
+
+        identification_task.refresh_from_db()
+        print(identification_task.__dict__)
+
+        assert frozenset(IdentificationTask.objects.done()) == frozenset([identification_task])
+
+    # counters
+    @pytest.mark.parametrize(
+        "validation_complete, expected_result",
+        [
+            (True, 1),
+            (False, 1),
+        ]
+    )
+    def test_total_annotations_should_be_increased_on_new_annotation(self, identification_task, validation_complete, expected_result):
+        assert identification_task.total_annotations == 0
+
+        _ = self._add_annotation(identification_task=identification_task, validation_complete=validation_complete)
+
+        identification_task.refresh_from_db()
+        assert identification_task.total_annotations == expected_result
+
+    def test_total_annotation_counters_should_not_be_increased_if_superexpert(self, identification_task):
+        assert identification_task.total_annotations == 0
+        assert identification_task.total_finished_annotations == 0
+
+        annotation = self._add_revision(identification_task=identification_task, overwrite=False, validation_complete=False)
+
+        identification_task.refresh_from_db()
+        assert identification_task.total_annotations == 0
+        assert identification_task.total_finished_annotations == 0
+
+        annotation.validation_complete = True
+        annotation.save()
+
+        identification_task.refresh_from_db()
+        assert identification_task.total_annotations == 0
+        assert identification_task.total_finished_annotations == 0
+
+    @pytest.mark.parametrize(
+        "validation_complete, expected_result",
+        [
+            (True, 1),
+            (False, 0),
+        ]
+    )
+    def test_total_finished_annotations_should_be_increased_on_new_annotation(self, identification_task, validation_complete, expected_result):
+        assert identification_task.total_finished_annotations == 0
+
+        self._add_annotation(
+            identification_task=identification_task,
+            validation_complete=validation_complete
+        )
+
+        identification_task.refresh_from_db()
+        assert identification_task.total_finished_annotations == expected_result
+
+    # assignees many2many relationship
+    def test_assignees(self, identification_task):
+        assert identification_task.assignees.count() == 0
+
+        _ = self._add_annotation(identification_task=identification_task)
+        assert identification_task.assignees.count() == 1
+
+        _ = self._add_revision(identification_task=identification_task)
+        assert identification_task.assignees.count() == 2
+
+    # status field transition
+    @pytest.mark.parametrize(
+        "num_is_relevant, expected_result",
+        [
+            (0, False),
+            (1, True),
+            (2, True),
+            (3, True),
+        ]
+    )
+    def test_status_should_be_conflict(self, identification_task, taxon_root, num_is_relevant, expected_result):
+        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+
+        categories = []
+        for i in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT):
+            category = Categories.objects.create(name='specie {}'.format(i))
+            categories.append(category)
+            _ = genus.add_child(
+                name=category.name,
+                rank=Taxon.TaxonomicRank.SPECIES,
+                content_object=category,
+                is_relevant=i < num_is_relevant
+            )
+
+        for category in categories:
+            self._add_annotation(
+                identification_task=identification_task,
+                category=category,
+                validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
+                status=ExpertReportAnnotation.STATUS_PUBLIC,
+            )
+
+        identification_task.refresh_from_db()
+
+        assert (identification_task.status == IdentificationTask.Status.CONFLICT) == expected_result
+
+    def test_status_should_be_flagged(self, identification_task, taxon_root):
+        category_1 = Categories.objects.create(name='specie 1')
+        category_2 = Categories.objects.create(name='specie 2')
+        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        specie_1 = genus.add_child(name='specie 1', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_1)
+        specie_2 = genus.add_child(name='specie 2', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_2)
+
+        for _ in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1):
+            self._add_annotation(
+                identification_task=identification_task,
+                category=category_1,
+                validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
+                status=ExpertReportAnnotation.STATUS_PUBLIC,
+            )
+
+        # Mark as flagged
+        self._add_annotation(
+            identification_task=identification_task,
+            category=category_1,
+            validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
+            status=ExpertReportAnnotation.STATUS_FLAGGED,
+        )
+
+        identification_task.refresh_from_db()
+
+        assert identification_task.status == IdentificationTask.Status.FLAGGED
+
+        self._add_revision(identification_task=identification_task)
+
+        identification_task.refresh_from_db()
+        assert identification_task.status == IdentificationTask.Status.DONE
+
+    # overview general
+    @pytest.mark.parametrize("overwrite", [False, True])
+    def test_fields_are_overwriten_on_review(self, identification_task, taxon_root, overwrite):
+        category_1 = Categories.objects.create(name='specie 1')
+        category_2 = Categories.objects.create(name='specie 2')
+        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        specie_1 = genus.add_child(name='specie 1', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_1)
+        specie_2 = genus.add_child(name='specie 2', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_2)
+
+        first_photo = identification_task.report.photos.first()
+        another_photo = Photo.objects.create(report=identification_task.report, photo='./testdata/splash.png')
+
+        for _ in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1):
+            self._add_annotation(
+                identification_task=identification_task,
+                category=category_1,
+                validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
+                status=ExpertReportAnnotation.STATUS_PUBLIC,
+                edited_user_notes="public message",
+                message_for_user="message to user",
+                best_photo=another_photo
+            )
+
+        # Disagree with others
+        self._add_annotation(
+            identification_task=identification_task,
+            category=category_2,
+            validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY,
+            status=ExpertReportAnnotation.STATUS_PUBLIC,
+            edited_user_notes="random public message",
+            message_for_user="random message to user",
+            best_photo=another_photo
+        )
+
+        identification_task.refresh_from_db()
+
+        assert identification_task.photo == another_photo
+        assert identification_task.public_note == "public message"
+        assert identification_task.message_for_user == None # Only superexperts and national supervisor can.
+        assert identification_task.taxon == specie_1
+        assert identification_task.confidence == Decimal('0.75') # (1 + 1 + 0.25) / 3
+        assert identification_task.agreement == 2/3
+        assert identification_task.is_safe == False # Not yet in a closed status.
+        assert identification_task.status == IdentificationTask.Status.REVIEW
+
+        self._add_revision(
+            identification_task=identification_task,
+            overwrite=overwrite,
+            category=category_2,
+            validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
+            status=ExpertReportAnnotation.STATUS_HIDDEN,
+            edited_user_notes="new public message",
+            message_for_user="new message to user",
+            best_photo=first_photo,
+        )
+
+        identification_task.refresh_from_db()
+
+        if overwrite:
+            assert identification_task.photo == first_photo
+            assert identification_task.public_note == "new public message"
+            assert identification_task.message_for_user == "new message to user"
+            assert identification_task.taxon == specie_2
+            assert identification_task.confidence == Decimal('1')
+            assert identification_task.agreement == 1
+            assert identification_task.is_safe == False # NOTE: superexpert has overwritten
+        else:
+            # From expert consensus
+            assert identification_task.photo == another_photo
+            assert identification_task.public_note == "public message"
+            assert identification_task.message_for_user == None # Only superexperts and national supervisor can.
+            assert identification_task.taxon == specie_1
+            assert identification_task.confidence == Decimal('0.75') # (1 + 1 + 0.25) / 3
+            assert identification_task.agreement == 2/3
+            assert identification_task.is_safe == True # NOTE: now is reviewed
+
+    def test_executive_annotation(self, identification_task, taxon_root):
+        category_1 = Categories.objects.create(name='specie 1')
+        category_2 = Categories.objects.create(name='specie 2')
+        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        specie_1 = genus.add_child(name='specie 1', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_1)
+        specie_2 = genus.add_child(name='specie 2', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_2)
+
+        first_photo = identification_task.report.photos.first()
+        another_photo = Photo.objects.create(report=identification_task.report, photo='./testdata/splash.png')
+
+        # Since superexpert will automatically review the executive validations, adding User with pk=25
+        super_reritja = User.objects.create(pk=25, username='super_reritja')
+
+        # Executive annotation
+        self._add_annotation(
+            identification_task=identification_task,
+            category=category_1,
+            validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY,
+            status=ExpertReportAnnotation.STATUS_PUBLIC,
+            edited_user_notes="public message",
+            message_for_user="message to user",
+            best_photo=another_photo,
+            validation_complete_executive=True
+        )
+
+        identification_task.refresh_from_db()
+
+        assert identification_task.photo == another_photo
+        assert identification_task.public_note == "public message"
+        assert identification_task.message_for_user == "message to user" # Only national supervisor can validate executive.
+        assert identification_task.taxon == specie_1
+        assert identification_task.confidence == Decimal('0.75')
+        assert identification_task.agreement == 1
+        assert identification_task.is_safe == True
+        assert identification_task.status == IdentificationTask.Status.DONE
+
+    # revision field transition
+    @pytest.mark.parametrize("overwrite", [False, True])
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_reviewed_at_is_set_after_revision(self, identification_task, overwrite):
+        assert not identification_task.is_reviewed
+
+        self._add_revision(identification_task=identification_task, overwrite=overwrite)
+
+        identification_task.refresh_from_db()
+
+        assert identification_task.is_reviewed
+        assert identification_task.reviewed_at == timezone.now()
+
+    @pytest.mark.parametrize(
+        "overwrite, expected_result",
+        [
+            (False, IdentificationTask.Revision.AGREE),
+            (True, IdentificationTask.Revision.OVERWRITE)
+        ]
+    )
+    def test_revision_type_is_set_after_revision(self, identification_task, overwrite, expected_result):
+        assert not identification_task.is_reviewed
+
+        self._add_revision(identification_task=identification_task, overwrite=overwrite)
+
+        identification_task.refresh_from_db()
+
+        assert identification_task.is_reviewed
+        assert identification_task.revision_type == expected_result

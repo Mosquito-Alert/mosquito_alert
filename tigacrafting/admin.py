@@ -114,7 +114,7 @@ class IdentificationTaskAdmin(NumericFilterModelAdmin):
         ("report", "photo"),
         ("created_at", "updated_at"),
         ("status", "is_safe"),
-        ("exclusivity_end", "in_exclusivty_period"),
+        ("exclusivity_end", "in_exclusivity_period"),
         ("total_annotations", "total_finished_annotations"),
         ("revision_type", "reviewed_at"),
         ("taxon", "confidence_label", "confidence"),
@@ -125,7 +125,7 @@ class IdentificationTaskAdmin(NumericFilterModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         # Make all fields read-only by getting the model's fields dynamically
-        return [field.name for field in self.model._meta.fields] + ['in_exclusivty_period', "confidence_label"]
+        return [field.name for field in self.model._meta.fields] + ['in_exclusivity_period', "confidence_label"]
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('report__country', 'taxon', 'photo')

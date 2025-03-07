@@ -122,7 +122,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='expertreportannotation',
             name='identification_task',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='expert_report_annotations', to='tigacrafting.identificationtask'),
+            field=models.ForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='expert_report_annotations', to='tigacrafting.identificationtask'),
         ),
         migrations.AddConstraint(
             model_name='identificationtask',
@@ -135,5 +135,9 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='identificationtask',
             constraint=models.CheckConstraint(check=models.Q(('uncertainty__range', (0, 1))), name='tigacrafting_identificationtask_uncertainty_between_0_and_1'),
+        ),
+        migrations.AddConstraint(
+            model_name='identificationtask',
+            constraint=models.CheckConstraint(check=models.Q(('agreement__range', (0, 1))), name='tigacrafting_identificationtask_agreement_between_0_and_1'),
         ),
     ]
