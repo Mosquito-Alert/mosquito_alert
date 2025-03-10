@@ -47,11 +47,21 @@ $(document).ready(function () {
         id_to_index[$("#id_form-" + i + "-id").val()] = i;
     }
 
+    var show_control_by_species = function(annotation_id){
+        var val = $('#category_' + annotation_id).val();
+        if(val == '4' || val == '5' || val == '6' || val == '7' || val == '10'){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     $( "select[id^='category_']" ).change(function(e){
         var form_id = e.target.id.split('_')[1];
         var form_index = id_to_index[form_id];
         var needs_value = $(this).find(':selected').data('needs-value');
         var version_uuid = $(this).data('version-uuid');
+
         //reset everything
         do_reset_button(form_index, version_uuid);
         $('#id_form-' + form_index + '-validation_value').val("");
@@ -86,6 +96,22 @@ $(document).ready(function () {
             $('#id_form-' + form_index + '-category').val($(this).find(':selected').val());
         }*/
         do_translate_classification(form_id);
+
+        if( $('input:radio[name=photo_to_display_report_' + version_uuid + ']').parent().parent().children('[id^=div_for_photo_to_display_report]').length == 1 ){
+            $('#id_form-' + form_index + '-best_photo').val( $('[name=photo_to_display_report_' + version_uuid + ']').val() );
+            $('input:radio[name=photo_to_display_report_' + version_uuid + ']').attr('checked', true);
+            const ano_id = $('[name=photo_to_display_report_' + version_uuid + ']').parent().data('ano-id');
+            const id_photo = $('input:radio[name=photo_to_display_report_' + version_uuid + ']').attr('id');
+            var show = show_control_by_species(ano_id);
+            if(show){
+                $('#blood_status_' + version_uuid + '_' + id_photo).show();
+            }
+            reset_all_picture_status_for_report(version_uuid).then(
+                function(){
+                    set_default_female(id_photo);
+                }
+            );
+        }
     });
 
     $( "select[id^='categoryvalue_']" ).change(function(e){
