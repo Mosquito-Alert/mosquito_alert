@@ -427,8 +427,8 @@ function single_report_template(report){
     const visibility_class = report.hide == true ? 'status_hidden' : 'status_visible';
     const user_notes = report.note == null || report.note == 'null' ? 'No notes' : report.note;
     const quick_upload_additional_button_class = report.type == 'adult' ? 'hide_button' : '';
-    const formatted_lat = report.lat.toFixed(6);
-    const formatted_lon = report.lon.toFixed(6);
+    const formatted_lat = report.lat != null ? report.lat.toFixed(6) : null;
+    const formatted_lon = report.lon != null ? report.lon.toFixed(6) : null;
     var report_type_label = '';
     if( report.type == 'adult' ){
         report_type_label = 'Adult';
