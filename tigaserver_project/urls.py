@@ -170,7 +170,7 @@ urlpatterns += i18n_patterns(
     path('webmap/coverage/', show_filterable_report_map, {'map_type': 'coverage'}, name='coverage_map'),
     path('webmap/', show_filterable_report_map, name='webmap.show_map_defaults'),
     path('', RedirectView.as_view(url='/static/tigapublic/spain.html#/es/', permanent=False)),
-    path('bcn/', show_filterable_report_map,{'min_lat': 41.321049, 'min_lon': 2.052380, 'max_lat': 41.468609, 'max_lon': 2.225610, 'min_zoom': 12,'max_zoom': 18}),
+    path('bcn/', show_filterable_report_map, {'min_zoom': 12,'max_zoom': 18}),
     path('single_report_map/<version_uuid>/', show_single_report_map, name='webmap.single_report'),
     path('single_simple/<version_uuid>/', single_report_map_simplified, name='single_report_map_simplified'),
     path('stats/', show_usage, name='show_usage'),

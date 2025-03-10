@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.query import QuerySet
 
 from fcm_django.models import FCMDeviceQuerySet, FCMDeviceManager
 
@@ -33,6 +34,22 @@ class ReportQuerySet(models.QuerySet):
             models.Q(
                 models.Q(map_aux_report__isnull=False)
                 & ~models.Q(map_aux_report__private_webmap_layer__in=PRIVATE_LAYERS),
+                _negated=not state
+            )
+        )
+
+    def browsable(self):
+        return self.filter(
+            hide=False
+        ).exclude(
+            tags__name="345"
+        )
+
+    def with_finished_validation(self, state: bool = True) -> QuerySet:
+        from tigacrafting.models import IdentificationTask
+        return self.filter(
+            models.Q(
+                identification_tasks__status=IdentificationTask.Status.DONE,
                 _negated=not state
             )
         )
