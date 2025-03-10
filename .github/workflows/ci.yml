@@ -19,7 +19,7 @@ concurrency:
 jobs:
   test:
     name: Test application
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code Repository
