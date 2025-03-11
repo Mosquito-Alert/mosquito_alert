@@ -571,8 +571,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
     this_user_is_expert = this_user.userstat.is_expert()
     this_user_is_superexpert = this_user.userstat.is_superexpert()
 
-    this_user_is_reritja = this_user.id == 25
-
     if not (this_user_is_expert or this_user_is_superexpert):
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
@@ -652,10 +650,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 report__country=spain_country
             )
 
-        public_final_reports = task_qs.done().filter(is_safe=True).values('report_id')
-        flagged_final_reports = task_qs.filter(status=IdentificationTask.Status.FLAGGED).values('report_id')
-        hidden_final_reports = task_qs.done().filter(is_safe=False).values('report_id')
-
         if load_new_reports == 'T' or this_user_is_superexpert:
             this_user.userstat.assign_reports()
 
@@ -669,15 +663,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not checked or checked == 'na'):
                 checked = 'unchecked'
 
-            user_tasks = task_qs.filter(
-                models.Exists(
-                    ExpertReportAnnotation.objects.filter(
-                        user=this_user,
-                        identification_task=models.OuterRef('pk'),
-                        validation_complete=True
-                    )
-                )
-            )
+            user_tasks = task_qs.user_has_annotated(user=this_user)
+
             args['n_flagged'] = user_tasks.filter(status=IdentificationTask.Status.FLAGGED).count()
             args['n_hidden'] = user_tasks.done().filter(is_safe=False).count()
             args['n_public'] = user_tasks.done().filter(is_safe=True).count()
@@ -711,7 +698,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             if year and year != 'all':
                 try:
                     this_year = int(year)
-                    all_annotations = all_annotations.filter(report__creation_time__year=this_year)
+                    all_annotations = all_annotations.filter(report__server_upload_time__year=this_year)
                 except ValueError:
                     pass
             if tiger_certainty and tiger_certainty != 'all':
@@ -740,11 +727,11 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             elif pending == 'favorite':
                 all_annotations = all_annotations.filter(report__favorites__user=this_user)
             if status == "flagged":
-                all_annotations = all_annotations.filter(status=0)
+                all_annotations = all_annotations.filter(status=ExpertReportAnnotation.STATUS_FLAGGED)
             elif status == "hidden":
-                all_annotations = all_annotations.filter(status=-1)
+                all_annotations = all_annotations.filter(status=ExpertReportAnnotation.STATUS_HIDDEN)
             elif status == "public":
-                all_annotations = all_annotations.filter(status=1)
+                all_annotations = all_annotations.filter(status=ExpertReportAnnotation.STATUS_PUBLIC)
 
             if this_user_is_superexpert:
                 if checked == "unchecked":
@@ -757,11 +744,22 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     all_annotations = all_annotations.filter(report__favorites__user=this_user)
 
                 if final_status == "flagged":
-                    all_annotations = all_annotations.filter(report__in=flagged_final_reports)
+                    all_annotations = all_annotations.filter(
+                        identification_task__isnull=False,
+                        identification_task__status=IdentificationTask.Status.FLAGGED,
+                    )
                 elif final_status == "hidden":
-                    all_annotations = all_annotations.filter(report__in=hidden_final_reports)
+                    all_annotations = all_annotations.filter(
+                        identification_task__isnull=False,
+                        identification_task__status=IdentificationTask.Status.DONE,
+                        identification_task__is_safe=False
+                    )
                 elif final_status == "public":
-                    all_annotations = all_annotations.filter(report__in=public_final_reports)
+                    all_annotations = all_annotations.filter(
+                        identification_task__isnull=False,
+                        identification_task__status=IdentificationTask.Status.DONE,
+                        identification_task__is_safe=True
+                    )
 
                 if loc == 'spain':
                     all_annotations = all_annotations.filter(report__country=spain_country)
@@ -833,9 +831,14 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['other_species_insects'] = OtherSpecies.objects.filter(category='Other insects').order_by('name')
         args['other_species_culicidae'] = OtherSpecies.objects.filter(category='Culicidae').order_by('ordering','name')
 
-        expert_users = User.objects.filter(groups__name='expert').order_by('first_name', 'last_name')
-        expert_users_w_country = UserStat.objects.filter(user_id__in=expert_users).filter(native_of_id__isnull=False).exclude(native_of_id=17).values('native_of_id').distinct()
-        args['country_name'] = EuropeCountry.objects.filter(gid__in=expert_users_w_country).order_by('name_engl').values('name_engl','iso3_code')
+        args['country_name'] = EuropeCountry.objects.filter(
+            models.Exists(
+                UserStat.objects.filter(
+                    user__groups__name='expert',
+                    native_of_id=models.OuterRef('gid')
+                )
+            )
+        ).exclude(pk=spain_country.pk).order_by('name_engl').values('name_engl','iso3_code')
 
         args['ns_list'] = User.objects.filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl')
 
@@ -871,7 +874,7 @@ def expert_report_status(request, reports_per_page=10, version_uuid=None, linked
             reports = Report.objects.filter(linked_id=linked_id)
             n_reports = 1
         else:
-            reports = Report.objects.filter(identification_task__isnull=False).order_by('-server_upload_time')
+            reports = Report.objects.non_deleted().filter(hide=False, identification_task__isnull=False).order_by('-server_upload_time')
             n_reports = len(reports)
 
         paginator = Paginator(reports, int(reports_per_page))
@@ -970,7 +973,7 @@ def get_reports_unfiltered_sites_embornal(reports_imbornal):
     return Report.objects.filter(
         type=Report.TYPE_SITE,
         breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN,
-        creation_time__year__gt=2014,
+        server_upload_time__year__gt=2014,
     ).exclude(
         note__icontains='#345'
     ).has_photos().annotate(
@@ -982,7 +985,7 @@ def get_reports_unfiltered_sites_embornal(reports_imbornal):
 def get_reports_unfiltered_sites_other(reports_imbornal):
     return Report.objects.filter(
         type=Report.TYPE_SITE,
-        creation_time__year__gt=2014,
+        server_upload_time__year__gt=2014,
     ).exclude(
         models.Q(note__icontains='#345') |
         models.Q(breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN)
@@ -998,13 +1001,8 @@ def get_reports_imbornal():
 def get_reports_unfiltered_adults():
     return Report.objects.filter(
         type=Report.TYPE_ADULT,
-        identification_task__isnull=False
-    ).filter(
-        models.Exists(
-            IdentificationTask.objects.filter(
-                report=models.OuterRef('pk')
-            ).closed(),
-            negated=True
+        identification_task__pk__in=models.Subquery(
+            IdentificationTask.objects.backlog().values('pk')
         )
     ).order_by('-server_upload_time')
 
