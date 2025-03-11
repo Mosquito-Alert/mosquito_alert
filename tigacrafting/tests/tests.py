@@ -1272,6 +1272,7 @@ class TestTaxonModel:
         species_2 = species_complex.add_child(name='species 2', rank=Taxon.TaxonomicRank.SPECIES)
 
         assert frozenset(Taxon.get_leaves_in_rank_group(Taxon.TaxonomicRank.SPECIES_COMPLEX)) == frozenset([species, species_1, species_2])
+        assert frozenset(Taxon.get_leaves_in_rank_group(Taxon.TaxonomicRank.SPECIES)) == frozenset([species, species_1, species_2])
         assert frozenset(Taxon.get_leaves_in_rank_group(Taxon.TaxonomicRank.GENUS)) == frozenset([genus])
 
     # fields
