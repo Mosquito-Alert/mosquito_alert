@@ -10,7 +10,7 @@ from tzlocal import get_localzone
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
@@ -874,7 +874,7 @@ def global_assignments_list(request, country_code=None, status=None):
         qs = qs.in_exclusivity_period()
         title = 'Reserved for national supervisors'
     else:
-        return HttpResponse('status not found.')
+        return HttpResponseBadRequest('status not found.')
 
     result = []
     for obj in qs.order_by('-created_at').prefetch_related('expert_report_annotations').iterator():
