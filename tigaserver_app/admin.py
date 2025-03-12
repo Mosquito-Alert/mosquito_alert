@@ -232,16 +232,6 @@ class ReportAdmin(SimpleHistoryAdmin):
         if obj.type == Report.TYPE_ADULT:
             extra_fieldsets.append(
                 (
-                    _("Classification"),
-                    {
-                        "fields": [
-                            "ia_filter_1", "ia_filter_2"
-                        ]
-                    }
-                )
-            )
-            extra_fieldsets.append(
-                (
                     _("Specific information"),
                     {
                         "fields": [

@@ -297,9 +297,9 @@
                 {{ form.not_sure }}
             </div>
             <div data-id="{{ form.instance.version_UUID }}" class="ia_val {{form.instance.type}}" style="">
-                <label style="color:white;"><b>IA Value: {{ form.instance.ia_filter_1|floatformat:4 }}</b></label>
+                <label style="color:white;"><b>IA Value: {{ form.instance.prediction.photo_prediction.insect_confidence|floatformat:4 }}</b></label>
             </div>
-            <div id="ia{{ form.instance.version_UUID }}" data-ia-value="{{ form.instance.ia_filter_1 }}" data-id="{{ form.instance.version_UUID }}" class="ia_graph {{form.instance.type}}" style="">
+            <div id="ia{{ form.instance.version_UUID }}" data-ia-value="{{ form.instance.prediction.photo_prediction.insect_confidence }}" data-id="{{ form.instance.version_UUID }}" class="ia_graph {{form.instance.type}}" style="">
             </div>
         {% endif %}
 
@@ -426,7 +426,7 @@
             $("#country_select").val("{{ country }}");
 
             $( "#slider" ).slider({
-                min: -1,
+                min: 0,
                 max: 1.05,
                 step: 0.05,
                 slide: function( event, ui ) {

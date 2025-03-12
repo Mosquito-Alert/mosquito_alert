@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -21,7 +21,9 @@ from tigaserver_app.models import (
     Fix,
     NotificationTopic,
     Device,
-    MobileApp
+    MobileApp,
+    PhotoPrediction,
+    ObservationPrediction
 )
 
 from .fields import (
@@ -673,4 +675,125 @@ class DeviceUpdateSerializer(DeviceSerializer):
             "type",
             "manufacturer",
             "model"
+        )
+class PhotoPredictionSerializer(serializers.ModelSerializer):
+
+    class BoundingBoxSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = PhotoPrediction
+            fields = (
+                'x_min',
+                'y_min',
+                'x_max',
+                'y_max',
+            )
+            extra_kwargs = {
+                "x_min": {"source": "x_tl"},
+                "y_min": {"source": "y_tl"},
+                "x_max": {"source": "x_br"},
+                "y_max": {"source": "y_br"},
+            }
+
+    class PredictionScoreSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = PhotoPrediction
+            fields = [fname.replace(PhotoPrediction.CLASS_FIELD_SUFFIX, '')  for fname in PhotoPrediction.get_score_fieldnames()]
+            extra_kwargs = {
+                fname.replace(PhotoPrediction.CLASS_FIELD_SUFFIX, ''): {"source": fname}
+                for fname in PhotoPrediction.get_score_fieldnames()
+            }
+
+    bbox = BoundingBoxSerializer(source='*')
+    scores = PredictionScoreSerializer(source='*')
+
+    def validate(self, data):
+        photo__uuid = self.context.pop('photo__uuid')
+
+        try:
+            data['photo'] = Photo.objects.get(uuid=photo__uuid)
+        except Photo.DoesNotExist:
+            raise serializers.ValidationError("The selected photo does not exist.")
+
+        return data
+
+    class Meta:
+        model = PhotoPrediction
+        fields = (
+            'bbox',
+            'insect_confidence',
+            'predicted_class',
+            'threshold_deviation',
+            'scores',
+            'classifier_version',
+            'created_at',
+            'updated_at'
+        )
+
+
+class ObservationPredictionSerializer(serializers.ModelSerializer):
+
+    ref_photo_uuid = serializers.UUIDField(
+        source='photo_prediction.photo.uuid',
+        help_text="The selected photo whose prediction represents the observation as the best classification result."
+    )
+
+    insect_confidence = serializers.FloatField(
+        source='photo_prediction.insect_confidence', read_only=True,
+        min_value=0, max_value=1
+    )
+    predicted_class = serializers.ChoiceField(
+        source='photo_prediction.predicted_class',
+        read_only=True,
+        choices=[fname for fname, _ in PhotoPrediction.CLASS_FIELDNAMES_CHOICES]
+    )
+    predicted_class_display = serializers.SerializerMethodField()
+
+    is_executive_validation = WritableSerializerMethodField(
+        field_class=serializers.BooleanField,
+        default=False,
+        help_text="Whether if the photo prediction will be used as an executive validation for the report."
+    )
+
+    def get_predicted_class_display(self, obj) -> Literal[tuple(value for _, value in PhotoPrediction.CLASS_FIELDNAMES_CHOICES)]:
+        return obj.photo_prediction.get_predicted_class_display()
+
+    def get_is_executive_validation(self, obj) -> bool:
+        return not obj.expert_annotation is None
+
+    def validate(self, data):
+        data['report_id'] = self.context.get('report__pk')
+        photo__uuid = data.pop('photo_prediction').get('photo')['uuid']
+
+        try:
+            photo = Photo.objects.get(uuid=photo__uuid, report=data['report_id'])
+        except Photo.DoesNotExist:
+            raise serializers.ValidationError("The selected photo does not belong to this observation.")
+
+        try:
+            data['photo_prediction'] = photo.prediction
+        except PhotoPrediction.DoesNotExist:
+            raise serializers.ValidationError("The selected photo has no prediction.")
+
+        return data
+
+    def create(self, validated_data):
+        is_executive_validation = validated_data.pop('is_executive_validation')
+
+        instance = super().create(validated_data)
+
+        if is_executive_validation:
+            instance.create_executive_expert_annotation()
+
+        return instance
+
+    class Meta:
+        model = ObservationPrediction
+        fields = (
+            'ref_photo_uuid',
+            'insect_confidence',
+            'predicted_class',
+            'predicted_class_display',
+            'is_executive_validation',
+            'created_at',
+            'updated_at'
         )
