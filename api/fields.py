@@ -40,8 +40,10 @@ class IntegerDefaultField(serializers.IntegerField):
 class TimeZoneSerializerChoiceField(TimeZoneSerializerField, serializers.ChoiceField):
     def __init__(self, **kwargs):
         self.use_pytz = kwargs.pop("use_pytz", use_pytz_default())
+        # NOTE: We need to use pytz.all_timezones instead of pytz.common_timezones since
+        #       this is not manually set, but set automatically depending on the lat/lon.
         _tzstrs = (
-            pytz.common_timezones if self.use_pytz else zoneinfo.available_timezones()
+            pytz.all_timezones if self.use_pytz else zoneinfo.available_timezones()
         )
         super().__init__(choices=sorted(_tzstrs), html_cutoff=5, **kwargs)
 
