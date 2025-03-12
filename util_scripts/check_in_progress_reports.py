@@ -10,9 +10,9 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
-from tigacrafting.models import IdentificationTask, ExpertReportAnnotation
+from tigacrafting.models import IdentificationTask
 
 for task in IdentificationTask.objects.ongoing().select_related('report', 'report__country').order_by('report__server_upload_time'):
     print("Report in progress {0} - country {1} - date {2}".format(task.report_id, task.report.country, task.created_at))
-    assigned_to = ExpertReportAnnotation.objects.filter(identification_task=task).values_list('user__username', flat=True)
+    assigned_to = task.expert_report_annotations.all().values_list('user__username', flat=True)
     print("\t - assigned to {0} from country , regional manager , country has regional manager ".format(list(assigned_to)))

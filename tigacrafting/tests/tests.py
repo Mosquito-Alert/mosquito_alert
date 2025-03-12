@@ -1888,6 +1888,10 @@ class TestIdentificationTaskFlow:
         identification_task.refresh_from_db()
         assert identification_task.status == IdentificationTask.Status.ARCHIVED
 
+        report.restore()
+        identification_task.refresh_from_db()
+        assert identification_task.status != IdentificationTask.Status.ARCHIVED
+
     def test_identification_task_status_should_be_deleted_after_report_deletion(self, identification_task):
         assert identification_task.status == IdentificationTask.Status.OPEN
 

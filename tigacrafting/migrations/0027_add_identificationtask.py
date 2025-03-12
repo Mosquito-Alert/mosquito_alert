@@ -33,9 +33,7 @@ def create_identification_tasks(apps, schema_editor):
     Photo = apps.get_model('tigaserver_app', 'Photo')
     EuropeCountry = apps.get_model('tigaserver_app', 'EuropeCountry')
 
-    report_qs = Report.objects.filter(
-        models.Q(type='adult') | models.Q(flipped_to='adult')
-    ).annotate(
+    report_qs = Report.objects.filter(type='adult').annotate(
         photo_exist=models.Exists(
             Photo.objects.filter(
                 report=models.OuterRef('pk')

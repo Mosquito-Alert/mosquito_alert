@@ -1880,10 +1880,10 @@ def clear_blocked(request, username, report=None):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         user = get_object_or_404(User, username=username)
 
-        annotations_qs = user.userstat.pending_annotations.stale()
+        annotations_qs = user.expert_report_annotations.stale()
 
         if report:
-            annotations_qs.filter(report=get_object_or_404(Report, pk=report))
+            annotations_qs = annotations_qs.filter(report=get_object_or_404(Report, pk=report))
 
         delete_annotations_and_notify(
             annotations_qs=annotations_qs

@@ -487,7 +487,7 @@ def predefined_messages(request):
 
 
 def update_pending_data(country):
-    country.pending_crisis_reports = IdentificationTask.objects.backlog().filter(report__country=country).count()
+    country.pending_crisis_reports = IdentificationTask.objects.backlog().filter(report__country=country).in_exclusivity_period(state=False).count()
     country.last_crisis_report_n_update = timezone.now()
     country.save()
 
@@ -663,7 +663,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not checked or checked == 'na'):
                 checked = 'unchecked'
 
-            user_tasks = task_qs.user_has_annotated(user=this_user)
+            user_tasks = task_qs.annotated_by(user=this_user)
 
             args['n_flagged'] = user_tasks.filter(status=IdentificationTask.Status.FLAGGED).count()
             args['n_hidden'] = user_tasks.done().filter(is_safe=False).count()

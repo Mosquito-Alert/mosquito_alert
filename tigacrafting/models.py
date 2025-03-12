@@ -523,7 +523,7 @@ class IdentificationTask(LifecycleModel):
 
         current_photo_id = self.photo_id
         if superexpert_annotation and superexpert_annotation.revise:
-            # Case 1: Superexpert revision
+            # Case 1: Superexpert revision (overwrite)
             self._update_from_annotation(
                 annotation=superexpert_annotation,
                 default_status=self.Status.DONE
@@ -582,6 +582,7 @@ class IdentificationTask(LifecycleModel):
                     self.status = self.Status.FLAGGED
             else:
                 # Back to defaults. e.g: when ExpertReportAnnotation delete
+                self.status = self._meta.get_field('status').default
                 self.public_note = None
                 self.message_for_user = None
                 self.taxon = None
@@ -1164,12 +1165,12 @@ class UserStat(models.Model):
 
     @transaction.atomic
     def assign_reports(self, country: Optional['EuropeCountry'] = None) -> List[Optional[IdentificationTask]]:
-        task_queue = IdentificationTask.objects.select_related('report')
+        task_queue = IdentificationTask.objects.exclude(assignees=self.user).select_related('report')
         if country is not None:
             task_queue = task_queue.filter(report__country=country)
 
         if self.is_superexpert():
-            task_queue = task_queue.to_review().user_has_annotated(user=self.user, state=False).order_by('created_at')
+            task_queue = task_queue.to_review().order_by('created_at')
         else:
             task_queue = task_queue.backlog(user=self.user)
             # Only assign until reaching the maximum allowed.

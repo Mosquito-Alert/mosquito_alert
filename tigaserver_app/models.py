@@ -1971,7 +1971,7 @@ class Report(TimeZoneModelMixin, models.Model):
                 _identification_task.status = IdentificationTask.Status.ARCHIVED
                 _identification_task.save()
 
-        if self.type != self.TYPE_ADULT or (self.flipped_to and self.flipped_to != self.TYPE_ADULT):
+        if self.type != self.TYPE_ADULT:
             IdentificationTask.objects.filter(report=self).delete()
 
     def soft_delete(self):
@@ -1988,6 +1988,10 @@ class Report(TimeZoneModelMixin, models.Model):
         self.deleted_at = None
         self.version_number = 0
         self.save_without_historical_record()
+
+        _identification_task = getattr(self, "identification_task", None)
+        if _identification_task:
+            _identification_task.refresh(force=True)
 
     def delete(self, *args, **kwargs):
         self.user.update_score()

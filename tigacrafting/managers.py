@@ -43,13 +43,13 @@ class IdentificationTaskQuerySet(models.QuerySet):
         from tigaserver_app.models import EuropeCountry
         from .models import UserStat
 
-        qs = self.assignable()
+        qs = self._assignable()
 
         if not user:
             return qs
 
         # Filter and prioritize tasks for the user
-        qs = qs.user_has_annotated(user=user, state=False).annotate(
+        qs = qs.exclude(assignees=user).annotate(
             in_supervised_country=models.Exists(
                 UserStat.objects.filter(
                     national_supervisor_of__isnull=False,
@@ -151,7 +151,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
         if user.userstat.national_supervisor_of:
             # Case national supervisor
-            qs_in_exclusivity = self.assignable().filter(
+            qs_in_exclusivity = self._assignable().exclude(assignees=user).filter(
                 report__country=user.userstat.national_supervisor_of
             ).in_exclusivity_period(state=True)
 
@@ -182,7 +182,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
     def blocked(self, days: int = settings.ENTOLAB_LOCK_PERIOD)  -> QuerySet:
         from .models import ExpertReportAnnotation
 
-        return self.ongoing().assignable(False).filter(
+        return self.ongoing()._assignable(False).filter(
             models.Exists(
                 ExpertReportAnnotation.objects.stale(days=days).filter(
                     identification_task=models.OuterRef('pk'),
@@ -266,7 +266,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
             supervisor_has_annotated=state
         )
 
-    def user_has_annotated(self, user: User, state: bool = True) -> QuerySet:
+    def annotated_by(self, user: User, state: bool = True) -> QuerySet:
         from .models import ExpertReportAnnotation
 
         return self.annotate(
@@ -281,7 +281,8 @@ class IdentificationTaskQuerySet(models.QuerySet):
             user_has_annotated=state
         )
 
-    def assignable(self, state: bool = True) -> QuerySet:
+    def _assignable(self, state: bool = True) -> QuerySet:
+        # NOTE: Private method. Do not use outside this class.
         from .models import IdentificationTask
 
         return self.filter(
