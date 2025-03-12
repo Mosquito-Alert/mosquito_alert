@@ -1481,6 +1481,7 @@ class AnnotateCoarseTestCase(APITestCase):
         r_site_reloaded = Report.objects.get(pk='007106f1-6003-4cf5-b049-8f6533a90813')
         n_responses = ReportResponse.objects.filter(report=r_site_reloaded).count()
         self.assertTrue(n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses))
+        self.assertEqual(r_site_reloaded.type, Report.TYPE_SITE)
         self.assertTrue(r_site_reloaded.flipped, "Report should be marked as flipped")
         self.assertTrue(r_site_reloaded.flipped_to == 'site#site',"Report should be marked as flipped from site to site, field has value of {0}".format(r_site_reloaded.flipped_to))
         self.assertEqual(r_site_reloaded.breeding_site_type, Report.BREEDING_SITE_TYPE_STORM_DRAIN)
@@ -1509,6 +1510,7 @@ class AnnotateCoarseTestCase(APITestCase):
 
         n_responses = ReportResponse.objects.filter(report=adult_reloaded).count()
         self.assertTrue( n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses) )
+        self.assertEqual(adult_reloaded.type, Report.TYPE_SITE)
         self.assertTrue( adult_reloaded.flipped, "Report should be marked as flipped" )
         self.assertTrue( adult_reloaded.flipped_to == 'adult#site', "Report should be marked as flipped from adult to site, field has value of {0}".format(adult_reloaded.flipped_to))
         try:
@@ -1531,6 +1533,7 @@ class AnnotateCoarseTestCase(APITestCase):
 
         n_responses = ReportResponse.objects.filter(report=site_reloaded).count()
         self.assertTrue(n_responses == 0, "Number of responses should be 0, is {0}".format(n_responses))
+        self.assertEqual(site_reloaded.type, Report.TYPE_ADULT)
         self.assertTrue(site_reloaded.flipped, "Report should be marked as flipped")
         self.assertTrue(site_reloaded.flipped_to == 'site#adult',"Report should be marked as flipped from site to adult, field has value of {0}".format(adult_reloaded.flipped_to))
         #print(site_reloaded.flipped_on)
