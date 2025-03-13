@@ -2260,13 +2260,16 @@ class Report(TimeZoneModelMixin, models.Model):
             confidence=identification_task.confidence
         )
 
-    def get_final_combined_expert_category_euro(self) -> Optional[str]:
+    def get_final_combined_expert_category_euro(self) -> str:
         identification_task = getattr(self, "identification_task", None)
         if not identification_task:
-            return None
+            return "Unclassified"
+        if not identification_task.taxon:
+            return "Unclassified"
+        if identification_task.status == IdentificationTask.Status.CONFLICT:
+            return "Conflict"
 
-        taxon_name = identification_task.taxon.name if identification_task.taxon else None
-        return "{} ({})".format(taxon_name, identification_task.confidence_label)
+        return "{} {}".format(identification_task.confidence_label, identification_task.taxon.name)
 
     # This is just a formatter of get_final_combined_expert_category_euro_struct. Takes the exact same output and makes it
     # template friendly, also adds explicit ids for category and complex

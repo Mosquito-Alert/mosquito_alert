@@ -454,6 +454,14 @@ class IdentificationTask(LifecycleModel):
             user=user
         )
 
+    def get_display_identification_label(self) -> str:
+        if not self.is_done:
+            return _("species_unclassified")
+        if not self.taxon:
+            return _("species_notsure")
+
+        return self.taxon.get_display_friendly_common_name()
+
     def refresh(self, force: bool = False, commit: bool = True) -> None:
         def get_most_voted_field(
                 field_name: str,
@@ -1415,6 +1423,20 @@ class Taxon(MP_Node):
         return parent_rank_group.get_children_leaves_in_rank_group().exclude(
             path__startswith=self.path
         )
+
+    def get_display_friendly_common_name(self) -> str:
+        if self.common_name:
+            return "{} ({})".format(self.common_name, self.name)
+
+        translations_table = {  # Translators: Comes from Taxon
+            112: _("species_albopictus"),
+            113: _("species_aegypti"),
+            114: _("species_japonicus"),
+            115: _("species_koreicus"),
+            10: _("species_culex")
+        }
+
+        return translations_table.get(self.pk, _("species_other"))
 
     # Methods
     def clean_rank_field(self):

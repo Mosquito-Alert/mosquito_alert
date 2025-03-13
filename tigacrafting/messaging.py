@@ -49,19 +49,23 @@ def create_notification_content_finished_validation(identification_task: Identif
         except TemplateDoesNotExist:
             return render_to_string('tigacrafting/validation_message_template_en.html', context).replace('&amp;', '&')
 
-    taxon_name = identification_task.taxon.name if identification_task.taxon else ''
+    taxon_name = identification_task.get_display_identification_label()
 
     # Set the language to the user's preference
     activate(user_language_code)
     title_native = _("your_picture_has_been_validated_by_an_expert")
     # NOTE: confidence_label is translatable
-    context_native['validation_category'] = "{} ({})".format(taxon_name, identification_task.confidence_label)
+    context_native['validation_category'] = 'N/A'
+    if taxon_name:
+        context_native['validation_category'] = "{} ({})".format(taxon_name, identification_task.confidence_label)
 
     # Get the message in English
     activate('en')
     title_en = _("your_picture_has_been_validated_by_an_expert")
     # NOTE: confidence_label is translatable
-    context_en['validation_category'] = "{} ({})".format(taxon_name, identification_task.confidence_label)
+    context_en['validation_category'] = 'N/A'
+    if taxon_name:
+        context_en['validation_category'] = "{} ({})".format(taxon_name, identification_task.confidence_label)
 
     deactivate()
 
