@@ -4,6 +4,7 @@ from typing import Optional
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.functions import Coalesce
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
@@ -40,8 +41,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
     def backlog(self, user: Optional[User] = None) -> QuerySet:
         """Awaiting assignment but part of the annotation cycle."""
-        from tigaserver_app.models import EuropeCountry
-        from .models import UserStat
+        from tigaserver_app.models import EuropeCountry, Report
 
         qs = self._assignable()
 
@@ -51,10 +51,9 @@ class IdentificationTaskQuerySet(models.QuerySet):
         # Filter and prioritize tasks for the user
         qs = qs.exclude(assignees=user).annotate(
             in_supervised_country=models.Exists(
-                UserStat.objects.filter(
-                    national_supervisor_of__isnull=False,
-                    national_supervisor_of=models.OuterRef('report__country')
-                )
+                Report.objects.filter(
+                    identification_task=models.OuterRef('pk')
+                ).in_supervised_country()
             )
         #NOTE: ordering by report__server_upload_time instead of the created_at from IdentificationTask.
         #      To be discussed. Keeping like this for legacy reasons now.
@@ -224,34 +223,45 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
     # SUPPORTING QUERYSETS
     def in_exclusivity_period(self, state: bool = True) -> QuerySet:
+        from tigaserver_app.models import Report
         from .models import IdentificationTask
 
         qs = self.filter(
             status=IdentificationTask.Status.OPEN
         ).annotate(
+            in_supervised_country=models.Exists(
+                Report.objects.filter(identification_task=models.OuterRef('pk')).in_supervised_country()
+            ),
             supervisor_has_annotated=models.Exists(
                 IdentificationTask.objects.supervisor_has_annotated().filter(pk=models.OuterRef('pk'))
+            ),
+            # NOTE: using "_" not to raise error due to same name is used for a @property.
+            _exclusivity_end=models.ExpressionWrapper(
+                models.F("report__server_upload_time") +
+                Coalesce(
+                    models.F("report__country__national_supervisor_report_expires_in"),
+                    models.Value(0)
+                ) * models.Value(timedelta(days=1)),
+                output_field=models.DateTimeField(),
             )
         )
 
         return qs.filter(
             models.Q(
-                models.Q(exclusivity_end__gt=timezone.now())
+                models.Q(in_supervised_country=True)
+                & models.Q(_exclusivity_end__gt=timezone.now())
                 & models.Q(supervisor_has_annotated=False),
                 _negated=not state
             )
         )
 
     def supervisor_has_annotated(self, state: bool = True) -> QuerySet:
-        from .models import ExpertReportAnnotation, UserStat
+        from tigaserver_app.models import Report
+        from .models import ExpertReportAnnotation
 
-        return self.annotate(
-            in_supervised_country=models.Exists(
-                UserStat.objects.filter(
-                    national_supervisor_of__isnull=False,
-                    national_supervisor_of=models.OuterRef('report__country')
-                )
-            ),
+        return self.filter(
+            report__in=Report.objects.filter(identification_task__isnull=False).in_supervised_country()
+        ).annotate(
             supervisor_has_annotated=models.Exists(
                 ExpertReportAnnotation.objects.filter(
                     identification_task=models.OuterRef('pk'),
@@ -261,8 +271,6 @@ class IdentificationTaskQuerySet(models.QuerySet):
                 )
             )
         ).filter(
-            report__country__isnull=False,
-            in_supervised_country=True,
             supervisor_has_annotated=state
         )
 

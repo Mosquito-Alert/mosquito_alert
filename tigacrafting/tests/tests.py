@@ -1600,22 +1600,19 @@ class TestIdentificationTaskModel:
         result = IdentificationTask.create_for_report(report=adult_report)
         assert result is None
 
-    def test_create_for_report_in_supervised_country_should_return_task_with_exclusivity_end_date(self, user_national_supervisor, _adult_report):
+    def test_create_for_report_in_supervised_country_should_return_task_with_exclusivity_end_date(self, user_national_supervisor, adult_report):
         country = user_national_supervisor.userstat.national_supervisor_of
 
-        report = _adult_report
-        report.save()
-
-        assert report.country == country
+        assert adult_report.country == country
 
         # Creating a photo will auto create a new IdentificationTask. Delete it and force manual.
-        _ = Photo.objects.create(report=report, photo='./testdata/splash.png')
-        IdentificationTask.objects.filter(report=report).delete()
+        _ = Photo.objects.create(report=adult_report, photo='./testdata/splash.png')
+        IdentificationTask.objects.filter(report=adult_report).delete()
 
-        obj = IdentificationTask.create_for_report(report=report)
+        obj = IdentificationTask.create_for_report(report=adult_report)
 
         assert obj is not None
-        assert obj.exclusivity_end == report.server_upload_time + timedelta(days=10)
+        assert obj.exclusivity_end == adult_report.server_upload_time + timedelta(days=10)
 
     def test_get_taxon_consensus_empty_annotations(self):
         result = IdentificationTask.get_taxon_consensus([], min_confidence=0.5)
@@ -1681,12 +1678,6 @@ class TestIdentificationTaskModel:
     def test_total_finished_annotations_is_0_default(self):
         assert IdentificationTask._meta.get_field("total_finished_annotations").default == 0
 
-    def test_exclusivity_end_is_nullable(self):
-        assert IdentificationTask._meta.get_field("exclusivity_end").null
-
-    def test_exclusivity_end_is_db_index(self):
-        assert IdentificationTask._meta.get_field("exclusivity_end").db_index
-
     def test_revision_type_is_nullable(self):
         assert IdentificationTask._meta.get_field("revision_type").null
 
@@ -1715,17 +1706,32 @@ class TestIdentificationTaskModel:
         assert IdentificationTask._meta.get_field("updated_at").auto_now
 
     # properties
+    def test_exclusivity_end(self, identification_task, user_national_supervisor):
+        country = user_national_supervisor.userstat.national_supervisor_of
+        assert identification_task.report.country == country
+
+        assert identification_task.exclusivity_end == identification_task.report.server_upload_time + timedelta(
+            days=country.national_supervisor_report_expires_in
+        )
+
+        # Delete the national supervisor.
+        user_national_supervisor.delete()
+        # clear cached for exclusivity_end @cached_property, requiring re-computation next time it's called
+        del identification_task.exclusivity_end
+        assert identification_task.exclusivity_end is None
+
     def test_in_exclusivity_period(self):
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
-            obj = IdentificationTask(
-                exclusivity_end=timezone.now() + timedelta(days=1)
-            )
+            obj = IdentificationTask()
 
-            assert obj.in_exclusivity_period
+            with patch.object(IdentificationTask, 'exclusivity_end', new_callable=PropertyMock) as mock_property:
+                mock_property.return_value = timezone.now() + timedelta(days=1)  # Set mock return value
 
-            traveller.shift(timedelta(days=1))
+                assert obj.in_exclusivity_period
 
-            assert not obj.in_exclusivity_period
+                traveller.shift(timedelta(days=1))
+
+                assert not obj.in_exclusivity_period
 
     @pytest.mark.parametrize(
         "value, expected_result",

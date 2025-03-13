@@ -54,6 +54,26 @@ class ReportQuerySet(models.QuerySet):
             )
         )
 
+    def in_supervised_country(self, state: bool = True) -> QuerySet:
+        from tigacrafting.models import UserStat
+
+        return self.annotate(
+            _in_supervised_country=models.Exists(
+                UserStat.objects.filter(
+                    national_supervisor_of__isnull=False,
+                    national_supervisor_of=models.OuterRef('country')
+                )
+            ),
+        ).filter(
+            models.Q(
+                models.Q(
+                    country__isnull=False,
+                    _in_supervised_country=True
+                ),
+                _negated=not state
+            )
+        )
+
 ReportManager = models.Manager.from_queryset(ReportQuerySet)
 
 class PhotoQuerySet(models.QuerySet):

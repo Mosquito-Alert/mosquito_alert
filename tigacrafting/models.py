@@ -179,19 +179,9 @@ class IdentificationTask(LifecycleModel):
         if not report.photos.exists() or not report.type==Report.TYPE_ADULT:
             return None
 
-        # If report country has NS assigned.
-        exclusivity_end = None
-        if country:= report.country:
-            country_has_ns = UserStat.objects.filter(national_supervisor_of=country).exists()
-            if country_has_ns:
-                exclusivity_end = report.server_upload_time + timedelta(
-                    days=country.national_supervisor_report_expires_in
-                )
-
         return self.objects.create(
             report=report,
-            photo=report.photos.first(),
-            exclusivity_end=exclusivity_end
+            photo=report.photos.first()
         )
 
     @classmethod
@@ -379,8 +369,6 @@ class IdentificationTask(LifecycleModel):
     total_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # total experts
     total_finished_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # when validation_complete = True (only for experts)
 
-    exclusivity_end = models.DateTimeField(null=True, blank=True, editable=False, db_index=True)
-
     # Revision
     revision_type = models.CharField(max_length=16, choices=Revision.choices, default=None, editable=False, blank=True, null=True)
     reviewed_at = models.DateTimeField(null=True, blank=True, editable=False)
@@ -418,9 +406,17 @@ class IdentificationTask(LifecycleModel):
             return ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY
         return ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
 
+    @cached_property
+    def exclusivity_end(self) -> Optional[timezone.datetime]:
+        country = self.report.country
+        if country and UserStat.objects.filter(national_supervisor_of=country).exists():
+            return self.report.server_upload_time + timedelta(days=country.national_supervisor_report_expires_in)
+        return None
+
     @property
     def in_exclusivity_period(self) -> bool:
-        return self.exclusivity_end and timezone.now() < self.exclusivity_end
+        exclusivity_end = self.exclusivity_end
+        return exclusivity_end and timezone.now() < exclusivity_end
 
     @property
     def is_done(self) -> bool:
