@@ -98,7 +98,7 @@ class ExpertReportAnnotationInlineAdmin(admin.StackedInline):
 
 @admin.register(IdentificationTask)
 class IdentificationTaskAdmin(NumericFilterModelAdmin):
-    search_fields = ("report", "taxon__name")
+    search_fields = ("report__pk", "taxon__name")
     list_display = ("report", "status", "is_safe", 'total_annotations', 'total_finished_annotations', 'taxon', 'confidence', 'created_at')
     list_filter = (
         "status",
