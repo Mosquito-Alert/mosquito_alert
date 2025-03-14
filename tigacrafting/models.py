@@ -608,7 +608,7 @@ class IdentificationTask(LifecycleModel):
         if self.is_reviewed:
             self.status = self.Status.DONE
 
-        if self.report.deleted or self.report.hide:
+        if self.report.deleted or self.report.hide or self.report.tags.filter(name='345').exists():
             self.status = self.Status.ARCHIVED
 
         if commit:

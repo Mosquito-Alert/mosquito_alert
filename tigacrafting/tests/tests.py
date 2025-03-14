@@ -1885,6 +1885,16 @@ class TestIdentificationTaskFlow:
         identification_task.refresh_from_db()
         assert identification_task.status == IdentificationTask.Status.ARCHIVED
 
+    def test_identification_task_status_should_be_archive_if_report_has_tag_345(self, identification_task):
+        assert identification_task.status == IdentificationTask.Status.OPEN
+
+        report = identification_task.report
+        report.tags.add('345')
+        report.save()
+
+        identification_task.refresh_from_db()
+        assert identification_task.status == IdentificationTask.Status.ARCHIVED
+
     def test_identification_task_status_should_be_archive_after_report_is_soft_deleted(self, identification_task):
         assert identification_task.status == IdentificationTask.Status.OPEN
 

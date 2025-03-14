@@ -1969,7 +1969,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
         self.user.update_score()
 
-        if self.hide:
+        if self.hide or self.tags.filter(name='345').exists():
             _identification_task = getattr(self, "identification_task", None)
             if _identification_task:
                 _identification_task.status = IdentificationTask.Status.ARCHIVED
