@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
                 ('object_id', models.PositiveIntegerField(blank=True, null=True)),
                 ('rank', models.PositiveSmallIntegerField(choices=[(30, 'Class'), (40, 'Order'), (50, 'Family'), (60, 'Genus'), (61, 'Subgenus'), (70, 'Species complex'), (71, 'Species')])),
                 ('name', models.CharField(max_length=32, unique=True)),
-                ('is_relevant', models.BooleanField(db_index=True, default=False, help_text='Indicates if this taxon is relevant for the application. Will be shown first.')),
+                ('is_relevant', models.BooleanField(db_index=True, default=False, help_text='Indicates if this taxon is relevant for the application. Will be shown first and will set task to conflict if final taxon is not this.')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('common_name', models.CharField(blank=True, max_length=64, null=True)),

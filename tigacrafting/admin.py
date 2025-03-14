@@ -1,11 +1,12 @@
 from django.contrib import admin
-from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, UserStat, Taxon
+from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, UserStat, Taxon, IdentificationTask
 from tigaserver_app.models import NutsEurope
 import csv
 from django.utils.encoding import smart_str
 from django.http.response import HttpResponse
 from django.utils.translation import gettext_lazy as _
 
+from admin_numeric_filter.admin import NumericFilterModelAdmin, SliderNumericFilter
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 from modeltranslation.admin import TranslationAdmin
@@ -63,18 +64,75 @@ class MoveLabAnnotationAdmin(admin.ModelAdmin):
         return False
 
 
-class ExpertReportAnnotationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'report', 'tiger_certainty_category', 'created', 'last_modified')
-    ordering = ('last_modified',)
-    readonly_fields = ('user', 'report', 'tiger_certainty_category', 'tiger_certainty_notes', 'site_certainty_category', 'site_certainty_notes', 'edited_user_notes', 'message_for_user', 'status', 'last_modified', 'validation_complete', 'revise', 'best_photo', 'linked_id', 'created')
-    fields = ('user', 'report', 'tiger_certainty_category', 'tiger_certainty_notes', 'site_certainty_category', 'site_certainty_notes', 'edited_user_notes', 'message_for_user', 'status', 'last_modified', 'validation_complete', 'revise', 'best_photo', 'linked_id', 'created')
-    actions = [export_full_csv, export_full_csv_sc]
+class ExpertReportAnnotationInlineAdmin(admin.StackedInline):
+    model = ExpertReportAnnotation
 
-    def has_add_permission(self, request):
+    ordering = ('last_modified',)
+    fields = (
+        'user',
+        ('validation_complete', 'revise'),
+        ('validation_complete_executive', 'simplified_annotation'),
+        ('category', 'complex', 'other_species', 'validation_value'),
+        ("taxon", "confidence"),
+        'status',
+        'best_photo',
+        ('edited_user_notes', 'message_for_user'),
+        ('created', 'last_modified')
+    )
+    def get_readonly_fields(self, request, obj=None):
+        # Make all fields read-only by getting the model's fields dynamically
+        return [field.name for field in self.model._meta.fields]
+
+    extra = 0
+    can_delete = False
+    show_change_link = True
+
+    def has_add_permission(self, request, obj):
+        return False
+
+    def has_change_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+@admin.register(IdentificationTask)
+class IdentificationTaskAdmin(NumericFilterModelAdmin):
+    search_fields = ("report__pk", "taxon__name")
+    list_display = ("report", "status", "is_safe", 'total_annotations', 'total_finished_annotations', 'taxon', 'confidence', 'created_at')
+    list_filter = (
+        "status",
+        ("is_safe", admin.BooleanFieldListFilter),
+        'total_finished_annotations',
+        ('confidence', SliderNumericFilter),
+        ('uncertainty', SliderNumericFilter),
+        ('taxon', admin.RelatedOnlyFieldListFilter),
+        ('report__country', admin.RelatedOnlyFieldListFilter)
+    )
+    ordering = ('-created_at',)
+    fields = (
+        ("report", "photo"),
+        ("created_at", "updated_at"),
+        ("status", "is_safe"),
+        ("exclusivity_end", "in_exclusivity_period"),
+        ("total_annotations", "total_finished_annotations"),
+        ("revision_type", "reviewed_at"),
+        ("taxon", "confidence_label", "confidence"),
+        ("agreement", "uncertainty"),
+        "public_note",
+        "message_for_user"
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        # Make all fields read-only by getting the model's fields dynamically
+        return [field.name for field in self.model._meta.fields] + ['exclusivity_end', 'in_exclusivity_period', "confidence_label"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('report__country', 'taxon', 'photo')
+
+    inlines = [
+        ExpertReportAnnotationInlineAdmin,
+    ]
 
 class UserStatAdmin(admin.ModelAdmin):
     search_fields = ('user__username',)
@@ -100,5 +158,4 @@ class TaxonAdmin(TreeAdmin, TranslationAdmin):
     ]
 
 admin.site.register(MoveLabAnnotation, MoveLabAnnotationAdmin)
-admin.site.register(ExpertReportAnnotation, ExpertReportAnnotationAdmin)
 admin.site.register(UserStat, UserStatAdmin)

@@ -10,18 +10,9 @@ from django.core.wsgi import get_wsgi_application
 
 application = get_wsgi_application()
 
+from tigacrafting.models import IdentificationTask
 
-from django.db.models import Count
-from tigaserver_app.models import EuropeCountry, Report, ExpertReportAnnotation, Categories
-
-
-current_progress = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos=None).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__lt=3).exclude(n_annotations=0).order_by('-server_upload_time')
-reports_filtered = current_progress.non_deleted()
-for c in current_progress:
-    country = 'None'
-    if c.country is not None:
-        country = c.country.name_engl
-    print("Report in progress {0} - country {1} - date {2}".format(c.version_UUID, country, c.server_upload_time  ))
-    assigned_to = ExpertReportAnnotation.objects.filter(report=c)
-    for a in assigned_to:
-        print("\t - assigned to {0} from country , regional manager , country has regional manager ".format( a.user.username ))
+for task in IdentificationTask.objects.ongoing().select_related('report', 'report__country').order_by('report__server_upload_time'):
+    print("Report in progress {0} - country {1} - date {2}".format(task.report_id, task.report.country, task.created_at))
+    assigned_to = task.expert_report_annotations.all().values_list('user__username', flat=True)
+    print("\t - assigned to {0} from country , regional manager , country has regional manager ".format(list(assigned_to)))
