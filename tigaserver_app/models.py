@@ -1230,7 +1230,11 @@ class Report(TimeZoneModelMixin, models.Model):
             return False
 
         identification_task = getattr(self, "identification_task", None)
-        return identification_task.is_done if identification_task else False
+        return (
+            identification_task.is_done or
+            identification_task.total_finished_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT or
+            identification_task.status == IdentificationTask.Status.REVIEW
+        ) if identification_task else False
 
     @property
     def response_html(self) -> str:
@@ -2071,7 +2075,10 @@ class Report(TimeZoneModelMixin, models.Model):
             return True
         else:
             if self.cached_visible is None:
-                return (not self.photos.all().exists()) or (self.is_expert_validated and self.get_final_expert_status() == ExpertReportAnnotation.STATUS_PUBLIC)
+                identification_task = getattr(self, "identification_task", None)
+                if identification_task:
+                    return identification_task.is_done and identification_task.is_safe
+                return True
             else:
                 return self.cached_visible == 1
 
@@ -2265,11 +2272,14 @@ class Report(TimeZoneModelMixin, models.Model):
         if not identification_task:
             return "Unclassified"
         if not identification_task.taxon:
-            return "Unclassified"
+            return "Not sure"
         if identification_task.status == IdentificationTask.Status.CONFLICT:
             return "Conflict"
 
-        return "{} {}".format(identification_task.confidence_label, identification_task.taxon.name)
+        if identification_task.taxon.is_relevant:
+            return "{} {}".format(identification_task.confidence_label, identification_task.taxon.name)
+        else:
+            return "Other species"
 
     # This is just a formatter of get_final_combined_expert_category_euro_struct. Takes the exact same output and makes it
     # template friendly, also adds explicit ids for category and complex

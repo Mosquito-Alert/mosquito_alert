@@ -634,9 +634,6 @@ class IdentificationTask(LifecycleModel):
         if self.report.deleted or self.report.hide:
             self.status = self.Status.ARCHIVED
 
-        if not self.status in self.CLOSED_STATUS:
-            self.is_safe = False
-
         return super().save(*args, **kwargs)
 
     class Meta:
@@ -1009,8 +1006,10 @@ class ExpertReportAnnotation(models.Model):
             return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
         elif self.report.type == 'adult':
             if not self.taxon:
-                return "Unclassified"
-            return self.taxon.name
+                return "Not sure"
+            if self.taxon.is_relevant:
+                return self.taxon.name
+            return "Other species - " + self.taxon.name
 
     def get_category(self) -> str:
         if self.report.type == 'site':
@@ -1049,6 +1048,8 @@ class ExpertReportAnnotation(models.Model):
 
         if self.category:
             if self.category.pk == 1:   # Case Unclassified.
+                return None
+            elif self.category.pk == 9: # Case 'Not sure'
                 return None
             elif self.category.pk == 2: # Case "Other species" selected
                 return Taxon.get_root()

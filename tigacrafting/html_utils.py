@@ -4,7 +4,7 @@ def get_html_color_for_label(taxon, confidence: Optional[float] = None) -> str:
     if not taxon:
         return "#8B4513"
 
-    if taxon.pk == 1: # Insecta (Other species):
+    if taxon.pk == 1 or not taxon.is_relevant: # Insecta (Other species):
         return "black"
     elif taxon.pk == 112: # Aedes Albopictus
         if confidence >= 0.9:

@@ -663,7 +663,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not checked or checked == 'na'):
                 checked = 'unchecked'
 
-            user_tasks = task_qs.annotated_by(user=this_user)
+            user_tasks = task_qs.filter(assignees=this_user)
 
             args['n_flagged'] = user_tasks.filter(status=IdentificationTask.Status.FLAGGED).count()
             args['n_hidden'] = user_tasks.done().filter(is_safe=False).count()
@@ -750,14 +750,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     )
                 elif final_status == "hidden":
                     all_annotations = all_annotations.filter(
-                        identification_task__isnull=False,
-                        identification_task__status=IdentificationTask.Status.DONE,
                         identification_task__is_safe=False
                     )
                 elif final_status == "public":
                     all_annotations = all_annotations.filter(
-                        identification_task__isnull=False,
-                        identification_task__status=IdentificationTask.Status.DONE,
                         identification_task__is_safe=True
                     )
 

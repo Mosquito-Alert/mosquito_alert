@@ -2153,7 +2153,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.taxon == specie_1
         assert identification_task.confidence == Decimal('0.75') # (1 + 1 + 0.25) / 3
         assert identification_task.agreement == 2/3
-        assert identification_task.is_safe == False # Not yet in a closed status.
+        assert identification_task.is_safe == True
         assert identification_task.status == IdentificationTask.Status.REVIEW
 
         self._add_revision(
