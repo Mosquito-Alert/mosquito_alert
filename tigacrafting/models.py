@@ -232,17 +232,15 @@ class IdentificationTask(LifecycleModel):
             Returns:
                 defaultdict: The propagated confidence values for each taxon.
             """
-            parent_confidence = defaultdict(Decimal)
+            ancestors_confidence = defaultdict(Decimal)
             for taxon, confidence in taxon_confidence.items():
-                if t_parent:=taxon.parent:
-                    parent_confidence[t_parent] += confidence
-            if parent_confidence:
-                # Recursively aggregate parent confidence values
-                return defaultdict(
-                    Decimal,
-                    Counter(taxon_confidence) + Counter(propagate_confidence_up(parent_confidence))
-                )
-            return taxon_confidence
+                for t_ancestor in taxon.get_ancestors().iterator():
+                    ancestors_confidence[t_ancestor] += confidence
+
+            return defaultdict(
+                Decimal,
+                Counter(taxon_confidence) + Counter(ancestors_confidence)
+            )
 
         def calculate_norm_entropy(probabilities: List[numbers.Number]) -> float:
             """Computes normalized entropy of the given probability distribution."""
