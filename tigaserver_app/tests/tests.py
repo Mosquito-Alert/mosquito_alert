@@ -2006,6 +2006,98 @@ class ReportModelTest(TestCase):
                 device_model_null2.refresh_from_db
             )
 
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_bite_is_published_on_create(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_BITE,
+        )
+        self.assertEqual(report.published_at, timezone.now())
+        self.assertEqual(report.published, True)
+
+    def test_breeding_site_is_published_in_two_days_on_create(self):
+        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
+            report = Report.objects.create(
+                user=TigaUser.objects.create(),
+                report_id='1234',
+                phone_upload_time=timezone.now(),
+                creation_time=timezone.now(),
+                version_time=timezone.now(),
+                type=Report.TYPE_SITE,
+            )
+            self.assertEqual(report.published_at, timezone.now() + timedelta(days=2))
+            self.assertEqual(report.published, False)
+
+            traveller.shift(timedelta(days=2))
+
+            self.assertEqual(report.published, True)
+
+    def test_adult_is_not_published_on_create(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+        )
+        self.assertEqual(report.published, False)
+
+    def test_published_report_is_unpublished_if_hide(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+        )
+        report.published_at = timezone.now()
+        report.save()
+
+        self.assertEqual(report.published, True)
+
+        report.hide = True
+        report.save()
+
+        self.assertEqual(report.published, False)
+
+    def test_published_report_is_unpublished_if_tag_345(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_BITE,
+            published_at=timezone.now(),
+            note='#345'
+        )
+
+        self.assertEqual(report.tags.filter(name='345').exists(), True)
+
+        self.assertEqual(report.published, False)
+
+    def test_published_and_hide_raise_IntegrityError(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+        )
+
+        with self.assertRaises(IntegrityError) as context:
+            Report.objects.filter(pk=report.pk).update(
+                hide=True,
+                published_at=timezone.now()
+            ) 
+
 class ApiTokenViewTest(APITestCase):
     ENDPOINT = '/api/token/'
 

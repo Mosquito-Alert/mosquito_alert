@@ -69,7 +69,7 @@ stages:
           nuts_3: !anything
         note: Test
         tags: !anylist
-        published: false
+        published: true
         event_environment: indoors
         event_moment: now
         bite_count: 3

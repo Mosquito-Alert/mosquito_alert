@@ -20,7 +20,7 @@ from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from django_lifecycle.conditions import WhenFieldValueChangesTo
+from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged
 from django_lifecycle import LifecycleModel, hook, AFTER_SAVE
 from treebeard.mp_tree import MP_Node
 from scipy.stats import entropy
@@ -641,6 +641,20 @@ class IdentificationTask(LifecycleModel):
             identification_task=self,
             from_user=User.objects.filter(pk=25).first()
         )
+
+    @hook(
+        AFTER_SAVE,
+        condition=WhenFieldHasChanged('status') | WhenFieldHasChanged('is_safe')
+    )
+    def refresh_report_published_at(self) -> None:
+        old_value = self.report.published_at
+        new_value = None
+        if self.is_done and self.is_safe:
+            new_value = timezone.now()
+
+        if old_value != new_value:
+            self.report.published_at = new_value
+            self.report.save()
 
     def save(self, *args, **kwargs):
         if not self.report.is_browsable:

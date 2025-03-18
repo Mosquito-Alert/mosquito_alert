@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.query import QuerySet
+from django.utils import timezone
 
 from fcm_django.models import FCMDeviceQuerySet, FCMDeviceManager
 
@@ -18,24 +19,14 @@ class ReportQuerySet(models.QuerySet):
         )
 
     def deleted(self, state: bool = True):
-        return self.exclude(deleted_at__isnull=state)
+        return self.filter(deleted_at__isnull=not state)
 
     def non_deleted(self):
         return self.deleted(state=False)
     
-    def published(self, state: bool = True):
-        PRIVATE_LAYERS = [
-            "breeding_site_not_yet_filtered",
-            "conflict",
-            "not_yet_validated",
-            "trash_layer",
-        ]
-        return self.non_deleted().filter(
-            models.Q(
-                models.Q(map_aux_report__isnull=False)
-                & ~models.Q(map_aux_report__private_webmap_layer__in=PRIVATE_LAYERS),
-                _negated=not state
-            )
+    def published(self):
+        return self.non_deleted().browsable().filter(
+            published_at__lte=timezone.now()
         )
 
     def browsable(self):

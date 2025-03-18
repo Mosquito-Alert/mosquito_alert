@@ -1,6 +1,5 @@
 import pytest
 
-from tigapublic.models import MapAuxReports
 from tigaserver_app.models import Report
 
 from .factories import create_breeding_site_object
@@ -17,25 +16,17 @@ def object(app_user):
 @pytest.fixture
 def published_object(app_user):
     breeding_site_obj = create_breeding_site_object(user=app_user)
+    breeding_site_obj.published_at = breeding_site_obj.server_upload_time
+    breeding_site_obj.save()
 
-    _ = MapAuxReports.objects.get_or_create(
-        version_uuid=breeding_site_obj,
-        defaults={
-            "id": 10,
-            "user_id": breeding_site_obj.user.pk,
-            "ref_system": 4326,
-            "type": breeding_site_obj.type,
-            "final_expert_status": 1,
-            "visible": True,
-        },
-    )
     return breeding_site_obj
 
 @pytest.fixture
 def unpublished_object(app_user):
     breeding_site_obj = create_breeding_site_object(user=app_user)
+    breeding_site_obj.hide = True
+    breeding_site_obj.save()
 
-    _ = MapAuxReports.objects.filter(version_uuid=breeding_site_obj).delete()
     return breeding_site_obj
 
 @pytest.fixture

@@ -786,6 +786,15 @@ class Report(TimeZoneModelMixin, models.Model):
         editable=False,
         help_text="Date and time on phone when first version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
     )
+
+    published_at = models.DateTimeField(
+        editable=False,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='Datetime when the report was published.'
+    )
+
     version_time = models.DateTimeField(
         help_text="Date and time on phone when this version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
     )
@@ -1223,9 +1232,9 @@ class Report(TimeZoneModelMixin, models.Model):
             self.location_is_masked
         )
 
-    @cached_property
+    @property
     def published(self) -> bool:
-        return Report.objects.published().filter(pk=self.pk).exists()
+        return not self.deleted and bool(self.published_at) and self.published_at <= timezone.now()
 
     @property
     def public_map_url(self) -> Optional[str]:
@@ -1926,6 +1935,12 @@ class Report(TimeZoneModelMixin, models.Model):
 
             self.device = device
 
+            if self.type == self.TYPE_BITE:
+                self.published_at = timezone.now()
+            elif self.type == self.TYPE_SITE:
+                # Some time for moderators to check images and discard if needed.
+                self.published_at = timezone.now() + timedelta(days=2)
+
         # Fill the country field
         if not self.country or _old_point != self.point:
             self.country = self._get_country_is_in()
@@ -1974,6 +1989,9 @@ class Report(TimeZoneModelMixin, models.Model):
                 getattr(self, fname) for fname in bite_fieldnames
             )
 
+        if self.hide or self.tags.filter(name='345').exists():
+            self.published_at = None
+
         super(Report, self).save(*args, **kwargs)
 
         self.user.update_score()
@@ -2019,6 +2037,10 @@ class Report(TimeZoneModelMixin, models.Model):
                     deleted_at__isnull=False
                 ),
                 name='version_number_constraint'
+            ),
+            models.CheckConstraint(
+                name='hide_when_published_at_is_not_null',
+                check=~models.Q(published_at__isnull=False) | models.Q(hide=False)
             )
         ]
         indexes = [

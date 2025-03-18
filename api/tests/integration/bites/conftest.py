@@ -1,6 +1,5 @@
 import pytest
 
-from tigapublic.models import MapAuxReports
 from tigaserver_app.models import Report
 
 from .factories import create_bite_object
@@ -17,25 +16,17 @@ def object(app_user):
 @pytest.fixture
 def published_object(app_user):
     bite_obj = create_bite_object(user=app_user)
+    bite_obj.published_at = bite_obj.server_upload_time
+    bite_obj.save()
 
-    _ = MapAuxReports.objects.get_or_create(
-        version_uuid=bite_obj,
-        defaults={
-            "id": 10,
-            "user_id": bite_obj.user.pk,
-            "ref_system": 4326,
-            "type": bite_obj.type,
-            "final_expert_status": 1,
-            "visible": True,
-        },
-    )
     return bite_obj
 
 @pytest.fixture
 def unpublished_object(app_user):
     bite_obj = create_bite_object(user=app_user)
+    bite_obj.hide = True
+    bite_obj.save()
 
-    _ = MapAuxReports.objects.filter(version_uuid=bite_obj).delete()
     return bite_obj
 
 @pytest.fixture
