@@ -232,9 +232,23 @@ class IdentificationTask(LifecycleModel):
             Returns:
                 defaultdict: The propagated confidence values for each taxon.
             """
+
+            # Cache for storing already fetched ancestors
+            ancestor_cache = {}
             ancestors_confidence = defaultdict(Decimal)
+
             for taxon, confidence in taxon_confidence.items():
-                for t_ancestor in taxon.get_ancestors().iterator():
+                # Find an existing sibling in the cache
+                t_ancestors = next(
+                    (value for key, value in ancestor_cache.items() if taxon.is_sibling_of(key)),
+                    None
+                )
+
+                if not t_ancestors:
+                    t_ancestors = list(taxon.get_ancestors())
+                    ancestor_cache[taxon] = t_ancestors
+
+                for t_ancestor in t_ancestors:
                     ancestors_confidence[t_ancestor] += confidence
 
             return defaultdict(
