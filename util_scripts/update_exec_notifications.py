@@ -33,8 +33,14 @@ def get_notification_content_from_report(report_uuid: str) -> Optional[Notificat
 
 
 def update_notification_content(notification_content_pk: int, report_annotation: ExpertReportAnnotation):
+
+    identification_task = getattr(report_annotation, 'identification_task', None)
+    if not identification_task:
+        return
+
     notification_content = create_notification_content_finished_validation(
-        report_annotation=report_annotation
+        identification_task=identification_task,
+        commit=False
     )
     notification_content.pk = notification_content_pk
     notification_content.save()

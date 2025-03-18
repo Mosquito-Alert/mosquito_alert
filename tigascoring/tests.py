@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.utils.translation import activate, deactivate, gettext as _
-from tigaserver_app.models import EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Award, AwardCategory, \
+from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo, ExpertReportAnnotation, Award, AwardCategory, \
     Notification, NotificationContent, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
     ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
 from tigacrafting.models import Categories
@@ -17,7 +17,7 @@ import string
 
 
 class ScoringTestCase(TestCase):
-    fixtures = ['auth_group.json', 'awardcategory.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json']
+    fixtures = ['auth_group.json', 'awardcategory.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json', 'taxon.json']
 
     def create_single_report(self, day, month, year, user, id, hour=None, minute=None, second=None, report_app_language='es'):
         utc = pytz.UTC
@@ -62,6 +62,8 @@ class ScoringTestCase(TestCase):
         report_in_season = self.create_single_report(conf.SEASON_START_DAY, conf.SEASON_START_MONTH, 2020, user,
                                                      '00000000-0000-0000-0000-000000000002')
         report_in_season.save()
+        _ = Photo.objects.create(report=report_in_season, photo='tigacrafting/tests/testdata/splash.png')
+        report_in_season.refresh_from_db()
         retval = compute_user_score_in_xp_v2(user_id)
         # 6 points first of season
         # 6 points first of day
@@ -74,6 +76,8 @@ class ScoringTestCase(TestCase):
         report_in_season = self.create_single_report(conf.SEASON_START_DAY, conf.SEASON_START_MONTH, 2020, user,
                                                      '00000000-0000-0000-0000-000000000002')
         report_in_season.save()
+        _ = Photo.objects.create(report=report_in_season, photo='tigacrafting/tests/testdata/splash.png')
+        report_in_season.refresh_from_db()
         reritja_user = User.objects.get(pk=25)
         superexperts_group = Group.objects.get(name='superexpert')
         superexperts_group.user_set.add(reritja_user)
@@ -85,7 +89,8 @@ class ScoringTestCase(TestCase):
         # 6 points first of season
         # 6 points first of day
         # 6 points geolocated
-        self.assertEqual(retval['total_score'], 18)
+        # 6 points picture
+        self.assertEqual(retval['total_score'], 24)
         # we hide the report, it does not yield any points
         report_in_season.hide = True
         report_in_season.save()

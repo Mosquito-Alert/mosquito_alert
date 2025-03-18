@@ -19,7 +19,6 @@ from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
 from django.urls import reverse
 import io
 from rest_framework import status
-from tigacrafting.messaging import send_finished_validation_notification
 from tigacrafting.messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict, notsure_msg_dict
 from rest_framework.test import APIRequestFactory
 from django.db import transaction
@@ -1036,11 +1035,9 @@ class NotificationTestCase(APITestCase):
     def test_auto_notification_report_is_issued_and_readable_via_api(self):
         r = Report.objects.get(pk='1')
 
-        # this should cause send_finished_validation_notification to be called
+        # this should cause send_finished_identification_task_notification to be called
         anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, report=r, category=self.categories[2], validation_complete=True, revise=True, validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         anno_reritja.save()
-
-        send_finished_validation_notification(anno_reritja)
 
         # there should be a new Notification
         self.assertEqual(Notification.objects.all().count(), 1)
@@ -1058,14 +1055,13 @@ class NotificationTestCase(APITestCase):
     def test_ack_notification(self):
         r = Report.objects.get(pk='1')
 
-        # this should cause send_finished_validation_notification to be called
+        # this should cause send_finished_identification_task_notification to be called
         anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, report=r,
                                                              category=self.categories[2], validation_complete=True,
                                                              revise=True,
                                                              validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         anno_reritja.save()
 
-        send_finished_validation_notification(anno_reritja)
         self.client.force_authenticate(user=self.reritja_user)
         response = self.client.get('/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000')
         # response should be ok
@@ -1346,7 +1342,7 @@ class NotificationTestCase(APITestCase):
         self.client.logout()
 
 class AnnotateCoarseTestCase(APITestCase):
-    fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json']
+    fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json', 'taxon.json']
     def test_annotate_taken(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
@@ -1393,6 +1389,8 @@ class AnnotateCoarseTestCase(APITestCase):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
         r = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        _ = Photo.objects.create(report=r)  # Needed to create an identification task
+        r.refresh_from_db()
         annos = ExpertReportAnnotation.objects.filter(report=r)
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Let's change that
@@ -1406,6 +1404,7 @@ class AnnotateCoarseTestCase(APITestCase):
                 data['validation_value'] = '1'
             response = self.client.post('/api/annotate_coarse/', data=data)
             self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+            r.refresh_from_db()
             classification = json.loads(r.get_final_combined_expert_category_euro_struct_json())
             category_text = classification['category']
             category_id = int(classification['category_id'])
@@ -1441,6 +1440,7 @@ class AnnotateCoarseTestCase(APITestCase):
         data['validation_value'] = '2'
         response = self.client.post('/api/annotate_coarse/', data=data)
         self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        r.refresh_from_db()
         classification = json.loads(r.get_final_combined_expert_category_euro_struct_json())
         category_text = classification['category']
         category_id = int(classification['category_id'])
