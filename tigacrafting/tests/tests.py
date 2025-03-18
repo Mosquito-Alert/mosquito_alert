@@ -15,7 +15,6 @@ from django.test import TestCase
 from django.utils.translation import activate, deactivate, gettext as _
 from tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
 from tigacrafting.models import ExpertReportAnnotation, Categories, Complex, OtherSpecies, Taxon, IdentificationTask
-from tigacrafting.views import must_be_autoflagged
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
@@ -963,53 +962,57 @@ class NewReportAssignment(TestCase):
 
 
 
-    def test_autoflag_report(self):
+    def test_report_annotation_conflict(self):
         self.create_team()
         self.create_report_pool()
         r = Report.objects.get(pk='1')
+        _ = Photo.objects.create(report=r, photo='./testdata/splash.png')
+        identification_task = r.identification_task
         self.assertEqual(r.version_UUID,'1')
 
         user_spain_1 = User.objects.get(username='expert_1_es')
         user_spain_4 = User.objects.get(username='expert_4_es')
         user_spain_6 = User.objects.get(username='expert_6_es')
 
-        c_1 = Categories.objects.create(pk=1,name='Red',specify_certainty_level=False)
-        c_1.save()
-        c_2 = Categories.objects.create(pk=2, name='Orange', specify_certainty_level=False)
-        c_2.save()
-        c_3 = Categories.objects.create(pk=3, name='Blue', specify_certainty_level=False)
-        c_3.save()
+        taxon_root = Taxon.add_root(
+            rank=Taxon.TaxonomicRank.GENUS,
+            name="genus",
+            common_name=""
+        )
 
-        cp_1 = Complex.objects.create(pk=1, description="Green/Teal")
-        cp_1.save()
+        c_1 = Categories.objects.create(name='Red',specify_certainty_level=False)
+        _ = taxon_root.add_child(name=c_1.name, rank=Taxon.TaxonomicRank.SPECIES, is_relevant=True, content_object=c_1)
+        c_2 = Categories.objects.create(name='Orange', specify_certainty_level=False)
+        _ = taxon_root.add_child(name=c_2.name, rank=Taxon.TaxonomicRank.SPECIES, is_relevant=True, content_object=c_2)
+        c_3 = Categories.objects.create(name='Blue', specify_certainty_level=False)
+        _ = taxon_root.add_child(name=c_3.name, rank=Taxon.TaxonomicRank.SPECIES, is_relevant=True, content_object=c_3)
+
+        cp_1 = Complex.objects.create(description="Green/Teal")
+        _ = taxon_root.add_child(name=cp_1.description, rank=Taxon.TaxonomicRank.SPECIES_COMPLEX, is_relevant=True, content_object=cp_1)
 
         anno_u1 = ExpertReportAnnotation.objects.create(user=user_spain_1, report=r, category=c_1, validation_complete=True)
-        anno_u1.save()
         anno_u4 = ExpertReportAnnotation.objects.create(user=user_spain_4, report=r, category=c_2,validation_complete=True)
-        anno_u4.save()
         anno_u6 = ExpertReportAnnotation.objects.create(user=user_spain_6, report=r, category=c_3,validation_complete=True)
-        anno_u6.save()
 
         #Three different categories -> Conflict
-        autoflag_question_mark = must_be_autoflagged(anno_u6, anno_u6.validation_complete)
-        self.assertEqual( autoflag_question_mark, True )
+        identification_task.refresh_from_db()
+        self.assertEqual(identification_task.status, IdentificationTask.Status.CONFLICT)
 
         anno_u6.category = None
         anno_u6.complex = cp_1
         anno_u6.save()
 
         # Two categories, one conflict -> Conflict
-        autoflag_question_mark = must_be_autoflagged(anno_u6, anno_u6.validation_complete)
-        self.assertEqual(autoflag_question_mark, True)
+        identification_task.refresh_from_db()
+        self.assertEqual(identification_task.status, IdentificationTask.Status.CONFLICT)
 
         anno_u6.category = c_1
         anno_u6.complex = None
         anno_u6.save()
 
         # Two equal categories, one different -> No Conflict
-        autoflag_question_mark = must_be_autoflagged(anno_u6, anno_u6.validation_complete)
-        self.assertEqual(autoflag_question_mark, False)
-
+        identification_task.refresh_from_db()
+        self.assertNotEqual(identification_task.status, IdentificationTask.Status.CONFLICT)
 
     def test_outdated_assign(self):
         self.create_team()
