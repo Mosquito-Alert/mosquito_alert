@@ -24,7 +24,7 @@ def published_object(app_user):
 @pytest.fixture
 def unpublished_object(app_user):
     bite_obj = create_bite_object(user=app_user)
-    bite_obj.hide = True
+    bite_obj.published_at = None
     bite_obj.save()
 
     return bite_obj

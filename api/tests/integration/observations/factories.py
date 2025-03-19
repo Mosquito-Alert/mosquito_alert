@@ -11,7 +11,7 @@ def create_observation_object(user: TigaUser, is_published: bool = False) -> Rep
     if is_published:
         report.published_at = report.server_upload_time
     else:
-        report.hide = True
+        report.published_at = None
 
     report.save()
 
