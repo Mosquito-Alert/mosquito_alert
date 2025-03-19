@@ -436,34 +436,6 @@ def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50',
 ITALY_GEOMETRY = GEOSGeometry('{"type": "Polygon","coordinates": [[[7.250976562499999,43.70759350405294],[8.96484375,44.071800467511565],[10.96435546875,41.95131994679697],[7.822265625000001,41.0130657870063],[8.1298828125,38.788345355085625],[11.865234375,37.735969208590504],[14.1064453125,36.70365959719456],[14.985351562499998,36.31512514748051],[18.80859375,40.27952566881291],[12.45849609375,44.5278427984555],[13.86474609375,45.413876460821086],[14.04052734375,46.51351558059737],[12.238769531249998,47.264320080254805],[6.8994140625,46.10370875598026],[6.43798828125,45.120052841530544],[7.250976562499999,43.70759350405294]]]}')
 
 
-def autoflag_others(id_annotation_report):
-    this_annotation = ExpertReportAnnotation.objects.get(id=id_annotation_report)
-    the_report = this_annotation.report
-    annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID).filter(user__groups__name='expert')
-    for anno in annotations:
-        if anno.id != id_annotation_report:
-            anno.status = 0
-            anno.save()
-
-
-def must_be_autoflagged(this_annotation, is_current_validated):
-    if this_annotation is not None:
-        the_report = this_annotation.report
-        if the_report is not None:
-            annotations = ExpertReportAnnotation.objects.filter(report_id=the_report.version_UUID,user__groups__name='expert',validation_complete=True).exclude(id=this_annotation.id)
-            anno_count = 0
-            classifications = []
-            for anno in annotations:
-                item = anno.category if anno.complex is None else anno.complex
-                classifications.append(item)
-                anno_count += 1
-            this_annotation_item = this_annotation.category if this_annotation.complex is None else this_annotation.complex
-            classifications.append(this_annotation_item)
-            if is_current_validated and len(classifications) == 3 and ( len(set(classifications)) == len(classifications) ):
-                return True
-    return False
-
-
 @login_required
 def entolab_license_agreement(request):
     if request.method == 'POST':
@@ -606,13 +578,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             if formset.is_valid():
                 for f in formset:
                     one_form = f.save(commit=False)
-                    auto_flag = must_be_autoflagged(one_form,one_form.validation_complete)
-                    if auto_flag:
-                        one_form.status = 0
                     one_form.save()
                     f.save_m2m()
-                    if auto_flag:
-                        autoflag_others(one_form.id)
             else:
                 return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
         page = request.POST.get('page')

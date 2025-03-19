@@ -2052,7 +2052,7 @@
                 }
 
                 // This is here to avoid that the "flagged without..." validation message pops up when the SUPERexpert is
-                // revising an autoflagged conflicting report
+                // revising a flagged report
                 {% if request.user.userstat.is_expert %}
                 if ( flag_title == 'flagged' ){
                     if( $("#id_form-" + id_string + "-tiger_certainty_notes").val() == "" ) {
