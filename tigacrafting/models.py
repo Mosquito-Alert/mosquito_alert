@@ -446,7 +446,7 @@ class IdentificationTask(LifecycleModel):
         self.taxon, self.confidence, self.uncertainty, self.agreement = self.get_taxon_consensus(
             annotations=[annotation,]
         )
-        self.is_safe = annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
+        self.is_safe = annotation.status != ExpertReportAnnotation.STATUS_HIDDEN
         self.status = default_status
 
     def assign_to_user(self, user: User) -> None:
@@ -591,7 +591,7 @@ class IdentificationTask(LifecycleModel):
                     }
                 self.photo_id = get_most_voted_field(field_name='best_photo', lookup_filter=taxon_filter)
                 self.public_note = get_most_voted_field(field_name='edited_user_notes', lookup_filter=taxon_filter)
-                self.is_safe = get_most_voted_field(field_name='status') == ExpertReportAnnotation.STATUS_PUBLIC
+                self.is_safe = get_most_voted_field(field_name='status') != ExpertReportAnnotation.STATUS_HIDDEN
             elif self.total_finished_annotations < self.total_annotations:
                 # Check for flagged annotations
                 if finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists():
