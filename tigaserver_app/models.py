@@ -707,6 +707,7 @@ class Report(TimeZoneModelMixin, models.Model):
         (TYPE_SITE, _("Breeding Site")),
         (TYPE_MISSION, _("Mission")),
     )
+    PUBLISHABLE_TYPES = [TYPE_BITE, TYPE_ADULT, TYPE_SITE]
 
     LOCATION_CURRENT = "current"
     LOCATION_SELECTED = "selected"
@@ -1978,7 +1979,7 @@ class Report(TimeZoneModelMixin, models.Model):
                 getattr(self, fname) for fname in bite_fieldnames
             )
 
-        if self.type not in [self.TYPE_BITE, self.TYPE_ADULT, self.TYPE_SITE]:
+        if self.type not in self.PUBLISHABLE_TYPES:
             self.published_at = None
 
         if not self.is_browsable:
