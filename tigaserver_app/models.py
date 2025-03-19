@@ -1229,7 +1229,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
     @property
     def published(self) -> bool:
-        return not self.deleted and bool(self.published_at) and self.published_at <= timezone.now()
+        return self.is_browsable and bool(self.published_at) and self.published_at <= timezone.now()
 
     @property
     def public_map_url(self) -> Optional[str]:
@@ -1980,7 +1980,7 @@ class Report(TimeZoneModelMixin, models.Model):
                 getattr(self, fname) for fname in bite_fieldnames
             )
 
-        if self.hide or self.tags.filter(name='345').exists():
+        if not self.is_browsable:
             self.published_at = None
 
         super(Report, self).save(*args, **kwargs)

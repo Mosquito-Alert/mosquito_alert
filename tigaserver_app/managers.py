@@ -25,7 +25,7 @@ class ReportQuerySet(models.QuerySet):
         return self.deleted(state=False)
     
     def published(self, state: bool = True):
-        return self.non_deleted().browsable().filter(
+        return self.browsable().filter(
             models.Q(
                 published_at__isnull=False,
                 published_at__lte=timezone.now(),
