@@ -1059,14 +1059,7 @@ class ExpertReportAnnotation(models.Model):
             return self.other_species.taxa.first()
 
         if self.category:
-            if self.category.pk == 1:   # Case Unclassified.
-                return None
-            elif self.category.pk == 9: # Case 'Not sure'
-                return None
-            elif self.category.pk == 2: # Case "Other species" selected
-                return Taxon.get_root()
-            else:
-                return self.category.taxa.first()
+            return self.category.taxa.first()
 
         return None
 
