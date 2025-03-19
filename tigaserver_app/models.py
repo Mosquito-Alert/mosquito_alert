@@ -881,10 +881,6 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text=_("A comma-separated list of tags you can add to a report to make them easier to find."),
     )
 
-    cached_visible = models.IntegerField(
-        null=True, blank=True, help_text="Precalculated value of show_on_map_function"
-    )
-
     mobile_app = models.ForeignKey(
         MobileApp,
         null=True,
@@ -1121,7 +1117,6 @@ class Report(TimeZoneModelMixin, models.Model):
             'hide',
             'ia_filter_1',
             'ia_filter_2',
-            'cached_visible',
             'package_name',
             'device_manufacturer',
             'device_model',
@@ -1304,10 +1299,6 @@ class Report(TimeZoneModelMixin, models.Model):
             return _("Medium")
         else:
             return _("Low")
-
-    @property
-    def visible(self) -> bool:
-        return self.show_on_map()
 
     @property
     def visible_photos(self):
@@ -2095,18 +2086,6 @@ class Report(TimeZoneModelMixin, models.Model):
         for photo in these_photos:
             result += '<br>' + photo.small_image_() + '<br>'
         return result
-
-    def show_on_map(self) -> bool:
-        if self.creation_time.year == 2014:
-            return True
-        else:
-            if self.cached_visible is None:
-                identification_task = getattr(self, "identification_task", None)
-                if identification_task:
-                    return identification_task.is_done and identification_task.is_safe
-                return True
-            else:
-                return self.cached_visible == 1
 
     def get_mean_expert_adult_score_aegypti(self):
         sum_scores = 0

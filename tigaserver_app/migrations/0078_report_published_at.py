@@ -97,4 +97,8 @@ class Migration(migrations.Migration):
             constraint=models.CheckConstraint(check=models.Q(models.Q(('published_at__isnull', False), _negated=True), ('hide', False), _connector='OR'), name='hide_when_published_at_is_not_null'),
         ),
         migrations.RunPython(populate_report_published_at, migrations.RunPython.noop),
+        migrations.RemoveField(
+            model_name='report',
+            name='cached_visible',
+        ),
     ]
