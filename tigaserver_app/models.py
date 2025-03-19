@@ -2031,8 +2031,11 @@ class Report(TimeZoneModelMixin, models.Model):
                 name='version_number_constraint'
             ),
             models.CheckConstraint(
-                name='hide_when_published_at_is_not_null',
-                check=~models.Q(published_at__isnull=False) | models.Q(hide=False)
+                name='is_browsable_when_published',
+                check=models.Q(published_at__isnull=True) |  # Allow if published_at is NULL
+                    (
+                        models.Q(hide=False) & models.Q(deleted_at__isnull=True) & models.Q(location_is_masked=False)
+                    )
             )
         ]
         indexes = [

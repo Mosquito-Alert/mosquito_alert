@@ -115,7 +115,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='report',
-            constraint=models.CheckConstraint(check=models.Q(models.Q(('published_at__isnull', False), _negated=True), ('hide', False), _connector='OR'), name='hide_when_published_at_is_not_null'),
+            constraint=models.CheckConstraint(check=models.Q(('published_at__isnull', True), models.Q(('hide', False), ('deleted_at__isnull', True), ('location_is_masked', False)), _connector='OR'), name='is_browsable_when_published'),
         ),
         migrations.RunPython(populate_report_published_at, migrations.RunPython.noop),
         migrations.RemoveField(
