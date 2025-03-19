@@ -1597,7 +1597,7 @@ def nearby_reports_no_dwindow(request):
         data = cursor.fetchall()
         flattened_data = [element for tupl in data for element in tupl]
 
-        reports_qs = Report.objects.browsable().filter(
+        reports_qs = Report.objects.non_deleted().filter(
             version_UUID__in=flattened_data
         ).exclude(
             cached_visible=0
@@ -1605,8 +1605,9 @@ def nearby_reports_no_dwindow(request):
 
         if user is not None:
             reports_qs = reports_qs.exclude(user=user)
+
         if show_hidden == 0:
-            reports_qs = reports_qs.non_deleted()
+            reports_qs = reports_qs.browsable()
 
         reports_adult = reports_qs.filter(type=Report.TYPE_ADULT).with_finished_validation()
         reports_bite = reports_qs.filter(type=Report.TYPE_BITE)

@@ -39,8 +39,10 @@ class ReportQuerySet(models.QuerySet):
         )
 
     def browsable(self):
-        return self.filter(
-            hide=False
+        # Should be the same as in is_browsable property.
+        return self.non_deleted().filter(
+            hide=False,
+            location_is_masked=False
         ).exclude(
             tags__name="345"
         )
