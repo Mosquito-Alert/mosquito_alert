@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -1066,17 +1068,11 @@ def string_par_to_bool(string_par):
             return True
     return False
 
-def get_cfa_reports():
-    new_reports_unfiltered_adults = get_reports_unfiltered_adults()
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_adults, False)
-    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(
-        hide=True)
-    # there seems to be some kind of caching issue .all() forces the queryset to refresh
-    results = []
-    for report in unfiltered_clean_reports_query:
-        results.append({"version_UUID": report.version_UUID})
-    return results
+def get_cfa_reports() -> List[Dict[str, str]]:
+    new_reports_unfiltered_adults = get_reports_unfiltered_adults().filter(
+        hide=False
+    ).non_deleted()
+    return list(new_reports_unfiltered_adults.values('version_UUID'))
 
 @api_view(['GET'])
 def force_refresh_cfa_reports(request):
@@ -1084,20 +1080,18 @@ def force_refresh_cfa_reports(request):
         results = get_cfa_reports()
         return Response(results)
 
-def get_cfs_reports():
-    reports_imbornal = get_reports_imbornal()
-    new_reports_unfiltered_sites_embornal = get_reports_unfiltered_sites_embornal(reports_imbornal)
-    new_reports_unfiltered_sites_other = get_reports_unfiltered_sites_other(reports_imbornal)
-    new_reports_unfiltered_sites = new_reports_unfiltered_sites_embornal | new_reports_unfiltered_sites_other
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered_sites, False)
-    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id).exclude(
-        hide=True)
-    # there seems to be some kind of caching issue .all() forces the queryset to refresh
-    results = []
-    for report in unfiltered_clean_reports_query:
-        results.append({"version_UUID": report.version_UUID})
-    return results
+def get_cfs_reports() -> List[Dict[str, str]]:
+    new_reports_unfiltered_sites = Report.objects.annotate(
+        n_annotations=Count('expert_report_annotations')
+    ).filter(
+        type=Report.TYPE_SITE,
+        n_annotations=0
+    ).exclude(
+        Q(note__icontains='#345') |
+        Q(hide=True)
+    ).has_photos().non_deleted()
+
+    return list(new_reports_unfiltered_sites.values('version_UUID'))
 
 @api_view(['GET'])
 def force_refresh_cfs_reports(request):
@@ -1945,11 +1939,21 @@ def all_reports_paginated(request):
         #return Response(serializer.data)
 
 # this function can be called by scripts and replicates the api behaviour, without calling API. Therefore, no timeouts
-def all_reports_internal(year):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(
-        version_UUID__in=non_visible_report_id).filter( package_filter )\
-        .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).filter(creation_time__year=year)
+def all_reports_internal(year: int):
+    visible_report_id = [
+        report.pk for report in Report.objects.filter(
+            server_upload_time__year=year,
+            hide=False
+        ).filter(
+            package_filter
+        ).exclude(
+            Q(type='mission') |  # Exclude mission reports
+            (Q(package_name='ceab.movelab.tigatrapp') & Q(package_version=10))  # Exclude specific package conditions
+        ).iterator() if report.visible
+    ]
+    queryset = Report.objects.filter(
+        pk__in=visible_report_id,
+    )
     serializer = MapDataSerializer(queryset, many=True)
     return serializer.data
 
