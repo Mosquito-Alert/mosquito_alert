@@ -541,6 +541,7 @@ class MapDataSerializer(serializers.ModelSerializer):
     final_expert_status_text = serializers.SerializerMethodField(method_name='get_final_expert_status')
     responses = FullReportResponseSerializer(many=True)
     country = serializers.SerializerMethodField(method_name='get_country')
+    cached_visible = serializers.SerializerMethodField()
 
     def get_final_expert_status(self, obj):
         return obj.get_final_expert_status()
@@ -553,6 +554,9 @@ class MapDataSerializer(serializers.ModelSerializer):
             return None
         else:
             return obj.country.iso3_code
+
+    def get_cached_visible(self, obj) -> bool:
+        return obj.visible
 
     class Meta:
         model = Report

@@ -2265,3 +2265,37 @@ class TestIdentificationTaskFlow:
 
         assert identification_task.is_reviewed
         assert identification_task.revision_type == expected_result
+
+    # lifecycle triggers
+    @pytest.mark.parametrize(
+        "status, is_safe, should_publish",
+        [
+            (IdentificationTask.Status.DONE, True, True),
+            (IdentificationTask.Status.DONE, False, False),
+            (IdentificationTask.Status.ARCHIVED, True, False),
+            (IdentificationTask.Status.ARCHIVED, False, False),
+            (IdentificationTask.Status.OPEN, True, False),
+            (IdentificationTask.Status.OPEN, False, False),
+            (IdentificationTask.Status.REVIEW, True, False),
+            (IdentificationTask.Status.REVIEW, False, False),
+        ]
+    )
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_on_status_change_sets_report_published_at(self, identification_task, status, is_safe, should_publish):
+        assert not identification_task.report.published
+
+        identification_task.status = status
+        identification_task.save()
+
+        assert not identification_task.report.published
+
+        identification_task.is_safe = is_safe
+        identification_task.save()
+
+        identification_task.report.refresh_from_db()
+
+        assert identification_task.report.published == should_publish
+        if should_publish:
+            assert identification_task.report.published_at == timezone.now()
+        else:
+            assert identification_task.report.published_at is None

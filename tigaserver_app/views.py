@@ -634,18 +634,6 @@ def get_latest_reports_qs(reports, property_filter=None):
             result_ids.append(this_version_UUID)
     return Report.objects.filter(version_UUID__in=result_ids)
 
-
-def get_latest_validated_reports(reports):
-    reports = filter(lambda x: x.show_on_map(), reports.iterator())
-    unique_report_ids = set([r.report_id for r in reports])
-    result_ids = list()
-    for this_id in unique_report_ids:
-        these_reports = sorted([report for report in reports if report.report_id == this_id], key=attrgetter('version_number'))
-        if these_reports[0].version_number > -1:
-            this_version_UUID = these_reports[-1].version_UUID
-            result_ids.append(this_version_UUID)
-    return Report.objects.filter(version_UUID__in=result_ids)
-
 # non_visible_report_id is veeeeery slow - try to replace with query (this is a work in progress)
 # select "version_UUID" from tigaserver_app_report where "version_UUID" in (select "version_UUID" from tigaserver_app_report where to_char(creation_time,'YYYY') = '2014')
 # UNION
@@ -697,7 +685,7 @@ class NonVisibleReportsMapViewSet(ReadOnlyModelViewSet):
     if conf.FAST_LOAD and conf.FAST_LOAD == True:
         non_visible_report_id = []
     else:
-        non_visible_report_id = [report.version_UUID for report in Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if not report.visible]
+        non_visible_report_id = [report.version_UUID for report in Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if not report.published]
 
     hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     queryset = hidden_reports | unfiltered_clean_reports_query
@@ -711,7 +699,7 @@ class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
     if conf.FAST_LOAD and conf.FAST_LOAD == True:
         non_visible_report_id = []
     else:
-        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
+        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.published]
     queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
@@ -906,11 +894,9 @@ def topics_subscribed(request):
 
 '''
 class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
-    if conf.FAST_LOAD and conf.FAST_LOAD == True:
-        non_visible_report_id = []
-    else:
-        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
+    queryset = Report.objects.exclude(hide=True).exclude(type='mission').filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
+    if not (conf.FAST_LOAD and conf.FAST_LOAD == True):
+        queryset = queryset.published()
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
     pagination_class = StandardResultsSetPagination
@@ -918,11 +904,9 @@ class AllReportsMapViewSetPaginated(ReadOnlyModelViewSet):
 
 '''
 class AllReportsMapViewSet(ReadOnlyModelViewSet):
-    if conf.FAST_LOAD and conf.FAST_LOAD == True:
-        non_visible_report_id = []
-    else:
-        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(version_UUID__in=non_visible_report_id).filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+    queryset = Report.objects.exclude(hide=True).exclude(type='mission').filter(Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) | Q(package_name='Mosquito Alert') ).exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
+    if not (conf.FAST_LOAD and conf.FAST_LOAD == True):
+        queryset = queryset.published()
     serializer_class = MapDataSerializer
     filter_class = MapDataFilter
 '''
@@ -1599,9 +1583,7 @@ def nearby_reports_no_dwindow(request):
 
         reports_qs = Report.objects.non_deleted().filter(
             version_UUID__in=flattened_data
-        ).exclude(
-            cached_visible=0
-        )
+        ).published()
 
         if user is not None:
             reports_qs = reports_qs.exclude(user=user)
@@ -1613,15 +1595,13 @@ def nearby_reports_no_dwindow(request):
         reports_bite = reports_qs.filter(type=Report.TYPE_BITE)
         reports_site = reports_qs.filter(type=Report.TYPE_SITE)
 
-        classified_reports_in_max_radius = filter(lambda x: x.show_on_map, reports_adult)
-
         if user is not None:
             user_reports = Report.objects.filter(user=user)
             if show_hidden == 0:
                 user_reports = user_reports.non_deleted()
-            all_reports = list(classified_reports_in_max_radius) + list(reports_bite) + list(reports_site) + list(user_reports)
+            all_reports = list(reports_adult) + list(reports_bite) + list(reports_site) + list(user_reports)
         else:
-            all_reports = list(classified_reports_in_max_radius) + list(reports_bite) + list(reports_site)
+            all_reports = list(reports_adult) + list(reports_bite) + list(reports_site)
 
         all_reports_sorted = sorted(all_reports, key=lambda x: x.creation_time, reverse=True)
 
@@ -1682,9 +1662,8 @@ def nearby_reports_fast(request):
             type=Report.TYPE_ADULT,
             version_UUID__in=flattened_data,
         ).exclude(
-            cached_visible=0,
             server_upload_time__lte=date_n_days_ago
-        )
+        ).published()
 
         classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports)
 
@@ -1933,9 +1912,7 @@ package_filter = (
 @api_view(['GET'])
 def all_reports_paginated(request):
     if request.method == 'GET':
-        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-        queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(
-            version_UUID__in=non_visible_report_id).filter( package_filter )\
+        queryset = Report.objects.published().exclude(type='mission').filter( package_filter )\
             .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
         f = MapDataFilter(request.GET, queryset=queryset)
         paginator = StandardResultsSetPagination()
@@ -1946,9 +1923,7 @@ def all_reports_paginated(request):
 
 # this function can be called by scripts and replicates the api behaviour, without calling API. Therefore, no timeouts
 def all_reports_internal(year):
-    non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-    queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(
-        version_UUID__in=non_visible_report_id).filter( package_filter )\
+    queryset = Report.objects.published().exclude(type='mission').filter( package_filter )\
         .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).filter(creation_time__year=year)
     serializer = MapDataSerializer(queryset, many=True)
     return serializer.data
@@ -1956,9 +1931,7 @@ def all_reports_internal(year):
 @api_view(['GET'])
 def all_reports(request):
     if request.method == 'GET':
-        non_visible_report_id = [report.version_UUID for report in Report.objects.all() if not report.visible]
-        queryset = Report.objects.exclude(hide=True).exclude(type='mission').exclude(
-            version_UUID__in=non_visible_report_id).filter( package_filter )\
+        queryset = Report.objects.published().exclude(type='mission').filter( package_filter )\
             .exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
         f = MapDataFilter(request.GET, queryset=queryset)
         serializer = MapDataSerializer(f.qs, many=True)
@@ -1974,17 +1947,9 @@ def non_visible_reports_internal(year):
 
     new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
 
-    unfiltered_clean_reports = filter_reports(new_reports_unfiltered, False)
-    unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-    unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
+    unfiltered_clean_reports_query = new_reports_unfiltered.non_deleted()
 
-    # new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
-    non_visible_report_id = [report.version_UUID for report in
-                                 Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if
-                                 not report.visible]
-
-    hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(
-        version_UUID__in=non_visible_report_id).filter( package_filter )\
+    hidden_reports = Report.objects.published(False).exclude(type='mission').filter( package_filter )\
         .exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
 
     queryset = hidden_reports | unfiltered_clean_reports_query
@@ -2008,17 +1973,9 @@ def non_visible_reports_paginated(request):
 
         new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
 
-        unfiltered_clean_reports = filter_reports(new_reports_unfiltered, False)
-        unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-        unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
+        unfiltered_clean_reports_query = new_reports_unfiltered.non_deleted()
 
-        # new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
-        non_visible_report_id = [report.version_UUID for report in
-                                     Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if
-                                     not report.visible]
-
-        hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(
-            version_UUID__in=non_visible_report_id).filter( package_filter )\
+        hidden_reports = Report.objects.published(False).exclude(type='mission').filter( package_filter )\
             .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
 
         queryset = hidden_reports | unfiltered_clean_reports_query
@@ -2044,17 +2001,9 @@ def non_visible_reports(request):
 
         new_reports_unfiltered = new_reports_unfiltered_adults | new_reports_unfiltered_sites
 
-        unfiltered_clean_reports = filter_reports(new_reports_unfiltered, False)
-        unfiltered_clean_reports_id = [report.version_UUID for report in unfiltered_clean_reports]
-        unfiltered_clean_reports_query = Report.objects.filter(version_UUID__in=unfiltered_clean_reports_id)
+        unfiltered_clean_reports_query = new_reports_unfiltered.non_deleted()
 
-        # new_reports_unfiltered_id = [ report.version_UUID for report in filtered_reports ]
-        non_visible_report_id = [report.version_UUID for report in
-                                     Report.objects.exclude(version_UUID__in=unfiltered_clean_reports_id) if
-                                     not report.visible]
-
-        hidden_reports = Report.objects.exclude(hide=True).exclude(type='mission').filter(
-            version_UUID__in=non_visible_report_id).filter( package_filter )\
+        hidden_reports = Report.objects.published(False).exclude(type='mission').filter( package_filter )\
             .exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
 
         queryset = hidden_reports | unfiltered_clean_reports_query
