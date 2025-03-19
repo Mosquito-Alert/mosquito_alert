@@ -1214,6 +1214,15 @@ class Report(TimeZoneModelMixin, models.Model):
         else:
             return None
 
+    @property
+    def is_browsable(self) -> bool:
+        return not (
+            self.hide or
+            self.deleted or
+            self.tags.filter(name='345').exists() or
+            self.location_is_masked
+        )
+
     @cached_property
     def published(self) -> bool:
         return Report.objects.published().filter(pk=self.pk).exists()
@@ -1969,7 +1978,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
         self.user.update_score()
 
-        if self.hide or self.tags.filter(name='345').exists():
+        if not self.is_browsable:
             _identification_task = getattr(self, "identification_task", None)
             if _identification_task:
                 _identification_task.status = IdentificationTask.Status.ARCHIVED
@@ -1982,11 +1991,6 @@ class Report(TimeZoneModelMixin, models.Model):
         self.deleted_at = timezone.now()
         self.version_number = -1
         self.save_without_historical_record()
-
-        _identification_task = getattr(self, "identification_task", None)
-        if _identification_task:
-            _identification_task.status = IdentificationTask.Status.ARCHIVED
-            _identification_task.save()
 
     def restore(self):
         self.deleted_at = None

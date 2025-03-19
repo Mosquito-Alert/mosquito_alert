@@ -620,7 +620,7 @@ class IdentificationTask(LifecycleModel):
         if self.is_reviewed:
             self.status = self.Status.DONE
 
-        if self.report.deleted or self.report.hide or self.report.tags.filter(name='345').exists():
+        if not self.report.is_browsable:
             self.status = self.Status.ARCHIVED
 
         if commit:
@@ -643,7 +643,7 @@ class IdentificationTask(LifecycleModel):
         )
 
     def save(self, *args, **kwargs):
-        if self.report.deleted or self.report.hide:
+        if not self.report.is_browsable:
             self.status = self.Status.ARCHIVED
 
         return super().save(*args, **kwargs)
