@@ -35,7 +35,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 WORKDIR /app
 COPY . /app
-ENV PYTHONPATH "${PYTHONPATH}:/app/"
 
 RUN pip install -r requirements/dev.pip
 
