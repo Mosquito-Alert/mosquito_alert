@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 
 def populate_report_published_at(apps, schema_editor):
     Report = apps.get_model('tigaserver_app', 'Report')
+    Photo = apps.get_model('tigaserver_app', 'Photo')
     UUIDTaggedItem = apps.get_model('tigaserver_app', 'UUIDTaggedItem')
     ExpertReportAnnotation = apps.get_model('tigacrafting', 'ExpertReportAnnotation')
     IdentificationTask = apps.get_model('tigacrafting', 'IdentificationTask')
@@ -20,6 +21,7 @@ def populate_report_published_at(apps, schema_editor):
     report_qs = Report.objects.filter(
         hide=False,
         deleted_at__isnull=True,
+        location_is_masked=False,
         published_at__isnull=True
     ).exclude(
         models.Exists(
@@ -33,21 +35,40 @@ def populate_report_published_at(apps, schema_editor):
 
     # Bite reports
     report_qs.filter(type=ReportModel.TYPE_BITE).update(
-        published_at=models.F('server_upload_time') + timedelta(seconds=1)
+        published_at=models.F('server_upload_time')
+    )
+
+    photos_exist = models.Exists(
+        Photo.objects.filter(
+            report=models.OuterRef('pk')
+        )
     )
 
     # Breeding site reports
-    report_qs.filter(type=ReportModel.TYPE_SITE).update(
+    sites_qs = report_qs.filter(type=ReportModel.TYPE_SITE)
+
+    # Adult site reports
+    adult_report_qs = report_qs.filter(type=ReportModel.TYPE_ADULT)
+
+    # Without photos -> direct publication
+    sites_qs.exclude(photos_exist).update(
+        published_at=models.F('server_upload_time')
+    )
+    adult_report_qs.exclude(photos_exist).update(
+        published_at=models.F('server_upload_time')
+    )
+
+    # With photos
+    # Breeding sites: 2 days margin publication
+    sites_qs.filter(photos_exist).update(
         published_at=models.F('server_upload_time') + timedelta(days=2)
     )
 
-    # Adult reports
-    adult_report_qs = report_qs.filter(
-        type=ReportModel.TYPE_ADULT,
+    # Adult reports (with done identification_task)
+    adult_report_qs = adult_report_qs.filter(
         identification_task__is_safe=True,
         identification_task__status=IdentificationTaskModel.Status.DONE
     )
-    
     # First: the reviewed by a supervisor
     adult_report_qs.filter(
         identification_task__reviewed_at__isnull=False

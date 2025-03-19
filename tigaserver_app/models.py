@@ -1863,6 +1863,10 @@ class Report(TimeZoneModelMixin, models.Model):
                 # Init tags from note hashtags
                 self.tags.set(set(re.findall(r'(?<=#)\w+', self.note)))
 
+            # NOTE: setting it here and not setting the field.default
+            # in order to avoid publishing on bulk_create
+            self.published_at = timezone.now()
+
             # Set mobile_app
             if self.package_name and self.package_version:
                 self.mobile_app, _ = MobileApp.objects.get_or_create(
@@ -1926,12 +1930,6 @@ class Report(TimeZoneModelMixin, models.Model):
 
             self.device = device
 
-            if self.type == self.TYPE_BITE:
-                self.published_at = timezone.now()
-            elif self.type == self.TYPE_SITE:
-                # Some time for moderators to check images and discard if needed.
-                self.published_at = timezone.now() + timedelta(days=2)
-
         # Fill the country field
         if not self.country or _old_point != self.point:
             self.country = self._get_country_is_in()
@@ -1979,6 +1977,9 @@ class Report(TimeZoneModelMixin, models.Model):
             self.bite_count = sum(
                 getattr(self, fname) for fname in bite_fieldnames
             )
+
+        if self.type not in [self.TYPE_BITE, self.TYPE_ADULT, self.TYPE_SITE]:
+            self.published_at = None
 
         if not self.is_browsable:
             self.published_at = None
@@ -3011,9 +3012,15 @@ class Photo(models.Model):
 
         super().save(*args, **kwargs)
 
-        if _is_adding and self.report.type == Report.TYPE_ADULT:
+        if not _is_adding:
+            return
+
+        if self.report.type == Report.TYPE_ADULT:
             if not IdentificationTask.objects.filter(report=self.report).exists():
                 IdentificationTask.create_for_report(report=self.report)
+        elif self.report.type == Report.TYPE_SITE:
+            self.report.published_at = self.report.server_upload_time + timedelta(days=2)
+            self.report.save()
 
 class Fix(TimeZoneModelMixin, models.Model):
     """

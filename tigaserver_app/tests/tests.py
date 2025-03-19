@@ -2019,7 +2019,7 @@ class ReportModelTest(TestCase):
         self.assertEqual(report.published_at, timezone.now())
         self.assertEqual(report.published, True)
 
-    def test_breeding_site_is_published_in_two_days_on_create(self):
+    def test_breeding_site_with_picture_is_published_in_two_days_on_create(self):
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
             report = Report.objects.create(
                 user=TigaUser.objects.create(),
@@ -2029,6 +2029,8 @@ class ReportModelTest(TestCase):
                 version_time=timezone.now(),
                 type=Report.TYPE_SITE,
             )
+            _ = Photo.objects.create(report=report, photo='./testdata/splash.png')
+            report.refresh_from_db()
             self.assertEqual(report.published_at, timezone.now() + timedelta(days=2))
             self.assertEqual(report.published, False)
 
@@ -2036,7 +2038,20 @@ class ReportModelTest(TestCase):
 
             self.assertEqual(report.published, True)
 
-    def test_adult_is_not_published_on_create(self):
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_breeding_site_without_picture_is_published_on_create(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_SITE,
+        )
+        self.assertEqual(report.published_at, timezone.now())
+        self.assertEqual(report.published, True)
+
+    def test_adult_without_picture_is_published_on_create(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
             report_id='1234',
@@ -2044,6 +2059,30 @@ class ReportModelTest(TestCase):
             creation_time=timezone.now(),
             version_time=timezone.now(),
             type=Report.TYPE_ADULT,
+        )
+        self.assertEqual(report.published, True)
+
+    def test_adult_with_picture_is_not_published_on_create(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+        )
+        _ = Photo.objects.create(report=report, photo='./testdata/splash.png')
+        report.refresh_from_db()
+        self.assertEqual(report.published, False)
+
+    def test_mission_is_not_published_on_create(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_MISSION,
         )
         self.assertEqual(report.published, False)
 
@@ -2079,6 +2118,45 @@ class ReportModelTest(TestCase):
         )
 
         self.assertEqual(report.tags.filter(name='345').exists(), True)
+
+        self.assertEqual(report.published, False)
+
+    def test_published_report_is_unpublished_if_soft_deleted(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+        )
+        report.published_at = timezone.now()
+        report.save()
+
+        self.assertEqual(report.published, True)
+
+        report.soft_delete()
+
+        self.assertEqual(report.published, False)
+
+    def test_published_report_is_unpublished_if_location_is_masked(self):
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_BITE
+        )
+        report.published_at = timezone.now()
+        report.save()
+
+        self.assertEqual(report.published, True)
+
+        report.location_choice=Report.LOCATION_CURRENT
+        report.current_location_lon=0
+        report.current_location_lat=84
+        report.save()
 
         self.assertEqual(report.published, False)
 
