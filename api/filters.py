@@ -47,8 +47,8 @@ class BaseReportFilter(filters.FilterSet):
     )
 
     location_country_id = filters.ModelChoiceFilter(field_name="country_id", queryset=EuropeCountry.objects.all())
-    location_nuts_3 = filters.CharFilter(field_name="nuts_3")
-    location_nuts_2 = filters.CharFilter(field_name="nuts_2")
+    location_adm_nuts3 = filters.CharFilter(field_name="nuts_3")
+    location_adm_nuts2 = filters.CharFilter(field_name="nuts_2")
 
     order_by = filters.OrderingFilter(
         fields=(("server_upload_time", "received_at"), ("creation_time", "created_at"))
@@ -62,8 +62,8 @@ class BaseReportFilter(filters.FilterSet):
             "received_at",
             "updated_at",
             "location_country_id",
-            "location_nuts_3",
-            "location_nuts_2",
+            "location_adm_nuts3",
+            "location_adm_nuts2",
         )
 
 class BaseReportWithPhotosFilter(BaseReportFilter):

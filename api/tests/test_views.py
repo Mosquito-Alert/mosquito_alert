@@ -61,7 +61,7 @@ class BaseReportTest:
         'created_at': '2024-01-01T00:00:00Z',
         'sent_at': '2024-01-01T00:30:00Z',
         'location': {
-            'type': 'current',
+            'source': 'auto',
             'point': {
                 'latitude': 0,
                 'longitude': 0,
