@@ -1240,8 +1240,11 @@ class Report(TimeZoneModelMixin, models.Model):
 
     @property
     def is_expert_validated(self) -> bool:
-        if not self.type == Report.TYPE_ADULT:
-            return False
+        if self.type == Report.TYPE_SITE:
+            num_expert_validations = self.expert_report_annotations.filter(user__groups__name='expert', validation_complete=True).count()
+            has_superexpert_validation = self.expert_report_annotations.filter(user__groups__name='superexpert', validation_complete=True, revise=True).exists()
+
+            return has_superexpert_validation or num_expert_validations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT
 
         identification_task = getattr(self, "identification_task", None)
         return (
