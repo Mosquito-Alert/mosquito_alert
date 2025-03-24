@@ -536,7 +536,7 @@ class MapDataSerializer(serializers.ModelSerializer):
     site_responses_text = serializers.ReadOnlyField()
     tigaprob_cat = serializers.ReadOnlyField()
     latest_version = serializers.SerializerMethodField()
-    visible = serializers.ReadOnlyField()
+    visible = serializers.SerializerMethodField()
     n_photos = serializers.ReadOnlyField()
     final_expert_status_text = serializers.SerializerMethodField(method_name='get_final_expert_status')
     responses = FullReportResponseSerializer(many=True)
@@ -555,8 +555,11 @@ class MapDataSerializer(serializers.ModelSerializer):
         else:
             return obj.country.iso3_code
 
+    def get_visible(self, obj) -> bool:
+        return obj.published
+
     def get_cached_visible(self, obj) -> bool:
-        return obj.visible
+        return obj.published
 
     class Meta:
         model = Report
