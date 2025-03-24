@@ -16,14 +16,16 @@ variables:
     received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
     updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
     location:
-      type: !anystr
+      source: !anystr
       timezone: !anything
       point:
         latitude: !anyfloat
         longitude: !anyfloat
       country_id: !anything
-      nuts_2: !anything
-      nuts_3: !anything
+      adm_boundaries:
+        nuts:
+          nuts2: !anything
+          nuts3: !anything
     note: !anything
     tags: !anylist
     published: !anybool

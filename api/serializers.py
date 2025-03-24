@@ -325,14 +325,59 @@ class SimplePhotoSerializer(serializers.ModelSerializer):
 class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     class LocationSerializer(serializers.ModelSerializer):
+        class AdmBoundaries(serializers.ModelSerializer):
+            class NutsAdmBoundaries(serializers.ModelSerializer):
+                class Meta:
+                    model = Report
+                    fields = (
+                        "nuts2",
+                        "nuts3",
+                    )
+                    extra_kwargs = {
+                        "nuts2": {
+                            "source": "nuts_2",
+                            "required": True,
+                            "allow_null": False,
+                            "help_text": "Basic regions for economic applications (e.g., Spanish autonomous communities)."
+                        },
+                        "nuts3": {
+                            "source": "nuts_3",
+                            "required": True,
+                            "allow_null": False,
+                            "help_text": "Small regions for specific analyses (e.g., French départements)."
+                        },
+                    }
+
+            nuts = NutsAdmBoundaries(
+                source="*",
+                required=False,
+                help_text="NUTS (Nomenclature of Territorial Units for Statistics). A hierarchical system used by the European Union to divide its territory into comparable regions for statistical purposes."
+            )
+
+            class Meta:
+                model = Report
+                fields = ("nuts",)
+
         point = PointField(required=True, allow_null=True)
         timezone = TimeZoneSerializerChoiceField(read_only=True, allow_null=True)
+        adm_boundaries = AdmBoundaries(source="*", read_only=True)
+        source = serializers.ChoiceField(
+            source="location_choice",
+            choices=[('auto', 'Auto (GPS)'), ('manual', 'Manual (User-selected)')],
+            help_text="Indicates how the location was obtained. Use 'Auto (GPS)' if the location was automatically retrieved"
+            " from the device's GPS, or 'Manual (User-selected)' if the location was selected by the user on a map.")
 
         def to_internal_value(self, data):
             ret = super().to_internal_value(data)
 
-            preffix = "current"
-            if ret["location_choice"] == Report.LOCATION_SELECTED:
+            # Map 'current' to 'auto' and 'selected' to 'manual'
+            location_choice = data.get('source')
+
+            if location_choice == 'auto':
+                ret['location_choice'] = Report.LOCATION_CURRENT
+                preffix = "current"
+            elif location_choice == 'manual':
+                ret['location_choice'] = Report.LOCATION_SELECTED
                 preffix = "selected"
 
             point = ret.pop("point")
@@ -341,26 +386,29 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
             return ret
 
+        def to_representation(self, instance):
+            ret = super().to_representation(instance)
+
+            # Map 'current' to 'auto' and 'selected' to 'manual'
+            location_choice = instance.location_choice
+            ret['source'] = 'auto'
+            if location_choice == Report.LOCATION_SELECTED:
+                ret['source'] = 'manual'
+
+            return ret
+
         class Meta:
             model = Report
             fields = (
-                "type",
+                "source",
                 "point",
                 "timezone",
                 "country_id",
-                "nuts_2",
-                "nuts_3",
+                "adm_boundaries"
             )
             read_only_fields = (
                 "country_id",
-                "nuts_2",
-                "nuts_3",
             )
-            extra_kwargs = {
-                "type": {"source": "location_choice"},
-                "nuts_2": {"allow_null": True},
-                "nuts_3": {"allow_null": True},
-            }
 
     uuid = serializers.UUIDField(
         source="version_UUID", allow_null=False, read_only=True
@@ -409,6 +457,9 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             "updated_at",
             "received_at",
         )
+        extra_kwargs = {
+            "uuid": {"required": True}  # Marks it as required in the response
+        }
 
 class BaseReportWithPhotosSerializer(BaseReportSerializer):
     photos = SimplePhotoSerializer(required=True, many=True)
@@ -445,32 +496,26 @@ class ObservationSerializer(BaseReportWithPhotosSerializer):
 class BiteSerializer(BaseReportSerializer):
     head_bite_count = IntegerDefaultField(
         default=0,
-        allow_null=True,
         help_text=Report._meta.get_field("head_bite_count").help_text,
     )
     left_arm_bite_count = IntegerDefaultField(
         default=0,
-        allow_null=True,
         help_text=Report._meta.get_field("left_arm_bite_count").help_text,
     )
     right_arm_bite_count = IntegerDefaultField(
         default=0,
-        allow_null=True,
         help_text=Report._meta.get_field("right_arm_bite_count").help_text,
     )
     chest_bite_count = IntegerDefaultField(
         default=0,
-        allow_null=True,
         help_text=Report._meta.get_field("chest_bite_count").help_text,
     )
     left_leg_bite_count = IntegerDefaultField(
         default=0,
-        allow_null=True,
         help_text=Report._meta.get_field("left_leg_bite_count").help_text,
     )
     right_leg_bite_count = IntegerDefaultField(
         default=0,
-        allow_null=True,
         help_text=Report._meta.get_field("right_leg_bite_count").help_text,
     )
 
@@ -524,10 +569,19 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    class UserScoreSerializer(serializers.ModelSerializer):
+        value = serializers.IntegerField(source="score_v2", min_value=0, read_only=True)
+        updated_at = serializers.DateTimeField(source="last_score_update", read_only=True, allow_null=True)
+
+        class Meta:
+            model = TigaUser
+            fields = ("value", "updated_at")
+
     uuid = serializers.UUIDField(source="user_UUID", read_only=True)
-    language_iso = serializers.SerializerMethodField(help_text='ISO 639-1 code')
+    language_iso = serializers.SerializerMethodField(help_text='ISO 639-1 code', default='en')
     username = serializers.SerializerMethodField()
     is_guest = serializers.SerializerMethodField()
+    score = UserScoreSerializer(source='*', read_only=True)
 
     def get_is_guest(self, obj) -> bool:
         return True
@@ -548,15 +602,13 @@ class UserSerializer(serializers.ModelSerializer):
             "language_iso",
             "is_guest",
             "score",
-            "last_score_update",
         )
         read_only_fields = (
             "registration_time",
             "score",
-            "last_score_update",
         )
         extra_kwargs = {
-            "score": {"source": "score_v2"}
+            "locale": {"default": "en"},
         }
 
 
@@ -575,6 +627,7 @@ class PhotoSerializer(serializers.ModelSerializer):
             "image_path"
         )
         extra_kwargs = {
+            "uuid": {"required": True},
             "image_url": {"source": "photo"},
         }
 

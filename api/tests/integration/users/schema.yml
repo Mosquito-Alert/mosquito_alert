@@ -12,5 +12,6 @@ variables:
     locale: !anything
     is_guest: true
     language_iso: !anything
-    score: !anyint
-    last_score_update: null
+    score:
+      value: !anyint
+      updated_at: null
