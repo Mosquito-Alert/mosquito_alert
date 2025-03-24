@@ -1133,6 +1133,10 @@ class ExpertReportAnnotation(models.Model):
 
         if self.identification_task:
             self.identification_task.refresh()
+        elif self.is_superexpert() and self.validation_complete and self.revise:
+            if self.status == self.STATUS_HIDDEN and not self.report.hide:
+                self.report.hide = True
+                self.report.save()
 
     def delete(self, *args, **kwargs):
         if self.validation_complete_executive:

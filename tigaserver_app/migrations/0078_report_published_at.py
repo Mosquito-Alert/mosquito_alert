@@ -6,6 +6,27 @@ from django.db import migrations, models
 
 from django.contrib.contenttypes.models import ContentType
 
+
+def mark_hidden_reports_not_published_from_identification_task(apps, schema_editor):
+    Report = apps.get_model('tigaserver_app', 'Report')
+    ExpertReportAnnotation = apps.get_model('tigacrafting', 'ExpertReportAnnotation')
+
+    from tigacrafting.models import ExpertReportAnnotation as ExpertReportAnnotationModel
+
+    Report.objects.filter(
+        identification_task__isnull=True,
+        hide=False
+    ).filter(
+        models.Exists(
+            ExpertReportAnnotation.objects.filter(
+                report=models.OuterRef('pk'),
+                validation_complete=True,
+                revise=True,
+                status=ExpertReportAnnotationModel.STATUS_HIDDEN
+            )
+        )
+    ).update(hide=True)
+
 def populate_report_published_at(apps, schema_editor):
     Report = apps.get_model('tigaserver_app', 'Report')
     Photo = apps.get_model('tigaserver_app', 'Photo')
@@ -117,6 +138,7 @@ class Migration(migrations.Migration):
             model_name='report',
             constraint=models.CheckConstraint(check=models.Q(('published_at__isnull', True), models.Q(('hide', False), ('deleted_at__isnull', True), ('location_is_masked', False)), _connector='OR'), name='is_browsable_when_published'),
         ),
+        migrations.RunPython(mark_hidden_reports_not_published_from_identification_task, migrations.RunPython.noop),
         migrations.RunPython(populate_report_published_at, migrations.RunPython.noop),
         migrations.RemoveField(
             model_name='report',

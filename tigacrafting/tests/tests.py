@@ -1585,6 +1585,40 @@ class TestExpertReportAnnotationModel:
 
             mocked_refresh.assert_called_once()
 
+    def test_without_identification_task_is_marked_hidden_if_superexpert_revise_hidden(self, adult_report):
+        assert getattr(adult_report, 'identification_task', None) is None
+        assert not adult_report.hide
+
+        super_reritja = User.objects.create(pk=25, username='super_reritja')
+        superexperts_group, _ = Group.objects.get_or_create(name='superexpert')
+        superexperts_group.user_set.add(super_reritja)
+
+        # Now superexpert mark as hidden
+        obj = ExpertReportAnnotation.objects.create(
+            user=super_reritja,
+            report=adult_report,
+            status=ExpertReportAnnotation.STATUS_HIDDEN,
+            validation_complete=True,
+            revise=False
+        )
+        # It is revise=False -> does nothing
+        adult_report.refresh_from_db()
+        assert not adult_report.hide
+
+        # Mark as revise
+        obj.revise = True
+        obj.save()
+
+        adult_report.refresh_from_db()
+        assert adult_report.hide
+
+        # If now superexpert mark as not hidden, does nothing.
+        obj.status = ExpertReportAnnotation.STATUS_PUBLIC
+        obj.save()
+
+        adult_report.refresh_from_db()
+        assert adult_report.hide
+
 @pytest.mark.django_db
 class TestIdentificationTaskModel:
     # classmethods
