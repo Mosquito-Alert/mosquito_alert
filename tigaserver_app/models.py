@@ -707,6 +707,7 @@ class Report(TimeZoneModelMixin, models.Model):
         (TYPE_SITE, _("Breeding Site")),
         (TYPE_MISSION, _("Mission")),
     )
+    PUBLISHABLE_TYPES = [TYPE_BITE, TYPE_ADULT, TYPE_SITE]
 
     LOCATION_CURRENT = "current"
     LOCATION_SELECTED = "selected"
@@ -786,6 +787,15 @@ class Report(TimeZoneModelMixin, models.Model):
         editable=False,
         help_text="Date and time on phone when first version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
     )
+
+    published_at = models.DateTimeField(
+        editable=False,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text='Datetime when the report was published.'
+    )
+
     version_time = models.DateTimeField(
         help_text="Date and time on phone when this version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
     )
@@ -870,10 +880,6 @@ class Report(TimeZoneModelMixin, models.Model):
         through=UUIDTaggedItem,
         blank=True,
         help_text=_("A comma-separated list of tags you can add to a report to make them easier to find."),
-    )
-
-    cached_visible = models.IntegerField(
-        null=True, blank=True, help_text="Precalculated value of show_on_map_function"
     )
 
     mobile_app = models.ForeignKey(
@@ -1112,7 +1118,6 @@ class Report(TimeZoneModelMixin, models.Model):
             'hide',
             'ia_filter_1',
             'ia_filter_2',
-            'cached_visible',
             'package_name',
             'device_manufacturer',
             'device_model',
@@ -1223,9 +1228,9 @@ class Report(TimeZoneModelMixin, models.Model):
             self.location_is_masked
         )
 
-    @cached_property
+    @property
     def published(self) -> bool:
-        return Report.objects.published().filter(pk=self.pk).exists()
+        return self.is_browsable and bool(self.published_at) and self.published_at <= timezone.now()
 
     @property
     def public_map_url(self) -> Optional[str]:
@@ -1235,8 +1240,11 @@ class Report(TimeZoneModelMixin, models.Model):
 
     @property
     def is_expert_validated(self) -> bool:
-        if not self.type == Report.TYPE_ADULT:
-            return False
+        if self.type == Report.TYPE_SITE:
+            num_expert_validations = self.expert_report_annotations.filter(user__groups__name='expert', validation_complete=True).count()
+            has_superexpert_validation = self.expert_report_annotations.filter(user__groups__name='superexpert', validation_complete=True, revise=True).exists()
+
+            return has_superexpert_validation or num_expert_validations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT
 
         identification_task = getattr(self, "identification_task", None)
         return (
@@ -1295,10 +1303,6 @@ class Report(TimeZoneModelMixin, models.Model):
             return _("Medium")
         else:
             return _("Low")
-
-    @property
-    def visible(self) -> bool:
-        return self.show_on_map()
 
     @property
     def visible_photos(self):
@@ -1863,6 +1867,10 @@ class Report(TimeZoneModelMixin, models.Model):
                 # Init tags from note hashtags
                 self.tags.set(set(re.findall(r'(?<=#)\w+', self.note)))
 
+            # NOTE: setting it here and not setting the field.default
+            # in order to avoid publishing on bulk_create
+            self.published_at = timezone.now()
+
             # Set mobile_app
             if self.package_name and self.package_version:
                 self.mobile_app, _ = MobileApp.objects.get_or_create(
@@ -1974,6 +1982,12 @@ class Report(TimeZoneModelMixin, models.Model):
                 getattr(self, fname) for fname in bite_fieldnames
             )
 
+        if self.type not in self.PUBLISHABLE_TYPES:
+            self.published_at = None
+
+        if not self.is_browsable:
+            self.published_at = None
+
         super(Report, self).save(*args, **kwargs)
 
         self.user.update_score()
@@ -2019,6 +2033,13 @@ class Report(TimeZoneModelMixin, models.Model):
                     deleted_at__isnull=False
                 ),
                 name='version_number_constraint'
+            ),
+            models.CheckConstraint(
+                name='is_browsable_when_published',
+                check=models.Q(published_at__isnull=True) |  # Allow if published_at is NULL
+                    (
+                        models.Q(hide=False) & models.Q(deleted_at__isnull=True) & models.Q(location_is_masked=False)
+                    )
             )
         ]
         indexes = [
@@ -2073,18 +2094,6 @@ class Report(TimeZoneModelMixin, models.Model):
         for photo in these_photos:
             result += '<br>' + photo.small_image_() + '<br>'
         return result
-
-    def show_on_map(self) -> bool:
-        if self.creation_time.year == 2014:
-            return True
-        else:
-            if self.cached_visible is None:
-                identification_task = getattr(self, "identification_task", None)
-                if identification_task:
-                    return identification_task.is_done and identification_task.is_safe
-                return True
-            else:
-                return self.cached_visible == 1
 
     def get_mean_expert_adult_score_aegypti(self):
         sum_scores = 0
@@ -3010,9 +3019,15 @@ class Photo(models.Model):
 
         super().save(*args, **kwargs)
 
-        if _is_adding and self.report.type == Report.TYPE_ADULT:
+        if not _is_adding:
+            return
+
+        if self.report.type == Report.TYPE_ADULT:
             if not IdentificationTask.objects.filter(report=self.report).exists():
                 IdentificationTask.create_for_report(report=self.report)
+        elif self.report.type == Report.TYPE_SITE:
+            self.report.published_at = self.report.server_upload_time + timedelta(days=2)
+            self.report.save()
 
 class Fix(TimeZoneModelMixin, models.Model):
     """

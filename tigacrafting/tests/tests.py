@@ -1585,6 +1585,40 @@ class TestExpertReportAnnotationModel:
 
             mocked_refresh.assert_called_once()
 
+    def test_without_identification_task_is_marked_hidden_if_superexpert_revise_hidden(self, adult_report):
+        assert getattr(adult_report, 'identification_task', None) is None
+        assert not adult_report.hide
+
+        super_reritja = User.objects.create(pk=25, username='super_reritja')
+        superexperts_group, _ = Group.objects.get_or_create(name='superexpert')
+        superexperts_group.user_set.add(super_reritja)
+
+        # Now superexpert mark as hidden
+        obj = ExpertReportAnnotation.objects.create(
+            user=super_reritja,
+            report=adult_report,
+            status=ExpertReportAnnotation.STATUS_HIDDEN,
+            validation_complete=True,
+            revise=False
+        )
+        # It is revise=False -> does nothing
+        adult_report.refresh_from_db()
+        assert not adult_report.hide
+
+        # Mark as revise
+        obj.revise = True
+        obj.save()
+
+        adult_report.refresh_from_db()
+        assert adult_report.hide
+
+        # If now superexpert mark as not hidden, does nothing.
+        obj.status = ExpertReportAnnotation.STATUS_PUBLIC
+        obj.save()
+
+        adult_report.refresh_from_db()
+        assert adult_report.hide
+
 @pytest.mark.django_db
 class TestIdentificationTaskModel:
     # classmethods
@@ -2265,3 +2299,37 @@ class TestIdentificationTaskFlow:
 
         assert identification_task.is_reviewed
         assert identification_task.revision_type == expected_result
+
+    # lifecycle triggers
+    @pytest.mark.parametrize(
+        "status, is_safe, should_publish",
+        [
+            (IdentificationTask.Status.DONE, True, True),
+            (IdentificationTask.Status.DONE, False, False),
+            (IdentificationTask.Status.ARCHIVED, True, False),
+            (IdentificationTask.Status.ARCHIVED, False, False),
+            (IdentificationTask.Status.OPEN, True, False),
+            (IdentificationTask.Status.OPEN, False, False),
+            (IdentificationTask.Status.REVIEW, True, False),
+            (IdentificationTask.Status.REVIEW, False, False),
+        ]
+    )
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_on_status_change_sets_report_published_at(self, identification_task, status, is_safe, should_publish):
+        assert not identification_task.report.published
+
+        identification_task.status = status
+        identification_task.save()
+
+        assert not identification_task.report.published
+
+        identification_task.is_safe = is_safe
+        identification_task.save()
+
+        identification_task.report.refresh_from_db()
+
+        assert identification_task.report.published == should_publish
+        if should_publish:
+            assert identification_task.report.published_at == timezone.now()
+        else:
+            assert identification_task.report.published_at is None

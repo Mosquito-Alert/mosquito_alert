@@ -151,6 +151,7 @@ class ReportAdmin(SimpleHistoryAdmin):
     readonly_fields = [
         "deleted",
         "deleted_at",
+        "published",
         "report_id",
         "version_number",
         "type",
@@ -171,6 +172,7 @@ class ReportAdmin(SimpleHistoryAdmin):
             {
                 "fields": [
                     ("report_id", "version_number"),
+                    ("published",),
                     ("hide", "deleted", "deleted_at"),
                     "type",
                     "user",
