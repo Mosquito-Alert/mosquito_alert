@@ -1835,7 +1835,11 @@ def all_reports_paginated(request):
 def all_reports_internal(year: int):
     queryset = Report.objects.published().filter( package_filter )\
         .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).filter(server_upload_time__year=year)
-    serializer = MapDataSerializer(queryset, many=True)
+
+    serializer = MapDataSerializer(
+        queryset.prefetch_related('expert_report_annotations', 'responses', 'photos').select_related('identification_task'),
+        many=True
+    )
     return serializer.data
 
 @api_view(['GET'])
@@ -1854,7 +1858,10 @@ def non_visible_reports_internal(year: int):
     if year is not None:
         queryset = queryset.filter(server_upload_time__year=year)
 
-    serializer = MapDataSerializer(queryset, many=True)
+    serializer = MapDataSerializer(
+        queryset.prefetch_related('expert_report_annotations', 'responses', 'photos').select_related('identification_task'),
+        many=True
+    )
     return serializer.data
 
 
