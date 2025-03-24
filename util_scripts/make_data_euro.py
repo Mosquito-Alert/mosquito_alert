@@ -17,11 +17,10 @@ import json
 from datetime import datetime
 #import config
 from tigaserver_project import settings
+from tigaserver_app.models import Report
 import psycopg2
 from django.utils.dateparse import parse_datetime
-from tigaserver_app.views import all_reports_internal
-from tigaserver_app.views import get_cfa_reports, get_cfs_reports, non_visible_reports_internal, coverage_month_internal
-from urllib.parse import urlsplit
+from tigaserver_app.views import all_reports_internal, non_visible_reports_internal, coverage_month_internal
 
 
 def update_municipalities(cursor):
@@ -62,21 +61,16 @@ def update_report_ids(cursor):
         """
     )
 
-def move_hidden_adult_report_to_trash_layer(cursor):
-    cursor.execute("""select "version_UUID" from tigaserver_app_report where hide=True and type='adult';""")
-    result = cursor.fetchall()
-    for row in result:
-        uuid = row[0]
-        cursor.execute("""UPDATE map_aux_reports set private_webmap_layer='trash_layer' WHERE version_uuid=%s;""",
-                       (uuid,))
-
-def move_masked_location_report_to_trash_layer(cursor):
-    cursor.execute("""select "version_UUID" from tigaserver_app_report where location_is_masked=True;""")
-    result = cursor.fetchall()
-    for row in result:
-        uuid = row[0]
-        cursor.execute("""UPDATE map_aux_reports set private_webmap_layer='trash_layer' WHERE version_uuid=%s;""",
-                       (uuid,))
+def move_not_publsihed_report_to_trash_layer(cursor):
+    cursor.execute("""
+        UPDATE map_aux_reports 
+        SET private_webmap_layer = 'trash_layer' 
+        WHERE version_uuid IN (
+            SELECT "version_UUID"
+            FROM tigaserver_app_report 
+            WHERE published_at IS NULL OR published_at > NOW()
+        );
+    """)
 
 def add_photo_to_not_yet_filtered_adults(cursor):
     cursor.execute(
@@ -224,19 +218,17 @@ filenames.append("/tmp/hidden_reports2025.json")
 
 
 # FILE WRITING
-
-
-cfa_data = get_cfa_reports()
+coarse_filter_adult_qs = Report.objects.in_coarse_filter().filter(type=Report.TYPE_ADULT).order_by('-server_upload_time')
 file = "/tmp/cfa.json"
 text_file = open(file, "w")
-text_file.write(json.dumps(cfa_data))
+text_file.write(json.dumps(list(coarse_filter_adult_qs.values('version_UUID'))))
 text_file.close()
 print ('Coarse filter adults complete')
 
-cfs_data = get_cfs_reports()
+coarse_filter_site_qs = Report.objects.in_coarse_filter().filter(type=Report.TYPE_SITE).order_by('-server_upload_time')
 file = "/tmp/cfs.json"
 text_file = open(file, "w")
-text_file.write(json.dumps(cfs_data))
+text_file.write(json.dumps(list(coarse_filter_site_qs.values('version_UUID'))))
 text_file.close()
 print ('Coarse filter sites complete')
 
@@ -651,8 +643,7 @@ cursor.execute(
     """UPDATE map_aux_reports set private_webmap_layer='breeding_site_other' where type='site' and expert_validation_result = 'site#-4' and to_char(observation_date, 'YYYY') = '2014' and site_cat <> 0 and expert_validated = FALSE;""")
 add_photo_to_unfiltered_sites(cursor)
 add_photo_to_not_yet_filtered_adults(cursor)
-move_hidden_adult_report_to_trash_layer(cursor)
-move_masked_location_report_to_trash_layer(cursor)
+move_not_publsihed_report_to_trash_layer(cursor)
 
 #Added field municipality_id to table, petition by SIGTE
 cursor.execute("""ALTER TABLE map_aux_reports add column municipality_id integer;""")
