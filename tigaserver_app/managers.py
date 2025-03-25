@@ -72,7 +72,7 @@ class ReportQuerySet(models.QuerySet):
         )
 
     def in_coarse_filter(self) -> QuerySet:
-        return self.non_deleted().has_photos().filter(
+        return self.browsable().non_deleted().has_photos().filter(
             expert_report_annotations__isnull=True
         ).order_by('-server_upload_time')
 
