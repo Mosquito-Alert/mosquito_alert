@@ -102,7 +102,7 @@
                     {% if is_superexpert %}
                     <div style="padding-top: 15px;">
                         <p style="text-align: center;">
-                            <a id="{{ d.ns_country_code }}_unassigned_list" class="btn btn-primary" href="{% url 'global_assignments_list' country_code=d.ns_country_code status='unassigned' %}"><i class="fas fa-list"></i>&nbsp; Unassigned report list</a>
+                            <a id="{{ d.ns_country_code }}_unassigned_list" class="btn btn-primary" href="{% url 'global_assignments_list' country_code=d.ns_country_code status='unassigned' %}" target="_blank"><i class="fas fa-list"></i>&nbsp; Unassigned report list</a>
                         </p>
                     </div>
                     {% endif %}
@@ -112,7 +112,7 @@
                     {% if is_superexpert %}
                     <div style="padding-top: 15px;">
                         <p style="text-align: center;">
-                            <a id="{{ d.ns_country_code }}_progress_list" class="btn btn-primary" href="{% url 'global_assignments_list' country_code=d.ns_country_code status='progress' %}"><i class="fas fa-list"></i>&nbsp; Reports in progress list</a>
+                            <a id="{{ d.ns_country_code }}_progress_list" class="btn btn-primary" href="{% url 'global_assignments_list' country_code=d.ns_country_code status='progress' %}" target="_blank"><i class="fas fa-list"></i>&nbsp; Reports in progress list</a>
                         </p>
                     </div>
                     {% endif %}
@@ -132,7 +132,7 @@
                     {% if is_superexpert %}
                     <div style="padding-top: 15px;">
                         <p style="text-align: center;">
-                            <a id="{{ d.ns_country_code }}_reserved_list" class="btn btn-primary" href="{% url 'global_assignments_list' country_code=d.ns_country_code status='reserved' %}"><i class="fas fa-list"></i>&nbsp; Reports reserved for supervisors</a>
+                            <a id="{{ d.ns_country_code }}_reserved_list" class="btn btn-primary" href="{% url 'global_assignments_list' country_code=d.ns_country_code status='reserved' %}" target="_blank"><i class="fas fa-list"></i>&nbsp; Reports reserved for supervisors</a>
                         </p>
                     </div>
                     {% endif %}
