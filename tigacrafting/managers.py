@@ -185,8 +185,6 @@ class IdentificationTaskQuerySet(models.QuerySet):
             models.Exists(
                 ExpertReportAnnotation.objects.stale(days=days).filter(
                     identification_task=models.OuterRef('pk'),
-                ).exclude(
-                    user__groups__name='superexpert'
                 )
             )
         )
@@ -311,6 +309,8 @@ class ExpertReportAnnotationQuerySet(models.QuerySet):
         return self.filter(
             validation_complete=False,
             created__lte=timezone.now() - timedelta(days=days),
+        ).exclude(
+            user__groups__name='superexpert'
         )
 
 ExpertReportAnnotationManager = models.Manager.from_queryset(ExpertReportAnnotationQuerySet)

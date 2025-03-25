@@ -493,7 +493,7 @@ def report_expiration(request, country_id=None):
     if not this_user.userstat.is_superexpert():
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
-    qs = IdentificationTask.objects.blocked()
+    qs = ExpertReportAnnotation.objects.stale()
 
     country = None
     if country_id is not None:
@@ -501,17 +501,16 @@ def report_expiration(request, country_id=None):
         qs = qs.filter(report__country=country)
 
     data_dict = {}
-    for task in qs.prefetch_related('assignees').iterator():
-        for user in task.assignees.all():
-            if user.username not in data_dict:
-                data_dict[user.username] = []
+    for annotation in qs.select_related('user'):
+        if annotation.user.username not in data_dict:
+            data_dict[annotation.user.username] = []
 
-            data_dict[user.username].append(
-                {
-                    'report_uuid': task.report_id,
-                    'days': (timezone.now() - task.created_at).days
-                }
-            )
+        data_dict[annotation.user.username].append(
+            {
+                'report_uuid': annotation.report_id,
+                'days': (timezone.now() - annotation.created).days
+            }
+        )
 
     sorted_data = sorted(data_dict.items(), key=lambda x: x[1][0]['days'], reverse=True)
 
