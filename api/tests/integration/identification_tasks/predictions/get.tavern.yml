@@ -16,7 +16,7 @@ marks:
 stages:
   - name: Retrieve is not allowed for mobile users
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
       headers:
         Authorization: "Bearer {app_user_token}"
       method: "GET"
@@ -24,13 +24,13 @@ stages:
       status_code: 403
   - name: Non auth user can not retrieve
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
       method: "GET"
     response:
       status_code: 403
   - name: User without perm view can retrieve
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
       method: "GET"
       headers:
         Authorization: "Token {token_user:s}"

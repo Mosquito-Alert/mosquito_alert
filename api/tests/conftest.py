@@ -7,7 +7,6 @@ import random
 from rest_framework.authtoken.models import Token
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Polygon, MultiPolygon
 from django.utils import timezone
@@ -18,17 +17,12 @@ from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
 from api.tests.utils import grant_permission_to_user
 from api.tests.clients import AppAPIClient
 
+from tigacrafting.models import IdentificationTask
 from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo
 
 User = get_user_model()
 TEST_DATA_PATH = Path(Path(__file__).parent.absolute(), "test_data/")
 
-@pytest.fixture(scope='function', autouse=True)
-def load_initial_data(django_db_setup, django_db_blocker):
-    with django_db_blocker.unblock():
-        call_command('loaddata', 'tigaserver_app/fixtures/categories.json')
-        call_command('loaddata', 'tigaserver_app/fixtures/auth_group.json')
-        call_command('loaddata', 'tigaserver_app/fixtures/users.json')
 
 @pytest.fixture
 def user_password():
@@ -89,6 +83,10 @@ def report_hidden_photo(report_photo):
     report_photo.hide = True
     report_photo.save()
     return report_photo
+
+@pytest.fixture
+def identification_task(adult_report):
+    return IdentificationTask.objects.get(report=adult_report)
 
 @pytest.fixture
 def django_live_url(live_server):

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Literal
+from typing import Optional
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -9,7 +9,7 @@ from rest_framework import serializers
 from drf_extra_fields.geo_fields import PointField
 from taggit.serializers import TaggitSerializer
 
-from tigacrafting.models import IdentificationTask, Taxon, ExpertReportAnnotation
+from tigacrafting.models import IdentificationTask, Taxon, PhotoPrediction
 from tigaserver_app.models import (
     NotificationContent,
     Notification,
@@ -24,9 +24,7 @@ from tigaserver_app.models import (
     Fix,
     NotificationTopic,
     Device,
-    MobileApp,
-    PhotoPrediction,
-    ObservationPrediction
+    MobileApp
 )
 
 from .base_serializers import LocalizedSerializerMixin
@@ -587,6 +585,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         confidence = serializers.FloatField(min_value=0, max_value=1, read_only=True)
         confidence_label = serializers.SerializerMethodField()
         is_confirmed = serializers.SerializerMethodField()
+        source = serializers.ChoiceField(source='result_source',choices=IdentificationTask.ResultSource.choices, allow_null=True)
 
         def get_confidence_label(self, obj) -> str:
             return obj.confidence_label
@@ -602,6 +601,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         class Meta:
             model = IdentificationTask
             fields = (
+                'source',
                 'taxon',
                 'is_confirmed',
                 'confidence',
@@ -973,7 +973,6 @@ class DeviceUpdateSerializer(DeviceSerializer):
             "model"
         )
 class PhotoPredictionSerializer(serializers.ModelSerializer):
-
     class BoundingBoxSerializer(serializers.ModelSerializer):
         class Meta:
             model = PhotoPrediction
@@ -999,97 +998,41 @@ class PhotoPredictionSerializer(serializers.ModelSerializer):
                 for fname in PhotoPrediction.get_score_fieldnames()
             }
 
+    photo = SimplePhotoSerializer(read_only=True)
     bbox = BoundingBoxSerializer(source='*')
     scores = PredictionScoreSerializer(source='*')
-
-    def validate(self, data):
-        photo__uuid = self.context.pop('photo__uuid')
-
-        try:
-            data['photo'] = Photo.objects.get(uuid=photo__uuid)
-        except Photo.DoesNotExist:
-            raise serializers.ValidationError("The selected photo does not exist.")
-
-        return data
 
     class Meta:
         model = PhotoPrediction
         fields = (
+            'photo',
             'bbox',
             'insect_confidence',
             'predicted_class',
             'threshold_deviation',
+            'is_decisive',
             'scores',
             'classifier_version',
             'created_at',
             'updated_at'
         )
+        extra_kwargs = {
+            'predicted_class': {'required': True}
+        }
 
-
-class ObservationPredictionSerializer(serializers.ModelSerializer):
-
-    ref_photo_uuid = serializers.UUIDField(
-        source='photo_prediction.photo.uuid',
-        help_text="The selected photo whose prediction represents the observation as the best classification result."
-    )
-
-    insect_confidence = serializers.FloatField(
-        source='photo_prediction.insect_confidence', read_only=True,
-        min_value=0, max_value=1
-    )
-    predicted_class = serializers.ChoiceField(
-        source='photo_prediction.predicted_class',
-        read_only=True,
-        choices=[fname for fname, _ in PhotoPrediction.CLASS_FIELDNAMES_CHOICES]
-    )
-    predicted_class_display = serializers.SerializerMethodField()
-
-    is_executive_validation = WritableSerializerMethodField(
-        field_class=serializers.BooleanField,
-        default=False,
-        help_text="Whether if the photo prediction will be used as an executive validation for the report."
-    )
-
-    def get_predicted_class_display(self, obj) -> Literal[tuple(value for _, value in PhotoPrediction.CLASS_FIELDNAMES_CHOICES)]:
-        return obj.photo_prediction.get_predicted_class_display()
-
-    def get_is_executive_validation(self, obj) -> bool:
-        return not obj.expert_annotation is None
+class CreatePhotoPredictionSerializer(PhotoPredictionSerializer):
+    photo_uuid = serializers.UUIDField(source='photo__uuid', required=True, write_only=True)
 
     def validate(self, data):
-        data['report_id'] = self.context.get('report__pk')
-        photo__uuid = data.pop('photo_prediction').get('photo')['uuid']
+        data['identification_task_id'] = self.context.get('observation_uuid')
+        photo__uuid = data.pop('photo__uuid')
 
         try:
-            photo = Photo.objects.get(uuid=photo__uuid, report=data['report_id'])
+            data['photo'] = Photo.objects.get(uuid=photo__uuid, report__identification_task=data['identification_task_id'])
         except Photo.DoesNotExist:
-            raise serializers.ValidationError("The selected photo does not belong to this observation.")
-
-        try:
-            data['photo_prediction'] = photo.prediction
-        except PhotoPrediction.DoesNotExist:
-            raise serializers.ValidationError("The selected photo has no prediction.")
+            raise serializers.ValidationError("The selected photo does not belong to this identification task or does not exist.")
 
         return data
 
-    def create(self, validated_data):
-        is_executive_validation = validated_data.pop('is_executive_validation')
-
-        instance = super().create(validated_data)
-
-        if is_executive_validation:
-            instance.create_executive_expert_annotation()
-
-        return instance
-
-    class Meta:
-        model = ObservationPrediction
-        fields = (
-            'ref_photo_uuid',
-            'insect_confidence',
-            'predicted_class',
-            'predicted_class_display',
-            'is_executive_validation',
-            'created_at',
-            'updated_at'
-        )
+    class Meta(PhotoPredictionSerializer.Meta):
+        fields = ('photo_uuid',) + PhotoPredictionSerializer.Meta.fields

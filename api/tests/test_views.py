@@ -15,15 +15,15 @@ from rest_framework.test import APITestCase
 
 from rest_framework_simplejwt.settings import api_settings
 
-from tigacrafting.models import ExpertReportAnnotation
-from tigaserver_app.models import TigaUser, Report, Device, MobileApp, ObservationPrediction
+from tigacrafting.models import IdentificationTask, PhotoPrediction
+from tigaserver_app.models import TigaUser, Report, Device, MobileApp
 
 from api.tests.clients import AppAPIClient
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
 from api.tests.factories import create_report_object
-from api.tests.integration.photos.predictions.factories import create_photo_prediction
+from api.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
 
 from .utils import grant_permission_to_user
 
@@ -172,14 +172,17 @@ class TestObservationAPI(BaseReportTest):
         return create_observation_object(user=app_user)
 
 @pytest.mark.django_db
-class TestObservationPredictionAPI:
+class TestIdentificationTaskPredictionAPI:
     @classmethod
-    def build_url(cls, observation):
-        return f"/api/v1/observations/{observation.pk}/prediction/"
+    def build_url(cls, identification_task, photo_uuid: str = None):
+        result = f"/api/v1/identification-tasks/{identification_task.pk}/predictions/"
+        if photo_uuid:
+            result += f"{photo_uuid}/"
+        return result
 
     @pytest.fixture
     def permitted_user(self, user):
-        grant_permission_to_user(type='add', model_class=ObservationPrediction, user=user)
+        grant_permission_to_user(type='change', model_class=PhotoPrediction, user=user)
         Token.objects.create(user=user)
         return user
 
@@ -192,35 +195,25 @@ class TestObservationPredictionAPI:
         client.credentials(HTTP_AUTHORIZATION=f"Token {str(token)}")
         return client
 
-    @pytest.mark.parametrize("is_executive_validation", [False, True])
-    def test_is_execution_validation_False_does_not_create_annotations(self, api_client, adult_report, is_executive_validation):
-        annotations_qs = ExpertReportAnnotation.objects.filter(
-            report=adult_report
-        )
+    @pytest.mark.parametrize("is_decisive", [False, True])
+    def test_is_decisive_False_does_not_set_identification_task(self, api_client, identification_task, is_decisive):
+        assert identification_task.result_source != IdentificationTask.ResultSource.AI
 
-        assert not annotations_qs.exists()
-
-        photo = adult_report.photos.first()
+        photo = identification_task.photo
         _ = create_photo_prediction(photo=photo)
 
-        response = api_client.post(
-            self.build_url(observation=adult_report),
+        response = api_client.patch(
+            self.build_url(identification_task=identification_task, photo_uuid=photo.uuid),
             data={
-                "ref_photo_uuid": photo.uuid,
-                "is_executive_validation": is_executive_validation
+                "is_decisive": is_decisive
             },
             format='json'
         )
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == status.HTTP_200_OK
 
-        if is_executive_validation:
-            assert annotations_qs.count() == 4
-            assert annotations_qs.filter(
-                user__username='aima',
-                validation_complete_executive=True
-            ).count() == 1
-        else:
-            assert not annotations_qs.exists()
+        identification_task.refresh_from_db()
+        assert (identification_task.result_source == IdentificationTask.ResultSource.AI) == is_decisive
+        assert identification_task.report.published == is_decisive
 
 @pytest.mark.django_db
 class TokenAPITest(APITestCase):
