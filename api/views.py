@@ -8,7 +8,9 @@ from drf_spectacular.utils import (
     extend_schema_view,
     extend_schema,
     PolymorphicProxySerializer,
-    OpenApiResponse
+    OpenApiResponse,
+    OpenApiParameter,
+    OpenApiTypes
 )
 
 from rest_framework import status
@@ -26,6 +28,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import Token
 
+from tigacrafting.models import IdentificationTask
 from tigaserver_app.models import (
     TigaUser,
     EuropeCountry,
@@ -39,7 +42,7 @@ from tigaserver_app.models import (
     Device
 )
 
-from .filters import NotificationFilter, CampaignFilter, ObservationFilter, BiteFilter, BreedingSiteFilter
+from .filters import NotificationFilter, CampaignFilter, ObservationFilter, BiteFilter, BreedingSiteFilter, IdentificationTaskFilter
 from .serializers import (
     PartnerSerializer,
     CampaignSerializer,
@@ -47,11 +50,13 @@ from .serializers import (
     FixSerializer,
     CountrySerializer,
     PhotoSerializer,
+    SimplePhotoSerializer,
     ObservationSerializer,
     BiteSerializer,
     BreedingSiteSerializer,
     DeviceSerializer,
-    DeviceUpdateSerializer
+    DeviceUpdateSerializer,
+    IdentificationTaskSerializer
 )
 from .serializers import (
     CreateNotificationSerializer,
@@ -59,8 +64,8 @@ from .serializers import (
     TopicNotificationCreateSerializer,
     UserNotificationCreateSerializer,
 )
-from .permissions import NotificationObjectPermissions, ReportPermissions, MyReportPermissions
-from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet
+from .permissions import NotificationObjectPermissions, ReportPermissions, MyReportPermissions, FullDjangoModelPermissions
+from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet, NestedViewSetMixin
 
 User = get_user_model()
 
@@ -198,6 +203,14 @@ class BaseReportViewSet(
     permission_classes = (ReportPermissions,)
 
     def get_permissions(self):
+        # Check if the request is for an action
+        if self.action and hasattr(self, self.action):
+            action_method = getattr(self, self.action)
+            if action_method and hasattr(action_method, 'kwargs'):
+                action_permissions = action_method.kwargs.get('permission_classes')
+                if action_permissions:
+                    return [permission() for permission in action_permissions]
+
         if self.request and self.request.method in SAFE_METHODS:
             return [AllowAny(),]
 
@@ -371,3 +384,33 @@ class DeviceViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Gene
             return DeviceUpdateSerializer
         else:
             return DeviceSerializer
+
+class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMobileViewSet):
+    queryset = IdentificationTask.objects.all()
+    serializer_class = IdentificationTaskSerializer
+    filterset_class = IdentificationTaskFilter
+    permission_classes = (FullDjangoModelPermissions,)
+
+    lookup_field = 'pk'
+    lookup_url_kwarg = 'uuid'
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="identification_task_uuid",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description="UUID of the related Identification Task"
+            )
+        ]
+    )
+    class PhotoViewSet(NestedViewSetMixin, ListModelMixin, RetrieveModelMixin, GenericNoMobileViewSet):
+        queryset = Photo.objects.visible()
+        serializer_class = SimplePhotoSerializer
+
+        parent_lookup_kwargs = {
+            'identification_task_uuid': 'report__identification_task__pk'
+        }
+
+        lookup_field = 'uuid'
+        lookup_url_kwarg = 'uuid'

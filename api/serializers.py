@@ -9,6 +9,7 @@ from rest_framework import serializers
 from drf_extra_fields.geo_fields import PointField
 from taggit.serializers import TaggitSerializer
 
+from tigacrafting.models import IdentificationTask, Taxon
 from tigaserver_app.models import (
     NotificationContent,
     Notification,
@@ -499,7 +500,121 @@ class BaseReportWithPhotosSerializer(BaseReportSerializer):
     class Meta(BaseReportSerializer.Meta):
         fields = BaseReportSerializer.Meta.fields + ("photos",)
 
+class TaxonSerializer(serializers.ModelSerializer):
+    rank = serializers.ChoiceField(choices=Taxon.TaxonomicRank.labels)
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['rank'] = instance.get_rank_display()
+        return ret
+
+    class Meta:
+        model = Taxon
+        fields = (
+            'name',
+            'common_name',
+            'rank'
+        )
+
+class IdentificationTaskSerializer(serializers.ModelSerializer):
+    class IdentificationTaskRevisionSerializer(serializers.ModelSerializer):
+        type = serializers.ChoiceField(source='revision_type',choices=IdentificationTask.Revision.choices)
+
+        def to_representation(self, instance):
+            if self.allow_null and instance.revision_type is None:
+                return None  # Return None or an empty dict as needed
+            return super().to_representation(instance)
+
+        class Meta:
+            model = IdentificationTask
+            fields = (
+                "type",
+                "created_at"
+            )
+            extra_kwargs = {
+                'created_at': {'source': 'reviewed_at', 'read_only': True},
+            }
+
+    class IdentificationTaskResultSerializer(serializers.ModelSerializer):
+        taxon = TaxonSerializer(allow_null=True, read_only=True)
+        confidence = serializers.FloatField(min_value=0, max_value=1, read_only=True)
+        confidence_label = serializers.SerializerMethodField()
+
+        def get_confidence_label(self, obj) -> str:
+            return obj.confidence_label
+
+        def to_representation(self, instance):
+            if self.allow_null and not instance.is_done:
+                return None  # Return None or an empty dict as needed
+            return super().to_representation(instance)
+
+        class Meta:
+            model = IdentificationTask
+            fields = (
+                'taxon',
+                'confidence',
+                'confidence_label',
+                'uncertainty',
+                'agreement',
+            )
+            extra_kwargs = {
+                'confidence': {'min_value': 0, 'max_value': 1},
+                'uncertainty': {'min_value': 0, 'max_value': 1},
+                'agreement': {'min_value': 0, 'max_value': 1},
+            }
+
+    uuid = serializers.UUIDField(source='report_id', read_only=True)
+    observation_uuid = serializers.UUIDField(source='report_id')
+    public_photo = SimplePhotoSerializer(source='photo', required=True)
+    revision = IdentificationTaskRevisionSerializer(source='*', allow_null=True, read_only=True)
+    result = IdentificationTaskResultSerializer(source='*', read_only=True)
+
+    class Meta:
+        model = IdentificationTask
+        fields = (
+            'uuid',
+            'observation_uuid',
+            'public_photo',
+            'assignees_ids',
+            'status',
+            'is_flagged',
+            'is_safe',
+            'public_note',
+            'num_assignations',
+            'num_annotations',
+            'revision',
+            'result',
+            'created_at',
+            'updated_at'
+        )
+        extra_kwargs = {
+            'assignees_ids': {'source': 'assignees', 'allow_empty': True},
+            'public_note': {'allow_null': True, 'allow_blank': True},
+            'num_assignations': {'source': 'total_annotations','min_value': 0},
+            'num_annotations': {'source': 'total_finished_annotations','min_value': 0},
+            'created_at': {'read_only': True},
+            'updated_at': {'read_only': True},
+        }
+
 class ObservationSerializer(BaseReportWithPhotosSerializer):
+    class IdentificationSerializer(serializers.ModelSerializer):
+        photo = SimplePhotoSerializer(required=True)
+        result = IdentificationTaskSerializer.IdentificationTaskResultSerializer(source='*', allow_null=True, read_only=True)
+
+        class Meta:
+            model = IdentificationTask
+            fields = (
+                'photo',
+                'num_annotations',
+                'result',
+                'public_note'
+            )
+            extra_kwargs = {
+                'num_annotations': {'source': 'total_finished_annotations', 'min_value': 0, 'read_only': True},
+                'public_note': {'allow_null': True, 'allow_blank': True}
+            }
+
+    identification = IdentificationSerializer(source='identification_task', read_only=True, allow_null=True)
 
     class MosquitoAppearanceSerializer(serializers.ModelSerializer):
         def to_representation(self, instance):
@@ -542,6 +657,7 @@ class ObservationSerializer(BaseReportWithPhotosSerializer):
 
     class Meta(BaseReportWithPhotosSerializer.Meta):
         fields = BaseReportWithPhotosSerializer.Meta.fields + (
+            "identification",
             "event_environment",
             "event_moment",
             "mosquito_appearance"
