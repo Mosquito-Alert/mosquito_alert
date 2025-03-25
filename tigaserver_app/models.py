@@ -2535,10 +2535,11 @@ class Report(TimeZoneModelMixin, models.Model):
         if not identification_task:
             return ExpertReportAnnotation.STATUS_PUBLIC
 
-        if identification_task.status == IdentificationTask.Status.FLAGGED:
+        if not identification_task.is_safe:
+            return ExpertReportAnnotation.STATUS_HIDDEN
+
+        if identification_task.is_flagged:
             return ExpertReportAnnotation.STATUS_FLAGGED
-        elif identification_task.is_done:
-            return ExpertReportAnnotation.STATUS_PUBLIC if identification_task.is_safe else ExpertReportAnnotation.STATUS_HIDDEN
 
         return ExpertReportAnnotation.STATUS_PUBLIC
 

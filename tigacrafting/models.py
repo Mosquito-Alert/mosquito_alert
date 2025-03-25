@@ -349,7 +349,6 @@ class IdentificationTask(LifecycleModel):
         # OPEN STATUS
         OPEN = 'open', _('Open')
         CONFLICT = 'conflict', _('Conflict')
-        FLAGGED = 'flagged', _('Flagged')
         REVIEW = 'review', _('Review')
 
         # DONE STATUS
@@ -372,6 +371,7 @@ class IdentificationTask(LifecycleModel):
     )
 
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN, db_index=True)
+    is_flagged = models.BooleanField(default=False)
 
     is_safe = models.BooleanField(default=False, editable=False, help_text="Indicates if the content is safe for publication.")
 
@@ -448,6 +448,7 @@ class IdentificationTask(LifecycleModel):
         )
         self.is_safe = annotation.status != ExpertReportAnnotation.STATUS_HIDDEN
         self.status = default_status
+        self.is_flagged = annotation.status == ExpertReportAnnotation.STATUS_FLAGGED
 
     def assign_to_user(self, user: User) -> None:
         """Assign the task to a user."""
@@ -549,53 +550,52 @@ class IdentificationTask(LifecycleModel):
             if executive_annotation:
                 # Case 2: Executive validation
                 default_status = (
-                    self.Status.FLAGGED if executive_annotation.status == ExpertReportAnnotation.STATUS_FLAGGED 
-                    else self.Status.DONE
+                    self.Status.DONE if executive_annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
+                    else self.Status.REVIEW
                 )
                 self._update_from_annotation(
                     annotation=executive_annotation,
                     default_status=default_status
                 )
-            elif self.total_finished_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
-                # Case 3: Sufficient annotations for final decision
-                taxon, confidence, uncertainty, agreement = self.get_taxon_consensus(
-                    annotations=list(finished_experts_annotations_qs)
-                )
-                if uncertainty > 0.92:
-                    self.taxon = Taxon.get_root()
-                    self.confidence = Decimal('1.0')
-                    self.uncertainty = 1.0
-                    self.agreement = 0.0
-                    self.status = self.Status.CONFLICT
-                else:
-                    self.taxon = taxon
-                    self.confidence = confidence
-                    self.uncertainty = uncertainty
-                    self.agreement = agreement
+            elif self.total_annotations > 0:
+                self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_HIDDEN).exists()
+                self.is_flagged = finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists()
 
-                    if finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists():
-                        self.status = self.Status.FLAGGED
-                    elif self.agreement == 0 and finished_experts_annotations_qs.filter(taxon__is_relevant=True).exists():
-                        # All experts has choosen different things.
+                if not self.is_safe or self.is_flagged:
+                    self.status = self.Status.REVIEW
+
+                if self.total_finished_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
+                    # Case 3: Sufficient annotations for final decision
+                    self.status = self.Status.REVIEW
+                    taxon, confidence, uncertainty, agreement = self.get_taxon_consensus(
+                        annotations=list(finished_experts_annotations_qs)
+                    )
+                    if uncertainty > 0.92:
+                        self.taxon = Taxon.get_root()
+                        self.confidence = Decimal('1.0')
+                        self.uncertainty = 1.0
+                        self.agreement = 0.0
                         self.status = self.Status.CONFLICT
                     else:
-                        self.status = self.Status.REVIEW
+                        self.taxon = taxon
+                        self.confidence = confidence
+                        self.uncertainty = uncertainty
+                        self.agreement = agreement
 
-                if self.taxon:
-                    taxon_filter = {
-                        'taxon__in': Taxon.get_tree(parent=self.taxon)
-                    }
-                else:
-                    taxon_filter = {
-                        'taxon__isnull': True
-                    }
-                self.photo_id = get_most_voted_field(field_name='best_photo', lookup_filter=taxon_filter)
-                self.public_note = get_most_voted_field(field_name='edited_user_notes', lookup_filter=taxon_filter)
-                self.is_safe = get_most_voted_field(field_name='status') != ExpertReportAnnotation.STATUS_HIDDEN
-            elif self.total_finished_annotations < self.total_annotations:
-                # Check for flagged annotations
-                if finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists():
-                    self.status = self.Status.FLAGGED
+                        if self.agreement == 0 and finished_experts_annotations_qs.filter(taxon__is_relevant=True).exists():
+                            # All experts has choosen different things.
+                            self.status = self.Status.CONFLICT
+
+                    if self.taxon:
+                        taxon_filter = {
+                            'taxon__in': Taxon.get_tree(parent=self.taxon)
+                        }
+                    else:
+                        taxon_filter = {
+                            'taxon__isnull': True
+                        }
+                    self.photo_id = get_most_voted_field(field_name='best_photo', lookup_filter=taxon_filter)
+                    self.public_note = get_most_voted_field(field_name='edited_user_notes', lookup_filter=taxon_filter)
             else:
                 # Back to defaults. e.g: when ExpertReportAnnotation delete
                 self.status = self._meta.get_field('status').default
@@ -606,6 +606,7 @@ class IdentificationTask(LifecycleModel):
                 self.uncertainty = self._meta.get_field('uncertainty').default
                 self.agreement = self._meta.get_field('agreement').default
                 self.is_safe = self._meta.get_field('is_safe').default
+                self.is_flagged = self._meta.get_field('is_flagged').default
 
         # Ensure photo_id is updated and save the instance
         self.photo_id = self.photo_id or current_photo_id
@@ -619,9 +620,14 @@ class IdentificationTask(LifecycleModel):
 
         if self.is_reviewed:
             self.status = self.Status.DONE
+            if self.revision_type == self.Revision.AGREE:
+                self.is_flagged = False
 
         if not self.report.is_browsable:
             self.status = self.Status.ARCHIVED
+
+        if self.status == self.Status.CONFLICT:
+            self.is_flagged = True
 
         if commit:
             # Save the updated instance
