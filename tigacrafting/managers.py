@@ -200,7 +200,6 @@ class IdentificationTaskQuerySet(models.QuerySet):
         from .models import IdentificationTask
         return self.filter(
             models.Q(status=IdentificationTask.Status.CONFLICT)
-            | models.Q(status=IdentificationTask.Status.FLAGGED)
             | models.Q(status=IdentificationTask.Status.REVIEW)
         )
 

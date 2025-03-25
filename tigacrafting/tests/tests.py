@@ -1700,6 +1700,9 @@ class TestIdentificationTaskModel:
     def test_status_is_set_to_OPEN_as_default(self):
         assert IdentificationTask._meta.get_field("status").default == IdentificationTask.Status.OPEN
 
+    def test_is_flagged_is_False_default(self):
+        assert IdentificationTask._meta.get_field("is_flagged").default == False
+
     def test_is_safe_is_False_default(self):
         assert IdentificationTask._meta.get_field("is_safe").default == False
 
@@ -1775,7 +1778,6 @@ class TestIdentificationTaskModel:
         [
             (IdentificationTask.Status.OPEN, False),
             (IdentificationTask.Status.CONFLICT, False),
-            (IdentificationTask.Status.FLAGGED, False),
             (IdentificationTask.Status.REVIEW, False),
             (IdentificationTask.Status.ARCHIVED, False),
             (IdentificationTask.Status.DONE, True),
@@ -2025,7 +2027,6 @@ class TestIdentificationTaskFlow:
         self._add_revision(identification_task=identification_task, overwrite=is_overwrite)
 
         identification_task.refresh_from_db()
-        print(identification_task.__dict__)
 
         assert frozenset(IdentificationTask.objects.done()) == frozenset([identification_task])
 
@@ -2125,8 +2126,9 @@ class TestIdentificationTaskFlow:
         identification_task.refresh_from_db()
 
         assert (identification_task.status == IdentificationTask.Status.CONFLICT) == expected_result
+        assert identification_task.is_flagged == expected_result
 
-    def test_status_should_be_flagged(self, identification_task, taxon_root):
+    def test_should_be_flagged(self, identification_task, taxon_root):
         category_1 = Categories.objects.create(name='specie 1')
         category_2 = Categories.objects.create(name='specie 2')
         genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
@@ -2151,12 +2153,14 @@ class TestIdentificationTaskFlow:
 
         identification_task.refresh_from_db()
 
-        assert identification_task.status == IdentificationTask.Status.FLAGGED
+        assert identification_task.status == IdentificationTask.Status.REVIEW
+        assert identification_task.is_flagged
 
         self._add_revision(identification_task=identification_task)
 
         identification_task.refresh_from_db()
         assert identification_task.status == IdentificationTask.Status.DONE
+        assert not identification_task.is_flagged
 
     # overview general
     @pytest.mark.parametrize("overwrite", [False, True])
@@ -2201,9 +2205,10 @@ class TestIdentificationTaskFlow:
         assert identification_task.confidence == Decimal('0.75') # (1 + 1 + 0.25) / 3
         assert identification_task.agreement == 2/3
         assert identification_task.is_safe == True
+        assert identification_task.is_flagged == False
         assert identification_task.status == IdentificationTask.Status.REVIEW
 
-        self._add_revision(
+        annotation = self._add_revision(
             identification_task=identification_task,
             overwrite=overwrite,
             category=category_2,
@@ -2224,6 +2229,8 @@ class TestIdentificationTaskFlow:
             assert identification_task.confidence == Decimal('1')
             assert identification_task.agreement == 1
             assert identification_task.is_safe == False # NOTE: superexpert has overwritten
+            assert identification_task.is_flagged == False
+            assert identification_task.status == IdentificationTask.Status.DONE
         else:
             # From expert consensus
             assert identification_task.photo == another_photo
@@ -2233,6 +2240,23 @@ class TestIdentificationTaskFlow:
             assert identification_task.confidence == Decimal('0.75') # (1 + 1 + 0.25) / 3
             assert identification_task.agreement == 2/3
             assert identification_task.is_safe == True # NOTE: now is reviewed
+            assert identification_task.is_flagged == False
+
+        assert identification_task.status == IdentificationTask.Status.DONE
+
+        # Change to FLAGGED
+        annotation.status = ExpertReportAnnotation.STATUS_FLAGGED
+        annotation.save()
+
+        identification_task.refresh_from_db()
+        if overwrite:
+            assert identification_task.is_safe == True
+            assert identification_task.is_flagged == True
+        else:
+            assert identification_task.is_safe == True
+            assert identification_task.is_flagged == False
+
+        assert identification_task.status == IdentificationTask.Status.DONE
 
     def test_executive_annotation(self, identification_task, taxon_root):
         category_1 = Categories.objects.create(name='specie 1')
@@ -2248,7 +2272,7 @@ class TestIdentificationTaskFlow:
         super_reritja = User.objects.create(pk=25, username='super_reritja')
 
         # Executive annotation
-        self._add_annotation(
+        annotation = self._add_annotation(
             identification_task=identification_task,
             category=category_1,
             validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY,
@@ -2269,6 +2293,16 @@ class TestIdentificationTaskFlow:
         assert identification_task.agreement == 1
         assert identification_task.is_safe == True
         assert identification_task.status == IdentificationTask.Status.DONE
+        assert identification_task.is_flagged == False
+
+        # Now change to flagged
+        annotation.status = ExpertReportAnnotation.STATUS_FLAGGED
+        annotation.save()
+
+        identification_task.refresh_from_db()
+        assert identification_task.is_safe == True
+        assert identification_task.status == IdentificationTask.Status.REVIEW
+        assert identification_task.is_flagged == True
 
     # revision field transition
     @pytest.mark.parametrize("overwrite", [False, True])
