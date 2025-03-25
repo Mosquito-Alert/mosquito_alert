@@ -371,7 +371,7 @@ class IdentificationTask(LifecycleModel):
     )
 
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN, db_index=True)
-    is_flagged = models.BooleanField(default=False)
+    is_flagged = models.BooleanField(default=False, editable=False)
 
     is_safe = models.BooleanField(default=False, editable=False, help_text="Indicates if the content is safe for publication.")
 
