@@ -1034,7 +1034,7 @@ class ExpertReportAnnotation(models.Model):
             if not self.taxon:
                 return "Not sure"
             if self.taxon.is_relevant:
-                return self.taxon.name
+                return "{} {}".format(self.confidence_label, self.taxon.name)
             return "Other species - " + self.taxon.name
 
     def get_category(self) -> str:
