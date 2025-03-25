@@ -1,0 +1,61 @@
+test_name: Identification tasks can not be listed by authenticated users.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - token_user
+
+stages:
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - name: List method returns not exist for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {token}"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: Non auth user can not list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: User without perm view can list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Identification tasks can be list only by authenticated users with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - token_user_can_view
+
+stages:
+  - name: User without perm view can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_list_data_validation}"

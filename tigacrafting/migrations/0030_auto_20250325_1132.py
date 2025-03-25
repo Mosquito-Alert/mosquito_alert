@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='identificationtask',
             name='is_flagged',
-            field=models.BooleanField(default=False),
+            field=models.BooleanField(default=False, editable=False),
         ),
         migrations.AlterField(
             model_name='identificationtask',
