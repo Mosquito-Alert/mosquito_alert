@@ -14,9 +14,7 @@ from drf_spectacular.utils import (
 )
 
 from rest_framework import status
-from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
@@ -24,13 +22,13 @@ from rest_framework.mixins import (
     UpdateModelMixin,
     DestroyModelMixin,
 )
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, SAFE_METHODS
 from rest_framework.response import Response
-from rest_framework.settings import api_settings
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import Token
 
-from tigacrafting.models import IdentificationTask
+from tigacrafting.models import IdentificationTask, PhotoPrediction
 from tigaserver_app.models import (
     TigaUser,
     EuropeCountry,
@@ -40,8 +38,6 @@ from tigaserver_app.models import (
     Report,
     Fix,
     Notification,
-    PhotoPrediction,
-    ObservationPrediction,
     Photo,
     Device
 )
@@ -55,14 +51,14 @@ from .serializers import (
     CountrySerializer,
     PhotoSerializer,
     SimplePhotoSerializer,
-    PhotoPredictionSerializer,
-    ObservationPredictionSerializer,
     ObservationSerializer,
     BiteSerializer,
     BreedingSiteSerializer,
     DeviceSerializer,
     DeviceUpdateSerializer,
-    IdentificationTaskSerializer
+    IdentificationTaskSerializer,
+    PhotoPredictionSerializer,
+    CreatePhotoPredictionSerializer
 )
 from .serializers import (
     CreateNotificationSerializer,
@@ -286,7 +282,12 @@ class BaseMyReportViewSet(BaseReportViewSet, GenericMobileOnlyViewSet):
         return super().get_queryset().filter(user=self.request.user)
 
 class BaseReportWithPhotosViewSet(BaseReportViewSet):
-    pass
+    def get_parsers(self):
+        # Since photos are required on POST, only allow
+        # parasers that allow files.
+        if self.request and self.request.method == 'POST':
+            return [MultiPartParser(), FormParser()]
+        return super().get_parsers()
 
 class BiteViewSet(BaseReportViewSet):
     serializer_class = BiteSerializer
@@ -326,39 +327,6 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_ADULT)
 
-    @action(
-        detail=True,
-        methods=['GET', 'POST', 'DELETE'],
-        authentication_classes=GenericNoMobileViewSet.authentication_classes,
-        permission_classes=GenericNoMobileViewSet.permission_classes,
-        parser_classes=GenericViewSet.parser_classes,
-        serializer_class=ObservationPredictionSerializer,
-        queryset=ObservationPrediction.objects.all(),
-        lookup_field='report__pk',
-        filter_backends=[]
-    )
-    def prediction(self, request, uuid=None):
-        if request.method == 'GET':
-            instance = self.get_object()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        elif request.method == 'POST':
-            serializer = self.get_serializer(data=request.data)
-            serializer.context['report__pk'] = uuid
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            headers = self._get_location_header(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        elif request.method == 'DELETE':
-            instance = self.get_object()
-            instance.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def _get_location_header(self, data):
-        try:
-            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
-        except (TypeError, KeyError):
-            return {}
 
 @extend_schema_view(
     list=extend_schema(
@@ -395,7 +363,6 @@ class MyUserViewSet(UserViewSet, GenericMobileOnlyViewSet):
         return user
 
 
-
 class PhotoViewSet(
     RetrieveModelMixin, GenericNoMobileViewSet
 ):
@@ -404,40 +371,6 @@ class PhotoViewSet(
 
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'
-
-    @action(
-        detail=True,
-        methods=['GET', 'POST', 'DELETE'],
-        authentication_classes=GenericNoMobileViewSet.authentication_classes,
-        permission_classes=GenericNoMobileViewSet.permission_classes,
-        parser_classes=GenericViewSet.parser_classes,
-        serializer_class=PhotoPredictionSerializer,
-        queryset=PhotoPrediction.objects.all(),
-        lookup_field='photo__uuid',
-        filter_backends=[]
-    )
-    def prediction(self, request, uuid=None):
-        if request.method == 'GET':
-            instance = self.get_object()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        elif request.method == 'POST':
-            serializer = self.get_serializer(data=request.data)
-            serializer.context['photo__uuid'] = uuid
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            headers = self._get_location_header(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        elif request.method == 'DELETE':
-            instance = self.get_object()
-            instance.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def _get_location_header(self, data):
-        try:
-            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
-        except (TypeError, KeyError):
-            return {}
 
 
 class DeviceViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericMobileOnlyViewSet):
@@ -485,3 +418,33 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
 
         lookup_field = 'uuid'
         lookup_url_kwarg = 'uuid'
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="identification_task_uuid",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description="UUID of the related Identification Task"
+            )
+        ]
+    )
+    class PhotoPredictionViewSet(NestedViewSetMixin, CreateModelMixin, RetrieveModelMixin, ListModelMixin, UpdateModelMixin, DestroyModelMixin, GenericNoMobileViewSet):
+        queryset = PhotoPrediction.objects.all()
+
+        parent_lookup_kwargs = {
+            'identification_task_uuid': 'identification_task__pk'
+        }
+
+        lookup_field = 'photo__uuid'
+        lookup_url_kwarg = 'photo_uuid'
+
+        def get_serializer_class(self):
+            if self.request.method == 'POST':
+                return CreatePhotoPredictionSerializer
+            return PhotoPredictionSerializer
+
+        def get_serializer_context(self):
+            result = super().get_serializer_context()
+            result['identification_task_uuid'] = self.kwargs['identification_task_uuid']
+            return result

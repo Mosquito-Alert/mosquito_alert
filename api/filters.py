@@ -1,10 +1,13 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
 
 from django_filters import rest_framework as filters
 
 from tigacrafting.models import IdentificationTask
-from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry
+from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry, Photo
+
+User = get_user_model()
 
 class CampaignFilter(filters.FilterSet):
     country_id = filters.ModelChoiceFilter(field_name="country_id", queryset=EuropeCountry.objects.all())
@@ -72,22 +75,7 @@ class BaseReportWithPhotosFilter(BaseReportFilter):
 
 
 class ObservationFilter(BaseReportWithPhotosFilter):
-    has_prediction = filters.BooleanFilter(
-        method='filter_has_prediction',
-        help_text='Filter observations that have an associated prediction. An observation is considered to have a prediction if a photo has been selected as reference to use the prediction from.'
-    )
-    has_predictions_all_photos = filters.BooleanFilter(
-        method='filter_has_predictions_all_photos',
-        help_text='Filters observations based on whether all associated photos have predictions. Set to True to include observations where every photo has a prediction; set to False to include observations where at least one photo is missing a prediction.'
-    )
-
-    def filter_has_prediction(self, queryset, name, value):
-        # Subquery to check for existence of related Predictions
-        return queryset.has_prediction(state=value)
-
-    def filter_has_predictions_all_photos(self, queryset, name, value):
-        # Subquery to check for existence of related Predictions
-        return queryset.has_predictions_all_photos(state=value)
+    pass
 
 class BiteFilter(BaseReportFilter):
     pass
@@ -109,6 +97,33 @@ class NotificationFilter(filters.FilterSet):
         fields = ("is_read",)
 
 class IdentificationTaskFilter(filters.FilterSet):
+    fully_predicted = filters.BooleanFilter(
+        method='filter_fully_predicted',
+        help_text='Filters identification task based on whether all associated photos have predictions. Set to True to include identification tasks where every photo has a prediction; set to False to include identification tasks where at least one photo is missing a prediction.'
+    )
+
+    def filter_fully_predicted(self, queryset, name, value):
+        # Subquery to check for existence of related Predictions
+        photos_qs = Photo.objects.visible()
+
+        return queryset.annotate(
+            has_visible_photos=models.Exists(
+                photos_qs.filter(
+                    report=models.OuterRef('report')
+                )
+            ),
+            has_missing_predictions=models.Exists(
+                photos_qs.filter(
+                    report=models.OuterRef('report')
+                ).exclude(
+                    prediction__identification_task=models.OuterRef('pk')
+                )
+            )
+        ).filter(
+            has_visible_photos=True,
+            has_missing_predictions=not value
+        )
+
     num_assignations = filters.NumericRangeFilter(field_name="total_annotations")
     num_annotations = filters.NumericRangeFilter(field_name="total_finished_annotations")
 

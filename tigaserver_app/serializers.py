@@ -783,10 +783,11 @@ class CoarseReportSerializer(serializers.ModelSerializer):
     lon = serializers.ReadOnlyField()
 
     def get_insect_confidence(self, obj) -> Union[float, None]:
-        if not obj.prediction:
+        identification_task = getattr(obj, 'identification_task', None)
+        if not identification_task:
             return None
 
-        return obj.prediction.photo_prediction.insect_confidence
+        return identification_task.pred_insect_confidence
 
     def get_site_cat(self,obj):
         return obj.site_cat

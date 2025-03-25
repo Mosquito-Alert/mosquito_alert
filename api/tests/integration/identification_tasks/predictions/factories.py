@@ -1,9 +1,11 @@
-from tigaserver_app.models import Photo, PhotoPrediction
+from tigacrafting.models import PhotoPrediction
+from tigaserver_app.models import Photo
 
 
 def create_photo_prediction(photo: Photo) -> PhotoPrediction:
     return PhotoPrediction.objects.create(
         photo=photo,
+        identification_task=photo.report.identification_task,
         classifier_version=PhotoPrediction.CLASSIFIER_VERSION_CHOICES[0][0],
         insect_confidence=0.93,
         predicted_class=PhotoPrediction.CLASS_FIELDNAMES_CHOICES[0][0],

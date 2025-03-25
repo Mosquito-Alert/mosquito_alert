@@ -7,7 +7,7 @@ marks:
   - usefixtures:
     - api_live_url
     - endpoint
-    - published_observation_with_prediction
+    - photo_prediction
     - token_user
     - app_user_token
 
@@ -15,7 +15,7 @@ marks:
 stages:
   - name: Delete is disabeld for mobile users
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
       headers:
         Authorization: "Bearer {app_user_token}"
       method: "DELETE"
@@ -23,7 +23,7 @@ stages:
       status_code: 403
   - name: Delete method authenticated users without permissions
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
       headers:
         Authorization: "Token {token_user}"
       method: "DELETE"
@@ -41,13 +41,13 @@ marks:
   - usefixtures:
     - api_live_url
     - endpoint
-    - published_observation_with_prediction
+    - photo_prediction
     - token_user_can_delete
 
 stages:
   - name: Delete is disabeld users even with permissions
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
       headers:
         Authorization: "Token {token_user_can_delete}"
       method: "DELETE"
