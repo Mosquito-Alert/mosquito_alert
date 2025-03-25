@@ -72,8 +72,12 @@ class ReportQuerySet(models.QuerySet):
         )
 
     def in_coarse_filter(self) -> QuerySet:
-        return self.browsable().has_photos().filter(
-            expert_report_annotations__isnull=True
+        from tigacrafting.models import ExpertReportAnnotation
+
+        return self.browsable().has_photos().exclude(
+            models.Exists(
+                ExpertReportAnnotation.objects.filter(report_id=models.OuterRef('pk'))
+            )
         ).order_by('-server_upload_time')
 
 ReportManager = models.Manager.from_queryset(ReportQuerySet)
