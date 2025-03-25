@@ -3,8 +3,8 @@ from django.utils import timezone
 
 from django_filters import rest_framework as filters
 
+from tigacrafting.models import IdentificationTask
 from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry
-
 
 class CampaignFilter(filters.FilterSet):
     country_id = filters.ModelChoiceFilter(field_name="country_id", queryset=EuropeCountry.objects.all())
@@ -92,3 +92,21 @@ class NotificationFilter(filters.FilterSet):
     class Meta:
         model = Notification
         fields = ("is_read",)
+
+class IdentificationTaskFilter(filters.FilterSet):
+    num_assignations = filters.NumericRangeFilter(field_name="total_annotations")
+    num_annotations = filters.NumericRangeFilter(field_name="total_finished_annotations")
+
+    order_by = filters.OrderingFilter(
+        fields=("created_at", "updated_at")
+    )
+
+    class Meta:
+        model = IdentificationTask
+        fields = {
+            "assignees": ["exact"],
+            "status": ["exact"],
+            "is_flagged": ["exact"],
+            "is_safe": ["exact"],
+            "revision_type": ["exact"],
+        }

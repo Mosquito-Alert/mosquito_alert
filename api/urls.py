@@ -1,7 +1,7 @@
 from django.urls import path, re_path, include
 
-from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+from rest_framework_nested import routers
 
 from drf_spectacular.settings import spectacular_settings
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -25,6 +25,7 @@ from .views import (
     BreedingSiteViewSet,
     MyBreedingSiteViewSet,
     DeviceViewSet,
+    IdentificationTaskViewSet
 )
 
 
@@ -48,6 +49,11 @@ router.register(r"devices", DeviceViewSet)
 router.register(r"campaigns", CampaignsViewSet)
 router.register(r"countries", CountriesViewSet)
 router.register(r"fixes", FixViewSet)
+
+router.register(r"identification-tasks", IdentificationTaskViewSet)
+identification_task_router = routers.NestedSimpleRouter(router, r'identification-tasks', lookup='identification_task')
+identification_task_router.register(r"photos", IdentificationTaskViewSet.PhotoViewSet)
+
 router.register(r"notifications", NotificationViewSet)
 router.register(r"observations", ObservationViewSest)
 router.register(r"partners", PartnersViewSet)
@@ -80,6 +86,7 @@ api_urlpatterns += [
 ]
 
 api_urlpatterns += router.urls
+api_urlpatterns += identification_task_router.urls
 
 urlpatterns = [
     path("", include(api_urlpatterns)),

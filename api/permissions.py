@@ -10,12 +10,13 @@ from .utils import get_fk_fieldnames
 User = get_user_model()
 
 
-class UserObjectPermissions(permissions.DjangoModelPermissions):
+class FullDjangoModelPermissions(permissions.DjangoModelPermissions):
     perms_map = {
         **permissions.DjangoObjectPermissions.perms_map,
         "GET": ["%(app_label)s.view_%(model_name)s"],
     }
 
+class UserObjectPermissions(FullDjangoModelPermissions):
     def has_permission(self, request, view):
         if isinstance(request.user, TigaUser):
             return True
