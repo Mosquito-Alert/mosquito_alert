@@ -312,4 +312,10 @@ class ExpertReportAnnotationQuerySet(models.QuerySet):
             user__groups__name='superexpert'
         )
 
+    def blocking(self) -> QuerySet:
+        from .models import IdentificationTask
+        return self.stale().filter(
+            identification_task__in=IdentificationTask.objects.blocked()
+        )
+
 ExpertReportAnnotationManager = models.Manager.from_queryset(ExpertReportAnnotationQuerySet)

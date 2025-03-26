@@ -493,7 +493,7 @@ def report_expiration(request, country_id=None):
     if not this_user.userstat.is_superexpert():
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
-    qs = ExpertReportAnnotation.objects.stale()
+    qs = ExpertReportAnnotation.objects.blocking()
 
     country = None
     if country_id is not None:

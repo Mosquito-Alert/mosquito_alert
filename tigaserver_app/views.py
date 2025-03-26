@@ -1757,7 +1757,7 @@ def delete_annotations_and_notify(annotations_qs):
 def clear_blocked_all(request):
     if request.method == 'DELETE':
         delete_annotations_and_notify(
-            annotations_qs=ExpertReportAnnotation.objects.stale()
+            annotations_qs=ExpertReportAnnotation.objects.blocking()
         )
 
         return Response(status=status.HTTP_200_OK)
@@ -1770,7 +1770,7 @@ def clear_blocked(request, username, report=None):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         user = get_object_or_404(User, username=username)
 
-        annotations_qs = user.expert_report_annotations.stale()
+        annotations_qs = user.expert_report_annotations.blocking()
 
         if report:
             annotations_qs = annotations_qs.filter(report=get_object_or_404(Report, pk=report))
