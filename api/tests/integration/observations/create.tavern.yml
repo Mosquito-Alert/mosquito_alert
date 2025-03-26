@@ -68,9 +68,7 @@ stages:
             longitude: 2.79036
           country_id: !anything
           adm_boundaries:
-            nuts:
-              nuts2: !anything
-              nuts3: !anything
+            nuts: !anything
         note: Test
         tags: !anylist
         published: false

@@ -234,6 +234,7 @@ class UserNotificationCreateSerializer(CreateNotificationSerializer):
     user_uuids = serializers.ListField(
         child=serializers.UUIDField(),
         required=True,
+        allow_empty=False,
         min_length=1,
         write_only=True
     )
@@ -265,6 +266,7 @@ class TopicNotificationCreateSerializer(CreateNotificationSerializer):
     topic_codes = serializers.ListField(
         child=serializers.CharField(),
         required=True,
+        allow_empty=False,
         min_length=1,
         write_only=True
     )
@@ -295,7 +297,7 @@ class TopicNotificationCreateSerializer(CreateNotificationSerializer):
 #### END NOTIFICATION SERIALIZERS ####
 
 class PartnerSerializer(serializers.ModelSerializer):
-    point = PointField()
+    point = PointField(required=True)
 
     class Meta:
         model = OrganizationPin
@@ -327,6 +329,10 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
     class LocationSerializer(serializers.ModelSerializer):
         class AdmBoundaries(serializers.ModelSerializer):
             class NutsAdmBoundaries(serializers.ModelSerializer):
+                def to_representation(self, instance):
+                    if self.allow_null and not (instance.nuts_2 and instance.nuts_3):
+                        return None
+                    return super().to_representation(instance)
                 class Meta:
                     model = Report
                     fields = (
@@ -351,6 +357,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             nuts = NutsAdmBoundaries(
                 source="*",
                 required=False,
+                allow_null=True,
                 help_text="NUTS (Nomenclature of Territorial Units for Statistics). A hierarchical system used by the European Union to divide its territory into comparable regions for statistical purposes."
             )
 
@@ -358,7 +365,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
                 model = Report
                 fields = ("nuts",)
 
-        point = PointField(required=True, allow_null=True)
+        point = PointField(required=True)
         timezone = TimeZoneSerializerChoiceField(read_only=True, allow_null=True)
         adm_boundaries = AdmBoundaries(source="*", read_only=True)
         source = serializers.ChoiceField(
@@ -388,6 +395,9 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
         def to_representation(self, instance):
             ret = super().to_representation(instance)
+
+            if self.allow_null and not instance.point:
+                return None
 
             # Map 'current' to 'auto' and 'selected' to 'manual'
             location_choice = instance.location_choice
@@ -548,6 +558,14 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
         validated_data['type'] = Report.TYPE_SITE
         return super().create(validated_data)
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+
+        if not instance.breeding_site_type:
+            ret['breeding_site_type'] = Report.BREEDING_SITE_TYPE_OTHER
+
+        return ret
+
     class Meta(BaseReportWithPhotosSerializer.Meta):
         fields = BaseReportWithPhotosSerializer.Meta.fields + (
             "site_type",
@@ -557,7 +575,7 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
             "has_larvae",
         )
         extra_kwargs = {
-            "site_type": {"allow_null": False, "source": "breeding_site_type"},
+            "site_type": {"allow_null": False, "allow_blank": False, "source": "breeding_site_type"},
             # Need to set default to None, otherwise BooleanField uses False
             "has_water": {"allow_null": True, "default": None, "source": "breeding_site_has_water"},
             "in_public_area": {"allow_null": True, "default": None, "source": "breeding_site_in_public_area"},

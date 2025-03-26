@@ -183,7 +183,7 @@ class BaseReportViewSet(
             "photos",
             queryset=Photo.objects.visible()
         )
-    ).non_deleted().order_by('-server_upload_time')
+    ).non_deleted().filter(point__isnull=False).order_by('-server_upload_time')
 
     lookup_url_kwarg = "uuid"
 
