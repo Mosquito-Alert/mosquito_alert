@@ -155,14 +155,17 @@ def update_municipalities(cursor):
 
 def update_lau(cursor):
     cursor.execute(
-        """SELECT r.version_uuid, lau.fid, lau.lau_name FROM lau_rg_01m_2018_4326 lau,map_aux_reports_newmap r WHERE st_within(st_setsrid(st_point(r.lon,r.lat),4326),lau.geom)""")
-    result = cursor.fetchall()
-    for row in result:
-        uuid = row[0]
-        lau_code = row[1]
-        lau_name = row[2]
-        cursor.execute("""UPDATE map_aux_reports_newmap set lau_code=%s,lau_name=%s WHERE version_uuid=%s;""",
-                       (lau_code, lau_name, uuid,))
+        """
+        UPDATE map_aux_reports_newmap
+        SET
+            lau_code = lau.fid,
+            lau_name = lau.lau_name
+        FROM tigaserver_app_report report
+        INNER JOIN lau_rg_01m_2018_4326 lau
+            ON report.lau_fk = lau.gid
+        WHERE report."version_UUID" = map_aux_reports_newmap.version_uuid;
+        """
+    )
 
 def update_tags(cursor):
     cursor.execute(

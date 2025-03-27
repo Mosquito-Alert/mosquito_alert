@@ -180,7 +180,8 @@ class BaseReportViewSet(
 ):
     queryset = Report.objects.select_related(
         "nuts_2_fk",
-        "nuts_3_fk"
+        "nuts_3_fk",
+        "lau_fk"
     ).prefetch_related(
         'tags',
         models.Prefetch(
