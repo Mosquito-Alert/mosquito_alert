@@ -676,11 +676,23 @@ class NutsEurope(models.Model):
         return "{0} ({1})".format(self.name_latn, self.europecountry.name_engl)
 
     @property
+    def code(self) -> str:
+        return self.fid
+
+    @property
+    def name(self) -> str:
+        return self.name_latn
+
+    @property
     def display_name(self) -> str:
         ret = self.name_latn
         if self.europecountry:
             ret = '{}, {}'.format(ret, self.europecountry.name_engl)
         return ret
+
+    @property
+    def level(self) -> int:
+        return self.levl_code
 
     class Meta:
         managed = True

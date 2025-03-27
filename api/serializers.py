@@ -380,18 +380,18 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             if instance.nuts_2_fk:
                 boundaries.append({
                     "source": NutsEurope.SOURCE_NAME,
-                    "code": instance.nuts_2_fk.nuts_id,
-                    "name": instance.nuts_2_fk.name_latn,
+                    "code": instance.nuts_2_fk.code,
+                    "name": instance.nuts_2_fk.name,
                     "display_name": instance.nuts_2_fk.display_name,
-                    "level": instance.nuts_2_fk.levl_code,
+                    "level": instance.nuts_2_fk.level,
                 })
             if instance.nuts_3_fk:
                 boundaries.append({
                     "source": NutsEurope.SOURCE_NAME,
-                    "code": instance.nuts_3_fk.nuts_id,
-                    "name": instance.nuts_3_fk.name_latn,
+                    "code": instance.nuts_3_fk.code,
+                    "name": instance.nuts_3_fk.name,
                     "display_name": instance.nuts_3_fk.display_name,
-                    "level": instance.nuts_3_fk.levl_code,
+                    "level": instance.nuts_3_fk.level,
                 })
             ret['adm_boundaries'] = boundaries
 
