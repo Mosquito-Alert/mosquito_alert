@@ -327,47 +327,16 @@ class SimplePhotoSerializer(serializers.ModelSerializer):
 class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     class LocationSerializer(serializers.ModelSerializer):
-        class AdmBoundaries(serializers.ModelSerializer):
-            class NutsAdmBoundaries(serializers.ModelSerializer):
-                def to_representation(self, instance):
-                    if self.allow_null and not (instance.nuts_2 and instance.nuts_3):
-                        return None
-                    return super().to_representation(instance)
-                class Meta:
-                    model = Report
-                    fields = (
-                        "nuts2",
-                        "nuts3",
-                    )
-                    extra_kwargs = {
-                        "nuts2": {
-                            "source": "nuts_2",
-                            "required": True,
-                            "allow_null": False,
-                            "help_text": "Basic regions for economic applications (e.g., Spanish autonomous communities)."
-                        },
-                        "nuts3": {
-                            "source": "nuts_3",
-                            "required": True,
-                            "allow_null": False,
-                            "help_text": "Small regions for specific analyses (e.g., French départements)."
-                        },
-                    }
-
-            nuts = NutsAdmBoundaries(
-                source="*",
-                required=False,
-                allow_null=True,
-                help_text="NUTS (Nomenclature of Territorial Units for Statistics). A hierarchical system used by the European Union to divide its territory into comparable regions for statistical purposes."
-            )
-
-            class Meta:
-                model = Report
-                fields = ("nuts",)
+        class AdmBoundarySerializer(serializers.Serializer):
+            name = serializers.CharField(required=True, allow_null=False)
+            display_name = serializers.CharField(required=True, allow_null=False)
+            code = serializers.CharField(required=True, allow_null=False)
+            source = serializers.CharField(required=True, allow_null=False)
+            level = serializers.IntegerField(required=True, min_value=0)
 
         point = PointField(required=True)
         timezone = TimeZoneSerializerChoiceField(read_only=True, allow_null=True)
-        adm_boundaries = AdmBoundaries(source="*", read_only=True)
+        adm_boundaries = AdmBoundarySerializer(many=True, read_only=True)
         source = serializers.ChoiceField(
             source="location_choice",
             choices=[('auto', 'Auto (GPS)'), ('manual', 'Manual (User-selected)')],
@@ -404,6 +373,26 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             ret['source'] = 'auto'
             if location_choice == Report.LOCATION_SELECTED:
                 ret['source'] = 'manual'
+
+            # Populating boundaries
+            boundaries = []
+            if instance.nuts_2_fk:
+                boundaries.append({
+                    "source": "NUTS",
+                    "code": instance.nuts_2_fk.nuts_id,
+                    "name": instance.nuts_2_fk.name_latn,
+                    "display_name": instance.nuts_2_fk.display_name,
+                    "level": instance.nuts_2_fk.levl_code,
+                })
+            if instance.nuts_3_fk:
+                boundaries.append({
+                    "source": "NUTS",
+                    "code": instance.nuts_3_fk.nuts_id,
+                    "name": instance.nuts_3_fk.name_latn,
+                    "display_name": instance.nuts_3_fk.display_name,
+                    "level": instance.nuts_3_fk.levl_code,
+                })
+            ret['adm_boundaries'] = boundaries
 
             return ret
 

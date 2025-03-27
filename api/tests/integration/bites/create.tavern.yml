@@ -65,8 +65,7 @@ stages:
             latitude: 41.67419
             longitude: 2.79036
           country_id: !anything
-          adm_boundaries:
-            nuts: !anything
+          adm_boundaries: !anylist
         note: Test
         tags: !anylist
         published: true
