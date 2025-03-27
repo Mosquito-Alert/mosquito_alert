@@ -101,15 +101,17 @@ def update_ia_value(cursor):
 
 def update_nuts3(cursor):
     cursor.execute(
-    """SELECT r.version_uuid, nuts.nuts_id, nuts.name_latn FROM nuts_europe nuts,map_aux_reports_newmap r WHERE nuts.levl_code = 3 and st_within(st_setsrid(st_point(r.lon,r.lat),4326),nuts.geom)"""
+        """
+        UPDATE map_aux_reports_newmap
+        SET
+            nuts3_code = nuts.nuts_id,
+            nuts3_name = nuts.name_latn
+        FROM tigaserver_app_report report
+        INNER JOIN nuts_europe nuts
+            ON report.nuts_3_fk = nuts.gid
+        WHERE report."version_UUID" = map_aux_reports_newmap.version_uuid;
+        """
     )
-    result = cursor.fetchall()
-    for row in result:
-        uuid = row[0]
-        nuts_code = row[1]
-        nuts_name = row[2]
-        cursor.execute("""UPDATE map_aux_reports_newmap set nuts3_code=%s,nuts3_name=%s WHERE version_uuid=%s;""",
-                       (nuts_code, nuts_name, uuid,))
 
 def update_nuts0(cursor):
     cursor.execute(

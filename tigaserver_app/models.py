@@ -656,12 +656,15 @@ class EuropeCountry(models.Model):
 
 
 class NutsEurope(models.Model):
+
+    SOURCE_NAME = 'NUTS'
+
     gid = models.AutoField(primary_key=True)
-    nuts_id = models.CharField(max_length=5, blank=True, null=True)
-    levl_code = models.SmallIntegerField(blank=True, null=True)
+    nuts_id = models.CharField(max_length=5, unique=True)
+    levl_code = models.SmallIntegerField()
     cntr_code = models.CharField(max_length=2, blank=True, null=True)
-    name_latn = models.CharField(max_length=70, blank=True, null=True)
-    nuts_name = models.CharField(max_length=106, blank=True, null=True)
+    name_latn = models.CharField(max_length=70)
+    nuts_name = models.CharField(max_length=106)
     mount_type = models.SmallIntegerField(blank=True, null=True)
     urbn_type = models.SmallIntegerField(blank=True, null=True)
     coast_type = models.SmallIntegerField(blank=True, null=True)
@@ -671,6 +674,18 @@ class NutsEurope(models.Model):
 
     def __str__(self):
         return "{0} ({1})".format(self.name_latn, self.europecountry.name_engl)
+
+    @property
+    def code(self) -> str:
+        return self.fid
+
+    @property
+    def name(self) -> str:
+        return self.name_latn.split('/')[0]
+
+    @property
+    def level(self) -> int:
+        return self.levl_code
 
     class Meta:
         managed = True
@@ -862,8 +877,11 @@ class Report(TimeZoneModelMixin, models.Model):
         null=True, blank=True, help_text="Note user attached to report."
     )
 
-    nuts_2 = models.CharField(max_length=4, null=True, blank=True)
-    nuts_3 = models.CharField(max_length=5, null=True, blank=True)
+    nuts_2_fk = models.ForeignKey(NutsEurope, null=True, blank=True, on_delete=models.PROTECT, related_name='+', limit_choices_to={'levl_code': 2})
+    nuts_3_fk = models.ForeignKey(NutsEurope, null=True, blank=True, on_delete=models.PROTECT, related_name='+', limit_choices_to={'levl_code': 3})
+    # NOTE: do not remove yet for legacy reasons
+    nuts_2 = models.CharField(max_length=4, null=True, blank=True, editable=False)
+    nuts_3 = models.CharField(max_length=5, null=True, blank=True, editable=False)
 
     ia_filter_1 = models.FloatField(
         null=True,
@@ -1950,18 +1968,16 @@ class Report(TimeZoneModelMixin, models.Model):
 
         if self.point:
             if self.country:
-                nuts3 = self._get_nuts_is_in(levl_code=3)
-                if nuts3:
-                    self.nuts_3 = nuts3.nuts_id
-
-                nuts2 = self._get_nuts_is_in(levl_code=2)
-                if nuts2:
-                    self.nuts_2 = nuts2.nuts_id
+                self.nuts_3_fk = self._get_nuts_is_in(levl_code=3)
+                self.nuts_2_fk = self._get_nuts_is_in(levl_code=2)
             else:
                 # Check if masked because of is in the ocean of out of the artic/antartic circle.
                 self.location_is_masked = self.point.y > settings.MAX_ALLOWED_LATITUDE \
                     or self.point.y < settings.MIN_ALLOWED_LATITUDE \
                     or settings.OCEAN_GEOM.contains(self.point)
+
+        self.nuts_3 = self.nuts_3_fk.nuts_id if self.nuts_3_fk else None
+        self.nuts_2 = self.nuts_2_fk.nuts_id if self.nuts_2_fk else None
 
         bite_fieldnames = [
             'head_bite_count',

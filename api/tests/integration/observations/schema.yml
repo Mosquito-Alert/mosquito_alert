@@ -22,10 +22,7 @@ variables:
         latitude: !anyfloat
         longitude: !anyfloat
       country_id: !anything
-      adm_boundaries:
-        nuts: !anything
-          # nuts2: !anything
-          # nuts3: !anything
+      adm_boundaries: !anylist
     note: !anything
     tags: !anylist
     published: !anybool
