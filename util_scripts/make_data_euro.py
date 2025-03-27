@@ -82,7 +82,7 @@ def add_photo_to_not_yet_filtered_adults(cursor):
         if current_uuid != last_uuid:
             # do stuff
             cursor.execute("""UPDATE map_aux_reports set photo_url=%s WHERE version_uuid=%s;""",
-                           ('/media/' + row[1], row[0],))
+                           (settings.MEDIA_URL + row[1], row[0],))
         last_uuid = current_uuid;
 
 
@@ -96,7 +96,7 @@ def add_photo_to_unfiltered_sites(cursor):
         if current_uuid != last_uuid:
             # do stuff
             cursor.execute("""UPDATE map_aux_reports set photo_url=%s WHERE version_uuid=%s;""",
-                           ('/media/' + row[1], row[0],))
+                           (settings.MEDIA_URL + row[1], row[0],))
         last_uuid = current_uuid;
 
 
