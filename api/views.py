@@ -180,9 +180,7 @@ class BaseReportViewSet(
 ):
     queryset = Report.objects.select_related(
         "nuts_2_fk",
-        "nuts_3_fk",
-        "nuts_2_fk__europecountry",  # NOTE: needed for NutsEurope.display_name
-        "nuts_3_fk__europecountry"  # NOTE: needed for NutsEurope.display_name
+        "nuts_3_fk"
     ).prefetch_related(
         'tags',
         models.Prefetch(
