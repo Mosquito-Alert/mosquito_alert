@@ -3,13 +3,14 @@ import uuid
 
 # Create your tests here.
 from django.test import TestCase, override_settings
-from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp, UserSubscription
+from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp, UserSubscription, LauEurope
 from django.core.management import call_command
 from PIL import Image, ExifTags
 from PIL.ExifTags import TAGS, GPSTAGS
 import tigaserver_project.settings as conf
 import os
 import requests
+from django.contrib.gis.geos import Polygon, MultiPolygon
 from django.utils import timezone
 from tigaserver_app.models import TigaUser, Report, Photo, Fix
 from tigacrafting.models import FavoritedReports
@@ -2174,7 +2175,33 @@ class ReportModelTest(TestCase):
             Report.objects.filter(pk=report.pk).update(
                 hide=True,
                 published_at=timezone.now()
-            ) 
+            )
+
+    def test_lau_fk_is_set_on_create(self):
+        lau = LauEurope.objects.create(
+            fid='test_lau_id',
+            lau_id='test_lau_id',
+            lau_name='test_lau_name',
+            geom=MultiPolygon(
+                Polygon.from_bbox((-10, 40, 10, 60))
+            )
+        )
+
+        point = lau.geom.point_on_surface
+
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+            location_choice="current",
+            current_location_lon=point.x,
+            current_location_lat=point.y,
+        )
+
+        assert report.lau_fk == lau
 
 class ApiTokenViewTest(APITestCase):
     ENDPOINT = '/api/token/'
