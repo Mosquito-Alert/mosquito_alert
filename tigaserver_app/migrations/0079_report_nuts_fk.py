@@ -25,6 +25,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='nutseurope',
             name='nuts_id',
+            field=models.CharField(max_length=5),
+        ),
+        migrations.AlterField(
+            model_name='nutseurope',
+            name='fid',
             field=models.CharField(max_length=5, unique=True),
         ),
         migrations.AlterField(

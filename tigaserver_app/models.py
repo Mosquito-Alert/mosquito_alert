@@ -660,7 +660,7 @@ class NutsEurope(models.Model):
     SOURCE_NAME = 'NUTS'
 
     gid = models.AutoField(primary_key=True)
-    nuts_id = models.CharField(max_length=5, unique=True)
+    nuts_id = models.CharField(max_length=5)
     levl_code = models.SmallIntegerField()
     cntr_code = models.CharField(max_length=2, blank=True, null=True)
     name_latn = models.CharField(max_length=70)
@@ -668,7 +668,7 @@ class NutsEurope(models.Model):
     mount_type = models.SmallIntegerField(blank=True, null=True)
     urbn_type = models.SmallIntegerField(blank=True, null=True)
     coast_type = models.SmallIntegerField(blank=True, null=True)
-    fid = models.CharField(max_length=5, blank=True, null=True)
+    fid = models.CharField(max_length=5, unique=True)
     geom = models.MultiPolygonField(blank=True, null=True)
     europecountry = models.ForeignKey(EuropeCountry, blank=True, null=True, related_name="nuts", on_delete=models.CASCADE)
 
