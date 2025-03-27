@@ -15,6 +15,7 @@ from tigaserver_app.models import (
     OrganizationPin,
     OWCampaigns,
     EuropeCountry,
+    NutsEurope,
     TigaUser,
     Report,
     Photo,
@@ -378,7 +379,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             boundaries = []
             if instance.nuts_2_fk:
                 boundaries.append({
-                    "source": "NUTS",
+                    "source": NutsEurope.SOURCE_NAME,
                     "code": instance.nuts_2_fk.nuts_id,
                     "name": instance.nuts_2_fk.name_latn,
                     "display_name": instance.nuts_2_fk.display_name,
@@ -386,7 +387,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
                 })
             if instance.nuts_3_fk:
                 boundaries.append({
-                    "source": "NUTS",
+                    "source": NutsEurope.SOURCE_NAME,
                     "code": instance.nuts_3_fk.nuts_id,
                     "name": instance.nuts_3_fk.name_latn,
                     "display_name": instance.nuts_3_fk.display_name,

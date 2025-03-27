@@ -656,6 +656,9 @@ class EuropeCountry(models.Model):
 
 
 class NutsEurope(models.Model):
+
+    SOURCE_NAME = 'NUTS'
+
     gid = models.AutoField(primary_key=True)
     nuts_id = models.CharField(max_length=5, unique=True)
     levl_code = models.SmallIntegerField()
