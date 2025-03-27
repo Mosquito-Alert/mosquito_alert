@@ -338,11 +338,15 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
         point = PointField(required=True)
         timezone = TimeZoneSerializerChoiceField(read_only=True, allow_null=True)
         adm_boundaries = AdmBoundarySerializer(many=True, read_only=True)
+        display_name = serializers.SerializerMethodField()
         source = serializers.ChoiceField(
             source="location_choice",
             choices=[('auto', 'Auto (GPS)'), ('manual', 'Manual (User-selected)')],
             help_text="Indicates how the location was obtained. Use 'Auto (GPS)' if the location was automatically retrieved"
             " from the device's GPS, or 'Manual (User-selected)' if the location was selected by the user on a map.")
+
+        def get_display_name(self, obj) -> Optional[str]:
+            return obj.location_display_name
 
         def to_internal_value(self, data):
             ret = super().to_internal_value(data)
@@ -408,6 +412,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
                 "source",
                 "point",
                 "timezone",
+                "display_name",
                 "country_id",
                 "adm_boundaries"
             )
