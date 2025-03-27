@@ -1295,6 +1295,23 @@ class Report(TimeZoneModelMixin, models.Model):
         return self.is_browsable and bool(self.published_at) and self.published_at <= timezone.now()
 
     @property
+    def location_display_name(self) -> Optional[str]:
+        result = []
+        if self.lau_fk:
+            result.append(self.lau_fk.name)
+        if self.nuts_3_fk:
+            result.append(self.nuts_3_fk.name)
+        if self.nuts_2_fk:
+            result.append(self.nuts_2_fk.name)
+        if self.country:
+            result.append(self.country.name_engl)
+
+        if not result:
+            return
+
+        return ', '.join(result)
+
+    @property
     def public_map_url(self) -> Optional[str]:
         if not self.published:
             return None
