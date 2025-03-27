@@ -121,6 +121,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('tigaserver_app', '0077_indexing_for_refactor_queues'),
+        ('tigacrafting', '0028_populate_identificationtask'),
     ]
 
     operations = [
