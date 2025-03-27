@@ -684,13 +684,6 @@ class NutsEurope(models.Model):
         return self.name_latn.split('/')[0]
 
     @property
-    def display_name(self) -> str:
-        ret = self.name
-        if self.europecountry:
-            ret = '{}, {}'.format(ret, self.europecountry.name_engl)
-        return ret
-
-    @property
     def level(self) -> int:
         return self.levl_code
 

@@ -330,7 +330,6 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
     class LocationSerializer(serializers.ModelSerializer):
         class AdmBoundarySerializer(serializers.Serializer):
             name = serializers.CharField(required=True, allow_null=False)
-            display_name = serializers.CharField(required=True, allow_null=False)
             code = serializers.CharField(required=True, allow_null=False)
             source = serializers.CharField(required=True, allow_null=False)
             level = serializers.IntegerField(required=True, min_value=0)
@@ -382,7 +381,6 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
                     "source": NutsEurope.SOURCE_NAME,
                     "code": instance.nuts_2_fk.code,
                     "name": instance.nuts_2_fk.name,
-                    "display_name": instance.nuts_2_fk.display_name,
                     "level": instance.nuts_2_fk.level,
                 })
             if instance.nuts_3_fk:
@@ -390,7 +388,6 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
                     "source": NutsEurope.SOURCE_NAME,
                     "code": instance.nuts_3_fk.code,
                     "name": instance.nuts_3_fk.name,
-                    "display_name": instance.nuts_3_fk.display_name,
                     "level": instance.nuts_3_fk.level,
                 })
             ret['adm_boundaries'] = boundaries
