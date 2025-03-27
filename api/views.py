@@ -179,6 +179,7 @@ class BaseReportViewSet(
     GenericViewSet,
 ):
     queryset = Report.objects.prefetch_related(
+        'tags',
         models.Prefetch(
             "photos",
             queryset=Photo.objects.visible()
