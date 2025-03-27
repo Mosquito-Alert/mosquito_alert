@@ -681,11 +681,11 @@ class NutsEurope(models.Model):
 
     @property
     def name(self) -> str:
-        return self.name_latn
+        return self.name_latn.split('/')[0]
 
     @property
     def display_name(self) -> str:
-        ret = self.name_latn
+        ret = self.name
         if self.europecountry:
             ret = '{}, {}'.format(ret, self.europecountry.name_engl)
         return ret
