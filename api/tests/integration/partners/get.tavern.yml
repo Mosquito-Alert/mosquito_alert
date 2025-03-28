@@ -14,7 +14,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{partner.pk}/"
       method: "GET"
     response:
-      status_code: 403
+      status_code: 401
   # AUTH
   - id: signup
     type: ref

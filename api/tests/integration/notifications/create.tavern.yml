@@ -24,7 +24,7 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "POST"
     response:
-      status_code: 403
+      status_code: 401
   - name: Auth users without perms can not create
     request:
       url: "{api_live_url}/{endpoint}/"

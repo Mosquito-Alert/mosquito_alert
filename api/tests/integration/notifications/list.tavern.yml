@@ -10,7 +10,7 @@ marks:
   - parametrize:
       key:
         - endpoint
-        - status_code
+        - status_code_token
       vals:
         - ["{endpoint}", 403]
         - ["me/{endpoint}", 401]
@@ -21,7 +21,7 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
     response:
-      status_code: !int "{status_code}"
+      status_code: 401
   - name: User without perm can not list
     request:
       url: "{api_live_url}/{endpoint}/"
@@ -29,7 +29,7 @@ stages:
       headers:
         Authorization: "Token {token_user:s}"
     response:
-      status_code: !int "{status_code}"
+      status_code: !int "{status_code_token}"
 
 ---
 

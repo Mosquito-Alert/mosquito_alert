@@ -17,7 +17,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: GET
     response:
-      status_code: 403
+      status_code: 401
   - name: Authorized user without permission can not get user
     request:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"

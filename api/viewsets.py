@@ -1,4 +1,4 @@
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.viewsets import GenericViewSet as DRFGenericViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
@@ -6,7 +6,7 @@ from rest_framework import permissions
 from rest_framework.renderers import JSONRenderer
 
 
-from .auth.authentication import AppUserJWTAuthentication
+from .auth.authentication import AppUserJWTAuthentication, NonAppUserSessionAuthentication
 from .permissions import UserObjectPermissions
 
 
@@ -18,10 +18,12 @@ class ResultsSetPagination(PageNumberPagination):
 
 class GenericViewSet(DRFGenericViewSet):
 
+    # NOTE: AppUserJWTAuthentication must be on top to return 401 with correct headers
+    # See: https://www.django-rest-framework.org/api-guide/authentication/#unauthorized-and-forbidden-responses
     authentication_classes = (
-        SessionAuthentication,
-        TokenAuthentication,
         AppUserJWTAuthentication,
+        TokenAuthentication,
+        NonAppUserSessionAuthentication,
     )
     _pagination_class = ResultsSetPagination
 
@@ -41,7 +43,7 @@ class GenericMobileOnlyViewSet(GenericViewSet):
 
 class GenericNoMobileViewSet(GenericViewSet):
     authentication_classes = (
-        SessionAuthentication,
+        NonAppUserSessionAuthentication,
         TokenAuthentication,
     )
-    permission_classes = (permissions.DjangoModelPermissions,)
+    permission_classes = (permissions.IsAuthenticated,)
