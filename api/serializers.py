@@ -539,9 +539,13 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         taxon = TaxonSerializer(allow_null=True, read_only=True)
         confidence = serializers.FloatField(min_value=0, max_value=1, read_only=True)
         confidence_label = serializers.SerializerMethodField()
+        is_confirmed = serializers.SerializerMethodField()
 
         def get_confidence_label(self, obj) -> str:
             return obj.confidence_label
+
+        def get_is_confirmed(self, obj) -> bool:
+            return obj.is_confirmed
 
         def to_representation(self, instance):
             if self.allow_null and not instance.is_done:
@@ -552,6 +556,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
             model = IdentificationTask
             fields = (
                 'taxon',
+                'is_confirmed',
                 'confidence',
                 'confidence_label',
                 'uncertainty',
