@@ -371,7 +371,7 @@ class IdentificationTask(LifecycleModel):
     )
 
     status = models.CharField(max_length=16, choices=Status.choices, default=Status.OPEN, db_index=True)
-    is_flagged = models.BooleanField(default=False)
+    is_flagged = models.BooleanField(default=False, editable=False)
 
     is_safe = models.BooleanField(default=False, editable=False, help_text="Indicates if the content is safe for publication.")
 
@@ -404,6 +404,12 @@ class IdentificationTask(LifecycleModel):
 
     # LEGACY
     @property
+    def is_confirmed(self) -> bool:
+        if not self.confidence:
+            return False
+        return self.confidence >= Decimal('0.9')
+
+    @property
     def validation_value(self) -> Optional[int]:
         if not self.taxon:
             return
@@ -414,7 +420,7 @@ class IdentificationTask(LifecycleModel):
         if not self.taxon.content_object.specify_certainty_level:
             return
 
-        if self.confidence >= Decimal('0.9'):
+        if self.is_confirmed:
             return ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY
         return ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
 
