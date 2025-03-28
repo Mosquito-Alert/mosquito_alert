@@ -108,7 +108,7 @@ def update_nuts3(cursor):
             nuts3_name = nuts.name_latn
         FROM tigaserver_app_report report
         INNER JOIN nuts_europe nuts
-            ON report.nuts_3_fk = nuts.gid
+            ON report.nuts_3_fk_id = nuts.gid
         WHERE report."version_UUID" = map_aux_reports_newmap.version_uuid;
         """
     )
@@ -162,7 +162,7 @@ def update_lau(cursor):
             lau_name = lau.lau_name
         FROM tigaserver_app_report report
         INNER JOIN lau_rg_01m_2018_4326 lau
-            ON report.lau_fk = lau.gid
+            ON report.lau_fk_id = lau.gid
         WHERE report."version_UUID" = map_aux_reports_newmap.version_uuid;
         """
     )
