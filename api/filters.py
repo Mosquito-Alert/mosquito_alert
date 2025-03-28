@@ -97,6 +97,13 @@ class IdentificationTaskFilter(filters.FilterSet):
     num_assignations = filters.NumericRangeFilter(field_name="total_annotations")
     num_annotations = filters.NumericRangeFilter(field_name="total_finished_annotations")
 
+    created_at = filters.IsoDateTimeFromToRangeFilter(
+        field_name="creation_time", label="Created at"
+    )
+    updated_at = filters.IsoDateTimeFromToRangeFilter(
+        field_name="updated_at", label="Update at"
+    )
+
     order_by = filters.OrderingFilter(
         fields=("created_at", "updated_at")
     )
