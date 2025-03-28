@@ -16,6 +16,7 @@ from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
 from api.tests.utils import grant_permission_to_user
 from api.tests.clients import AppAPIClient
 
+from tigacrafting.models import IdentificationTask
 from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo
 
 User = get_user_model()
@@ -60,8 +61,8 @@ def adult_report(app_user, dummy_image):
         version_time=timezone.now(),
         type=Report.TYPE_ADULT,
         location_choice=Report.LOCATION_CURRENT,
-        current_location_lon=2,
-        current_location_lat=2,
+        current_location_lon=-3.7,
+        current_location_lat=40.41,
     )
 
     _ = Photo.objects.create(
@@ -80,6 +81,10 @@ def report_hidden_photo(report_photo):
     report_photo.hide = True
     report_photo.save()
     return report_photo
+
+@pytest.fixture
+def identification_task(adult_report):
+    return IdentificationTask.objects.get(report=adult_report)
 
 @pytest.fixture
 def django_live_url(live_server):

@@ -22,6 +22,7 @@ variables:
       # type: !anystr
       # created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
     result:
+      source: !anything
       taxon: null
         # name: !anystr
         # common_name: !anystr
