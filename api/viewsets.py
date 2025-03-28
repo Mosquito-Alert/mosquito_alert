@@ -46,4 +46,4 @@ class GenericNoMobileViewSet(GenericViewSet):
         NonAppUserSessionAuthentication,
         TokenAuthentication,
     )
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.DjangoModelPermissions,)
