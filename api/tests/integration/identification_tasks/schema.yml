@@ -28,6 +28,7 @@ variables:
         # rank: !anystr
       confidence: !anyfloat
       confidence_label: !anystr
+      is_confirmed: !anybool
       uncertainty: !anyfloat
       agreement: !anyfloat
     created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
