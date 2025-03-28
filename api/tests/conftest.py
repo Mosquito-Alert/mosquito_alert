@@ -14,6 +14,8 @@ from django.utils.module_loading import import_string
 from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
 
 from api.tests.utils import grant_permission_to_user
+from api.tests.clients import AppAPIClient
+
 from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo
 
 User = get_user_model()
@@ -177,6 +179,18 @@ def token_user_can_delete(token_instance_user, model_class):
     yield token_instance_user.key
 
     permission.delete()
+
+@pytest.fixture
+def app_api_client(app_user):
+    api_client = AppAPIClient()
+    api_client.force_login(user=app_user)
+    return api_client
+
+@pytest.fixture
+def non_app_api_client(user):
+    api_client = AppAPIClient()
+    api_client.force_login(user=user)
+    return api_client
 
 @pytest.fixture
 def test_png_image_path():

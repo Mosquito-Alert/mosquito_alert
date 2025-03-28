@@ -20,7 +20,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: "{method}"
     response:
-      status_code: 403
+      status_code: 401
 
 ---
 test_name: Only auth user with can_change perm can update

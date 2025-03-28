@@ -9,13 +9,13 @@ from django.utils import timezone
 from django.utils.module_loading import import_string
 
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APITestCase
 
 from rest_framework_simplejwt.settings import api_settings
 
 from tigaserver_app.models import TigaUser, Report, Device, MobileApp
 
-from api.auth.serializers import AppUserTokenObtainPairSerializer
+from api.tests.clients import AppAPIClient
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
@@ -23,34 +23,7 @@ from api.tests.factories import create_report_object
 
 User = get_user_model()
 
-@pytest.fixture
-def app_api_client(app_user):
-    api_client = AppAPIClient()
-    api_client.force_login(user=app_user)
-    return api_client
-
 # TODO: automatic user subscription on new report.
-
-class AppAPIClient(APIClient):
-    def __init__(self, device: Device = None,  *args, **kwargs):
-        self.device = device
-        super().__init__(self, *args, **kwargs)
-
-    def force_login(self, user, backend=None) -> None:
-        self.logout()
-        return super().force_login(user, backend)
-
-    def _login(self, user, backend=None):
-        if isinstance(user, User):
-            return super()._login(user, backend)
-        elif isinstance(user, TigaUser):
-            token = AppUserTokenObtainPairSerializer.get_token(
-                user=user,
-                device_id=self.device.device_id if self.device else None
-            )
-            self.credentials(HTTP_AUTHORIZATION=f"Bearer {str(token.access_token)}")
-        else:
-            raise NotImplementedError
 
 @pytest.mark.django_db
 class BaseReportTest:

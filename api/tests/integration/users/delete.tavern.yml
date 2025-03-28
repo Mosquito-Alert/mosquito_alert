@@ -16,7 +16,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: "DELETE"
     response:
-      status_code: 403
+      status_code: 401
   - name: Auth users can not delete even with delete perms
     request:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"

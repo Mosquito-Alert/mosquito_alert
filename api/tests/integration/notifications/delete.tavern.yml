@@ -16,7 +16,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       method: "DELETE"
     response:
-      status_code: 403
+      status_code: 401
   - name: Delete method return 405 for app users
     request:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"

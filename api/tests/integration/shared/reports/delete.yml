@@ -12,7 +12,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{object.pk}/"
       method: DELETE
     response:
-      status_code: 403
+      status_code: 401
   - id: auth_non_permissions_cannot_delete
     name: User without perm can not delete
     request:
