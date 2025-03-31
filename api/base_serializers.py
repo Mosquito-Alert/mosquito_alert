@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import empty
 
+from tigaserver_app.models import TigaUser
 
 class FieldPolymorphicSerializer(serializers.Serializer):
     field_value_serializer_mapping = None
@@ -115,3 +116,32 @@ class FieldPolymorphicSerializer(serializers.Serializer):
             raise ValidationError(
                 f"{self.resource_type_field_name} is a required field."
             )
+
+class LocalizedSerializerMixin:
+    """
+    A custom serializer field that supports localization for a dynamic field name.
+    Allows calling with arguments such as 'title', 'message', max_length, help_text, etc.
+    """
+    def __init__(self, *args, **kwargs):
+        # From CharField
+        allow_blank = kwargs.pop('allow_blank', False)
+        trim_whitespace = kwargs.pop('trim_whitespace', True)
+        max_length = kwargs.pop('max_length', None)
+        min_length = kwargs.pop('min_length', None)
+
+        super().__init__(*args, **kwargs)
+
+        required_languages = kwargs.get('required_languages', ['en'])
+
+        # Sort the languages alphabetically based on the language code
+        for code, name in sorted(TigaUser.AVAILABLE_LANGUAGES, key=lambda x: x[0]):
+            # Use max_length if provided and if the field is for 'title'
+            field_params = {
+                'required': code in required_languages,
+                'allow_blank': allow_blank,
+                'trim_whitespace': trim_whitespace,
+                'max_length': max_length,
+                'min_length': min_length,
+                'help_text': name
+            }
+            self.fields[code] = serializers.CharField(**field_params)

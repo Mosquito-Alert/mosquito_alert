@@ -26,13 +26,13 @@ from tigaserver_app.models import (
     MobileApp
 )
 
+from .base_serializers import LocalizedSerializerMixin
 from .fields import (
     TimezoneAwareDateTimeField,
     WritableSerializerMethodField,
     IntegerDefaultField,
     TagListSerializerField,
     TimeZoneSerializerChoiceField,
-    LocalizedField
 )
 
 User = get_user_model()
@@ -176,11 +176,17 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 class CreateNotificationSerializer(serializers.ModelSerializer):
     class CreateNotificationMessageSerializer(serializers.Serializer):
-        title = LocalizedField(
+        class LocalizedMessageTitleSerializer(LocalizedSerializerMixin, serializers.Serializer):
+            pass
+
+        class LocalizedMessageBodySerializer(LocalizedSerializerMixin, serializers.Serializer):
+            pass
+
+        title = LocalizedMessageTitleSerializer(
             max_length=255,
             help_text="Provide the message's title in all supported languages"
         )
-        body = LocalizedField(
+        body = LocalizedMessageBodySerializer(
             help_text="Provide the message's body in all supported languages"
         )
         class Meta:
