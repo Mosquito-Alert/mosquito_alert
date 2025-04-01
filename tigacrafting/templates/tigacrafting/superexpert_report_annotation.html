@@ -30,26 +30,6 @@
 
 {% block navbar_left_items %}
     <li>
-        <div class="btn-group" id="location_grp" data-toggle="buttons" style="margin-right:5px;">
-            <label class="btn btn-danger btn-sm navbar-btn active" data-toggle="tooltip" data-placement="bottom" title="Entolab-All" id="ento-all">
-                <input type="radio" name="loc_all" autocomplete="off">
-                <span>ALL</span>
-                <span class="badge">{{ n_loc_all }}</span>
-            </label>
-            <label class="btn btn-danger btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Entolab-Spain" id="ento-es">
-                <input type="radio" name="loc_spain" autocomplete="off">
-                <span>ES</span>
-                <span class="badge">{{ n_loc_spain }}</span>
-            </label>
-            <label class="btn btn-danger btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Entolab-Europe" id="ento-eu">
-                <input type="radio" name="loc_europe" autocomplete="off">
-                    <span>EU</span>
-                    <span class="badge">{{ n_loc_europe }}</span>
-            </label>
-        </div>
-    </li>
-
-    <li>
         <div class="btn-group" id="type_grp" data-toggle="buttons" style="margin-right:5px;">
             <label class="btn btn-info btn-sm navbar-btn" data-toggle="tooltip" data-placement="bottom" title="Public"
                    id="public_btn">
@@ -260,10 +240,6 @@
 
         var checked = "{{ checked }}";
 
-        var loc_all_btn = $("#ento-all"), loc_spain_btn = $("#ento-es"), loc_europe_btn = $("#ento-eu");
-
-        var loc = "{{ loc }}";
-
         function clear_btns() {
             public_btn.removeClass("active");
             flagged_btn.removeClass("active");
@@ -272,17 +248,12 @@
             favorite_btn.removeClass("active");
             revised_btn.removeClass("active");
             confirmed_btn.removeClass("active");
-            loc_all_btn.removeClass("active");
-            loc_spain_btn.removeClass("active");
-            loc_europe_btn.removeClass("active");
         }
 
         function activate_btns() {
             clear_btns();
             final_status == "public" ? public_btn.addClass("active") : (final_status == "flagged" ? flagged_btn.addClass("active") : (final_status == "hidden" ? hidden_btn.addClass("active") : {}) );
             checked == "revised" ? revised_btn.addClass("active") : (checked == "confirmed" ? confirmed_btn.addClass("active") : (checked == "unchecked" ? unchecked_btn.addClass("active") : (checked == "favorite" ? favorite_btn.addClass("active") : {} ) ) );
-            loc == "spain" ? loc_spain_btn.addClass("active") : ( loc == "europe" ? loc_europe_btn.addClass("active") : ( loc == "na" ? loc_all_btn.addClass("active") : {} ));
-
         }
 
         activate_btns();
@@ -339,17 +310,6 @@
                 qp += '&checked=' + 'unchecked';
             }
 
-            if( loc_spain_btn.hasClass("active") ){
-                $("#loc_input").val("spain");
-                qp += '&loc=spain';
-            } else if ( loc_europe_btn.hasClass("active") ){
-                $("#loc_input").val("europe");
-                qp += '&loc=europe';
-            } else {
-                $("#loc_input").val("na");
-                qp += '&loc=na';
-            }
-
             return(qp);
         }
 
@@ -376,14 +336,6 @@
             background_save(qp);
         }
 
-        function submit_queries_loc(event) {
-            gear.show();
-            loc = event.data.extr;
-            activate_btns();
-            var qp = query_selectors();
-            background_save(qp);
-        }
-
         public_btn.on('click', {extr: 'public'}, submit_queries_final_status);
         flagged_btn.on('click', { extr: 'flagged'}, submit_queries_final_status);
         hidden_btn.on('click', {extr: 'hidden'}, submit_queries_final_status);
@@ -392,10 +344,6 @@
         confirmed_btn.on('click', { extr: 'confirmed'}, submit_queries_checked);
         revised_btn.on('click', { extr: 'revised'}, submit_queries_checked);
         favorite_btn.on('click', { extr: 'favorite'}, submit_queries_checked);
-
-        loc_all_btn.on('click', {extr: 'na'}, submit_queries_loc);
-        loc_spain_btn.on('click', {extr: 'spain'}, submit_queries_loc);
-        loc_europe_btn.on('click', {extr: 'europe'}, submit_queries_loc);
 
         var country_name = "{{ country_name | safe }}";
 

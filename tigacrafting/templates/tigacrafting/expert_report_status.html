@@ -641,7 +641,7 @@
                 zIndexMargin: 9999,
                 dataSource: function(term, object){
                     $.ajax('/api/uuid_list_autocomplete/', {
-                        data: { uuid: term, loc: $('#loc_input').val(), start: 0 },
+                        data: { uuid: term, start: 0 },
                         dataType: 'json',
                         success: function(data){
                             var $items = [];
