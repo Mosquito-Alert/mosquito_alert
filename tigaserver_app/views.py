@@ -1796,7 +1796,6 @@ def reports_id_filtered(request):
 @api_view(['GET'])
 def uuid_list_autocomplete(request):
     if request.method == 'GET':
-        loc = request.query_params.get('loc', -1)
         user = request.user
         uuid = request.query_params.get('uuid', -1)
 
@@ -1804,12 +1803,7 @@ def uuid_list_autocomplete(request):
             raise ParseError(detail='uuid is mandatory')
 
         qs = ExpertReportAnnotation.objects.filter(user=user).filter(report__type='adult').filter(report__version_UUID__startswith=uuid)
-        if loc == 'spain':
-            qs = qs.filter(Q(report__country__isnull=True) | Q(report__country__gid=17)).values('report__version_UUID').distinct()
-        elif loc == 'europe':
-            qs = qs.filter(Q(report__country__isnull=False) & ~Q(report__country__gid=17)).values('report__version_UUID').distinct()
-        else:
-            qs = qs.values('report__version_UUID').distinct()
+        qs = qs.values('report__version_UUID').distinct()
         return Response(qs, status=status.HTTP_200_OK)
 
 package_filter = (

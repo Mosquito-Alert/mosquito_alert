@@ -519,7 +519,7 @@ def report_expiration(request, country_id=None):
 
 @transaction.atomic
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', ns_exec='all', edit_mode='off', tags_filter='na',loc='na'):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', ns_exec='all', edit_mode='off', tags_filter='na'):
     this_user = request.user
 
     if settings.SHOW_USER_AGREEMENT_ENTOLAB:
@@ -557,7 +557,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         ns_exec = request.POST.get('ns_exec', ns_exec)
         tags_filter = request.POST.get('tags_filter', tags_filter)
         checked = request.POST.get('checked', checked)
-        loc = request.POST.get('loc', loc)
         tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
         note_language = request.GET.get('note_language', "es")
         load_new_reports = request.POST.get('load_new_reports', load_new_reports)
@@ -574,7 +573,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         page = request.POST.get('page')
         if not page:
             page = '1'
-        return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&loc=' + loc + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.parse.quote_plus(tags_filter)) if tags_filter else ''))
+        return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.parse.quote_plus(tags_filter)) if tags_filter else ''))
     else:
         tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
         note_language = request.GET.get('note_language', note_language)
@@ -590,21 +589,10 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         ns_exec = request.GET.get('ns_exec', ns_exec)
         tags_filter = request.GET.get('tags_filter', tags_filter)
         checked = request.GET.get('checked', checked)
-        loc = request.GET.get('loc', loc)
         load_new_reports = request.GET.get('load_new_reports', load_new_reports)
         edit_mode = request.GET.get('edit_mode', edit_mode)
 
         task_qs = IdentificationTask.objects
-
-        spain_country = EuropeCountry.objects.spain()
-        if loc == 'spain':
-            task_qs = task_qs.filter(report__country=spain_country)
-        elif loc == 'europe':
-            task_qs = task_qs.filter(
-                report__country__isnull=False
-            ).exclude(
-                report__country=spain_country
-            )
 
         if load_new_reports == 'T' or this_user_is_superexpert:
             this_user.userstat.assign_reports()
@@ -632,11 +620,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             args['n_unchecked'] = user_report_annotations.filter(validation_complete=False).count()
             args['n_confirmed'] = user_report_annotations.filter(validation_complete=True, revise=False).count()
             args['n_revised'] = user_report_annotations.filter(validation_complete=True, revise=True).count()
-
-            args['n_loc_spain'] = user_tasks.filter(report__country=spain_country).count()
-            args['n_loc_europe'] = user_tasks.filter(report__country__isnull=False).exclude(report__country=spain_country).count()
-            args['n_loc_all'] = user_tasks.count()
-
 
         all_annotations = this_user.expert_report_annotations.all()
         if version_uuid and version_uuid != 'na':
@@ -714,11 +697,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                         identification_task__is_flagged=False
                     )
 
-                if loc == 'spain':
-                    all_annotations = all_annotations.filter(report__country=spain_country)
-                elif loc == 'europe':
-                    all_annotations = all_annotations.filter(report__country__isnull=False).exclude(report__country=spain_country)
-
         all_annotations = all_annotations.order_by('-report__server_upload_time')
         if orderby == "tiger_score":
             all_annotations = all_annotations.order_by('category__name')
@@ -754,7 +732,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         args['site_certainty'] = site_certainty
         args['pending'] = pending
         args['checked'] = checked
-        args['loc'] = loc
         args['status'] = status
         args['final_status'] = final_status
         args['version_uuid'] = version_uuid
@@ -791,7 +768,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                     native_of_id=models.OuterRef('gid')
                 )
             )
-        ).exclude(pk=spain_country.pk).order_by('name_engl').values('name_engl','iso3_code')
+        ).order_by('name_engl').values('name_engl','iso3_code')
 
         args['ns_list'] = User.objects.filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl')
 
