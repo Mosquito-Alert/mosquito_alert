@@ -1326,11 +1326,7 @@ class Report(TimeZoneModelMixin, models.Model):
             return has_superexpert_validation or num_expert_validations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT
 
         identification_task = getattr(self, "identification_task", None)
-        return (
-            identification_task.is_done or
-            identification_task.total_finished_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT or
-            identification_task.status == IdentificationTask.Status.REVIEW
-        ) if identification_task else False
+        return identification_task.is_done if identification_task else False
 
     @property
     def response_html(self) -> str:

@@ -558,15 +558,9 @@ class IdentificationTask(LifecycleModel):
                     default_status=default_status
                 )
             elif self.total_annotations > 0:
-                self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_HIDDEN).exists()
-                self.is_flagged = finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists()
-
-                if not self.is_safe or self.is_flagged:
-                    self.status = self.Status.REVIEW
-
                 if self.total_finished_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
                     # Case 3: Sufficient annotations for final decision
-                    self.status = self.Status.REVIEW
+                    self.status = self.Status.DONE
                     taxon, confidence, uncertainty, agreement = self.get_taxon_consensus(
                         annotations=list(finished_experts_annotations_qs)
                     )
@@ -596,6 +590,12 @@ class IdentificationTask(LifecycleModel):
                         }
                     self.photo_id = get_most_voted_field(field_name='best_photo', lookup_filter=taxon_filter)
                     self.public_note = get_most_voted_field(field_name='edited_user_notes', lookup_filter=taxon_filter)
+
+                self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_HIDDEN).exists()
+                self.is_flagged = finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists()
+
+                if not self.is_safe or self.is_flagged:
+                    self.status = self.Status.REVIEW
             else:
                 # Back to defaults. e.g: when ExpertReportAnnotation delete
                 self.status = self._meta.get_field('status').default

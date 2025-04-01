@@ -1431,7 +1431,8 @@ class AnnotateCoarseTestCase(APITestCase):
                 self.assertTrue(notsure_msg_dict['es'] in notif_content.body_html_native, "Report classified as not_sure associated notification should contain not_sure message, it does not")
                 #'Con esta foto no podemos identificar ninguna especie'
             Notification.objects.filter(report=r).delete()
-            ExpertReportAnnotation.objects.filter(report=r).delete()
+            for annotation in ExpertReportAnnotation.objects.filter(report=r):
+                annotation.delete()
         # test also definitely albopictus
         category = Categories.objects.get(pk=4)
         data = {

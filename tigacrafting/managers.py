@@ -201,6 +201,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
         return self.filter(
             models.Q(status=IdentificationTask.Status.CONFLICT)
             | models.Q(status=IdentificationTask.Status.REVIEW)
+            | models.Q(status=IdentificationTask.Status.DONE, reviewed_at__isnull=True)
         )
 
     def closed(self) -> QuerySet:

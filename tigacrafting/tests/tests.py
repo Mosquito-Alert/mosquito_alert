@@ -2162,6 +2162,17 @@ class TestIdentificationTaskFlow:
         assert identification_task.status == IdentificationTask.Status.DONE
         assert not identification_task.is_flagged
 
+    def test_one_flagged_annotation_sets_status_to_review(self, identification_task):
+        # Mark as flagged
+        self._add_annotation(
+            identification_task=identification_task,
+            status=ExpertReportAnnotation.STATUS_FLAGGED,
+        )
+
+        identification_task.refresh_from_db()
+        assert identification_task.status == IdentificationTask.Status.REVIEW
+        assert identification_task.is_flagged
+
     # overview general
     @pytest.mark.parametrize("overwrite", [False, True])
     def test_fields_are_overwriten_on_review(self, identification_task, taxon_root, overwrite):
@@ -2206,7 +2217,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.agreement == 2/3
         assert identification_task.is_safe == True
         assert identification_task.is_flagged == False
-        assert identification_task.status == IdentificationTask.Status.REVIEW
+        assert identification_task.status == IdentificationTask.Status.DONE
 
         annotation = self._add_revision(
             identification_task=identification_task,
