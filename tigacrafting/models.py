@@ -16,6 +16,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
+from django.utils import translation
 from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -1040,7 +1041,8 @@ class ExpertReportAnnotation(models.Model):
             if not self.taxon:
                 return "Not sure"
             if self.taxon.is_relevant:
-                return "{} {}".format(self.confidence_label, self.taxon.name)
+                with translation.override('en'):
+                    return "{} {}".format(self.confidence_label, self.taxon.name)
             if self.taxon.is_root():
                 return "Other species"
             return "Other species - " + self.taxon.name
