@@ -383,7 +383,7 @@
 
             {% endblock %}
         </div>
-        {% if user.userstat.can_activate_crisis_mode %}
+        {% comment %} {% if user.userstat.can_activate_crisis_mode %}
         <div id="crisis_status" class="row {% if user.userstat.crisis_mode %}crisis-on{% else %}crisis-off{% endif %}">
             <h3>Emergency mode is
                 {% if user.userstat.crisis_mode %}
@@ -393,7 +393,7 @@
                 {% endif %}
             </h3>
         </div>
-        {% endif %}
+        {% endif %} {% endcomment %}
     </div>
 
     {% if objects.has_next or objects.has_previous %}
