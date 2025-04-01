@@ -31,7 +31,8 @@ variables:
     photos: !anylist
     event_environment: !anything
     event_moment: !anything
-    user_perceived_mosquito_specie: !anything
-    user_perceived_mosquito_thorax: !anything
-    user_perceived_mosquito_abdomen: !anything
-    user_perceived_mosquito_legs: !anything
+    mosquito_appearance: !anything
+      # specie: !anything
+      # thorax: !anything
+      # abdomen: !anything
+      # legs: !anything

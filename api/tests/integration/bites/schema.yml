@@ -30,10 +30,11 @@ variables:
     # Fields only for bites
     event_environment: !anystr
     event_moment: !anystr
-    bite_count: !anyint
-    head_bite_count: !anyint
-    left_arm_bite_count: !anyint
-    right_arm_bite_count: !anyint
-    chest_bite_count: !anyint
-    left_leg_bite_count: !anyint
-    right_leg_bite_count: !anyint
+    counts:
+      total: !anyint
+      head: !anyint
+      left_arm: !anyint
+      right_arm: !anyint
+      chest: !anyint
+      left_leg: !anyint
+      right_leg: !anyint

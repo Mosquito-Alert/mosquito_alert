@@ -49,6 +49,7 @@ stages:
         tags:
           - tag1
           - tag2
+        mosquito_appearance.legs: albopictus
     response:
       status_code: 201
       json: &response_observation_with_photo
@@ -79,10 +80,11 @@ stages:
             url: !anystr
         event_environment: !anything
         event_moment: !anything
-        user_perceived_mosquito_specie: !anything
-        user_perceived_mosquito_thorax: !anything
-        user_perceived_mosquito_abdomen: !anything
-        user_perceived_mosquito_legs: !anything
+        mosquito_appearance:
+          specie: null
+          thorax: null
+          abdomen: null
+          legs: albopictus
   - name: Create observation report without TZ should raise
     request:
       url: "{api_live_url}/{endpoint}/"

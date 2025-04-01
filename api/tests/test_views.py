@@ -139,6 +139,8 @@ class TestBiteAPI(BaseReportTest):
     endpoint = '/api/v1/bites/'
     queryset = Report.objects.filter(type=Report.TYPE_BITE)
 
+    _common_post_data = BaseReportTest._common_post_data | {'counts': {'head': 1}}
+
     @pytest.fixture
     def report_object(self, app_user):
         return create_bite_object(user=app_user)

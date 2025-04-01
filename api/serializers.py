@@ -499,6 +499,41 @@ class BaseReportWithPhotosSerializer(BaseReportSerializer):
 
 class ObservationSerializer(BaseReportWithPhotosSerializer):
 
+    class MosquitoAppearanceSerializer(serializers.ModelSerializer):
+        def to_representation(self, instance):
+            ret = super().to_representation(instance)
+
+            if self.allow_null:
+                if not any([instance.user_perceived_mosquito_specie,
+                            instance.user_perceived_mosquito_thorax,
+                            instance.user_perceived_mosquito_abdomen,
+                            instance.user_perceived_mosquito_legs]):
+                    return None
+
+            return ret
+
+        class Meta:
+            model = Report
+            fields = (
+                "specie",
+                "thorax",
+                "abdomen",
+                "legs"
+            )
+            extra_kwargs = {
+                "specie": {"source": "user_perceived_mosquito_specie"},
+                "thorax": {"source": "user_perceived_mosquito_thorax"},
+                "abdomen": {"source": "user_perceived_mosquito_abdomen"},
+                "legs": {"source": "user_perceived_mosquito_legs"},
+            }
+
+    mosquito_appearance = MosquitoAppearanceSerializer(
+        source='*',
+        required=False,
+        allow_null=True,
+        help_text="User-provided description of the mosquito's appearance"
+    )
+
     def create(self, validated_data):
         validated_data['type'] = Report.TYPE_ADULT
         return super().create(validated_data)
@@ -507,37 +542,59 @@ class ObservationSerializer(BaseReportWithPhotosSerializer):
         fields = BaseReportWithPhotosSerializer.Meta.fields + (
             "event_environment",
             "event_moment",
-            "user_perceived_mosquito_specie",
-            "user_perceived_mosquito_thorax",
-            "user_perceived_mosquito_abdomen",
-            "user_perceived_mosquito_legs",
+            "mosquito_appearance"
         )
 
 class BiteSerializer(BaseReportSerializer):
-    head_bite_count = IntegerDefaultField(
-        default=0,
-        help_text=Report._meta.get_field("head_bite_count").help_text,
-    )
-    left_arm_bite_count = IntegerDefaultField(
-        default=0,
-        help_text=Report._meta.get_field("left_arm_bite_count").help_text,
-    )
-    right_arm_bite_count = IntegerDefaultField(
-        default=0,
-        help_text=Report._meta.get_field("right_arm_bite_count").help_text,
-    )
-    chest_bite_count = IntegerDefaultField(
-        default=0,
-        help_text=Report._meta.get_field("chest_bite_count").help_text,
-    )
-    left_leg_bite_count = IntegerDefaultField(
-        default=0,
-        help_text=Report._meta.get_field("left_leg_bite_count").help_text,
-    )
-    right_leg_bite_count = IntegerDefaultField(
-        default=0,
-        help_text=Report._meta.get_field("right_leg_bite_count").help_text,
-    )
+    class BiteCountsSerializer(serializers.ModelSerializer):
+        head = IntegerDefaultField(
+            default=0,
+            source="head_bite_count",
+            help_text=Report._meta.get_field("head_bite_count").help_text,
+        )
+        left_arm = IntegerDefaultField(
+            default=0,
+            source="left_arm_bite_count",
+            help_text=Report._meta.get_field("left_arm_bite_count").help_text,
+        )
+        right_arm = IntegerDefaultField(
+            default=0,
+            source="right_arm_bite_count",
+            help_text=Report._meta.get_field("right_arm_bite_count").help_text,
+        )
+        chest = IntegerDefaultField(
+            default=0,
+            source="chest_bite_count",
+            help_text=Report._meta.get_field("chest_bite_count").help_text,
+        )
+        left_leg = IntegerDefaultField(
+            default=0,
+            source="left_leg_bite_count",
+            help_text=Report._meta.get_field("left_leg_bite_count").help_text,
+        )
+        right_leg = IntegerDefaultField(
+            default=0,
+            source="right_leg_bite_count",
+            help_text=Report._meta.get_field("right_leg_bite_count").help_text,
+        )
+
+        class Meta:
+            model = Report
+            fields = (
+                "total",
+                "head",
+                "left_arm",
+                "right_arm",
+                "chest",
+                "left_leg",
+                "right_leg",
+            )
+            read_only_fields = ("total", )
+            extra_kwargs = {
+                "total": {"source": "bite_count"}
+            }
+
+    counts = BiteCountsSerializer(source='*')
 
     def create(self, validated_data):
         validated_data['type'] = Report.TYPE_BITE
@@ -547,16 +604,7 @@ class BiteSerializer(BaseReportSerializer):
         fields = BaseReportSerializer.Meta.fields + (
             "event_environment",
             "event_moment",
-            "bite_count",
-            "head_bite_count",
-            "left_arm_bite_count",
-            "right_arm_bite_count",
-            "chest_bite_count",
-            "left_leg_bite_count",
-            "right_leg_bite_count",
-        )
-        read_only_fields = BaseReportSerializer.Meta.read_only_fields + (
-            "bite_count",
+            "counts"
         )
 
 class BreedingSiteSerializer(BaseReportWithPhotosSerializer):

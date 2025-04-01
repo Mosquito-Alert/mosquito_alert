@@ -45,8 +45,8 @@ stages:
           - tag2
         event_environment: indoors
         event_moment: now
-        head_bite_count: 2
-        chest_bite_count: 1
+        counts.head: 2
+        counts.chest: 1
     response:
       status_code: 201
       json:
@@ -72,13 +72,14 @@ stages:
         published: true
         event_environment: indoors
         event_moment: now
-        bite_count: 3
-        head_bite_count: 2
-        left_arm_bite_count: 0
-        right_arm_bite_count: 0
-        chest_bite_count: 1
-        left_leg_bite_count: 0
-        right_leg_bite_count: 0
+        counts:
+          total: 3
+          head: 2
+          left_arm: 0
+          right_arm: 0
+          chest: 1
+          left_leg: 0
+          right_leg: 0
   - name: Create bite report without TZ should raise
     request:
       url: "{api_live_url}/{endpoint}/"
