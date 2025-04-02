@@ -88,8 +88,8 @@ class FixViewSet(CreateModelMixin, GenericViewSet):
         request=PolymorphicProxySerializer(
             component_name="MetaNotification",
             serializers={
-                "user": UserNotificationCreateSerializer,
-                "topic": TopicNotificationCreateSerializer,
+                UserNotificationCreateSerializer().fields['receiver_type'].get_default(): UserNotificationCreateSerializer,
+                TopicNotificationCreateSerializer().fields['receiver_type'].get_default(): TopicNotificationCreateSerializer,
             },
             resource_type_field_name="receiver_type",
         ),

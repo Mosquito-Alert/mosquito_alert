@@ -199,11 +199,7 @@ class CreateNotificationSerializer(serializers.ModelSerializer):
         write_only=True,
         help_text='The message of the notification'
     )
-    receiver_type = serializers.ChoiceField(
-        choices=["user", "topic"],
-        write_only=True,
-        required=True
-    )
+    receiver_type = serializers.HiddenField(default=None)
 
     @transaction.atomic
     def create(self, validated_data, user: Optional[TigaUser] = None):
@@ -239,6 +235,10 @@ class CreateNotificationSerializer(serializers.ModelSerializer):
         )
 
 class UserNotificationCreateSerializer(CreateNotificationSerializer):
+
+    # NOTE: needed for drf-spectacular
+    receiver_type = serializers.ChoiceField(choices=['user'], default='user', write_only=True)
+
     user_uuids = serializers.ListField(
         child=serializers.UUIDField(),
         required=True,
@@ -271,6 +271,10 @@ class UserNotificationCreateSerializer(CreateNotificationSerializer):
 
 
 class TopicNotificationCreateSerializer(CreateNotificationSerializer):
+
+    # NOTE: needed for drf-spectacular
+    receiver_type = serializers.ChoiceField(choices=['topic'], default='topic', write_only=True)
+
     topic_codes = serializers.ListField(
         child=serializers.CharField(),
         required=True,
