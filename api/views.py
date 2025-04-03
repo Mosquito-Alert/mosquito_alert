@@ -387,6 +387,7 @@ class DeviceViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Gene
 
 class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMobileViewSet):
     queryset = IdentificationTask.objects.all().select_related(
+        'photo',
         'report',
         'report__country',
         # NOTE: needed for get_display_name
