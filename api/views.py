@@ -386,7 +386,14 @@ class DeviceViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Gene
             return DeviceSerializer
 
 class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMobileViewSet):
-    queryset = IdentificationTask.objects.all()
+    queryset = IdentificationTask.objects.all().select_related(
+        'report',
+        'report__country',
+        # NOTE: needed for get_display_name
+        'report__nuts_2_fk',
+        'report__nuts_3_fk',
+        'report__lau_fk'
+    )
     serializer_class = IdentificationTaskSerializer
     filterset_class = IdentificationTaskFilter
     permission_classes = (FullDjangoModelPermissions,)

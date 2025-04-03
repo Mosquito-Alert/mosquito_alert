@@ -484,6 +484,46 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             "uuid": {"required": True}  # Marks it as required in the response
         }
 
+class BaseSimplifiedReportSerializer(serializers.ModelSerializer):
+    class SimplifiedLocationSerializer(serializers.ModelSerializer):
+        point = BaseReportSerializer.LocationSerializer().fields['point']
+        timezone = BaseReportSerializer.LocationSerializer().fields['timezone']
+        display_name = BaseReportSerializer.LocationSerializer().fields['display_name']
+        country = BaseReportSerializer.LocationSerializer().fields['country']
+
+        get_display_name = BaseReportSerializer.LocationSerializer.get_display_name
+
+        class Meta:
+            model = BaseReportSerializer.LocationSerializer.Meta.model
+            fields = (
+                "point",
+                "timezone",
+                "display_name",
+                "country"
+            )
+            read_only_fields = fields
+
+    uuid = BaseReportSerializer().fields['uuid']
+    created_at = BaseReportSerializer().fields['created_at']
+    created_at_local = BaseReportSerializer().fields['created_at_local']
+    received_at = BaseReportSerializer().fields['received_at']
+    location = SimplifiedLocationSerializer(source=BaseReportSerializer().fields['location'].source)
+    note = BaseReportSerializer().fields['note']
+
+    get_created_at_local = BaseReportSerializer.get_created_at_local
+
+    class Meta:
+        model = BaseReportSerializer.Meta.model
+        fields = (
+            "uuid",
+            "created_at",
+            "created_at_local",
+            "received_at",
+            "location",
+            "note",
+        )
+        read_only_fields = fields
+
 class BaseReportWithPhotosSerializer(BaseReportSerializer):
     photos = SimplePhotoSerializer(required=True, many=True)
 
@@ -515,6 +555,11 @@ class TaxonSerializer(serializers.ModelSerializer):
             'common_name',
             'rank'
         )
+
+class SimplifiedObservationSerializer(BaseSimplifiedReportSerializer):
+    class Meta(BaseSimplifiedReportSerializer.Meta):
+        pass
+
 
 class IdentificationTaskSerializer(serializers.ModelSerializer):
     class IdentificationTaskRevisionSerializer(serializers.ModelSerializer):
@@ -568,7 +613,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
                 'agreement': {'min_value': 0, 'max_value': 1},
             }
 
-    observation_uuid = serializers.UUIDField(source='report_id')
+    observation = SimplifiedObservationSerializer(source='report', read_only=True)
     public_photo = SimplePhotoSerializer(source='photo', required=True)
     revision = IdentificationTaskRevisionSerializer(source='*', allow_null=True, read_only=True)
     result = IdentificationTaskResultSerializer(source='*', read_only=True)
@@ -576,7 +621,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = IdentificationTask
         fields = (
-            'observation_uuid',
+            'observation',
             'public_photo',
             'assignees_ids',
             'status',
