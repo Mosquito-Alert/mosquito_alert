@@ -9,7 +9,7 @@ def model_class():
 
 @pytest.fixture
 def endpoint(identification_task):
-    return f"identification-tasks/{identification_task.pk}/photos"
+    return f"identification-tasks/{identification_task.report.pk}/photos"
 
 @pytest.fixture
 def extra_photo(identification_task, dummy_image):
