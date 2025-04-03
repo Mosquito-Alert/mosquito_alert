@@ -592,6 +592,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {
             'assignees_ids': {'source': 'assignees', 'allow_empty': True},
+            'status': {'default': IdentificationTask.Status.OPEN},
             'public_note': {'allow_null': True, 'allow_blank': True},
             'num_assignations': {'source': 'total_annotations','min_value': 0},
             'num_annotations': {'source': 'total_finished_annotations','min_value': 0},
