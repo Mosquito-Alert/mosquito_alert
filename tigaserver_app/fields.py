@@ -1,6 +1,8 @@
+from io import BytesIO
 import os
-from PIL import ExifTags
+from PIL import Image, ImageOps, ExifTags
 
+from django.core.files.images import get_image_dimensions
 from django.db.models.fields.files import ImageFieldFile
 
 from rest_framework import serializers
@@ -37,6 +39,20 @@ class ProcessedImageExifFieldFile(ImageFieldFile):
         # ADDED CODE END
         content = generate(spec)
         return super().save(new_name, content, save)
+
+    def _get_image_dimensions(self):
+        if not hasattr(self, "_dimensions_cache"):
+            close = self.closed
+            self.open()
+            img = Image.open(self.file)
+
+            img_trans = ImageOps.exif_transpose(img)
+            img_buffer = BytesIO()
+            img_trans.save(img_buffer, format=img.format)
+            img_buffer.seek(0)
+
+            self._dimensions_cache = get_image_dimensions(img_buffer, close=close)
+        return self._dimensions_cache
 
 
 class ProcessedImageField(OriginalProcessedImageField):
