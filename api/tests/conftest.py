@@ -52,7 +52,8 @@ def dummy_image():
     return test_image
 
 @pytest.fixture
-def adult_report(app_user, dummy_image):
+def adult_report(app_user, es_country, dummy_image):
+    point_on_surface = es_country.geom.point_on_surface
     r = Report.objects.create(
         user=app_user,
         report_id=1234,  # TODO: change
@@ -61,8 +62,8 @@ def adult_report(app_user, dummy_image):
         version_time=timezone.now(),
         type=Report.TYPE_ADULT,
         location_choice=Report.LOCATION_CURRENT,
-        current_location_lon=2,
-        current_location_lat=2,
+        current_location_lon=point_on_surface.x,
+        current_location_lat=point_on_surface.y,
     )
 
     _ = Photo.objects.create(
