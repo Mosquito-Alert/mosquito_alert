@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Optional
 import random
 from urllib.parse import urljoin
 
@@ -22,14 +22,20 @@ def authenticate_with_token(client, type, token):
     client.credentials(HTTP_AUTHORIZATION=f"{type} {str(token)}")
 
 
-def grant_permission_to_user(type, model_class, user):
-    assert type in ["add", "change", "delete", "view"], "type is not a valid option"
+def grant_permission_to_user(model_class, user, type: Optional[str] = None, codename: Optional[str] = None):
+    if type:
+        assert type in ["add", "change", "delete", "view"], "type is not a valid option"
+        codename=f"{type}_" + model_class._meta.model_name
+    elif codename:
+        pass
+    else:
+        raise ValueError("At least one of 'type' or 'codename' must be provided")
     # Get the content type of the model
     content_type = ContentType.objects.get_for_model(model_class)
 
     # Get or create the permission
     permission, _ = Permission.objects.get_or_create(
-        content_type=content_type, codename=f"{type}_" + model_class._meta.model_name
+        content_type=content_type, codename=codename
     )
 
     # Assign the permission to the user

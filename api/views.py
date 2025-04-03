@@ -402,6 +402,15 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     lookup_field = 'pk'
     lookup_url_kwarg = 'observation_uuid'
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        user = self.request.user
+        if not (user and user.has_perm("tigacrafting.view_archived_identificationtasks")):
+            qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
+
+        return qs
+
     @extend_schema(
         parameters=[
             OpenApiParameter(
