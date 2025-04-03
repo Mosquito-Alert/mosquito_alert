@@ -108,11 +108,14 @@ class IdentificationTaskFilter(filters.FilterSet):
         fields=("created_at", "updated_at")
     )
 
+    status = filters.MultipleChoiceFilter(
+        choices=IdentificationTask.Status.choices
+    )
+
     class Meta:
         model = IdentificationTask
         fields = {
             "assignees": ["exact"],
-            "status": ["exact"],
             "is_flagged": ["exact"],
             "is_safe": ["exact"],
             "revision_type": ["exact"],
