@@ -26,6 +26,7 @@ marks:
     - api_live_url
     - app_user
     - app_user_token
+    - es_country
 
 stages:
   - name: Create bite report
@@ -64,7 +65,10 @@ stages:
           point:
             latitude: 41.67419
             longitude: 2.79036
-          country_id: !anything
+          country:
+            id: !anyint
+            name_en: !anystr
+            iso3_code: !anystr
           display_name: !anything
           adm_boundaries: !anylist
         note: Test

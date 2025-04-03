@@ -8,6 +8,7 @@ from rest_framework.authtoken.models import Token
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
+from django.contrib.gis.geos import Polygon, MultiPolygon
 from django.utils import timezone
 from django.utils.module_loading import import_string
 
@@ -102,7 +103,8 @@ def country():
 @pytest.fixture
 def es_country():
     obj, _ = EuropeCountry.objects.get_or_create(
-        cntr_id="ES", name_engl="Spain", iso3_code="ESP", fid="ES"
+        cntr_id="ES", name_engl="Spain", iso3_code="ESP", fid="ES",
+        geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0)))
     )
     return obj
 

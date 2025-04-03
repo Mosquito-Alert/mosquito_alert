@@ -21,7 +21,7 @@ variables:
       point:
         latitude: !anyfloat
         longitude: !anyfloat
-      country_id: !anything
+      country: !anything
       display_name: !anything
       adm_boundaries: !anylist
     note: !anything

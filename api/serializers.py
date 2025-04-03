@@ -347,6 +347,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
         point = PointField(required=True)
         timezone = TimeZoneSerializerChoiceField(read_only=True, allow_null=True)
+        country = CountrySerializer(read_only=True, allow_null=True)
         adm_boundaries = AdmBoundarySerializer(many=True, read_only=True)
         display_name = serializers.SerializerMethodField()
         source = serializers.ChoiceField(
@@ -423,11 +424,8 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
                 "point",
                 "timezone",
                 "display_name",
-                "country_id",
+                "country",
                 "adm_boundaries"
-            )
-            read_only_fields = (
-                "country_id",
             )
 
     uuid = serializers.UUIDField(
