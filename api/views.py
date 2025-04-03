@@ -392,15 +392,15 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     permission_classes = (FullDjangoModelPermissions,)
 
     lookup_field = 'pk'
-    lookup_url_kwarg = 'uuid'
+    lookup_url_kwarg = 'observation_uuid'
 
     @extend_schema(
         parameters=[
             OpenApiParameter(
-                name="identification_task_uuid",
+                name="observation_uuid",
                 type=OpenApiTypes.UUID,
                 location=OpenApiParameter.PATH,
-                description="UUID of the related Identification Task"
+                description="UUID of the Observation"
             )
         ]
     )
@@ -409,7 +409,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         serializer_class = SimplePhotoSerializer
 
         parent_lookup_kwargs = {
-            'identification_task_uuid': 'report__identification_task__pk'
+            'observation_uuid': 'report__identification_task__pk'
         }
 
         lookup_field = 'uuid'

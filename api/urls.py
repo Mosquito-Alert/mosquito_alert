@@ -1,13 +1,13 @@
 from django.urls import path, re_path, include
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
-from rest_framework_nested import routers
 
 from drf_spectacular.settings import spectacular_settings
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from drf_spectacular.views import SpectacularRedocView, SpectacularAPIView, SpectacularJSONAPIView
 
 from .auth.views import GuestRegisterView, PasswordChangeView
+from .routers import NestedSimpleRouter, SimpleRouter
 from .views import (
     UserViewSet,
     MyUserViewSet,
@@ -42,7 +42,7 @@ class CustomRedocView(SpectacularRedocView):
         return response
 
 
-router = routers.SimpleRouter()
+router = SimpleRouter()
 router.register(r"bites", BiteViewSet)
 router.register(r"breeding-sites", BreedingSiteViewSet)
 router.register(r"devices", DeviceViewSet)
@@ -51,7 +51,7 @@ router.register(r"countries", CountriesViewSet)
 router.register(r"fixes", FixViewSet)
 
 router.register(r"identification-tasks", IdentificationTaskViewSet)
-identification_task_router = routers.NestedSimpleRouter(router, r'identification-tasks', lookup='identification_task')
+identification_task_router = NestedSimpleRouter(router, r'identification-tasks', lookup='')
 identification_task_router.register(r"photos", IdentificationTaskViewSet.PhotoViewSet)
 
 router.register(r"notifications", NotificationViewSet)

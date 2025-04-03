@@ -6,7 +6,6 @@ description: Login information for test server
 variables:
   endpoint: "identification-tasks"
   response_data_validation: &retrieve_validation
-    uuid: !anystr
     observation_uuid: !anystr
     public_photo:
       uuid: !anystr

@@ -568,7 +568,6 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
                 'agreement': {'min_value': 0, 'max_value': 1},
             }
 
-    uuid = serializers.UUIDField(source='report_id', read_only=True)
     observation_uuid = serializers.UUIDField(source='report_id')
     public_photo = SimplePhotoSerializer(source='photo', required=True)
     revision = IdentificationTaskRevisionSerializer(source='*', allow_null=True, read_only=True)
@@ -577,7 +576,6 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = IdentificationTask
         fields = (
-            'uuid',
             'observation_uuid',
             'public_photo',
             'assignees_ids',
