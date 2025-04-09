@@ -132,9 +132,3 @@ class DeviceQuerySet(FCMDeviceQuerySet):
 class DeviceManager(FCMDeviceManager):
     def get_queryset(self):
         return DeviceQuerySet(self.model)
-
-class EuropeCountryQuerySet(models.QuerySet):
-    def spain(self):
-        return self.get(gid=17)
-
-EuropeCountryManager = models.Manager.from_queryset(EuropeCountryQuerySet)

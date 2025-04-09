@@ -45,7 +45,7 @@ import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
 from .fields import ProcessedImageField
-from .managers import ReportManager, PhotoManager, NotificationManager, DeviceManager, EuropeCountryManager
+from .managers import ReportManager, PhotoManager, NotificationManager, DeviceManager
 from .messaging import send_new_award_notification
 from .mixins import TimeZoneModelMixin
 
@@ -625,6 +625,8 @@ class MissionItem(models.Model):
 
 
 class EuropeCountry(models.Model):
+    SPAIN_PK = 17
+
     gid = models.AutoField(primary_key=True)
     cntr_id = models.CharField(max_length=2, blank=True)
     name_engl = models.CharField(max_length=44, help_text='Full name of the country in English (e.g., Spain).')
@@ -640,8 +642,6 @@ class EuropeCountry(models.Model):
 
     pending_crisis_reports = models.IntegerField(blank=True, null=True, help_text='Number of reports in country assignable to non-supervisors')
     last_crisis_report_n_update = models.DateTimeField(help_text="Last time count was updated", null=True, blank=True)
-
-    objects = EuropeCountryManager()
 
     class Meta:
         managed = True
@@ -1227,7 +1227,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
     @property
     def is_spain(self) -> bool:
-        return self.country == EuropeCountry.objects.spain()
+        return self.country_id == EuropeCountry.SPAIN_PK
 
     @property
     def language(self) -> str:

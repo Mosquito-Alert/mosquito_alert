@@ -111,12 +111,11 @@ class IdentificationTaskQuerySet(models.QuerySet):
             )
         else:
             # Case Non European user: Prioritize reports from nuts2 assignation, then spain, the Europe.
-            spain_country = EuropeCountry.objects.spain()
             qs = qs.annotate(
                 in_spain_own_region=models.Case(
                     models.When(
                         models.Q(
-                            report__country=spain_country,
+                            report__country_id=EuropeCountry.SPAIN_PK,
                             report__nuts_2=user.userstat.nuts2_assignation.nuts_id if user.userstat.nuts2_assignation else None
                         ),
                         then=True
@@ -126,7 +125,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
                 ),
                 in_spain=models.Case(
                     models.When(
-                        report__country=spain_country,
+                        report__country_id=EuropeCountry.SPAIN_PK,
                         then=True
                     ),
                     default=False,
