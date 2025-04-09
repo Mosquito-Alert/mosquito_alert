@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from django_filters import rest_framework as filters
 
-from tigacrafting.models import IdentificationTask
+from tigacrafting.models import IdentificationTask, Taxon
 from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry
 
 class CampaignFilter(filters.FilterSet):
@@ -111,6 +111,19 @@ class IdentificationTaskFilter(filters.FilterSet):
     status = filters.MultipleChoiceFilter(
         choices=IdentificationTask.Status.choices
     )
+
+    observation_country = filters.ModelMultipleChoiceFilter(
+        field_name="report__country",
+        queryset=EuropeCountry.objects.all(),
+    )
+
+    result_taxon = filters.ModelMultipleChoiceFilter(
+        field_name="taxon",
+        queryset=Taxon.objects.all(),
+    )
+    result_confidence = filters.NumericRangeFilter(field_name="confidence")
+    result_uncertainty = filters.NumericRangeFilter(field_name="uncertainty")
+    result_agreement = filters.NumericRangeFilter(field_name="agreement")
 
     class Meta:
         model = IdentificationTask
