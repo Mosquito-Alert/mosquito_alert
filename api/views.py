@@ -14,6 +14,7 @@ from drf_spectacular.utils import (
 )
 
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -64,7 +65,14 @@ from .serializers import (
     TopicNotificationCreateSerializer,
     UserNotificationCreateSerializer,
 )
-from .permissions import NotificationObjectPermissions, ReportPermissions, MyReportPermissions, FullDjangoModelPermissions
+from .permissions import (
+    NotificationObjectPermissions,
+    ReportPermissions,
+    MyReportPermissions,
+    IdentificationTaskPermissions,
+    MyIdentificationTaskPermissions,
+    IdentificationTaskBacklogPermissions
+)
 from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet, NestedViewSetMixin
 
 User = get_user_model()
@@ -397,7 +405,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     )
     serializer_class = IdentificationTaskSerializer
     filterset_class = IdentificationTaskFilter
-    permission_classes = (FullDjangoModelPermissions,)
+    permission_classes = (IdentificationTaskPermissions,)
 
     lookup_field = 'pk'
     lookup_url_kwarg = 'observation_uuid'
@@ -410,6 +418,23 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
 
         return qs
+
+    @extend_schema(
+        responses={
+            200: IdentificationTaskSerializer,
+            204: OpenApiResponse(description="No available tasks in backlog"),
+        },
+        description="Retrieve the next identification task from the backlog.",
+    )
+    @action(detail=False, methods=["GET"], url_path="backlog/next", permission_classes=[IdentificationTaskBacklogPermissions,])
+    def backlog_next(self, request):
+        task = IdentificationTask.objects.backlog(user=request.user).first()
+
+        if not task:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        serializer = self.get_serializer(task)
+        return Response(serializer.data)
 
     @extend_schema(
         parameters=[
@@ -431,3 +456,17 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
 
         lookup_field = 'uuid'
         lookup_url_kwarg = 'uuid'
+
+
+@extend_schema_view(
+    list=extend_schema(
+        tags=['identification-tasks'],
+        operation_id='identificationtasks_list_mine',
+        description="Get identification tasks annotated by me"
+    )
+)
+class MyIdentificationTaskViewSet(IdentificationTaskViewSet):
+    permission_classes = (MyIdentificationTaskPermissions,)
+
+    def get_queryset(self):
+        return super().get_queryset().annotated_by(user=self.request.user)

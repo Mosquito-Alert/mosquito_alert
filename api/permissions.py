@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import MultipleObjectsReturned
 
+from rest_framework import exceptions
 from rest_framework import permissions
 
+from tigacrafting.models import ExpertReportAnnotation
 from tigaserver_app.models import TigaUser, Notification
 
 from .utils import get_fk_fieldnames
@@ -84,3 +86,22 @@ class MyReportPermissions(ReportPermissions):
         if user and user.is_authenticated and isinstance(user, TigaUser):
             return super().has_permission(request=request, view=view)
         return False
+
+class IdentificationTaskPermissions(FullDjangoModelPermissions):
+    pass
+
+class MyIdentificationTaskPermissions(permissions.DjangoModelPermissions):
+    pass
+
+class IdentificationTaskBacklogPermissions(permissions.IsAuthenticated):
+    def has_permission(self, request, view):
+        if not super().has_permission(request, view):
+            return False
+
+        if request.method != "GET":
+            raise exceptions.MethodNotAllowed(request.method)
+
+        return request.user.has_perm('%(app_label)s.add_%(model_name)s' % {
+            'app_label': ExpertReportAnnotation._meta.app_label,
+            'model_name': ExpertReportAnnotation._meta.model_name
+        })

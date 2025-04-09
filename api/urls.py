@@ -25,7 +25,8 @@ from .views import (
     BreedingSiteViewSet,
     MyBreedingSiteViewSet,
     DeviceViewSet,
-    IdentificationTaskViewSet
+    IdentificationTaskViewSet,
+    MyIdentificationTaskViewSet
 )
 
 
@@ -83,6 +84,7 @@ api_urlpatterns += [
     path("me/observations/", MyObservationViewSest.as_view({'get': 'list'}), name='my-observations'),
     path("me/bites/", MyBiteViewSet.as_view({'get': 'list'}), name='my-bites'),
     path("me/breeding-sites/", MyBreedingSiteViewSet.as_view({'get': 'list'}), name='my-breeding-sites'),
+    path("me/identification-tasks/", MyIdentificationTaskViewSet.as_view({'get': 'list'}), name='my-identification-tasks'),
 ]
 
 api_urlpatterns += router.urls
