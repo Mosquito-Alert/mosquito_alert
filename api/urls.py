@@ -25,8 +25,10 @@ from .views import (
     BreedingSiteViewSet,
     MyBreedingSiteViewSet,
     DeviceViewSet,
+    MyAnnotationViewSet,
     IdentificationTaskViewSet,
-    MyIdentificationTaskViewSet
+    MyIdentificationTaskViewSet,
+    TaxaViewSet
 )
 
 
@@ -54,11 +56,13 @@ router.register(r"fixes", FixViewSet)
 router.register(r"identification-tasks", IdentificationTaskViewSet)
 identification_task_router = NestedSimpleRouter(router, r'identification-tasks', lookup='')
 identification_task_router.register(r"photos", IdentificationTaskViewSet.PhotoViewSet)
+identification_task_router.register(r"annotations", IdentificationTaskViewSet.AnnotationViewSet)
 
 router.register(r"notifications", NotificationViewSet)
 router.register(r"observations", ObservationViewSest)
 router.register(r"partners", PartnersViewSet)
 router.register(r"photos", PhotoViewSet)
+router.register(r"taxa", TaxaViewSet)
 router.register(r"users", UserViewSet)
 
 token_obtain_view = TokenObtainPairView.as_view()
@@ -84,6 +88,7 @@ api_urlpatterns += [
     path("me/observations/", MyObservationViewSest.as_view({'get': 'list'}), name='my-observations'),
     path("me/bites/", MyBiteViewSet.as_view({'get': 'list'}), name='my-bites'),
     path("me/breeding-sites/", MyBreedingSiteViewSet.as_view({'get': 'list'}), name='my-breeding-sites'),
+    path("me/identification-tasks/annotations/", MyAnnotationViewSet.as_view({'get': 'list'}), name='my-annotations'),
     path("me/identification-tasks/", MyIdentificationTaskViewSet.as_view({'get': 'list'}), name='my-identification-tasks'),
 ]
 

@@ -6,7 +6,7 @@ from django.contrib.auth.models import User, Group
 from tigacrafting.models import IdentificationTask, ExpertReportAnnotation
 
 
-def add_annotation(identification_task: IdentificationTask, user: Optional[User] = None, **kwargs) -> ExpertReportAnnotation:
+def create_annotation(identification_task: IdentificationTask, user: Optional[User] = None, **kwargs) -> ExpertReportAnnotation:
     expert_group, _ = Group.objects.get_or_create(name='expert')
     if user is None:
         user = User.objects.create(
@@ -21,7 +21,7 @@ def add_annotation(identification_task: IdentificationTask, user: Optional[User]
         **kwargs
     )
 
-def add_revision(identification_task: IdentificationTask, overwrite: bool = False, user: Optional[User] = None, **kwargs) -> ExpertReportAnnotation:
+def create_review(identification_task: IdentificationTask, overwrite: bool = False, user: Optional[User] = None, **kwargs) -> ExpertReportAnnotation:
     superexpert_group, _ = Group.objects.get_or_create(name='superexpert')
 
     if user is None:

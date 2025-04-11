@@ -117,7 +117,7 @@ class IdentificationTaskAdmin(NumericFilterModelAdmin):
         ("status", "is_safe", "is_flagged"),
         ("exclusivity_end", "in_exclusivity_period"),
         ("total_annotations", "total_finished_annotations"),
-        ("revision_type", "reviewed_at"),
+        ("review_type", "reviewed_at"),
         ("taxon", "confidence_label", "confidence"),
         ("agreement", "uncertainty"),
         "public_note",

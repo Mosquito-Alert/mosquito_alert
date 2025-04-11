@@ -9,18 +9,15 @@ marks:
   - usefixtures:
     - api_live_url
     - identification_task
+    - app_user_token
     - token_user
 
 stages:
-  - id: signup
-    type: ref
-  - id: login
-    type: ref
   - name: Retrieve is not allowed for mobile users
     request:
       url: "{api_live_url}/{endpoint}/backlog/next/"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
       method: "GET"
     response:
       status_code: 403
@@ -53,7 +50,7 @@ marks:
     - token_user_can_add_annotations
 
 stages:
-  - name: User without perm view can not retrieve
+  - name: User with perm view can retrieve
     request:
       url: "{api_live_url}/{endpoint}/backlog/next/"
       method: "GET"

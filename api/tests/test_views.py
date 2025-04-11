@@ -9,17 +9,20 @@ from django.utils import timezone
 from django.utils.module_loading import import_string
 
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient, APITestCase
 
 from rest_framework_simplejwt.settings import api_settings
 
+from tigacrafting.models import ExpertReportAnnotation
 from tigaserver_app.models import TigaUser, Report, Device, MobileApp
 
 from api.tests.clients import AppAPIClient
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
+from api.tests.integration.identification_tasks.factories import create_annotation
 from api.tests.factories import create_report_object
+from api.tests.utils import grant_permission_to_user
 
 User = get_user_model()
 
@@ -573,3 +576,164 @@ class TestDeviceAPI:
         assert device.device_id == 'unique_id'
         assert device.pk == device_pk
         assert Device.objects.filter(user=app_user).count() == 1
+
+@pytest.mark.django_db
+class TestIdentificationTaskAnnotationsApi:
+    @pytest.fixture
+    def endpoint(self, identification_task):
+        return f'/api/v1/identification-tasks/{identification_task.report.pk}/annotations/'
+
+    @pytest.fixture
+    def api_client(self, user):
+        api_client = APIClient()
+        api_client.force_login(user=user)
+
+        return api_client
+
+    @pytest.fixture
+    def with_add_permission(self, user):
+        return grant_permission_to_user(
+            type="add", model_class=ExpertReportAnnotation, user=user
+        )
+
+    @pytest.fixture
+    def common_post_data(self, taxon_root):
+        return {
+            'classification': {
+                'taxon_id': taxon_root.pk,
+                'confidence_label': 'definitely'
+            }
+        }
+
+    @pytest.mark.parametrize(
+        "confidence_label, validation_value",
+        [
+            ('definitely', ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY),
+            ('probably', ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY),
+        ]
+    )
+    def test_confidence_label_sets_obj_validation_value(self, api_client, endpoint, common_post_data, with_add_permission, confidence_label, validation_value):
+        post_data = common_post_data
+        post_data['classification']['confidence_label'] = confidence_label
+
+        response = api_client.post(
+            endpoint,
+            data=post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
+        assert annotation.validation_value == validation_value
+
+    @pytest.mark.parametrize(
+        "validation_complete_executive, revise, expected_result",
+        [
+            (False, False, False),
+            (False, True, True),
+            (True, False, True),
+            (True, True, True),
+        ]
+    )
+    def test_is_decisive_representation(self, identification_task, user, api_client, endpoint, validation_complete_executive, revise, expected_result):
+        obj = create_annotation(
+            identification_task=identification_task,
+            user=user,
+            validation_complete_executive=validation_complete_executive,
+            revise=revise
+        )
+
+        response = api_client.get(
+            endpoint + f'{obj.pk}/',
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['is_decisive'] == expected_result
+
+    @pytest.mark.parametrize(
+        "is_decisive",
+        [True, False]
+    )
+    def test_is_decisive_sets_validation_complete_executive(self, api_client, endpoint, common_post_data, with_add_permission, is_decisive):
+        post_data = common_post_data
+        post_data['is_decisive'] = is_decisive
+
+        response = api_client.post(
+            endpoint,
+            data=post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
+        assert annotation.validation_complete_executive == is_decisive
+
+    @pytest.mark.parametrize(
+        "status, expected_result",
+        [
+            (ExpertReportAnnotation.STATUS_FLAGGED, True),
+            (ExpertReportAnnotation.STATUS_HIDDEN, False),
+            (ExpertReportAnnotation.STATUS_PUBLIC, False),
+        ]
+    )
+    def test_is_flagged_representation(self, identification_task, user, api_client, endpoint, status, expected_result):
+        obj = create_annotation(
+            identification_task=identification_task,
+            user=user,
+            status=status
+        )
+
+        response = api_client.get(
+            endpoint + f'{obj.pk}/',
+            format='json'
+        )
+        assert response.status_code == 200
+        assert response.data['is_flagged'] == expected_result
+
+    @pytest.mark.parametrize(
+        "is_flagged, expected_result",
+        [
+            (True, ExpertReportAnnotation.STATUS_FLAGGED),
+            (False, ExpertReportAnnotation.STATUS_PUBLIC),
+        ]
+    )
+    def test_is_flagged_sets_status_to_flagged(self, api_client, endpoint, common_post_data, with_add_permission, is_flagged, expected_result):
+        post_data = common_post_data
+        post_data['is_flagged'] = is_flagged
+
+        response = api_client.post(
+            endpoint,
+            data=post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
+        assert annotation.status == expected_result
+
+
+    def test_POST_always_saves_validation_complete_True(self, api_client, endpoint, common_post_data, with_add_permission):
+        response = api_client.post(
+            endpoint,
+            data=common_post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
+        assert annotation.validation_complete
+
+    def test_classification_null_shoud_set_status_to_hidden(self, api_client, endpoint, common_post_data, with_add_permission):
+        post_data = common_post_data
+        post_data['classification'] = None
+
+        response = api_client.post(
+            endpoint,
+            data=post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
+        assert annotation.status == ExpertReportAnnotation.STATUS_HIDDEN
+        assert annotation.taxon is None

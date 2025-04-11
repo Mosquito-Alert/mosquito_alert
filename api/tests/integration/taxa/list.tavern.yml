@@ -1,0 +1,39 @@
+---
+
+test_name: Taxa can be listed by everybody.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - taxon_root
+    - token_user
+
+stages:
+  - name: List is allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_list_data_validation}"
+  - name: Non auth user can not list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+    response:
+      status_code: 401
+  - name: User without perm view can list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_list_data_validation}"

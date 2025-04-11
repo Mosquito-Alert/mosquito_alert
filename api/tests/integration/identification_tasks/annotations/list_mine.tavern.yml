@@ -1,0 +1,66 @@
+test_name: My annotations can not be listed by authenticated users.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - me_endpoint
+    - app_user_token
+    - token_user
+
+stages:
+  - name: List method returns not exist for mobile users
+    request:
+      url: "{api_live_url}/{me_endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: Non auth user can not list
+    request:
+      url: "{api_live_url}/{me_endpoint}/"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: User without perm view can list
+    request:
+      url: "{api_live_url}/{me_endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+
+---
+
+test_name: My annotations can be list only by owner.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - me_endpoint
+    - annotation
+    - annotation_from_another_user
+    - token_user
+
+stages:
+  - name: User without perm view can list only owned annotations
+    request:
+      url: "{api_live_url}/{me_endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{annotation.pk}"

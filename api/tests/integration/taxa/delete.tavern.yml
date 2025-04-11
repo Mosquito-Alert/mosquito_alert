@@ -7,27 +7,27 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user_token
-    - identification_task
+    - taxon_root
     - token_user_can_delete
 
 stages:
   - name: Delete is disabeld for mobile users
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{taxon_root.pk}/"
       headers:
         Authorization: "Bearer {app_user_token}"
       method: "DELETE"
     response:
-      status_code: 403
+      status_code: 405
   - name: Delete method non authenticated users
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{taxon_root.pk}/"
       method: "DELETE"
     response:
-      status_code: 403
+      status_code: 401
   - name: Delete method authenticated even users with permissions
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{taxon_root.pk}/"
       headers:
         Authorization: "Token {token_user_can_delete}"
       method: "DELETE"

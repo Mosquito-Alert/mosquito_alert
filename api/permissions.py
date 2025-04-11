@@ -105,3 +105,25 @@ class IdentificationTaskBacklogPermissions(permissions.IsAuthenticated):
             'app_label': ExpertReportAnnotation._meta.app_label,
             'model_name': ExpertReportAnnotation._meta.model_name
         })
+
+class AnnotationPermissions(FullDjangoModelPermissions):
+    # Always allow retrieve owned annotations
+
+    def has_permission(self, request, view):
+        if request.user and request.user.is_authenticated and view.action == 'retrieve':
+            return True
+        return super().has_permission(request=request, view=view)
+
+    def has_object_permission(self, request, view, obj):
+        # Allow retrieve if user is the owner
+        if view.action == 'retrieve':
+            if obj.user == request.user:
+                return True
+            return super().has_permission(request=request, view=view)
+        return super().has_object_permission(request, view, obj)
+
+class MyAnnotationPermissions(permissions.DjangoModelPermissions):
+    pass
+
+class TaxaPermissions(UserObjectPermissions):
+    perms_map = permissions.DjangoModelPermissions.perms_map

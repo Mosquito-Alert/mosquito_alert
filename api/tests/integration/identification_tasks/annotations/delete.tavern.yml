@@ -6,14 +6,16 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - app_user_token
-    - identification_task
+    - endpoint
+    - annotation
     - token_user_can_delete
+    - app_user_token
+
 
 stages:
   - name: Delete is disabeld for mobile users
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
       headers:
         Authorization: "Bearer {app_user_token}"
       method: "DELETE"
@@ -21,13 +23,13 @@ stages:
       status_code: 403
   - name: Delete method non authenticated users
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
       method: "DELETE"
     response:
       status_code: 403
   - name: Delete method authenticated even users with permissions
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
       headers:
         Authorization: "Token {token_user_can_delete}"
       method: "DELETE"

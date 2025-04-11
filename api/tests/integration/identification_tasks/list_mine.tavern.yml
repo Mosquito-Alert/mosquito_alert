@@ -6,18 +6,15 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user_token
     - token_user
 
 stages:
-  - id: signup
-    type: ref
-  - id: login
-    type: ref
   - name: List method returns not exist for mobile users
     request:
       url: "{api_live_url}/me/{endpoint}/"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
       method: "GET"
     response:
       status_code: 403
@@ -51,7 +48,7 @@ marks:
     - token_user
 
 stages:
-  - name: User without perm view can not retrieve
+  - name: User without perm view can retrieve only annotated identification tasks.
     request:
       url: "{api_live_url}/me/{endpoint}/"
       method: "GET"
@@ -82,7 +79,7 @@ marks:
     - token_user
 
 stages:
-  - name: User without perm view can not retrieve
+  - name: User without perm view can not retrieve not owned
     request:
       url: "{api_live_url}/me/{endpoint}/"
       method: "GET"
@@ -110,7 +107,7 @@ marks:
     - token_user
 
 stages:
-  - name: User with perm view can not retrieve
+  - name: User with regular perm view can not retrieve archived identification task
     request:
       url: "{api_live_url}/me/{endpoint}/"
       method: "GET"
@@ -139,7 +136,7 @@ marks:
     - token_user_can_view_archived_identificationtasks
 
 stages:
-  - name: User with perm view can not retrieve
+  - name: User with perm view archived can retrieve archived identification task
     request:
       url: "{api_live_url}/me/{endpoint}/"
       method: "GET"

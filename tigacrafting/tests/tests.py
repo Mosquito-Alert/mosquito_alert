@@ -11,7 +11,7 @@ import uuid
 
 from datetime import timedelta
 from django.conf import settings
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.utils.translation import activate, deactivate, gettext as _
 from tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
 from tigacrafting.models import ExpertReportAnnotation, Categories, Complex, OtherSpecies, Taxon, IdentificationTask
@@ -66,8 +66,8 @@ def create_report(version_number, version_uuid, user, country):
     p.save()
     return r
 
-
-class NewReportAssignment(TestCase):
+@pytest.mark.django_db(transaction=True)
+class NewReportAssignment(TransactionTestCase):
     fixtures = ['auth_group.json','europe_countries_new.json', 'reritja_like.json', 'granter_user.json', 'awardcategory.json', 'nutseurope.json']
 
     # just regular european users
@@ -1718,11 +1718,11 @@ class TestIdentificationTaskModel:
     def test_total_finished_annotations_is_0_default(self):
         assert IdentificationTask._meta.get_field("total_finished_annotations").default == 0
 
-    def test_revision_type_is_nullable(self):
-        assert IdentificationTask._meta.get_field("revision_type").null
+    def test_review_type_is_nullable(self):
+        assert IdentificationTask._meta.get_field("review_type").null
 
-    def test_revision_type_is_None_default(self):
-        assert IdentificationTask._meta.get_field("revision_type").default == None
+    def test_review_type_is_None_default(self):
+        assert IdentificationTask._meta.get_field("review_type").default == None
 
     def test_reviewed_at_is_nullable(self):
         assert IdentificationTask._meta.get_field("reviewed_at").null
@@ -1890,7 +1890,7 @@ class TestIdentificationTaskFlow:
             **kwargs
         )
 
-    def _add_revision(self, identification_task: IdentificationTask, overwrite: bool = False, validation_complete: bool = True, **kwargs) -> ExpertReportAnnotation:
+    def _add_review(self, identification_task: IdentificationTask, overwrite: bool = False, validation_complete: bool = True, **kwargs) -> ExpertReportAnnotation:
         superexpert_group, _ = Group.objects.get_or_create(name='superexpert')
         user_expert = User.objects.create(
             username=str(uuid.uuid4())
@@ -2024,7 +2024,7 @@ class TestIdentificationTaskFlow:
         for _ in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT):
             self._add_annotation(identification_task=identification_task)
 
-        self._add_revision(identification_task=identification_task, overwrite=is_overwrite)
+        self._add_review(identification_task=identification_task, overwrite=is_overwrite)
 
         identification_task.refresh_from_db()
 
@@ -2050,7 +2050,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.total_annotations == 0
         assert identification_task.total_finished_annotations == 0
 
-        annotation = self._add_revision(identification_task=identification_task, overwrite=False, validation_complete=False)
+        annotation = self._add_review(identification_task=identification_task, overwrite=False, validation_complete=False)
 
         identification_task.refresh_from_db()
         assert identification_task.total_annotations == 0
@@ -2088,7 +2088,7 @@ class TestIdentificationTaskFlow:
         _ = self._add_annotation(identification_task=identification_task)
         assert identification_task.assignees.count() == 1
 
-        _ = self._add_revision(identification_task=identification_task)
+        _ = self._add_review(identification_task=identification_task)
         assert identification_task.assignees.count() == 2
 
     # status field transition
@@ -2156,7 +2156,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.status == IdentificationTask.Status.REVIEW
         assert identification_task.is_flagged
 
-        self._add_revision(identification_task=identification_task)
+        self._add_review(identification_task=identification_task)
 
         identification_task.refresh_from_db()
         assert identification_task.status == IdentificationTask.Status.DONE
@@ -2219,7 +2219,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.is_flagged == False
         assert identification_task.status == IdentificationTask.Status.DONE
 
-        annotation = self._add_revision(
+        annotation = self._add_review(
             identification_task=identification_task,
             overwrite=overwrite,
             category=category_2,
@@ -2315,13 +2315,13 @@ class TestIdentificationTaskFlow:
         assert identification_task.status == IdentificationTask.Status.REVIEW
         assert identification_task.is_flagged == True
 
-    # revision field transition
+    # review field transition
     @pytest.mark.parametrize("overwrite", [False, True])
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
-    def test_reviewed_at_is_set_after_revision(self, identification_task, overwrite):
+    def test_reviewed_at_is_set_after_review(self, identification_task, overwrite):
         assert not identification_task.is_reviewed
 
-        self._add_revision(identification_task=identification_task, overwrite=overwrite)
+        self._add_review(identification_task=identification_task, overwrite=overwrite)
 
         identification_task.refresh_from_db()
 
@@ -2331,19 +2331,19 @@ class TestIdentificationTaskFlow:
     @pytest.mark.parametrize(
         "overwrite, expected_result",
         [
-            (False, IdentificationTask.Revision.AGREE),
-            (True, IdentificationTask.Revision.OVERWRITE)
+            (False, IdentificationTask.Review.AGREE),
+            (True, IdentificationTask.Review.OVERWRITE)
         ]
     )
-    def test_revision_type_is_set_after_revision(self, identification_task, overwrite, expected_result):
+    def test_review_type_is_set_after_review(self, identification_task, overwrite, expected_result):
         assert not identification_task.is_reviewed
 
-        self._add_revision(identification_task=identification_task, overwrite=overwrite)
+        self._add_review(identification_task=identification_task, overwrite=overwrite)
 
         identification_task.refresh_from_db()
 
         assert identification_task.is_reviewed
-        assert identification_task.revision_type == expected_result
+        assert identification_task.review_type == expected_result
 
     # lifecycle triggers
     @pytest.mark.parametrize(
