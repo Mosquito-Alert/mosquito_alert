@@ -33,6 +33,7 @@ variables:
     num_annotations: !anyint
     review: null
     result:
+      source: !anything
       taxon: !anything
       confidence: !anyfloat
       confidence_label: !anystr
