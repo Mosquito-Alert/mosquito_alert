@@ -25,24 +25,18 @@ variables:
     public_photo:
       uuid: !anystr
       url: !anystr
-    assignees_ids: !anylist
+    annotators: !anylist
     status: !anystr
     is_flagged: !anybool
     is_safe: !anybool
     public_note: !anything
-    num_assignations: !anyint
     num_annotations: !anyint
-    revision: null
-      # type: !anystr
-      # created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    review: null
     result:
-      taxon: null
-        # name: !anystr
-        # common_name: !anystr
-        # rank: !anystr
+      taxon: !anything
       confidence: !anyfloat
       confidence_label: !anystr
-      is_confirmed: !anybool
+      is_high_confidence: !anybool
       uncertainty: !anyfloat
       agreement: !anyfloat
     created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z

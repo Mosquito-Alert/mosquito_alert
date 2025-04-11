@@ -8,19 +8,16 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user_token
     - identification_task
     - token_user
 
 stages:
-  - id: signup
-    type: ref
-  - id: login
-    type: ref
   - name: Retrieve is not allowed for mobile users
     request:
       url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
       method: "GET"
     response:
       status_code: 403

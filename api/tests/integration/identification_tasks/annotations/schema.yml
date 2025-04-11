@@ -1,0 +1,30 @@
+---
+
+name: Common test information
+description: Information for test server
+
+variables:
+  response_data_validation: &retrieve_validation
+    id: !anyint
+    observation_uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    user:
+      id: !anyint
+      username: !anystr
+      first_name: !anystr
+      last_name: !anystr
+      full_name: !anystr
+    best_photo: !anything
+    classification: !anything
+    feedback: !anything
+    is_flagged: !anybool
+    is_decisive: !anybool
+    created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    tags: !anylist
+  response_list_data_validation: &response_list_validation
+    count: !anyint
+    next: !anything
+    previous: !anything
+    results: [
+      <<: *retrieve_validation
+    ]
