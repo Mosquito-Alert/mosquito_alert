@@ -66,8 +66,15 @@ class WritableSerializerMethodField(serializers.Field):
         super().__init__(**kwargs)
 
     def bind(self, field_name, parent):
+        ret = super().bind(field_name, parent)
         self.serializer_field.bind(field_name, parent)
-        return super().bind(field_name, parent)
+        self.deserializer_field.bind(field_name, parent)
+        return ret
+
+    def run_validation(self, *args, **kwargs):
+        return {
+            self.field_name: self.deserializer_field.run_validation(*args, **kwargs)
+        }
 
     def to_internal_value(self, data):
         return {

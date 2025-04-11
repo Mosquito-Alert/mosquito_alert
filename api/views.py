@@ -8,10 +8,13 @@ from drf_spectacular.utils import (
     extend_schema_view,
     extend_schema,
     PolymorphicProxySerializer,
-    OpenApiResponse
+    OpenApiResponse,
+    OpenApiParameter,
+    OpenApiTypes
 )
 
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -26,6 +29,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import Token
 
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon
 from tigaserver_app.models import (
     TigaUser,
     EuropeCountry,
@@ -39,7 +43,16 @@ from tigaserver_app.models import (
     Device
 )
 
-from .filters import NotificationFilter, CampaignFilter, ObservationFilter, BiteFilter, BreedingSiteFilter
+from .filters import (
+    NotificationFilter,
+    CampaignFilter,
+    ObservationFilter,
+    BiteFilter,
+    BreedingSiteFilter,
+    IdentificationTaskFilter,
+    AnnotationFilter,
+    TaxonFilter
+)
 from .serializers import (
     PartnerSerializer,
     CampaignSerializer,
@@ -47,11 +60,16 @@ from .serializers import (
     FixSerializer,
     CountrySerializer,
     PhotoSerializer,
+    SimplePhotoSerializer,
     ObservationSerializer,
     BiteSerializer,
     BreedingSiteSerializer,
     DeviceSerializer,
-    DeviceUpdateSerializer
+    DeviceUpdateSerializer,
+    AnnotationSerializer,
+    IdentificationTaskSerializer,
+    TaxonSerializer,
+    TaxonTreeNodeSerializer
 )
 from .serializers import (
     CreateNotificationSerializer,
@@ -59,8 +77,18 @@ from .serializers import (
     TopicNotificationCreateSerializer,
     UserNotificationCreateSerializer,
 )
-from .permissions import NotificationObjectPermissions, ReportPermissions, MyReportPermissions
-from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet
+from .permissions import (
+    NotificationObjectPermissions,
+    ReportPermissions,
+    MyReportPermissions,
+    IdentificationTaskPermissions,
+    MyIdentificationTaskPermissions,
+    IdentificationTaskBacklogPermissions,
+    AnnotationPermissions,
+    MyAnnotationPermissions,
+    TaxaPermissions
+)
+from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet, NestedViewSetMixin
 
 User = get_user_model()
 
@@ -182,7 +210,10 @@ class BaseReportViewSet(
         "nuts_2_fk",
         "nuts_3_fk",
         "lau_fk",
-        "country"
+        "country",
+        "identification_task",
+        "identification_task__photo",
+        "identification_task__taxon",
     ).prefetch_related(
         'tags',
         models.Prefetch(
@@ -198,6 +229,14 @@ class BaseReportViewSet(
     permission_classes = (ReportPermissions,)
 
     def get_permissions(self):
+        # Check if the request is for an action
+        if self.action and hasattr(self, self.action):
+            action_method = getattr(self, self.action)
+            if action_method and hasattr(action_method, 'kwargs'):
+                action_permissions = action_method.kwargs.get('permission_classes')
+                if action_permissions:
+                    return [permission() for permission in action_permissions]
+
         if self.request and self.request.method in SAFE_METHODS:
             return [AllowAny(),]
 
@@ -371,3 +410,156 @@ class DeviceViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Gene
             return DeviceUpdateSerializer
         else:
             return DeviceSerializer
+
+
+class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMobileViewSet):
+    queryset = IdentificationTask.objects.all().select_related(
+        'taxon',
+        'photo',
+        'report',
+        'report__country',
+        # NOTE: needed for get_display_name
+        'report__nuts_2_fk',
+        'report__nuts_3_fk',
+        'report__lau_fk'
+    ).prefetch_related('assignees')
+    serializer_class = IdentificationTaskSerializer
+    filterset_class = IdentificationTaskFilter
+    permission_classes = (IdentificationTaskPermissions,)
+
+    lookup_field = 'pk'
+    lookup_url_kwarg = 'observation_uuid'
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        user = self.request.user
+        if not (user and user.has_perm("tigacrafting.view_archived_identificationtasks")):
+            qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
+
+        return qs
+
+    @extend_schema(
+        responses={
+            200: IdentificationTaskSerializer,
+            204: OpenApiResponse(description="No available tasks in backlog"),
+        },
+        description="Retrieve the next identification task from the backlog.",
+    )
+    @action(detail=False, methods=["GET"], url_path="backlog/next", permission_classes=[IdentificationTaskBacklogPermissions,])
+    def backlog_next(self, request):
+        task = IdentificationTask.objects.backlog(user=request.user).first()
+
+        if not task:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        serializer = self.get_serializer(task)
+        return Response(serializer.data)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="observation_uuid",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description="UUID of the Observation"
+            )
+        ]
+    )
+    class PhotoViewSet(NestedViewSetMixin, ListModelMixin, RetrieveModelMixin, GenericNoMobileViewSet):
+        queryset = Photo.objects.visible()
+        serializer_class = SimplePhotoSerializer
+
+        parent_lookup_kwargs = {
+            'observation_uuid': 'report__identification_task__pk'
+        }
+
+        lookup_field = 'uuid'
+        lookup_url_kwarg = 'uuid'
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="observation_uuid",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description="UUID of the Observation"
+            )
+        ]
+    )
+    class AnnotationViewSet(NestedViewSetMixin, ListModelMixin, RetrieveModelMixin, CreateModelMixin, GenericNoMobileViewSet):
+        queryset = ExpertReportAnnotation.objects.is_annotation().select_related(
+            'user',
+            'report',
+            'best_photo',
+            'taxon',
+        )
+        serializer_class = AnnotationSerializer
+        filterset_class = AnnotationFilter
+        permission_classes = (AnnotationPermissions, )
+
+        parent_lookup_kwargs = {
+            'observation_uuid': 'identification_task__pk'
+        }
+
+        lookup_field = 'pk'
+        lookup_url_kwarg = 'id'
+
+        def get_serializer_context(self):
+            result = super().get_serializer_context()
+            result['observation_uuid'] = self.kwargs['observation_uuid']
+            return result
+
+
+@extend_schema_view(
+    list=extend_schema(
+        tags=['identification-tasks'],
+        operation_id='identificationtasks_list_mine',
+        description="Get identification tasks annotated by me"
+    )
+)
+class MyIdentificationTaskViewSet(IdentificationTaskViewSet):
+    permission_classes = (MyIdentificationTaskPermissions,)
+
+    def get_queryset(self):
+        return super().get_queryset().annotated_by(users=[self.request.user,])
+
+
+@extend_schema_view(
+    list=extend_schema(
+        tags=['identification-tasks'],
+        operation_id='identificationtasks_annotations_list_mine',
+        description="Get my annotations"
+    )
+)
+class MyAnnotationViewSet(ListModelMixin, GenericNoMobileViewSet):
+    queryset = IdentificationTaskViewSet.AnnotationViewSet.queryset
+    serializer_class = IdentificationTaskViewSet.AnnotationViewSet.serializer_class
+    filterset_class = IdentificationTaskViewSet.AnnotationViewSet.filterset_class
+    permission_classes = (MyAnnotationPermissions, )
+
+    lookup_field = 'pk'
+    lookup_url_kwarg = 'id'
+
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+
+
+class TaxaViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
+    queryset = Taxon.objects.all()
+    serializer_class = TaxonSerializer
+    filterset_class = TaxonFilter
+    permission_classes = (TaxaPermissions, )
+
+    @extend_schema(operation_id='taxa_root_tree_retrieve')
+    @action(detail=False, methods=["GET"], url_path="tree", serializer_class=TaxonTreeNodeSerializer)
+    def root_tree(self, request):
+        taxon = Taxon.get_root()
+        serializer = self.get_serializer(taxon)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["GET"], url_path="tree", serializer_class=TaxonTreeNodeSerializer)
+    def tree(self, request, pk=None):
+        taxon = self.get_object()
+        serializer = self.get_serializer(taxon)
+        return Response(serializer.data)

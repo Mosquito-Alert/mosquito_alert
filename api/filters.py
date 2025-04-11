@@ -1,10 +1,13 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
 
 from django_filters import rest_framework as filters
 
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon
 from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry
 
+User = get_user_model()
 
 class CampaignFilter(filters.FilterSet):
     country_id = filters.ModelChoiceFilter(field_name="country_id", queryset=EuropeCountry.objects.all())
@@ -72,7 +75,10 @@ class BaseReportWithPhotosFilter(BaseReportFilter):
 
 
 class ObservationFilter(BaseReportWithPhotosFilter):
-    pass
+    identification_taxon = filters.ModelMultipleChoiceFilter(
+        field_name="identification_task__taxon",
+        queryset=Taxon.objects.all(),
+    )
 
 class BiteFilter(BaseReportFilter):
     pass
@@ -92,3 +98,119 @@ class NotificationFilter(filters.FilterSet):
     class Meta:
         model = Notification
         fields = ("is_read",)
+
+class IdentificationTaskFilter(filters.FilterSet):
+    annotator_ids = filters.ModelMultipleChoiceFilter(
+        field_name="assignees",
+        queryset=User.objects.all(),
+        method="filter_by_annotators"
+    )
+
+    def filter_by_annotators(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.annotated_by(users=value)
+
+    num_assignations = filters.NumericRangeFilter(field_name="total_annotations")
+    num_annotations = filters.NumericRangeFilter(field_name="total_finished_annotations")
+
+    created_at = filters.IsoDateTimeFromToRangeFilter(
+        field_name="created_at", label="Created at"
+    )
+    updated_at = filters.IsoDateTimeFromToRangeFilter(
+        field_name="updated_at", label="Update at"
+    )
+
+    order_by = filters.OrderingFilter(
+        fields=("created_at", "updated_at")
+    )
+
+    status = filters.MultipleChoiceFilter(
+        choices=IdentificationTask.Status.choices
+    )
+
+    observation_country = filters.ModelMultipleChoiceFilter(
+        field_name="report__country",
+        queryset=EuropeCountry.objects.all(),
+    )
+
+    result_taxon = filters.ModelMultipleChoiceFilter(
+        field_name="taxon",
+        queryset=Taxon.objects.all(),
+    )
+    result_confidence = filters.NumericRangeFilter(field_name="confidence")
+    result_uncertainty = filters.NumericRangeFilter(field_name="uncertainty")
+    result_agreement = filters.NumericRangeFilter(field_name="agreement")
+
+    class Meta:
+        model = IdentificationTask
+        fields = {
+            "is_flagged": ["exact"],
+            "is_safe": ["exact"],
+            "review_type": ["exact"],
+        }
+
+class AnnotationFilter(filters.FilterSet):
+    user_ids = filters.ModelMultipleChoiceFilter(
+        field_name="user",
+        queryset=User.objects.all(),
+    )
+
+    classification_taxon_ids = filters.ModelMultipleChoiceFilter(
+        field_name="taxon",
+        queryset=Taxon.objects.all(),
+    )
+
+    classification_confidence = filters.NumericRangeFilter(field_name="confidence")
+    classification_confidence_label = filters.ChoiceFilter(
+        choices=[('definitely', 'definitely'), ('probably', 'probably')],
+        method="filter_by_confidence_label"
+    )
+
+    def filter_by_confidence_label(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.filter(
+            validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY if value == 'definitely' else ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
+        )
+
+    is_flagged = filters.BooleanFilter(
+        method="filter_by_is_flagged"
+    )
+
+    def filter_by_is_flagged(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.filter(
+            status=ExpertReportAnnotation.STATUS_FLAGGED
+        )
+
+    is_decisive = filters.BooleanFilter(
+        method="filter_by_is_decisive"
+    )
+
+    def filter_by_is_decisive(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.filter(
+            models.Q(
+                models.Q(revise=True)
+                | models.Q(validation_complete_executive=True),
+                _negated=not value
+            )
+        )
+
+    order_by = filters.OrderingFilter(
+        fields=("created_at", "updated_at")
+    )
+
+    class Meta:
+        model = ExpertReportAnnotation
+        fields = {}
+
+class TaxonFilter(filters.FilterSet):
+    class Meta:
+        model = Taxon
+        fields = {
+            "is_relevant": ["exact"],
+        }
