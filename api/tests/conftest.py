@@ -17,6 +17,7 @@ from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
 from api.tests.utils import grant_permission_to_user
 from api.tests.clients import AppAPIClient
 
+from tigacrafting.models import IdentificationTask, Taxon
 from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo
 
 User = get_user_model()
@@ -84,6 +85,10 @@ def report_hidden_photo(report_photo):
     return report_photo
 
 @pytest.fixture
+def identification_task(adult_report):
+    return IdentificationTask.objects.get(report=adult_report)
+
+@pytest.fixture
 def django_live_url(live_server):
     yield live_server.url
 
@@ -123,6 +128,17 @@ def user():
     return User.objects.create_user(
         username=f"user_{random.randint(1,1000)}",
         password=User.objects.make_random_password(),
+        first_name="Test FirstName",
+        last_name="Test LastName"
+    )
+
+@pytest.fixture
+def another_user():
+    return User.objects.create_user(
+        username=f"user_{random.randint(1,1000)}",
+        password=User.objects.make_random_password(),
+        first_name="Test Another FirstName",
+        last_name="Test Another LastName"
     )
 
 @pytest.fixture
@@ -208,3 +224,11 @@ def test_jpg_image_path():
 @pytest.fixture
 def test_non_image_path():
     return Path(TEST_DATA_PATH, Path("non_image.txt"))
+
+@pytest.fixture
+def taxon_root():
+    return Taxon.add_root(
+        rank=Taxon.TaxonomicRank.CLASS,
+        name="Insecta",
+        common_name=""
+    )

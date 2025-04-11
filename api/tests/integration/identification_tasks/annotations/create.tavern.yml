@@ -1,0 +1,127 @@
+---
+
+test_name: Create is not allowed for mobile users and non auth
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - token_user
+    - app_user_token
+
+stages:
+  - name: Create method not allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "POST"
+    response:
+      status_code: 403
+  - name: Create method non authenticated users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+    response:
+      status_code: 403
+  - name: Create method authenticated users without permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Token {token_user}"
+      method: "POST"
+    response:
+      status_code: 403
+
+---
+
+test_name: Create method
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - identification_task
+    - user
+    - taxon_root
+    - token_user_can_add
+
+stages:
+  - name: Create method
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Token {token_user_can_add}"
+      method: "POST"
+      json:
+        classification:
+          taxon_id: !int "{taxon_root.pk}"
+          confidence_label: 'definitely'
+    response:
+      status_code: 201
+      json:
+        id: !anyint
+        observation_uuid: "{identification_task.report.pk}"
+        user:
+          id: !int "{user.pk}"
+          username: "{user.username}"
+          first_name: "{user.first_name}"
+          last_name: "{user.last_name}"
+          full_name: "{user.first_name} {user.last_name}"
+        best_photo: null
+        classification:
+          taxon:
+            id: !int "{taxon_root.pk}"
+            name: !anystr
+            common_name: !anything
+            rank: !anystr
+            italicize: !anybool
+          confidence: 1
+          confidence_label: 'definitely'
+        feedback:
+          public_note: null
+          user_note: null
+        is_flagged: false
+        is_decisive: false
+        tags: !anylist
+        created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+
+---
+
+test_name: Create off-topic classification
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - identification_task
+    - user
+    - taxon_root
+    - token_user_can_add
+
+stages:
+  - name: Create off-topic classification
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Token {token_user_can_add}"
+      method: "POST"
+      json:
+        classification: null
+    response:
+      status_code: 201
+      strict:
+        - json:off
+      json:
+        observation_uuid: "{identification_task.report.pk}"
+        classification: null

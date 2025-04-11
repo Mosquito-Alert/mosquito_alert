@@ -21,8 +21,9 @@ from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged
-from django_lifecycle import LifecycleModel, hook, AFTER_SAVE
+from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged, WhenFieldValueIs, WhenFieldValueIsNot
+from django_lifecycle.priority import HIGHEST_PRIORITY
+from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, BEFORE_SAVE, AFTER_CREATE, BEFORE_CREATE
 from treebeard.mp_tree import MP_Node
 from scipy.stats import entropy
 
@@ -356,7 +357,7 @@ class IdentificationTask(LifecycleModel):
         DONE = 'done', _('Done')
         ARCHIVED = 'archived', _('Archived')  # For soft-deleted reports or hidden
 
-    class Revision(models.TextChoices):
+    class Review(models.TextChoices):
         AGREE = 'agree', _("Agreed with experts")
         OVERWRITE = 'overwrite', _("Overwritten")
 
@@ -382,8 +383,8 @@ class IdentificationTask(LifecycleModel):
     total_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # total experts
     total_finished_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # when validation_complete = True (only for experts)
 
-    # Revision
-    revision_type = models.CharField(max_length=16, choices=Revision.choices, default=None, editable=False, blank=True, null=True)
+    # Review
+    review_type = models.CharField(max_length=16, choices=Review.choices, default=None, editable=False, blank=True, null=True)
     reviewed_at = models.DateTimeField(null=True, blank=True, editable=False)
 
     taxon = models.ForeignKey('Taxon', on_delete=models.PROTECT, null=True, blank=True, editable=False)
@@ -398,6 +399,16 @@ class IdentificationTask(LifecycleModel):
     updated_at = models.DateTimeField(auto_now=True, editable=False)
 
     objects = IdentificationTaskManager()
+
+    @cached_property
+    def annotators(self) -> models.QuerySet:
+        return self.assignees.filter(
+            pk__in=self.annotations.values('user')
+        ).order_by('expert_report_annotations__created')
+
+    @cached_property
+    def annotations(self) -> models.QuerySet:
+        return self.expert_report_annotations.all().is_annotation()
 
     @property
     def confidence_label(self) -> str:
@@ -547,13 +558,13 @@ class IdentificationTask(LifecycleModel):
 
         current_photo_id = self.photo_id
         if superexpert_annotation and superexpert_annotation.revise:
-            # Case 1: Superexpert revision (overwrite)
+            # Case 1: Superexpert review (overwrite)
             self._update_from_annotation(
                 annotation=superexpert_annotation,
                 default_status=self.Status.DONE
             )
         elif not self.is_reviewed or force:
-            # TODO: ensure annotations are before superexpert revision -> pending, there are annotations that not meet this requirement.
+            # TODO: ensure annotations are before superexpert review -> pending, there are annotations that not meet this requirement.
             if executive_annotation:
                 # Case 2: Executive validation
                 default_status = (
@@ -620,14 +631,14 @@ class IdentificationTask(LifecycleModel):
 
         if superexpert_annotation:
             self.reviewed_at = superexpert_annotation.last_modified
-            self.revision_type = self.Revision.OVERWRITE if superexpert_annotation.revise else self.Revision.AGREE
+            self.review_type = self.Review.OVERWRITE if superexpert_annotation.revise else self.Review.AGREE
         else:
             self.reviewed_at = None
-            self.revision_type = None
+            self.review_type = None
 
         if self.is_reviewed:
             self.status = self.Status.DONE
-            if self.revision_type == self.Revision.AGREE:
+            if self.review_type == self.Review.AGREE:
                 self.is_flagged = False
 
         if not self.report.is_browsable:
@@ -655,9 +666,10 @@ class IdentificationTask(LifecycleModel):
             from_user=User.objects.filter(pk=25).first()
         )
 
+    @hook(AFTER_CREATE)
     @hook(
         AFTER_SAVE,
-        condition=WhenFieldHasChanged('status') | WhenFieldHasChanged('is_safe')
+        condition=WhenFieldHasChanged('status', has_changed=True) | WhenFieldHasChanged('is_safe', has_changed=True)
     )
     def refresh_report_published_at(self) -> None:
         old_value = self.report.published_at
@@ -735,7 +747,7 @@ AEGYPTI_CATEGORIES_SEPARATED = ((2, 'Definitely Aedes aegypti'), (1, 'Probably A
 
 SITE_CATEGORIES = ((2, 'Definitely a breeding site'), (1, 'Probably a breeding site'), (0, 'Not sure'), (-1, 'Probably not a breeding site'), (-2, 'Definitely not a breeding site'))
 
-class ExpertReportAnnotation(models.Model):
+class ExpertReportAnnotation(LifecycleModel):
     VALIDATION_CATEGORY_DEFINITELY = 2
     VALIDATION_CATEGORY_PROBABLY = 1
     VALIDATION_CATEGORIES = ((VALIDATION_CATEGORY_DEFINITELY, 'Definitely'), (VALIDATION_CATEGORY_PROBABLY, 'Probably'))
@@ -1085,16 +1097,11 @@ class ExpertReportAnnotation(models.Model):
             return 0.0
 
     def _get_taxon(self) -> Optional['Taxon']:
-        if self.complex:
-            return self.complex.taxa.first()
-
-        if self.other_species:
-            return self.other_species.taxa.first()
-
-        if self.category:
-            return self.category.taxa.first()
-
-        return None
+        return Taxon.get_from_old_classification(
+            category=self.category,
+            complex=self.complex,
+            other_species=self.other_species
+        )
 
     def _can_be_simplified(self) -> bool:
         # If the user is the superexpert -> False
@@ -1114,10 +1121,73 @@ class ExpertReportAnnotation(models.Model):
             total_completed_annotations_qs.count() < settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1
         )
 
-    def save(self, *args, **kwargs):
-        if not kwargs.pop('skip_lastmodified', False):
-            self.last_modified = timezone.now()
+    @hook(
+        BEFORE_CREATE,
+        priority=HIGHEST_PRIORITY,
+        condition=(
+            WhenFieldValueIsNot('taxon', None)
+            | (WhenFieldValueIs('category', None)
+                & WhenFieldValueIs('complex', None)
+                & WhenFieldValueIs('other_species', None)
+            )
+        )
+    )
+    @hook(
+        BEFORE_SAVE,
+        priority=HIGHEST_PRIORITY,
+        condition=WhenFieldHasChanged('taxon', has_changed=True)
+    )
+    def on_taxon_change(self):
+        try:
+            taxon = self.taxon or Taxon.objects.get(pk=self.taxon_id)
+        except Taxon.DoesNotExist:
+            taxon = None
 
+        if not taxon:
+            # Set as 'Off-topic'. This is not a mosquito observation.
+            self.category = Categories.objects.filter(pk=9).first()
+            return
+
+        _taxon_content_object = taxon.content_object
+        if isinstance(_taxon_content_object, Complex):
+            # Set category to 'Complex'
+            self.category = Categories.objects.filter(pk=8).first()
+            self.complex = _taxon_content_object
+        elif isinstance(_taxon_content_object, OtherSpecies):
+            # Set category to 'Other species'
+            self.category = Categories.objects.filter(pk=2).first()
+            self.other_species = _taxon_content_object
+        elif isinstance(_taxon_content_object, Categories):
+            self.category = _taxon_content_object
+        else:
+            self.category = None
+            self.complex = None
+            self.other_species = None
+
+    @hook(
+        BEFORE_CREATE,
+        condition=(
+            WhenFieldValueIs('taxon', None)
+        )
+    )
+    @hook(
+        BEFORE_SAVE,
+        condition=(
+            WhenFieldHasChanged('taxon', has_changed=False)
+            & (WhenFieldHasChanged('category', has_changed=True)
+                | WhenFieldHasChanged('other_species', has_changed=True)
+                | WhenFieldHasChanged('complex', has_changed=True)
+            )
+        )
+    )
+    def on_old_classification_change(self):
+        self.taxon = self._get_taxon()
+
+    @hook(
+        BEFORE_SAVE,
+        condition=WhenFieldHasChanged('category')
+    )
+    def on_category_change(self):
         if self.category:
             self.tiger_certainty_category = -2
             if self.category.pk == 4: # albopictus
@@ -1126,6 +1196,10 @@ class ExpertReportAnnotation(models.Model):
             self.aegypti_certainty_category = -2
             if self.category.pk == 5: # aegypti
                 self.aegypti_certainty_category = 2
+
+    def save(self, *args, **kwargs):
+        if not kwargs.pop('skip_lastmodified', False):
+            self.last_modified = timezone.now()
 
         # On create only
         if self._state.adding:
@@ -1141,14 +1215,14 @@ class ExpertReportAnnotation(models.Model):
 
         if not self.identification_task or str(self.identification_task.pk) != str(self.report.pk):
             self.identification_task = IdentificationTask.objects.filter(report=self.report).first()
-        self.taxon = self._get_taxon()
+
         self.confidence = self._get_confidence()
 
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
 
         if self.validation_complete and self.validation_complete_executive:
             self.create_replicas()
-            self.create_super_expert_approval(report=self.report)
+            # self.create_super_expert_approval(report=self.report)
 
         if self.identification_task:
             self.identification_task.refresh()
@@ -1382,6 +1456,19 @@ class Taxon(MP_Node):
         # Round down to the nearest multiple of 10
         return (rank // cls.RANK_GROUP_STEP) * cls.RANK_GROUP_STEP
 
+    @classmethod
+    def get_from_old_classification(cls, category: Optional[Categories] = None, complex: Optional[Complex] = None, other_species: Optional[OtherSpecies] = None) -> Optional['Taxon']:
+        if complex:
+            return complex.taxa.first()
+
+        if other_species:
+            return other_species.taxa.first()
+
+        if category:
+            return category.taxa.first()
+
+        return None
+
     class TaxonomicRank(models.IntegerChoices):
         # DOMAIN = 0, _("Domain")
         # KINGDOM = 10, _("Kingdom")
@@ -1429,6 +1516,10 @@ class Taxon(MP_Node):
     @property
     def is_specie(self):
         return self.rank >= self.TaxonomicRank.SPECIES_COMPLEX
+
+    @property
+    def italicize(self):
+        return self.rank >= self.TaxonomicRank.GENUS
 
     @cached_property
     def parent(self) -> Optional['Taxon']:
