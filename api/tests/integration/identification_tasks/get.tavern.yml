@@ -15,7 +15,7 @@ marks:
 stages:
   - name: Retrieve is not allowed for mobile users
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       headers:
         Authorization: "Bearer {app_user_token}"
       method: "GET"
@@ -23,13 +23,13 @@ stages:
       status_code: 403
   - name: Non auth user can not retrieve
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       method: "GET"
     response:
       status_code: 403
   - name: User without perm view can not retrieve
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       method: "GET"
       headers:
         Authorization: "Token {token_user:s}"
@@ -52,7 +52,7 @@ marks:
 stages:
   - name: User with perm view can retrieve
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       method: "GET"
       headers:
         Authorization: "Token {token_user_can_view:s}"

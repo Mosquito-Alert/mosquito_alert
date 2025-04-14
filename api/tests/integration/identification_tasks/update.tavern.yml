@@ -18,7 +18,7 @@ marks:
 stages:
   - name: Update is disabeld for mobile users
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       headers:
         Authorization: "Bearer {app_user_token}"
       method: "{method}"
@@ -26,13 +26,13 @@ stages:
       status_code: 403
   - name: Update is disabeld for non auth users
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       method: "{method}"
     response:
       status_code: 403
   - name: Update is disabeld users even with permissions
     request:
-      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       headers:
         Authorization: "Token {token_user_can_change}"
       method: "{method}"
