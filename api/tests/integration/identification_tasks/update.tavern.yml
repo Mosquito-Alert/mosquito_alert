@@ -1,0 +1,40 @@
+test_name: Update is disabled
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - identification_task
+    - token_user_can_change
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - name: Update is disabeld for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "{method}"
+    response:
+      status_code: 403
+  - name: Update is disabeld for non auth users
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      method: "{method}"
+    response:
+      status_code: 403
+  - name: Update is disabeld users even with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      headers:
+        Authorization: "Token {token_user_can_change}"
+      method: "{method}"
+    response:
+      status_code: 405

@@ -29,6 +29,7 @@ variables:
     published: !anybool
     # Fields only for breeding sites
     photos: !anylist
+    identification: !anything
     event_environment: !anything
     event_moment: !anything
     mosquito_appearance: !anything

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Optional
+from typing import Optional, List
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -271,19 +271,17 @@ class IdentificationTaskQuerySet(models.QuerySet):
             supervisor_has_annotated=state
         )
 
-    def annotated_by(self, user: User, state: bool = True) -> QuerySet:
+    def annotated_by(self, users: List[User]) -> QuerySet:
         from .models import ExpertReportAnnotation
 
-        return self.annotate(
-            user_has_annotated=models.Exists(
+        return self.filter(
+            models.Exists(
                 ExpertReportAnnotation.objects.filter(
                     identification_task=models.OuterRef('pk'),
-                    user=user,
+                    user__in=users,
                     validation_complete=True,
                 )
             )
-        ).filter(
-            user_has_annotated=state
         )
 
     def _assignable(self, state: bool = True) -> QuerySet:
@@ -301,6 +299,12 @@ class IdentificationTaskQuerySet(models.QuerySet):
 IdentificationTaskManager = models.Manager.from_queryset(IdentificationTaskQuerySet)
 
 class ExpertReportAnnotationQuerySet(models.QuerySet):
+    def is_annotation(self) -> QuerySet:
+        return self.completed().exclude(
+            user__groups__name='superexpert',
+            revise=False
+        )
+
     def completed(self, state: bool = True) -> QuerySet:
         return self.filter(validation_complete=state)
 

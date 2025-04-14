@@ -1,6 +1,5 @@
 from django.urls import path, re_path, include
 
-from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 from drf_spectacular.settings import spectacular_settings
@@ -8,6 +7,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from drf_spectacular.views import SpectacularRedocView, SpectacularAPIView, SpectacularJSONAPIView
 
 from .auth.views import GuestRegisterView, PasswordChangeView
+from .routers import NestedSimpleRouter, SimpleRouter
 from .views import (
     UserViewSet,
     MyUserViewSet,
@@ -25,6 +25,10 @@ from .views import (
     BreedingSiteViewSet,
     MyBreedingSiteViewSet,
     DeviceViewSet,
+    MyAnnotationViewSet,
+    IdentificationTaskViewSet,
+    MyIdentificationTaskViewSet,
+    TaxaViewSet
 )
 
 
@@ -41,17 +45,24 @@ class CustomRedocView(SpectacularRedocView):
         return response
 
 
-router = routers.SimpleRouter()
+router = SimpleRouter()
 router.register(r"bites", BiteViewSet)
 router.register(r"breeding-sites", BreedingSiteViewSet)
 router.register(r"devices", DeviceViewSet)
 router.register(r"campaigns", CampaignsViewSet)
 router.register(r"countries", CountriesViewSet)
 router.register(r"fixes", FixViewSet)
+
+router.register(r"identification-tasks", IdentificationTaskViewSet)
+identification_task_router = NestedSimpleRouter(router, r'identification-tasks', lookup='')
+identification_task_router.register(r"photos", IdentificationTaskViewSet.PhotoViewSet)
+identification_task_router.register(r"annotations", IdentificationTaskViewSet.AnnotationViewSet)
+
 router.register(r"notifications", NotificationViewSet)
 router.register(r"observations", ObservationViewSest)
 router.register(r"partners", PartnersViewSet)
 router.register(r"photos", PhotoViewSet)
+router.register(r"taxa", TaxaViewSet)
 router.register(r"users", UserViewSet)
 
 token_obtain_view = TokenObtainPairView.as_view()
@@ -77,9 +88,12 @@ api_urlpatterns += [
     path("me/observations/", MyObservationViewSest.as_view({'get': 'list'}), name='my-observations'),
     path("me/bites/", MyBiteViewSet.as_view({'get': 'list'}), name='my-bites'),
     path("me/breeding-sites/", MyBreedingSiteViewSet.as_view({'get': 'list'}), name='my-breeding-sites'),
+    path("me/identification-tasks/annotations/", MyAnnotationViewSet.as_view({'get': 'list'}), name='my-annotations'),
+    path("me/identification-tasks/", MyIdentificationTaskViewSet.as_view({'get': 'list'}), name='my-identification-tasks'),
 ]
 
 api_urlpatterns += router.urls
+api_urlpatterns += identification_task_router.urls
 
 urlpatterns = [
     path("", include(api_urlpatterns)),

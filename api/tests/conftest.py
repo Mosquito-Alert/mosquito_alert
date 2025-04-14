@@ -17,6 +17,7 @@ from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
 from api.tests.utils import grant_permission_to_user
 from api.tests.clients import AppAPIClient
 
+from tigacrafting.models import IdentificationTask, Taxon
 from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo
 
 User = get_user_model()
@@ -52,7 +53,8 @@ def dummy_image():
     return test_image
 
 @pytest.fixture
-def adult_report(app_user, dummy_image):
+def adult_report(app_user, es_country, dummy_image):
+    point_on_surface = es_country.geom.point_on_surface
     r = Report.objects.create(
         user=app_user,
         report_id=1234,  # TODO: change
@@ -61,8 +63,8 @@ def adult_report(app_user, dummy_image):
         version_time=timezone.now(),
         type=Report.TYPE_ADULT,
         location_choice=Report.LOCATION_CURRENT,
-        current_location_lon=2,
-        current_location_lat=2,
+        current_location_lon=point_on_surface.x,
+        current_location_lat=point_on_surface.y,
     )
 
     _ = Photo.objects.create(
@@ -81,6 +83,10 @@ def report_hidden_photo(report_photo):
     report_photo.hide = True
     report_photo.save()
     return report_photo
+
+@pytest.fixture
+def identification_task(adult_report):
+    return IdentificationTask.objects.get(report=adult_report)
 
 @pytest.fixture
 def django_live_url(live_server):
@@ -122,6 +128,17 @@ def user():
     return User.objects.create_user(
         username=f"user_{random.randint(1,1000)}",
         password=User.objects.make_random_password(),
+        first_name="Test FirstName",
+        last_name="Test LastName"
+    )
+
+@pytest.fixture
+def another_user():
+    return User.objects.create_user(
+        username=f"user_{random.randint(1,1000)}",
+        password=User.objects.make_random_password(),
+        first_name="Test Another FirstName",
+        last_name="Test Another LastName"
     )
 
 @pytest.fixture
@@ -207,3 +224,11 @@ def test_jpg_image_path():
 @pytest.fixture
 def test_non_image_path():
     return Path(TEST_DATA_PATH, Path("non_image.txt"))
+
+@pytest.fixture
+def taxon_root():
+    return Taxon.add_root(
+        rank=Taxon.TaxonomicRank.CLASS,
+        name="Insecta",
+        common_name=""
+    )

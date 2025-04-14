@@ -1,0 +1,55 @@
+---
+
+test_name: Taxa can be retrieved by everybody.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - taxon_root
+    - taxon_children
+    - token_user
+
+stages:
+  - name: Retrieve is allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/tree/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 200
+      json: &root_tree_response
+        id: !int "{taxon_root.pk}"
+        name: "{taxon_root.name}"
+        common_name: "{taxon_root.common_name}"
+        rank: "class"
+        is_relevant: !bool "{taxon_root.is_relevant}"
+        italicize: false
+        children:
+          - id: !int "{taxon_children.pk}"
+            name: "{taxon_children.name}"
+            common_name: "{taxon_children.common_name}"
+            rank: "order"
+            is_relevant: !bool "{taxon_children.is_relevant}"
+            italicize: false
+            children: []
+  - name: Non auth user can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/tree/"
+      method: "GET"
+    response:
+      status_code: 401
+  - name: User without perm view can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/tree/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+      json:
+        <<: *root_tree_response

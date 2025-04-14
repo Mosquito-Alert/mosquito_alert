@@ -4,11 +4,20 @@ from typing import Optional
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
+from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.helpers import lazy_serializer
+
 from rest_framework import serializers
 
 from drf_extra_fields.geo_fields import PointField
 from taggit.serializers import TaggitSerializer
 
+from tigacrafting.models import (
+    IdentificationTask,
+    Taxon,
+    ExpertReportAnnotation,
+    UserStat
+)
 from tigaserver_app.models import (
     NotificationContent,
     Notification,
@@ -37,6 +46,26 @@ from .fields import (
 
 User = get_user_model()
 
+
+class SimpleUserSerializer(serializers.ModelSerializer):
+
+    full_name = serializers.SerializerMethodField()
+
+    def get_full_name(self, obj) -> str:
+        return obj.get_full_name()
+
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'full_name'
+        )
+        extra_kwargs = {
+            "id": {"read_only": True},
+        }
 
 class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
@@ -483,6 +512,46 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             "uuid": {"required": True}  # Marks it as required in the response
         }
 
+class BaseSimplifiedReportSerializer(serializers.ModelSerializer):
+    class SimplifiedLocationSerializer(serializers.ModelSerializer):
+        point = BaseReportSerializer.LocationSerializer().fields['point']
+        timezone = BaseReportSerializer.LocationSerializer().fields['timezone']
+        display_name = BaseReportSerializer.LocationSerializer().fields['display_name']
+        country = BaseReportSerializer.LocationSerializer().fields['country']
+
+        get_display_name = BaseReportSerializer.LocationSerializer.get_display_name
+
+        class Meta:
+            model = BaseReportSerializer.LocationSerializer.Meta.model
+            fields = (
+                "point",
+                "timezone",
+                "display_name",
+                "country"
+            )
+            read_only_fields = fields
+
+    uuid = BaseReportSerializer().fields['uuid']
+    created_at = BaseReportSerializer().fields['created_at']
+    created_at_local = BaseReportSerializer().fields['created_at_local']
+    received_at = BaseReportSerializer().fields['received_at']
+    location = SimplifiedLocationSerializer(source=BaseReportSerializer().fields['location'].source)
+    note = BaseReportSerializer().fields['note']
+
+    get_created_at_local = BaseReportSerializer.get_created_at_local
+
+    class Meta:
+        model = BaseReportSerializer.Meta.model
+        fields = (
+            "uuid",
+            "created_at",
+            "created_at_local",
+            "received_at",
+            "location",
+            "note",
+        )
+        read_only_fields = fields
+
 class BaseReportWithPhotosSerializer(BaseReportSerializer):
     photos = SimplePhotoSerializer(required=True, many=True)
 
@@ -499,7 +568,327 @@ class BaseReportWithPhotosSerializer(BaseReportSerializer):
     class Meta(BaseReportSerializer.Meta):
         fields = BaseReportSerializer.Meta.fields + ("photos",)
 
+class SimpleTaxonSerializer(serializers.ModelSerializer):
+    rank = serializers.ChoiceField(choices=[x.lower() for x in Taxon.TaxonomicRank.names])
+
+    italicize = serializers.SerializerMethodField(help_text="Display the name in italics when rendering.")
+
+    def get_italicize(self, obj) -> bool:
+        return obj.italicize
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['rank'] = [x.name.lower() for x in Taxon.TaxonomicRank if x.value == instance.rank][0]
+        return ret
+
+    class Meta:
+        model = Taxon
+        fields = (
+            'id',
+            'name',
+            'common_name',
+            'rank',
+            'italicize'
+        )
+        extra_kwargs = {
+            'id': {'read_only': True}
+        }
+
+class TaxonSerializer(SimpleTaxonSerializer):
+
+    class Meta(SimpleTaxonSerializer.Meta):
+        fields = SimpleTaxonSerializer.Meta.fields + (
+            'is_relevant',
+        )
+        extra_kwargs = {
+            'is_relevant': {'required': True}
+        }
+
+class TaxonTreeNodeSerializer(TaxonSerializer):
+    children = serializers.SerializerMethodField()
+
+    @extend_schema_field(lazy_serializer("api.serializers.TaxonTreeNodeSerializer")(many=True))
+    def get_children(self, obj: Taxon):
+        if obj.get_children_count():
+            # TODO: get_children() -> can be improved to reduce the number of queries.
+            return TaxonTreeNodeSerializer(obj.get_children(), many=True).data
+        else:
+            return []
+
+    class Meta(TaxonSerializer.Meta):
+        fields = TaxonSerializer.Meta.fields + (
+            'children',
+        )
+
+class SimplifiedObservationSerializer(BaseSimplifiedReportSerializer):
+    class Meta(BaseSimplifiedReportSerializer.Meta):
+        pass
+
+
+class SimpleAnnotatorUserSerializer(SimpleUserSerializer):
+    def to_representation(self, instance):
+        # Get the request user
+        user = self.context.get('request').user
+        # Check if the user has permission to view
+        new_instance = instance
+        if instance.pk != user.pk and not user.has_perm('%(app_label)s.view_%(model_name)s' % {
+            'app_label': UserStat._meta.app_label,
+            'model_name': UserStat._meta.model_name
+        }):
+            new_instance = User(id=-1, username='anonymous', first_name='Anonymous', last_name='User')
+
+        return super().to_representation(new_instance)
+
+class AnnotationSerializer(serializers.ModelSerializer):
+    class AnnotationFeedbackSerializer(serializers.ModelSerializer):
+        def to_representation(self, instance):
+            ret = super().to_representation(instance)
+            # Ensure public_note and user_note will be None instead of blank
+            ret['public_note'] = ret['public_note'] or None
+            ret['user_note'] = ret['user_note'] or None
+            return ret
+
+        class Meta:
+            model = ExpertReportAnnotation
+            fields = (
+                "public_note",
+                "user_note"
+            )
+            extra_kwargs = {
+                "public_note": {"source": "edited_user_notes", "allow_null": True},
+                "user_note": {"source": "message_for_user", "allow_null": True},
+            }
+
+    class AnnotationClassificationSerializer(serializers.ModelSerializer):
+        taxon = SimpleTaxonSerializer(read_only=True)
+        confidence_label = serializers.ChoiceField(
+            source="validation_value",
+            choices=['definitely', 'probably'],
+            required=True
+        )
+
+        def to_internal_value(self, data):
+            if self.allow_null and data is None:
+                return {
+                    'status': ExpertReportAnnotation.STATUS_HIDDEN
+                }
+            ret = super().to_internal_value(data)
+            ret['validation_value'] = ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY if data.pop('confidence_label') == 'definitely' else ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
+            return ret
+
+        def to_representation(self, instance):
+            if self.allow_null and instance.taxon is None:
+                return None
+
+            ret = super().to_representation(instance)
+            ret['confidence_label'] = 'definitely' if instance.validation_value == ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY else 'probably'
+
+            return ret
+
+        class Meta:
+            model = ExpertReportAnnotation
+            fields = (
+                "taxon_id",
+                "taxon",
+                "confidence",
+                "confidence_label",
+            )
+            extra_kwargs = {
+                "taxon_id": {"source": "taxon", "write_only": True, "required": True, "allow_null": False},
+                "confidence": {"read_only": True},
+            }
+
+    user_hidden_obj = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    user = SimpleAnnotatorUserSerializer(read_only=True)
+    feedback = AnnotationFeedbackSerializer(source='*', required=False)
+
+    classification = AnnotationClassificationSerializer(source='*', required=True, allow_null=True)
+    best_photo = SimplePhotoSerializer(read_only=True, allow_null=True)
+    tags = TagListSerializerField(required=False, allow_empty=True)
+
+    is_flagged = WritableSerializerMethodField(
+        field_class=serializers.BooleanField,
+        default=False
+    )
+
+    is_decisive = WritableSerializerMethodField(
+        field_class=serializers.BooleanField,
+        default=False,
+    )
+
+    def get_is_flagged(self, obj) -> bool:
+        return obj.status == ExpertReportAnnotation.STATUS_FLAGGED
+
+    def get_is_decisive(self, obj) -> bool:
+        return obj.validation_complete_executive or obj.revise
+
+    def validate(self, data):
+        data['user'] = data.pop('user_hidden_obj')
+        data['validation_complete'] = True
+
+        try:
+            data['report'] = Report.objects.get(type='adult', pk=self.context.get('observation_uuid'))
+        except Report.DoesNotExist:
+            raise serializers.ValidationError("The observation does not does not exist.")
+
+        is_flagged = data.pop("is_flagged")
+        if is_flagged:
+            data["status"] = ExpertReportAnnotation.STATUS_FLAGGED
+        elif not data.get("status", None):
+            # Only set to PUBLIC if not set to HIDDEN
+            data["status"] = ExpertReportAnnotation.STATUS_PUBLIC
+
+        data['validation_complete_executive'] = data.pop("is_decisive")
+
+        return data
+
+    class Meta:
+        model = ExpertReportAnnotation
+        fields = (
+            "id",
+            "observation_uuid",
+            "user_hidden_obj",
+            "user",
+            "best_photo_id",
+            "best_photo",
+            "classification",
+            "feedback",
+            "is_flagged",
+            "is_decisive",
+            "tags",
+            "created_at",
+            "updated_at",
+        )
+        extra_kwargs = {
+            "user_id": {'read_only': True},
+            "best_photo_id": {'source': 'best_photo', 'write_only': True},
+            "observation_uuid": {'source': 'report', 'read_only': True},
+            'created_at': {"source": "created", 'read_only': True},
+            'updated_at': {"source": "last_modified", 'read_only': True},
+        }
+
+class SimpleAnnotationSerializer(serializers.ModelSerializer):
+    id = AnnotationSerializer().fields['id']
+    user = AnnotationSerializer().fields['user']
+    classification = AnnotationSerializer().fields['classification']
+    is_flagged = AnnotationSerializer().fields['is_flagged']
+    is_decisive = AnnotationSerializer().fields['is_decisive']
+
+    get_is_flagged = AnnotationSerializer.get_is_flagged
+    get_is_decisive = AnnotationSerializer.get_is_decisive
+
+    class Meta:
+        model = AnnotationSerializer.Meta.model
+        fields = (
+            "id",
+            "user",
+            "classification",
+            "is_flagged",
+            "is_decisive"
+        )
+
+class IdentificationTaskSerializer(serializers.ModelSerializer):
+    class IdentificationTaskReviewSerializer(serializers.ModelSerializer):
+        type = serializers.ChoiceField(source='review_type',choices=IdentificationTask.Review.choices)
+
+        def to_representation(self, instance):
+            if self.allow_null and instance.review_type is None:
+                return None  # Return None or an empty dict as needed
+            return super().to_representation(instance)
+
+        class Meta:
+            model = IdentificationTask
+            fields = (
+                "type",
+                "created_at"
+            )
+            extra_kwargs = {
+                'created_at': {'source': 'reviewed_at', 'read_only': True},
+            }
+
+    class IdentificationTaskResultSerializer(serializers.ModelSerializer):
+        taxon = SimpleTaxonSerializer(allow_null=True, read_only=True)
+        confidence = serializers.FloatField(min_value=0, max_value=1, read_only=True)
+        confidence_label = serializers.SerializerMethodField()
+        is_high_confidence = serializers.SerializerMethodField()
+
+        def get_confidence_label(self, obj) -> str:
+            return obj.confidence_label
+
+        def get_is_high_confidence(self, obj) -> bool:
+            return obj.is_high_confidence
+
+        def to_representation(self, instance):
+            if self.allow_null and not instance.is_done:
+                return None  # Return None or an empty dict as needed
+            return super().to_representation(instance)
+
+        class Meta:
+            model = IdentificationTask
+            fields = (
+                'taxon',
+                'is_high_confidence',
+                'confidence',
+                'confidence_label',
+                'uncertainty',
+                'agreement',
+            )
+            extra_kwargs = {
+                'confidence': {'min_value': 0, 'max_value': 1},
+                'uncertainty': {'min_value': 0, 'max_value': 1},
+                'agreement': {'min_value': 0, 'max_value': 1},
+            }
+
+    observation = SimplifiedObservationSerializer(source='report', read_only=True)
+    public_photo = SimplePhotoSerializer(source='photo', required=True)
+    review = IdentificationTaskReviewSerializer(source='*', allow_null=True, read_only=True)
+    result = IdentificationTaskResultSerializer(source='*', read_only=True)
+    annotators = SimpleAnnotatorUserSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = IdentificationTask
+        fields = (
+            'observation',
+            'public_photo',
+            'annotators',
+            'status',
+            'is_flagged',
+            'is_safe',
+            'public_note',
+            'num_annotations',
+            'review',
+            'result',
+            'created_at',
+            'updated_at'
+        )
+        extra_kwargs = {
+            'status': {'default': IdentificationTask.Status.OPEN},
+            'public_note': {'allow_null': True, 'allow_blank': True},
+            'num_annotations': {'source': 'total_finished_annotations','min_value': 0},
+            'created_at': {'read_only': True},
+            'updated_at': {'read_only': True},
+        }
+
 class ObservationSerializer(BaseReportWithPhotosSerializer):
+    class IdentificationSerializer(serializers.ModelSerializer):
+        photo = SimplePhotoSerializer(required=True)
+        result = IdentificationTaskSerializer.IdentificationTaskResultSerializer(source='*', allow_null=True, read_only=True)
+
+        class Meta:
+            model = IdentificationTask
+            fields = (
+                'photo',
+                'num_annotations',
+                'result',
+                'public_note'
+            )
+            extra_kwargs = {
+                'num_annotations': {'source': 'total_finished_annotations', 'min_value': 0, 'read_only': True},
+                'public_note': {'allow_null': True, 'allow_blank': True}
+            }
+
+    identification = IdentificationSerializer(source='identification_task', read_only=True, allow_null=True)
 
     class MosquitoAppearanceSerializer(serializers.ModelSerializer):
         def to_representation(self, instance):
@@ -542,6 +931,7 @@ class ObservationSerializer(BaseReportWithPhotosSerializer):
 
     class Meta(BaseReportWithPhotosSerializer.Meta):
         fields = BaseReportWithPhotosSerializer.Meta.fields + (
+            "identification",
             "event_environment",
             "event_moment",
             "mosquito_appearance"

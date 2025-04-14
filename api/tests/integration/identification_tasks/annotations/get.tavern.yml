@@ -1,0 +1,199 @@
+---
+
+test_name: Annotation can not be read by non-authenticated users.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - app_user_token
+
+stages:
+  - name: Retrieve is not allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: Non auth user can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
+      method: "GET"
+    response:
+      status_code: 403
+
+---
+
+test_name: Annotation can be retrieved by authenticated users with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - annotation_from_another_user
+    - token_user_can_view
+
+stages:
+  - name: User with perm view can retrieve owned annotation
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
+  - name: User with perm view can retrieve not owned annotation
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
+
+---
+
+test_name: Annotation can be retrieved by users withouth permissions only if owned.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - annotation_from_another_user
+    - token_user
+
+stages:
+  - name: User without perm view can retrieve if owned annotation
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+  - name: User without perm view can not retrieve if not owned annotation
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Annotator name can be read if user has no permissions but owned annotation.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - user
+    - annotation
+    - token_user
+
+stages:
+  - name: User without perm view can retrieve if owned annotation
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        user:
+          id: !int "{user.pk}"
+          username: "{user.username}"
+          first_name: "{user.first_name}"
+          last_name: "{user.last_name}"
+          full_name: "{user.first_name} {user.last_name}"
+
+---
+
+test_name: Annotator name is anonymous if user has no permissions and not owned annotation.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation_from_another_user
+    - token_user_can_view
+
+stages:
+  - name: User without perm view can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        user:
+          id: -1
+          username: 'anonymous'
+          first_name: 'Anonymous'
+          last_name: 'User'
+          full_name: 'Anonymous User'
+
+---
+
+test_name: Annotator name is retrieved if user has permissions even if not owned annotation.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - another_user
+    - annotation_from_another_user
+    - token_user_can_view
+    - token_user_can_view_annotators
+
+stages:
+  - name: User with perm view can retrieve full name
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        user:
+          id: !int "{another_user.pk}"
+          username: "{another_user.username}"
+          first_name: "{another_user.first_name}"
+          last_name: "{another_user.last_name}"
+          full_name: "{another_user.first_name} {another_user.last_name}"

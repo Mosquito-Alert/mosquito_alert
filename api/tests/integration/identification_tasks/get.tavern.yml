@@ -1,0 +1,109 @@
+---
+
+test_name: Identification tasks can not be read by authenticated users.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - identification_task
+    - token_user
+
+stages:
+  - name: Retrieve is not allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: Non auth user can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: User without perm view can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Identification tasks can be read only by authenticated users with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - token_user_can_view
+
+stages:
+  - name: User with perm view can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
+
+---
+
+test_name: Archived identification tasks can not be retrieved.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - archived_identification_task
+    - token_user_can_view
+
+stages:
+  - name: User with regular view perm view can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{archived_identification_task.report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view:s}"
+    response:
+      status_code: 404
+
+
+---
+
+test_name: Archived identification tasks can be retrieved if view_archived_identificationtasks permission.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - archived_identification_task
+    - token_user_can_view
+    - token_user_can_view_archived_identificationtasks
+
+stages:
+  - name: User with perm view archived can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{archived_identification_task.report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view_archived_identificationtasks:s}"
+    response:
+      status_code: 200

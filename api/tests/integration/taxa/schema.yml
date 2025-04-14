@@ -1,0 +1,21 @@
+---
+
+name: Common test information
+description: Login information for test server
+
+variables:
+  endpoint: "taxa"
+  response_data_validation: &retrieve_validation
+    id: !anyint
+    name: !anystr
+    common_name: !anything
+    rank: !anystr
+    italicize: !anybool
+    is_relevant: !anybool
+  response_list_data_validation: &response_list_validation
+    count: !anyint
+    next: !anything
+    previous: !anything
+    results: [
+      <<: *retrieve_validation
+    ]

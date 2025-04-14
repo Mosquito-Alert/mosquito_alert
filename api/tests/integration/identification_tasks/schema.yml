@@ -1,0 +1,50 @@
+---
+
+name: Common test information
+description: Login information for test server
+
+variables:
+  endpoint: "identification-tasks"
+  response_data_validation: &retrieve_validation
+    observation:
+      uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+      created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+      created_at_local: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}([+-]\d{2}:\d{2}|Z)
+      received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+      location:
+        timezone: !anything
+        point:
+          latitude: !anyfloat
+          longitude: !anyfloat
+        country:
+          id: !anyint
+          name_en: !anystr
+          iso3_code: !anystr
+        display_name: !anything
+      note: !anything
+    public_photo:
+      uuid: !anystr
+      url: !anystr
+    annotators: !anylist
+    status: !anystr
+    is_flagged: !anybool
+    is_safe: !anybool
+    public_note: !anything
+    num_annotations: !anyint
+    review: null
+    result:
+      taxon: !anything
+      confidence: !anyfloat
+      confidence_label: !anystr
+      is_high_confidence: !anybool
+      uncertainty: !anyfloat
+      agreement: !anyfloat
+    created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+    updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+  response_list_data_validation: &response_list_validation
+    count: !anyint
+    next: !anything
+    previous: !anything
+    results: [
+      <<: *retrieve_validation
+    ]

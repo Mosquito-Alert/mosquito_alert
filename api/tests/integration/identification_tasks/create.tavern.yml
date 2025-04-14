@@ -1,0 +1,36 @@
+---
+
+test_name: Create is disabled for all users
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - token_user_can_add
+
+stages:
+  - name: Create method not exist for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "POST"
+    response:
+      status_code: 403
+  - name: Create method non authenticated users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+    response:
+      status_code: 403
+  - name: Create method users even with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Token {token_user_can_add}"
+      method: "POST"
+    response:
+      status_code: 405

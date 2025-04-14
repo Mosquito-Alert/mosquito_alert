@@ -1,0 +1,153 @@
+test_name: My identification tasks can not be listed by authenticated users.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - token_user
+
+stages:
+  - name: List method returns not exist for mobile users
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: Non auth user can not list
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: User without perm view can list
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+
+---
+
+test_name: My identification tasks can be list only by if annotated.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - annotation
+    - token_user
+
+stages:
+  - name: User without perm view can retrieve only annotated identification tasks.
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - observation:
+              uuid: "{identification_task.report.pk}"
+
+---
+
+test_name: My identification tasks can be list not return non annotated identification tasks.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - annotation_from_another_user
+    - token_user
+
+stages:
+  - name: User without perm view can not retrieve not owned
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0
+
+---
+
+test_name: Archived identification tasks will not be list.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - archived_identification_task
+    - annotation
+    - token_user
+
+stages:
+  - name: User with regular perm view can not retrieve archived identification task
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0
+
+---
+
+test_name: Archived identification tasks will be listed if view_archived_identificationtasks permission.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - archived_identification_task
+    - annotation
+    - token_user
+    - token_user_can_view_archived_identificationtasks
+
+stages:
+  - name: User with perm view archived can retrieve archived identification task
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_view_archived_identificationtasks:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - observation:
+              uuid: "{archived_identification_task.report.pk}"

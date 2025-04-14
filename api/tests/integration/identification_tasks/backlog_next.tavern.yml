@@ -1,0 +1,61 @@
+---
+
+test_name: Backlog identification tasks can not be read by authenticated users.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - app_user_token
+    - token_user
+
+stages:
+  - name: Retrieve is not allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/backlog/next/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: Non auth user can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/backlog/next/"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: User without perm view can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/backlog/next/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Background identification tasks can be read only by authenticated users with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - token_user_can_add_annotations
+
+stages:
+  - name: User with perm view can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/backlog/next/"
+      method: "GET"
+      headers:
+        Authorization: "Token {token_user_can_add_annotations:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
