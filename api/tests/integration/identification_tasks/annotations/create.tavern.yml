@@ -84,6 +84,7 @@ stages:
             italicize: !anybool
           confidence: 1
           confidence_label: 'definitely'
+          is_high_confidence: true
         feedback:
           public_note: null
           user_note: null

@@ -666,6 +666,10 @@ class AnnotationSerializer(serializers.ModelSerializer):
             choices=['definitely', 'probably'],
             required=True
         )
+        is_high_confidence = serializers.SerializerMethodField()
+
+        def get_is_high_confidence(self, obj) -> bool:
+            return obj.is_high_confidence
 
         def to_internal_value(self, data):
             if self.allow_null and data is None:
@@ -692,6 +696,7 @@ class AnnotationSerializer(serializers.ModelSerializer):
                 "taxon",
                 "confidence",
                 "confidence_label",
+                "is_high_confidence"
             )
             extra_kwargs = {
                 "taxon_id": {"source": "taxon", "write_only": True, "required": True, "allow_null": False},

@@ -46,6 +46,8 @@ def get_confidence_label(value: numbers.Number) -> str:
     else:
         return _('Not sure')
 
+def get_is_high_confidence(value: numbers.Number) -> bool:
+    return float(value) >= 0.9
 
 class CrowdcraftingTask(models.Model):
     task_id = models.IntegerField(unique=True, null=True, default=None)
@@ -419,7 +421,7 @@ class IdentificationTask(LifecycleModel):
     def is_high_confidence(self) -> bool:
         if not self.confidence:
             return False
-        return self.confidence >= Decimal('0.9')
+        return get_is_high_confidence(value=self.confidence)
 
     @property
     def validation_value(self) -> Optional[int]:
@@ -813,6 +815,12 @@ class ExpertReportAnnotation(LifecycleModel):
     @property
     def confidence_label(self):
         return get_confidence_label(value=self.confidence)
+
+    @property
+    def is_high_confidence(self) -> bool:
+        if not self.confidence:
+            return False
+        return get_is_high_confidence(value=self.confidence)
 
     @classmethod
     def _get_auto_message(cls, category: 'Categories', validation_value: int, locale: str = 'en') -> Optional[str]:
