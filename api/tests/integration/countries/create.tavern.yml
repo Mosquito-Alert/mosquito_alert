@@ -8,17 +8,29 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user_token
+    - token_user_can_add
 
 stages:
-  - id: signup
-    type: ref
-  - id: login
-    type: ref
-  - name: Create method returns 404
+  - name: Create method not allowed for mobile users
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
       method: "POST"
     response:
-      status_code: 404 # NOTE: return 404 instead of 405 due to list is not able, so URL ending with '/' does not exist
+      status_code: 405
+  - name: Create method non authenticated users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+    response:
+      status_code: 401
+  - name: Create method users even with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Token {token_user_can_add}"
+      method: "POST"
+    response:
+      status_code: 405

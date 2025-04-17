@@ -127,3 +127,6 @@ class MyAnnotationPermissions(permissions.DjangoModelPermissions):
 
 class TaxaPermissions(UserObjectPermissions):
     perms_map = permissions.DjangoModelPermissions.perms_map
+
+class CountriesPermissions(UserObjectPermissions):
+    perms_map = permissions.DjangoModelPermissions.perms_map

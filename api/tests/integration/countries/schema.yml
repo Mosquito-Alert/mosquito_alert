@@ -5,7 +5,14 @@ description: Login information for test server
 
 variables:
   endpoint: "countries"
-  response_data_validation:
+  response_data_validation: &retrieve_validation
     id: !anyint
     name_en: !anystr
     iso3_code: !anystr
+  response_list_data_validation: &response_list_validation
+    count: !anyint
+    next: !anything
+    previous: !anything
+    results: [
+      <<: *retrieve_validation
+    ]

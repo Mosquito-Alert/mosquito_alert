@@ -6,6 +6,8 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user_token
+    - token_user_can_change
     - country
   - parametrize:
       key: method
@@ -14,15 +16,25 @@ marks:
         - PATCH
 
 stages:
-  - id: signup
-    type: ref
-  - id: login
-    type: ref
   - name: Update is disabeld
     request:
       url: "{api_live_url}/{endpoint}/{country.pk}/"
       headers:
-        Authorization: "Bearer {token}"
+        Authorization: "Bearer {app_user_token}"
+      method: "{method}"
+    response:
+      status_code: 405
+  - name: Update is disabeld for non auth users
+    request:
+      url: "{api_live_url}/{endpoint}/{country.pk}/"
+      method: "{method}"
+    response:
+      status_code: 401
+  - name: Update is disabeld users even with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/{country.pk}/"
+      headers:
+        Authorization: "Token {token_user_can_change}"
       method: "{method}"
     response:
       status_code: 405

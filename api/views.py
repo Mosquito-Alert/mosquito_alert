@@ -86,7 +86,8 @@ from .permissions import (
     IdentificationTaskBacklogPermissions,
     AnnotationPermissions,
     MyAnnotationPermissions,
-    TaxaPermissions
+    TaxaPermissions,
+    CountriesPermissions
 )
 from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet, NestedViewSetMixin
 
@@ -100,9 +101,11 @@ class CampaignsViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     filterset_class = CampaignFilter
 
 
-class CountriesViewSet(RetrieveModelMixin, GenericViewSet):
+class CountriesViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     queryset = EuropeCountry.objects.all()
     serializer_class = CountrySerializer
+    permission_classes = (CountriesPermissions,)
+
     lookup_url_kwarg = "id"
 
 

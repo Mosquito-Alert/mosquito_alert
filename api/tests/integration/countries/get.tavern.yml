@@ -6,26 +6,32 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user_token
+    - token_user
     - country
 
 stages:
-  - name: Retrieve country for unauthorized users must fail
+  - name: Retrieve is allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/{country.pk}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
+  - name: Non auth user can not retrieve
     request:
       url: "{api_live_url}/{endpoint}/{country.pk}/"
       method: "GET"
     response:
       status_code: 401
-  # AUTH
-  - id: signup
-    type: ref
-  - id: login
-    type: ref
-  - name: Retrieve country for authorized users & check schema result
+  - name: User without perm view can retrieve
     request:
       url: "{api_live_url}/{endpoint}/{country.pk}/"
-      headers:
-        Authorization: "Bearer {token}"
       method: "GET"
+      headers:
+        Authorization: "Token {token_user:s}"
     response:
       status_code: 200
       json: !force_format_include "{response_data_validation}"
