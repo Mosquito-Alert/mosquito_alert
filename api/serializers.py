@@ -709,6 +709,7 @@ class AnnotationSerializer(serializers.ModelSerializer):
     feedback = AnnotationFeedbackSerializer(source='*', required=False)
 
     classification = AnnotationClassificationSerializer(source='*', required=True, allow_null=True)
+    best_photo_uuid = serializers.UUIDField(write_only=True, required=False)
     best_photo = SimplePhotoSerializer(read_only=True, allow_null=True)
     tags = TagListSerializerField(required=False, allow_empty=True)
 
@@ -737,6 +738,12 @@ class AnnotationSerializer(serializers.ModelSerializer):
         except Report.DoesNotExist:
             raise serializers.ValidationError("The observation does not does not exist.")
 
+        if best_photo_uuid := data.pop('best_photo_uuid', None):
+            try:
+                data['best_photo'] = Photo.objects.get(report=data['report'], uuid=best_photo_uuid)
+            except Photo.DoesNotExist:
+                raise serializers.ValidationError("The photo does not does not exist or does not belong to the observation.")
+
         is_flagged = data.pop("is_flagged")
         if is_flagged:
             data["status"] = ExpertReportAnnotation.STATUS_FLAGGED
@@ -755,7 +762,7 @@ class AnnotationSerializer(serializers.ModelSerializer):
             "observation_uuid",
             "user_hidden_obj",
             "user",
-            "best_photo_id",
+            "best_photo_uuid",
             "best_photo",
             "classification",
             "feedback",
@@ -767,7 +774,6 @@ class AnnotationSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {
             "user_id": {'read_only': True},
-            "best_photo_id": {'source': 'best_photo', 'write_only': True},
             "observation_uuid": {'source': 'report', 'read_only': True},
             'created_at': {"source": "created", 'read_only': True},
             'updated_at': {"source": "last_modified", 'read_only': True},

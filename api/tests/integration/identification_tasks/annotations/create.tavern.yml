@@ -38,7 +38,7 @@ stages:
 
 ---
 
-test_name: Create method
+test_name: Create method without best_photo
 
 includes:
   - !include schema.yml
@@ -53,7 +53,7 @@ marks:
     - token_user_can_add
 
 stages:
-  - name: Create method
+  - name: Create method without best_photo
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
@@ -75,6 +75,67 @@ stages:
           last_name: "{user.last_name}"
           full_name: "{user.first_name} {user.last_name}"
         best_photo: null
+        classification:
+          taxon:
+            id: !int "{taxon_root.pk}"
+            name: !anystr
+            common_name: !anything
+            rank: !anystr
+            italicize: !anybool
+          confidence: 1
+          confidence_label: 'definitely'
+          is_high_confidence: true
+        feedback:
+          public_note: null
+          user_note: null
+        is_flagged: false
+        is_decisive: false
+        tags: !anylist
+        created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+        updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+
+---
+
+test_name: Create method with best_photo
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - identification_task
+    - user
+    - taxon_root
+    - token_user_can_add
+
+stages:
+  - name: Create method with best_photo
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Token {token_user_can_add}"
+      method: "POST"
+      json:
+        best_photo_uuid: "{identification_task.photo.uuid}"
+        classification:
+          taxon_id: !int "{taxon_root.pk}"
+          confidence_label: 'definitely'
+    response:
+      status_code: 201
+      json:
+        id: !anyint
+        observation_uuid: "{identification_task.report.pk}"
+        user:
+          id: !int "{user.pk}"
+          username: "{user.username}"
+          first_name: "{user.first_name}"
+          last_name: "{user.last_name}"
+          full_name: "{user.first_name} {user.last_name}"
+        best_photo:
+          uuid: "{identification_task.photo.uuid}"
+          url: !anystr
         classification:
           taxon:
             id: !int "{taxon_root.pk}"
