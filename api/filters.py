@@ -111,8 +111,8 @@ class IdentificationTaskFilter(filters.FilterSet):
             return queryset
         return queryset.annotated_by(users=value)
 
-    num_assignations = filters.NumericRangeFilter(field_name="total_annotations")
-    num_annotations = filters.NumericRangeFilter(field_name="total_finished_annotations")
+    num_assignations = filters.RangeFilter(field_name="total_annotations")
+    num_annotations = filters.RangeFilter(field_name="total_finished_annotations")
 
     created_at = filters.IsoDateTimeFromToRangeFilter(
         field_name="created_at", label="Created at"
@@ -138,9 +138,9 @@ class IdentificationTaskFilter(filters.FilterSet):
         field_name="taxon",
         queryset=Taxon.objects.all(),
     )
-    result_confidence = filters.NumericRangeFilter(field_name="confidence")
-    result_uncertainty = filters.NumericRangeFilter(field_name="uncertainty")
-    result_agreement = filters.NumericRangeFilter(field_name="agreement")
+    result_confidence = filters.RangeFilter(field_name="confidence")
+    result_uncertainty = filters.RangeFilter(field_name="uncertainty")
+    result_agreement = filters.RangeFilter(field_name="agreement")
 
     class Meta:
         model = IdentificationTask
@@ -161,7 +161,7 @@ class AnnotationFilter(filters.FilterSet):
         queryset=Taxon.objects.all(),
     )
 
-    classification_confidence = filters.NumericRangeFilter(field_name="confidence")
+    classification_confidence = filters.RangeFilter(field_name="confidence")
     classification_confidence_label = filters.ChoiceFilter(
         choices=[('definitely', 'definitely'), ('probably', 'probably')],
         method="filter_by_confidence_label"
