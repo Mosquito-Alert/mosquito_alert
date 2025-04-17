@@ -75,7 +75,7 @@ class BaseReportWithPhotosFilter(BaseReportFilter):
 
 
 class ObservationFilter(BaseReportWithPhotosFilter):
-    identification_taxon = filters.ModelMultipleChoiceFilter(
+    identification_taxon_ids = filters.ModelMultipleChoiceFilter(
         field_name="identification_task__taxon",
         queryset=Taxon.objects.all(),
     )
@@ -128,12 +128,12 @@ class IdentificationTaskFilter(filters.FilterSet):
         choices=IdentificationTask.Status.choices
     )
 
-    observation_country = filters.ModelMultipleChoiceFilter(
+    observation_country_ids = filters.ModelMultipleChoiceFilter(
         field_name="report__country",
         queryset=EuropeCountry.objects.all(),
     )
 
-    result_taxon = filters.ModelMultipleChoiceFilter(
+    result_taxon_ids = filters.ModelMultipleChoiceFilter(
         field_name="taxon",
         queryset=Taxon.objects.all(),
     )
