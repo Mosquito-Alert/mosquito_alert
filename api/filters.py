@@ -111,7 +111,6 @@ class IdentificationTaskFilter(filters.FilterSet):
             return queryset
         return queryset.annotated_by(users=value)
 
-    num_assignations = filters.RangeFilter(field_name="total_annotations")
     num_annotations = filters.RangeFilter(field_name="total_finished_annotations")
 
     created_at = filters.IsoDateTimeFromToRangeFilter(
