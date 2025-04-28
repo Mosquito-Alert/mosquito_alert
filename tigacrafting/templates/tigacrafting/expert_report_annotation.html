@@ -836,12 +836,18 @@
                     $('#' + $('#' + '{{ form.best_photo.auto_id }}').val()).attr('checked', true);
                 }
 
-                $('input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']').change(function () {
-                    //console.log(this.value);
-                    $('#' + '{{ form.best_photo.auto_id }}').val(this.value);
+                var radioSelector = 'input:radio[name=photo_to_display_report_' + '{{ form.instance.report.version_UUID }}' + ']';
+                $(radioSelector).change(function () {
+                    if (this.checked) {
+                        $('#' + '{{ form.best_photo.auto_id }}').val(this.value);
+                    } else {
+                        $('#' + '{{ form.best_photo.auto_id }}').val();
+                    }
                     //set_default_female(this.value);
                     //reset_all_picture_status_for_report('{{ form.instance.report.version_UUID }}').then( set_default_female(id_photo) );
                 });
+                // Trigger it manually for the initially checked radio button
+                $(radioSelector).trigger('change');
 
 
                 $("#clear_button_{{ form.instance.id }}").click(function () {
