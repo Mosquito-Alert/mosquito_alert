@@ -2364,7 +2364,8 @@ class Report(TimeZoneModelMixin, models.Model):
             return "Conflict"
 
         if identification_task.taxon.is_relevant:
-            return "{} {}".format(identification_task.confidence_label, identification_task.taxon.name)
+            with translation.override('en'):
+                return "{} {}".format(identification_task.confidence_label, identification_task.taxon.name)
         else:
             return "Other species"
 
