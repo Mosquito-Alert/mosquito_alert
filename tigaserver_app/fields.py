@@ -1,8 +1,6 @@
-from io import BytesIO
 import os
 from PIL import Image, ImageOps, ExifTags
 
-from django.core.files.images import get_image_dimensions
 from django.db.models.fields.files import ImageFieldFile
 
 from rest_framework import serializers
@@ -47,11 +45,12 @@ class ProcessedImageExifFieldFile(ImageFieldFile):
             img = Image.open(self.file)
 
             img_trans = ImageOps.exif_transpose(img)
-            img_buffer = BytesIO()
-            img_trans.save(img_buffer, format=img.format)
-            img_buffer.seek(0)
+            self._dimensions_cache = img_trans.size
+            img_trans.close()
 
-            self._dimensions_cache = get_image_dimensions(img_buffer, close=close)
+            if close:
+                self.close()
+
         return self._dimensions_cache
 
 
