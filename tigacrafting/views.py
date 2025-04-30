@@ -609,7 +609,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
 
             user_tasks = task_qs.filter(assignees=this_user)
 
-            args['n_flagged'] = user_tasks.done().filter(is_flagged=True, is_safe=True).count()
+            args['n_flagged'] = user_tasks.done().filter(is_flagged=True).count()
             args['n_hidden'] = user_tasks.done().filter(is_safe=False).count()
             args['n_public'] = user_tasks.done().filter(is_flagged=False, is_safe=True).count()
 
@@ -684,8 +684,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
 
                 if final_status == "flagged":
                     all_annotations = all_annotations.filter(
-                        identification_task__is_flagged=True,
-                        identification_task__is_safe=True
+                        identification_task__is_flagged=True
                     )
                 elif final_status == "hidden":
                     all_annotations = all_annotations.filter(
