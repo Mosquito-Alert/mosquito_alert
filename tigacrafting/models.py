@@ -613,7 +613,6 @@ class IdentificationTask(LifecycleModel):
                 default_status=self.Status.DONE
             )
         elif self.total_finished_annotations > 0:
-            self.result_source = self.ResultSource.EXPERT
             if not self.is_reviewed or force:
                 # TODO: ensure annotations are before superexpert review -> pending, there are annotations that not meet this requirement.
                 if executive_annotation:
@@ -630,6 +629,7 @@ class IdentificationTask(LifecycleModel):
                     if self.total_finished_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
                         # Case 3: Sufficient annotations for final decision
                         self.status = self.Status.DONE
+                        self.result_source = self.ResultSource.EXPERT
                         taxon, confidence, uncertainty, agreement = self.get_taxon_consensus(
                             annotations=list(finished_experts_annotations_qs)
                         )
