@@ -1589,7 +1589,7 @@ class TestExpertReportAnnotationModel:
         assert getattr(adult_report, 'identification_task', None) is None
         assert not adult_report.hide
 
-        super_reritja = User.objects.create(pk=25, username='super_reritja')
+        super_reritja, _ = User.objects.get_or_create(pk=25, username='super_reritja')
         superexperts_group, _ = Group.objects.get_or_create(name='superexpert')
         superexperts_group.user_set.add(super_reritja)
 
@@ -2280,7 +2280,7 @@ class TestIdentificationTaskFlow:
         another_photo = Photo.objects.create(report=identification_task.report, photo='./testdata/splash.png')
 
         # Since superexpert will automatically review the executive validations, adding User with pk=25
-        super_reritja = User.objects.create(pk=25, username='super_reritja')
+        super_reritja, _ = User.objects.get_or_create(pk=25, username='super_reritja')
 
         # Executive annotation
         annotation = self._add_annotation(
