@@ -1917,6 +1917,13 @@ class Report(TimeZoneModelMixin, models.Model):
 
         self.version_time = self.version_time or self.creation_time
 
+        # Set the location to current if not located and not mission
+        # (missions are not located)
+        if not self.located and self.type != self.TYPE_MISSION:
+            self.location_choice = self.LOCATION_SELECTED
+            self.current_location_lat = 0
+            self.current_location_lon = 0
+
         # Recreate the Point (just in case lat/lon has changed)
         _old_point = self.point
         self.point = self._get_point()

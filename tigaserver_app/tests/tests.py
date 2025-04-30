@@ -2017,6 +2017,9 @@ class ReportModelTest(TestCase):
             creation_time=timezone.now(),
             version_time=timezone.now(),
             type=Report.TYPE_BITE,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
         )
         self.assertEqual(report.published_at, timezone.now())
         self.assertEqual(report.published, True)
@@ -2030,6 +2033,9 @@ class ReportModelTest(TestCase):
                 creation_time=timezone.now(),
                 version_time=timezone.now(),
                 type=Report.TYPE_SITE,
+                location_choice=Report.LOCATION_CURRENT,
+                current_location_lon=41,
+                current_location_lat=2,
             )
             _ = Photo.objects.create(report=report, photo='./testdata/splash.png')
             report.refresh_from_db()
@@ -2049,6 +2055,9 @@ class ReportModelTest(TestCase):
             creation_time=timezone.now(),
             version_time=timezone.now(),
             type=Report.TYPE_SITE,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
         )
         self.assertEqual(report.published_at, timezone.now())
         self.assertEqual(report.published, True)
@@ -2061,6 +2070,9 @@ class ReportModelTest(TestCase):
             creation_time=timezone.now(),
             version_time=timezone.now(),
             type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
         )
         self.assertEqual(report.published, True)
 
@@ -2072,6 +2084,9 @@ class ReportModelTest(TestCase):
             creation_time=timezone.now(),
             version_time=timezone.now(),
             type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
         )
         _ = Photo.objects.create(report=report, photo='./testdata/splash.png')
         report.refresh_from_db()
@@ -2085,6 +2100,9 @@ class ReportModelTest(TestCase):
             creation_time=timezone.now(),
             version_time=timezone.now(),
             type=Report.TYPE_MISSION,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
         )
         self.assertEqual(report.published, False)
 
@@ -2096,6 +2114,9 @@ class ReportModelTest(TestCase):
             creation_time=timezone.now(),
             version_time=timezone.now(),
             type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
         )
         report.published_at = timezone.now()
         report.save()
@@ -2116,7 +2137,10 @@ class ReportModelTest(TestCase):
             version_time=timezone.now(),
             type=Report.TYPE_BITE,
             published_at=timezone.now(),
-            note='#345'
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
+            note='#345',
         )
 
         self.assertEqual(report.tags.filter(name='345').exists(), True)
@@ -2131,6 +2155,9 @@ class ReportModelTest(TestCase):
             creation_time=timezone.now(),
             version_time=timezone.now(),
             type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
         )
         report.published_at = timezone.now()
         report.save()
@@ -2148,7 +2175,10 @@ class ReportModelTest(TestCase):
             phone_upload_time=timezone.now(),
             creation_time=timezone.now(),
             version_time=timezone.now(),
-            type=Report.TYPE_BITE
+            type=Report.TYPE_BITE,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
         )
         report.published_at = timezone.now()
         report.save()
@@ -2170,6 +2200,9 @@ class ReportModelTest(TestCase):
             creation_time=timezone.now(),
             version_time=timezone.now(),
             type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=41,
+            current_location_lat=2,
         )
 
         with self.assertRaises(IntegrityError) as context:
@@ -2203,6 +2236,29 @@ class ReportModelTest(TestCase):
         )
 
         assert report.lau_fk == lau
+
+    def test_report_location_is_forced_if_missing(self):
+        for t, _ in Report.TYPE_CHOICES:
+            report = Report.objects.create(
+                user=TigaUser.objects.create(),
+                report_id='1234',
+                phone_upload_time=timezone.now(),
+                creation_time=timezone.now(),
+                version_time=timezone.now(),
+                type=t,
+            )
+
+            report.refresh_from_db()
+
+            if t != Report.TYPE_MISSION:
+                self.assertEqual(report.location_choice, Report.LOCATION_SELECTED)
+                self.assertEqual(report.current_location_lon, 0)
+                self.assertEqual(report.current_location_lat, 0)
+                self.assertEqual(report.location_is_masked, True)
+            else:
+                self.assertEqual(report.location_choice, '')
+                self.assertIsNone(report.current_location_lon)
+                self.assertIsNone(report.current_location_lat)
 
 class ApiTokenViewTest(APITestCase):
     ENDPOINT = '/api/token/'
