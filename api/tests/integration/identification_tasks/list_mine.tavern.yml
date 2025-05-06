@@ -43,8 +43,8 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - identification_task
     - annotation
+    - identification_task
     - jwt_token_user
 
 stages:
@@ -102,8 +102,8 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - archived_identification_task
     - annotation
+    - archived_identification_task
     - jwt_token_user
 
 stages:
@@ -130,8 +130,8 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - archived_identification_task
     - annotation
+    - archived_identification_task
     - jwt_token_user
     - perm_user_can_view_archived_identificationtasks
 
