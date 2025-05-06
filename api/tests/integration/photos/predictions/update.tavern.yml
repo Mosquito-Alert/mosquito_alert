@@ -31,7 +31,7 @@ stages:
       method: "{method}"
     response:
       status_code: 403
-  - name: Update is disabeld users even with permissions
+  - name: Users with permission can update
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
