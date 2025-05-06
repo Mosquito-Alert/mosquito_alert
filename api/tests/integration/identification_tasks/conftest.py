@@ -28,6 +28,7 @@ def annotation_from_another_user(identification_task, another_user):
         user=another_user
     )
 
+@pytest.fixture
 def identification_task_fully_predicted(app_user, dummy_image):
     observation = create_observation_object(user=app_user)
     photo = Photo.objects.create(
