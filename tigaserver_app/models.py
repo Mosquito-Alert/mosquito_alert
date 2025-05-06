@@ -2126,7 +2126,7 @@ class Report(TimeZoneModelMixin, models.Model):
         for photo in self.visible_photos:
             best_photo = ExpertReportAnnotation.objects.filter(best_photo=photo).exists()
             border_style = "3px solid green" if best_photo else "1px solid #333333"
-            result += '<div id="' + str(photo.id) + '" style="border: ' + border_style + ';margin:1px;">' + photo.medium_image_for_validation_() + '</div><div>' + get_icon_for_blood_genre(photo.blood_genre) + '</div><br>'
+            result += '<div id="' + str(photo.id) + '" style="border: ' + border_style + ';margin:1px;">' + photo.medium_image_for_validation_(show_prediction=True) + '</div><div>' + get_icon_for_blood_genre(photo.blood_genre) + '</div><br>'
         return result
 
     def get_crowdcrafting_score(self):
@@ -2359,11 +2359,15 @@ class Report(TimeZoneModelMixin, models.Model):
         if identification_task.status == IdentificationTask.Status.CONFLICT:
             return "Conflict"
 
+        res = "Other species"
         if identification_task.taxon.is_relevant:
             with translation.override('en'):
-                return "{} {}".format(identification_task.confidence_label, identification_task.taxon.name)
-        else:
-            return "Other species"
+                res = "{} {}".format(identification_task.confidence_label, identification_task.taxon.name)
+
+        if identification_task.result_source == IdentificationTask.ResultSource.AI:
+            res = res + " ({})".format(identification_task.result_source)
+
+        return res
 
     # This is just a formatter of get_final_combined_expert_category_euro_struct. Takes the exact same output and makes it
     # template friendly, also adds explicit ids for category and complex
@@ -3063,8 +3067,42 @@ class Photo(models.Model):
     def medium_image_(self):
         return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
 
-    def medium_image_for_validation_(self):
-        return '<a target="_blank" href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
+    def medium_image_for_validation_(self, show_prediction: bool = False):
+        caption_html = ""
+        if show_prediction and hasattr(self, 'prediction') and self.prediction:
+            caption_html = '''
+                <figcaption title="AI label: {0}" style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    background: rgba(0, 0, 0, 0.7);
+                    color: white;
+                    padding: 4px 8px;
+                    font-size: 12px;
+                    border-bottom-right-radius: 4px;
+                    z-index: 1;
+                    cursor: default;
+                ">
+                    <i class="fa fa-magic"></i>
+                    <span>{1}</span>
+                </figcaption>
+            '''.format(
+                self.prediction.predicted_class,
+                self.prediction.taxon.name if self.prediction.taxon else "Uncertain"
+            )
+
+        return '''
+            <figure style="position: relative; display: inline-block;">
+                {0}
+                <a target="_blank" href="{1}">
+                    <img src="{2}" style="display: block;">
+                </a>
+            </figure>
+        '''.format(
+            caption_html,
+            self.photo.url,
+            self.get_medium_url()
+        )
 
     # Metadata scrubbing
     # def save(self, *args, **kwargs):

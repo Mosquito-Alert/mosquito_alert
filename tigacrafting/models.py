@@ -1055,7 +1055,7 @@ class ExpertReportAnnotation(LifecycleModel):
                         '<input data-best="' + str(best_photo) + '" type="radio" name="photo_to_display_report_' + str(self.report.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '" ' + ('checked="checked"' if these_photos.count() == 1 else '') + ' "/>Display this photo on public map:'\
                         '</div>' \
                         '<br>' \
-                        '<div style="border:' + border_style + ';margin:1px;position: relative;">' + photo.medium_image_for_validation_() + '</div>'
+                        '<div style="border:' + border_style + ';margin:1px;position: relative;">' + photo.medium_image_for_validation_(show_prediction=True) + '</div>'
                         # '<div id="blood_status_' + str(self.report.version_UUID) + '_' + str(photo.id) + '">' \
                         # '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
                         # '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
