@@ -9,7 +9,7 @@ marks:
   - usefixtures:
     - api_live_url
     - endpoint
-    - token_user
+    - token_user_can_add
     - app_user_token
 
 stages:
@@ -27,11 +27,11 @@ stages:
       method: "POST"
     response:
       status_code: 403
-  - name: Create method authenticated users without permissions
+  - name: Create method is not allowed even for users with permissions
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
-        Authorization: "Token {token_user}"
+        Authorization: "Token {token_user_can_add}"
       method: "POST"
     response:
-      status_code: 403
+      status_code: 405
