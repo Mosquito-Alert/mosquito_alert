@@ -72,11 +72,16 @@ class ReportQuerySet(models.QuerySet):
         )
 
     def in_coarse_filter(self) -> QuerySet:
-        from tigacrafting.models import ExpertReportAnnotation
+        from tigacrafting.models import ExpertReportAnnotation, PhotoPrediction
 
         return self.browsable().has_photos().exclude(
-            models.Exists(
-                ExpertReportAnnotation.objects.filter(report_id=models.OuterRef('pk'))
+            models.Q(
+                models.Exists(
+                    ExpertReportAnnotation.objects.filter(report_id=models.OuterRef('pk'))
+                ) |
+                models.Exists(
+                    PhotoPrediction.objects.filter(is_decisive=True, photo__report_id=models.OuterRef('pk'))
+                )
             )
         ).order_by('-server_upload_time')
 
