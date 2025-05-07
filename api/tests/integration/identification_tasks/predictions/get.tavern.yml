@@ -27,7 +27,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
       method: "GET"
     response:
-      status_code: 403
+      status_code: 401
   - name: User without perm view can retrieve
     request:
       url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"

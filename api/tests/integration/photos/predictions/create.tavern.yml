@@ -26,7 +26,7 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "POST"
     response:
-      status_code: 403
+      status_code: 401
   - name: Create method is not allowed even for users with permissions
     request:
       url: "{api_live_url}/{endpoint}/"
