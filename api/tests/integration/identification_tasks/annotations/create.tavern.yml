@@ -9,7 +9,7 @@ marks:
   - usefixtures:
     - api_live_url
     - endpoint
-    - token_user
+    - jwt_token_user
     - app_user_token
 
 stages:
@@ -26,12 +26,12 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "POST"
     response:
-      status_code: 403
+      status_code: 401
   - name: Create method authenticated users without permissions
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
-        Authorization: "Token {token_user}"
+        Authorization: "Bearer {jwt_token_user}"
       method: "POST"
     response:
       status_code: 403
@@ -50,14 +50,14 @@ marks:
     - identification_task
     - user
     - taxon_root
-    - token_user_can_add
+    - jwt_token_user_can_add
 
 stages:
   - name: Create method without best_photo
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
-        Authorization: "Token {token_user_can_add}"
+        Authorization: "Bearer {jwt_token_user_can_add}"
       method: "POST"
       json:
         classification:
@@ -108,14 +108,14 @@ marks:
     - identification_task
     - user
     - taxon_root
-    - token_user_can_add
+    - jwt_token_user_can_add
 
 stages:
   - name: Create method with best_photo
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
-        Authorization: "Token {token_user_can_add}"
+        Authorization: "Bearer {jwt_token_user_can_add}"
       method: "POST"
       json:
         best_photo_uuid: "{identification_task.photo.uuid}"
@@ -169,14 +169,14 @@ marks:
     - identification_task
     - user
     - taxon_root
-    - token_user_can_add
+    - jwt_token_user_can_add
 
 stages:
   - name: Create off-topic classification
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
-        Authorization: "Token {token_user_can_add}"
+        Authorization: "Bearer {jwt_token_user_can_add}"
       method: "POST"
       json:
         classification: null

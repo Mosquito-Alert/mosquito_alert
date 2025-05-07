@@ -245,7 +245,8 @@ DRF_STANDARDIZED_ERRORS = {
 
 SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
-    "USER_ID_FIELD": "user_UUID", # NOTE: from TigaUser
+    "USER_ID_FIELD": "pk",
+    "USER_ID_CLAIM": "user_pk",
     "TOKEN_OBTAIN_SERIALIZER": "api.auth.serializers.AppUserTokenObtainPairSerializer",
 }
 

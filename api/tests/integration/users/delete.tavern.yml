@@ -8,7 +8,7 @@ marks:
     - api_live_url
     - app_user
     - app_user_token
-    - token_user_can_delete
+    - jwt_token_user_can_delete
 
 stages:
   - name: Anonymous users can not delete
@@ -22,7 +22,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: "DELETE"
       headers:
-        Authorization: "Token {token_user_can_delete}"
+        Authorization: "Bearer {jwt_token_user_can_delete}"
     response:
       status_code: 405
   - name: Mobile users can not delete

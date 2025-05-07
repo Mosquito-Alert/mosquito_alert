@@ -8,7 +8,7 @@ marks:
     - api_live_url
     - endpoint
     - app_user_token
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: List method returns 403 for mobile users
@@ -24,13 +24,13 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
     response:
-      status_code: 403
+      status_code: 401
   - name: User without perm view can not list
     request:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 403
 
@@ -46,7 +46,7 @@ marks:
     - api_live_url
     - endpoint
     - annotation
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - name: User with perm view can retrieve
@@ -54,7 +54,7 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
       json: !force_format_include "{response_list_data_validation}"

@@ -79,6 +79,7 @@ from .serializers import (
 )
 from .permissions import (
     NotificationObjectPermissions,
+    MyNotificationPermissions,
     ReportPermissions,
     MyReportPermissions,
     IdentificationTaskPermissions,
@@ -194,6 +195,7 @@ class NotificationViewSet(
     )
 )
 class MyNotificationViewSet(NotificationViewSet, GenericMobileOnlyViewSet):
+    permission_classes = (MyNotificationPermissions,)
     def get_queryset(self):
         return super().get_queryset().for_user(user=self.request.user)
 

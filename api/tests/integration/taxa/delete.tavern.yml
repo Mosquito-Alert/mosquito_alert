@@ -8,7 +8,7 @@ marks:
     - api_live_url
     - app_user_token
     - taxon_root
-    - token_user_can_delete
+    - jwt_token_user_can_delete
 
 stages:
   - name: Delete is disabeld for mobile users
@@ -29,7 +29,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/{taxon_root.pk}/"
       headers:
-        Authorization: "Token {token_user_can_delete}"
+        Authorization: "Bearer {jwt_token_user_can_delete}"
       method: "DELETE"
     response:
       status_code: 405

@@ -8,7 +8,7 @@ marks:
     - endpoint
     - api_live_url
     - annotation
-    - token_user_can_change
+    - jwt_token_user_can_change
     - app_user_token
   - parametrize:
       key: method
@@ -30,12 +30,12 @@ stages:
       url: "{api_live_url}/{endpoint}/{annotation.pk}/"
       method: "{method}"
     response:
-      status_code: 403
+      status_code: 401
   - name: Update is disabeld users even with permissions
     request:
       url: "{api_live_url}/{endpoint}/{annotation.pk}/"
       headers:
-        Authorization: "Token {token_user_can_change}"
+        Authorization: "Bearer {jwt_token_user_can_change}"
       method: "{method}"
     response:
       status_code: 405

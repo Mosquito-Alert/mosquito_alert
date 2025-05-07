@@ -7,7 +7,7 @@ marks:
   - usefixtures:
     - api_live_url
     - report_photo
-    - token_user_can_delete
+    - jwt_token_user_can_delete
 
 stages:
   - id: signup
@@ -27,12 +27,12 @@ stages:
       url: "{api_live_url}/{endpoint}/{report_photo.uuid}/"
       method: "DELETE"
     response:
-      status_code: 403
+      status_code: 401
   - name: Delete method authenticated even users with permissions
     request:
       url: "{api_live_url}/{endpoint}/{report_photo.uuid}/"
       headers:
-        Authorization: "Token {token_user_can_delete}"
+        Authorization: "Bearer {jwt_token_user_can_delete}"
       method: "DELETE"
     response:
       status_code: 405

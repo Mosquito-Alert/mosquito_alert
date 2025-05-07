@@ -8,7 +8,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - token_user_can_add
+    - jwt_token_user_can_add
 
 stages:
   - name: Non auth user can not create
@@ -22,9 +22,9 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "POST"
       headers:
-        Authorization: "Token {token_user_can_add:s}"
+        Authorization: "Bearer {jwt_token_user_can_add:s}"
     response:
-      status_code: 401
+      status_code: 403
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-
+# TODO: test again user (regular user) also, skipping for now because it's been already tested in test_views.py
 test_name: Make sure token is correct
 
 marks:

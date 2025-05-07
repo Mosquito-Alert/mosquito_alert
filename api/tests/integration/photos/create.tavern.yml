@@ -8,7 +8,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - token_user_can_add
+    - jwt_token_user_can_add
 
 stages:
   - id: signup
@@ -33,7 +33,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
-        Authorization: "Token {token_user_can_add}"
+        Authorization: "Bearer {jwt_token_user_can_add}"
       method: "POST"
     response:
       status_code: 404

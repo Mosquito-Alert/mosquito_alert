@@ -1,6 +1,30 @@
+import random
+
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from tigaserver_app.models import Report, TigaUser
+
+User = get_user_model()
+
+def create_regular_user(password: str = "testpassword123_tmp") -> 'User':
+    user = User.objects.create_user(
+        username=f"user_{random.randint(1,1000)}",
+        password=User.objects.make_random_password(),
+        first_name="Test FirstName",
+        last_name="Test LastName"
+    )
+    if password:
+        user.set_password(password)
+        user.save()
+    return user
+
+def create_mobile_user(password: str = "testpassword123_tmp") -> TigaUser:
+    user = TigaUser.objects.create()
+    if password:
+        user.set_password(password)
+        user.save()
+    return user
 
 def create_report_object(user: TigaUser) -> Report:
     return Report(

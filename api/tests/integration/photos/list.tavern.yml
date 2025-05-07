@@ -6,7 +6,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - id: signup
@@ -32,6 +32,6 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 404

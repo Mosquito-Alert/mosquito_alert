@@ -10,7 +10,7 @@ marks:
     - api_live_url
     - identification_task
     - app_user_token
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: Retrieve is not allowed for mobile users
@@ -26,13 +26,13 @@ stages:
       url: "{api_live_url}/{endpoint}/backlog/next/"
       method: "GET"
     response:
-      status_code: 403
+      status_code: 401
   - name: User without perm view can not retrieve
     request:
       url: "{api_live_url}/{endpoint}/backlog/next/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 403
 
@@ -47,7 +47,8 @@ marks:
   - usefixtures:
     - api_live_url
     - identification_task
-    - token_user_can_add_annotations
+    - jwt_token_user
+    - perm_user_can_add_annotations
 
 stages:
   - name: User with perm view can retrieve
@@ -55,7 +56,7 @@ stages:
       url: "{api_live_url}/{endpoint}/backlog/next/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_add_annotations:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
       json: !force_format_include "{response_data_validation}"

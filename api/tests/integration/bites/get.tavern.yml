@@ -10,7 +10,7 @@ marks:
   - usefixtures:
     - api_live_url
     - published_object
-    - token_user
+    - jwt_token_user
 
 stages:
   - type: ref
@@ -37,7 +37,7 @@ marks:
   - usefixtures:
     - api_live_url
     - soft_deleted_object
-    - token_user_can_view
+    - jwt_token_user_can_view
     - app_user_token
 
 stages:
@@ -60,7 +60,7 @@ marks:
   - usefixtures:
     - api_live_url
     - unpublished_object
-    - token_user
+    - jwt_token_user
     - app_user_token
 
 stages:
@@ -90,7 +90,7 @@ marks:
   - usefixtures:
     - api_live_url
     - unpublished_object
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - type: ref

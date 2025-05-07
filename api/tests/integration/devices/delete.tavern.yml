@@ -9,7 +9,7 @@ marks:
     - app_user
     - app_user_token
     - device
-    - token_user_can_delete
+    - jwt_token_user_can_delete
 
 stages:
   - name: Delete is disabled for anonymous users
@@ -23,9 +23,9 @@ stages:
       url: "{api_live_url}/{endpoint}/{device.device_id}/"
       method: "DELETE"
       headers:
-        Authorization: "Token {token_user_can_delete:s}"
+        Authorization: "Bearer {jwt_token_user_can_delete:s}"
     response:
-      status_code: 401
+      status_code: 403
   - name: Delete is disabled for mobile users even if they own the device
     request:
       url: "{api_live_url}/{endpoint}/{device.device_id}/"

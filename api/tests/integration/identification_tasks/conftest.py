@@ -31,6 +31,12 @@ def archived_identification_task(identification_task):
     return identification_task
 
 @pytest.fixture
+def perm_user_can_view_archived_identificationtasks(user, model_class):
+    return grant_permission_to_user(
+        codename="view_archived_identificationtasks", model_class=model_class, user=user
+    )
+
+@pytest.fixture
 def token_user_can_view_archived_identificationtasks(token_instance_user, model_class):
     permission = grant_permission_to_user(
         codename="view_archived_identificationtasks", model_class=model_class, user=token_instance_user.user
@@ -42,23 +48,13 @@ def token_user_can_view_archived_identificationtasks(token_instance_user, model_
     permission.delete()
 
 @pytest.fixture
-def token_user_can_add_annotations(token_instance_user):
-    permission = grant_permission_to_user(
-        type="add", model_class=ExpertReportAnnotation, user=token_instance_user.user
+def perm_user_can_add_annotations(user):
+    return grant_permission_to_user(
+        type="add", model_class=ExpertReportAnnotation, user=user
     )
-
-    token_instance_user.refresh_from_db()
-    return token_instance_user.key
-
-    permission.delete()
 
 @pytest.fixture
-def token_user_can_view_annotators(token_instance_user):
-    permission = grant_permission_to_user(
-        type="view", model_class=UserStat, user=token_instance_user.user
+def perm_user_can_view_annotators(user):
+    return grant_permission_to_user(
+        type="view", model_class=UserStat, user=user
     )
-
-    token_instance_user.refresh_from_db()
-    return token_instance_user.key
-
-    permission.delete()

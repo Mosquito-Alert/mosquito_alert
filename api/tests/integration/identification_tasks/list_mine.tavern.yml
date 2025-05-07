@@ -7,7 +7,7 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user_token
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: List method returns not exist for mobile users
@@ -23,13 +23,13 @@ stages:
       url: "{api_live_url}/me/{endpoint}/"
       method: "GET"
     response:
-      status_code: 403
+      status_code: 401
   - name: User without perm view can list
     request:
       url: "{api_live_url}/me/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
 
@@ -45,7 +45,7 @@ marks:
     - api_live_url
     - identification_task
     - annotation
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: User without perm view can retrieve only annotated identification tasks.
@@ -53,7 +53,7 @@ stages:
       url: "{api_live_url}/me/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
       strict:
@@ -76,7 +76,7 @@ marks:
     - api_live_url
     - identification_task
     - annotation_from_another_user
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: User without perm view can not retrieve not owned
@@ -84,7 +84,7 @@ stages:
       url: "{api_live_url}/me/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
       strict:
@@ -104,7 +104,7 @@ marks:
     - api_live_url
     - archived_identification_task
     - annotation
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: User with regular perm view can not retrieve archived identification task
@@ -112,7 +112,7 @@ stages:
       url: "{api_live_url}/me/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
       strict:
@@ -132,8 +132,8 @@ marks:
     - api_live_url
     - archived_identification_task
     - annotation
-    - token_user
-    - token_user_can_view_archived_identificationtasks
+    - jwt_token_user
+    - perm_user_can_view_archived_identificationtasks
 
 stages:
   - name: User with perm view archived can retrieve archived identification task
@@ -141,7 +141,7 @@ stages:
       url: "{api_live_url}/me/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view_archived_identificationtasks:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
       strict:

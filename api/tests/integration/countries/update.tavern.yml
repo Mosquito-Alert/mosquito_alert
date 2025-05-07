@@ -7,7 +7,7 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user_token
-    - token_user_can_change
+    - jwt_token_user_can_change
     - country
   - parametrize:
       key: method
@@ -34,7 +34,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/{country.pk}/"
       headers:
-        Authorization: "Token {token_user_can_change}"
+        Authorization: "Bearer {jwt_token_user_can_change}"
       method: "{method}"
     response:
       status_code: 405

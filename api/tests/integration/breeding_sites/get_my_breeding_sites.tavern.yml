@@ -13,7 +13,7 @@ marks:
     - api_live_url
     - app_user
     - app_user_token
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - type: ref

@@ -18,7 +18,9 @@ from api.tests.utils import grant_permission_to_user
 from api.tests.clients import AppAPIClient
 
 from tigacrafting.models import IdentificationTask, Taxon
-from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo
+from tigaserver_app.models import EuropeCountry, Report, Photo
+
+from .factories import create_mobile_user, create_regular_user
 
 User = get_user_model()
 TEST_DATA_PATH = Path(Path(__file__).parent.absolute(), "test_data/")
@@ -30,14 +32,15 @@ def user_password():
 
 @pytest.fixture
 def app_user(user_password):
-    user = TigaUser.objects.create()
-    user.set_password(user_password)
-    user.save(0)
-    return user
+    return create_mobile_user(password=user_password)
 
 @pytest.fixture
 def app_user_token(app_user):
     return str(import_string(simplejwt_settings.TOKEN_OBTAIN_SERIALIZER).get_token(user=app_user).access_token)
+
+@pytest.fixture
+def jwt_token_user(user):
+    return str(import_string(simplejwt_settings.TOKEN_OBTAIN_SERIALIZER).get_token(user=user).access_token)
 
 @pytest.fixture
 def dummy_image():
@@ -124,13 +127,8 @@ def it_country():
 
 
 @pytest.fixture
-def user():
-    return User.objects.create_user(
-        username=f"user_{random.randint(1,1000)}",
-        password=User.objects.make_random_password(),
-        first_name="Test FirstName",
-        last_name="Test LastName"
-    )
+def user(user_password):
+    return create_regular_user(password=user_password)
 
 @pytest.fixture
 def another_user():
@@ -156,48 +154,63 @@ def token_user(token_instance_user):
 
 
 @pytest.fixture
-def token_user_can_add(token_instance_user, model_class):
-    permission = grant_permission_to_user(
-        type="add", model_class=model_class, user=token_instance_user.user
+def perm_user_can_add(user, model_class):
+    return grant_permission_to_user(
+        type="add", model_class=model_class, user=user
     )
 
+@pytest.fixture
+def jwt_token_user_can_add(jwt_token_user, perm_user_can_add):
+    return jwt_token_user
+
+@pytest.fixture
+def token_user_can_add(token_instance_user, perm_user_can_add):
     return token_instance_user.key
 
     permission.delete()
 
 
 @pytest.fixture
-def token_user_can_view(token_instance_user, model_class):
-    permission = grant_permission_to_user(
-        type="view", model_class=model_class, user=token_instance_user.user
+def jwt_token_user_can_view(jwt_token_user, perm_user_can_view):
+    return jwt_token_user
+
+@pytest.fixture
+def perm_user_can_view(user, model_class):
+    return grant_permission_to_user(
+        type="view", model_class=model_class, user=user
     )
 
-    token_instance_user.refresh_from_db()
+@pytest.fixture
+def token_user_can_view(token_instance_user, perm_user_can_view):
     return token_instance_user.key
 
-    permission.delete()
-
+@pytest.fixture
+def jwt_token_user_can_change(jwt_token_user, perm_user_can_change):
+    return jwt_token_user
 
 @pytest.fixture
-def token_user_can_change(token_instance_user, model_class):
-    permission = grant_permission_to_user(
-        type="change", model_class=model_class, user=token_instance_user.user
+def perm_user_can_change(user, model_class):
+    return grant_permission_to_user(
+        type="change", model_class=model_class, user=user
     )
-
-    yield token_instance_user.key
-
-    permission.delete()
-
 
 @pytest.fixture
-def token_user_can_delete(token_instance_user, model_class):
-    permission = grant_permission_to_user(
-        type="delete", model_class=model_class, user=token_instance_user.user
+def token_user_can_change(token_instance_user, perm_user_can_change):
+    return token_instance_user.key
+
+@pytest.fixture
+def jwt_token_user_can_delete(jwt_token_user, perm_user_can_delete):
+    return jwt_token_user
+
+@pytest.fixture
+def perm_user_can_delete(user, model_class):
+    return grant_permission_to_user(
+        type="delete", model_class=model_class, user=user
     )
 
-    yield token_instance_user.key
-
-    permission.delete()
+@pytest.fixture
+def token_user_can_delete(token_instance_user, perm_user_can_delete):
+    return token_instance_user.key
 
 @pytest.fixture
 def app_api_client(app_user):

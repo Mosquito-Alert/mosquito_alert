@@ -8,7 +8,7 @@ marks:
     - api_live_url
     - me_endpoint
     - app_user_token
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: List method returns not exist for mobile users
@@ -24,13 +24,13 @@ stages:
       url: "{api_live_url}/{me_endpoint}/"
       method: "GET"
     response:
-      status_code: 403
+      status_code: 401
   - name: User without perm view can list
     request:
       url: "{api_live_url}/{me_endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
 
@@ -47,7 +47,7 @@ marks:
     - me_endpoint
     - annotation
     - annotation_from_another_user
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: User without perm view can list only owned annotations
@@ -55,7 +55,7 @@ stages:
       url: "{api_live_url}/{me_endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
       strict:
