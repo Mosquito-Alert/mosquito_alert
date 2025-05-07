@@ -534,6 +534,8 @@ class BaseSimplifiedReportSerializer(serializers.ModelSerializer):
             read_only_fields = fields
 
     uuid = BaseReportSerializer().fields['uuid']
+    # NOTE: user_uuid is used by AIMA for knowing who to send notifications.
+    user_uuid = BaseReportSerializer().fields['user_uuid']
     created_at = BaseReportSerializer().fields['created_at']
     created_at_local = BaseReportSerializer().fields['created_at_local']
     received_at = BaseReportSerializer().fields['received_at']
@@ -546,6 +548,7 @@ class BaseSimplifiedReportSerializer(serializers.ModelSerializer):
         model = BaseReportSerializer.Meta.model
         fields = (
             "uuid",
+            "user_uuid",
             "created_at",
             "created_at_local",
             "received_at",
