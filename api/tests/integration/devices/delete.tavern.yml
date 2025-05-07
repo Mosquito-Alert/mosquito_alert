@@ -9,7 +9,7 @@ marks:
     - app_user
     - app_user_token
     - device
-    - token_user_can_add
+    - token_user_can_delete
 
 stages:
   - name: Delete is disabled for anonymous users
@@ -21,9 +21,9 @@ stages:
   - name: Auth user can not create
     request:
       url: "{api_live_url}/{endpoint}/{device.device_id}/"
-      method: "POST"
+      method: "DELETE"
       headers:
-        Authorization: "Token {token_user_can_add:s}"
+        Authorization: "Token {token_user_can_delete:s}"
     response:
       status_code: 401
   - name: Delete is disabled for mobile users even if they own the device
