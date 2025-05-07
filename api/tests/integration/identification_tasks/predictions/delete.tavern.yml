@@ -8,7 +8,7 @@ marks:
     - api_live_url
     - endpoint
     - photo_prediction
-    - token_user
+    - jwt_token_user
     - app_user_token
 
 
@@ -25,7 +25,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
       headers:
-        Authorization: "Token {token_user}"
+        Authorization: "Bearer {jwt_token_user}"
       method: "DELETE"
     response:
       status_code: 403
@@ -42,14 +42,14 @@ marks:
     - api_live_url
     - endpoint
     - photo_prediction
-    - token_user_can_delete
+    - jwt_token_user_can_delete
 
 stages:
   - name: Delete is disabeld users even with permissions
     request:
       url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
       headers:
-        Authorization: "Token {token_user_can_delete}"
+        Authorization: "Bearer {jwt_token_user_can_delete}"
       method: "DELETE"
     response:
       status_code: 204
