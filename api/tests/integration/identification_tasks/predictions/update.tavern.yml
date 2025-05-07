@@ -8,7 +8,7 @@ marks:
     - api_live_url
     - endpoint
     - photo_prediction
-    - token_user
+    - jwt_token_user
     - app_user_token
   - parametrize:
       key: method
@@ -35,7 +35,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
       headers:
-        Authorization: "Token {token_user}"
+        Authorization: "Bearer {jwt_token_user}"
       method: "{method}"
       json:
         bbox:
@@ -72,7 +72,7 @@ marks:
     - api_live_url
     - endpoint
     - photo_prediction
-    - token_user_can_change
+    - jwt_token_user_can_change
   - parametrize:
       key: method
       vals:
@@ -84,7 +84,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/{photo_prediction.photo.uuid}/"
       headers:
-        Authorization: "Token {token_user_can_change}"
+        Authorization: "Bearer {jwt_token_user_can_change}"
       method: "{method}"
       json:
         bbox:

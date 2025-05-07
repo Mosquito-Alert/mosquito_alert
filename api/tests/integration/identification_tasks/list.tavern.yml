@@ -126,7 +126,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - token_user_can_view
+    - jwt_token_user_can_view
     - identification_task_fully_predicted
     - identification_task_with_pending_predictions
 
@@ -138,7 +138,7 @@ stages:
       params:
         fully_predicted: True
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
       strict:
@@ -155,7 +155,7 @@ stages:
       params:
         fully_predicted: False
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
       strict:

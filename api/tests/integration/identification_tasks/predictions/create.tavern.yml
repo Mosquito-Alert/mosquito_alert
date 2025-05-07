@@ -9,7 +9,7 @@ marks:
   - usefixtures:
     - api_live_url
     - endpoint
-    - token_user
+    - jwt_token_user
     - app_user_token
 
 stages:
@@ -31,7 +31,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
-        Authorization: "Token {token_user}"
+        Authorization: "Bearer {jwt_token_user}"
       method: "POST"
     response:
       status_code: 403
@@ -48,14 +48,14 @@ marks:
     - api_live_url
     - endpoint
     - report_photo
-    - token_user_can_add
+    - jwt_token_user_can_add
 
 stages:
   - name: Create method
     request:
       url: "{api_live_url}/{endpoint}/"
       headers:
-        Authorization: "Token {token_user_can_add}"
+        Authorization: "Bearer {jwt_token_user_can_add}"
       method: "POST"
       json:
         photo_uuid: "{report_photo.uuid}"
