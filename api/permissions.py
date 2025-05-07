@@ -12,7 +12,25 @@ from .utils import get_fk_fieldnames
 User = get_user_model()
 
 
-class FullDjangoModelPermissions(permissions.DjangoModelPermissions):
+class IsMobileUser(permissions.IsAuthenticated):
+    def has_permission(self, request, view):
+        return isinstance(
+            request.user, TigaUser
+        ) and super().has_permission(request, view)
+
+class IsRegularUser(permissions.IsAuthenticated):
+    def has_permission(self, request, view):
+        return isinstance(
+            request.user, User
+        ) and super().has_permission(request, view)
+
+class DjangoRegularUserModelPermissions(permissions.DjangoModelPermissions):
+    def has_permission(self, request, view):
+        return isinstance(
+            request.user, User
+        ) and super().has_permission(request, view)
+
+class FullDjangoModelPermissions(DjangoRegularUserModelPermissions):
     perms_map = {
         **permissions.DjangoObjectPermissions.perms_map,
         "GET": ["%(app_label)s.view_%(model_name)s"],
@@ -69,6 +87,9 @@ class NotificationObjectPermissions(UserObjectPermissions):
             Notification.objects.for_user(user=request.user).filter(pk=obj.pk).exists()
         )
 
+class MyNotificationPermissions(NotificationObjectPermissions):
+    def has_permission(self, request, view):
+        return isinstance(request.user, TigaUser) and super().has_permission(request, view)
 
 class ReportPermissions(UserObjectPermissions):
     perms_map = permissions.DjangoObjectPermissions.perms_map
@@ -90,10 +111,10 @@ class MyReportPermissions(ReportPermissions):
 class IdentificationTaskPermissions(FullDjangoModelPermissions):
     pass
 
-class MyIdentificationTaskPermissions(permissions.DjangoModelPermissions):
+class MyIdentificationTaskPermissions(DjangoRegularUserModelPermissions):
     pass
 
-class IdentificationTaskBacklogPermissions(permissions.IsAuthenticated):
+class IdentificationTaskBacklogPermissions(IsRegularUser):
     def has_permission(self, request, view):
         if not super().has_permission(request, view):
             return False
@@ -122,7 +143,7 @@ class AnnotationPermissions(FullDjangoModelPermissions):
             return super().has_permission(request=request, view=view)
         return super().has_object_permission(request, view, obj)
 
-class MyAnnotationPermissions(permissions.DjangoModelPermissions):
+class MyAnnotationPermissions(DjangoRegularUserModelPermissions):
     pass
 
 class TaxaPermissions(UserObjectPermissions):

@@ -11,7 +11,7 @@ marks:
     - api_live_url
     - published_object
     - unpublished_object
-    - token_user
+    - jwt_token_user
     - app_user_token
 
 stages:

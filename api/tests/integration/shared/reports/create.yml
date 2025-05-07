@@ -10,3 +10,12 @@ stages:
       method: "POST"
     response:
       status_code: 401
+  - id: regular_user_cannot_create
+    name: Regular user can not create
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 403

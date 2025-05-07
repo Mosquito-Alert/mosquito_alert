@@ -19,7 +19,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{object.pk}/"
       method: DELETE
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 403
   - id: appuser_can_delete_own_reports

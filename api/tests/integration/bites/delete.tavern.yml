@@ -10,7 +10,7 @@ marks:
   - usefixtures:
     - api_live_url
     - object
-    - token_user
+    - jwt_token_user
     - app_user_token
 
 stages:

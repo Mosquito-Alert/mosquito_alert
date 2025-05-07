@@ -26,7 +26,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{annotation.pk}/"
       method: "GET"
     response:
-      status_code: 403
+      status_code: 401
 
 ---
 
@@ -41,7 +41,7 @@ marks:
     - endpoint
     - annotation
     - annotation_from_another_user
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - name: User with perm view can retrieve owned annotation
@@ -49,7 +49,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{annotation.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
       json: !force_format_include "{response_data_validation}"
@@ -58,7 +58,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
       json: !force_format_include "{response_data_validation}"
@@ -76,7 +76,7 @@ marks:
     - endpoint
     - annotation
     - annotation_from_another_user
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: User without perm view can retrieve if owned annotation
@@ -84,7 +84,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{annotation.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
   - name: User without perm view can not retrieve if not owned annotation
@@ -92,7 +92,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 403
 
@@ -109,7 +109,7 @@ marks:
     - endpoint
     - user
     - annotation
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: User without perm view can retrieve if owned annotation
@@ -117,7 +117,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{annotation.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
       strict:
@@ -142,7 +142,7 @@ marks:
     - api_live_url
     - endpoint
     - annotation_from_another_user
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - name: User without perm view can not retrieve
@@ -150,7 +150,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
       strict:
@@ -176,8 +176,8 @@ marks:
     - endpoint
     - another_user
     - annotation_from_another_user
-    - token_user_can_view
-    - token_user_can_view_annotators
+    - jwt_token_user_can_view
+    - perm_user_can_view_annotators
 
 stages:
   - name: User with perm view can retrieve full name
@@ -185,7 +185,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
       strict:

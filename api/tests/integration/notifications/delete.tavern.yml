@@ -8,7 +8,7 @@ marks:
     - api_live_url
     - user_notification
     - app_user_token
-    - token_user_can_delete
+    - jwt_token_user_can_delete
 
 stages:
   - name: Anonymous users can not delete
@@ -30,7 +30,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       headers:
-        Authorization: "Token {token_user_can_delete:s}"
+        Authorization: "Bearer {jwt_token_user_can_delete:s}"
       method: "DELETE"
     response:
       status_code: 405

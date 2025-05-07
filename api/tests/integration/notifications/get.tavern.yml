@@ -9,7 +9,7 @@ marks:
   - usefixtures:
     - api_live_url
     - user_notification
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: Anonymous user can not retrieve
@@ -23,7 +23,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 403
 
@@ -38,7 +38,7 @@ marks:
   - usefixtures:
     - api_live_url
     - user_notification
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - name: User with perm can retrieve
@@ -46,7 +46,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
 

@@ -6,14 +6,14 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - token_user
+    - jwt_token_user
   - parametrize:
       key:
         - endpoint
         - status_code_token
       vals:
         - ["{endpoint}", 403]
-        - ["me/{endpoint}", 401]
+        - ["me/{endpoint}", 403]
 
 stages:
   - name: Non auth user can not list
@@ -27,7 +27,7 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: !int "{status_code_token}"
 
@@ -41,7 +41,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - token_user_can_view
+    - jwt_token_user_can_view
     - user_notification
 
 stages:
@@ -50,7 +50,7 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
       json:

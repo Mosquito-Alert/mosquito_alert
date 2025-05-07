@@ -9,10 +9,13 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - jwt_token_user
 
 stages:
   - type: ref
     id: anonymous_cannot_create
+  - type: ref
+    id: regular_user_cannot_create
 
 ---
 

@@ -7,7 +7,7 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
-    - token_user_can_change
+    - jwt_token_user_can_change
   - parametrize:
       key: method
       vals:
@@ -32,7 +32,7 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
-    - token_user_can_change
+    - jwt_token_user_can_change
   - parametrize:
       key: method
       vals:
@@ -45,7 +45,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: "{method}"
       headers:
-        Authorization: 'Token {token_user_can_change}'
+        Authorization: 'Bearer {jwt_token_user_can_change}'
     response:
       status_code: 200
 

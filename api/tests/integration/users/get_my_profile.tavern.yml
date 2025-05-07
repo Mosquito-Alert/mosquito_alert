@@ -10,7 +10,7 @@ marks:
     - api_live_url
     - app_user
     - app_user_token
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - name: Anonymous user can not get user
@@ -24,9 +24,9 @@ stages:
       url: "{api_live_url}/me/"
       method: GET
       headers:
-        Authorization: 'Token {token_user_can_view}'
+        Authorization: 'Bearer {jwt_token_user_can_view}'
     response:
-      status_code: 401
+      status_code: 403
   - name: Mobile user get their profile
     request:
       url: "{api_live_url}/me/"

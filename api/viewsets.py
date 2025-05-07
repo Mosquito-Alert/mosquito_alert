@@ -2,12 +2,11 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.viewsets import GenericViewSet as DRFGenericViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-from rest_framework import permissions
 from rest_framework.renderers import JSONRenderer
 from rest_framework_nested.viewsets import NestedViewSetMixin as OriginalNestedViewSetMixin, _force_mutable
 
 from .auth.authentication import AppUserJWTAuthentication, NonAppUserSessionAuthentication
-from .permissions import UserObjectPermissions
+from .permissions import UserObjectPermissions, IsMobileUser, DjangoRegularUserModelPermissions
 
 
 class ResultsSetPagination(PageNumberPagination):
@@ -37,16 +36,10 @@ class GenericViewSet(DRFGenericViewSet):
 
 
 class GenericMobileOnlyViewSet(GenericViewSet):
-    authentication_classes = (
-        AppUserJWTAuthentication,
-    )
+    permission_classes = (IsMobileUser, ) + GenericViewSet.permission_classes
 
 class GenericNoMobileViewSet(GenericViewSet):
-    authentication_classes = (
-        NonAppUserSessionAuthentication,
-        TokenAuthentication,
-    )
-    permission_classes = (permissions.DjangoModelPermissions,)
+    permission_classes = (DjangoRegularUserModelPermissions, )
 
 class NestedViewSetMixin(OriginalNestedViewSetMixin):
     def initialize_request(self, request, *args, **kwargs):

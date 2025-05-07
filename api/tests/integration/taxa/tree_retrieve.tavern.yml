@@ -11,7 +11,7 @@ marks:
     - app_user_token
     - taxon_root
     - taxon_children
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: Retrieve is allowed for mobile users
@@ -48,7 +48,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{taxon_root.pk}/tree/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
       json:

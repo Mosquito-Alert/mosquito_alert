@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.utils.module_loading import import_string
 
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient
 
 from rest_framework_simplejwt.settings import api_settings
 
@@ -168,83 +168,76 @@ class TestObservationAPI(BaseReportTest):
     def report_object(self, app_user):
         return create_observation_object(user=app_user)
 
-@pytest.mark.django_db
-class TokenAPITest(APITestCase):
-    @classmethod
-    def setUpTestData(cls) -> None:
-        cls.endpoint = '/api/v1/auth/token/'
-        cls.endpoint_refresh = cls.endpoint + 'refresh/'
-        cls.endpoint_verify = cls.endpoint + 'verify/'
 
-    def setUp(self) -> None:
-        self.app_user = TigaUser.objects.create()
-        self.app_user.set_password('testpassword123_tmp')
-        self.app_user.save()
+@pytest.mark.django_db
+class TestTokenAPI:
+
+    endpoint = '/api/v1/auth/token/'
+    endpoint_refresh = endpoint + 'refresh/'
+    endpoint_verify = endpoint + 'verify/'
+
+    @pytest.fixture(params=[pytest.lazy_fixture('user'), pytest.lazy_fixture('app_user')])
+    def any_user(self, request):
+        return request.param
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
-    def test_user_last_login_is_updated_on_token_create(self):
-        self.assertIsNone(self.app_user.last_login)
+    def test_user_last_login_is_updated_on_token_create(self, any_user, user_password, client):
+        assert any_user.last_login is None
 
-        response = self.client.post(
+        response = client.post(
             self.endpoint,
             data={
-                'username': self.app_user.username,
-                'password': 'testpassword123_tmp',
+                'username': any_user.username,
+                'password': user_password,
             }
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        assert response.status_code == status.HTTP_200_OK
 
-        self.app_user.refresh_from_db()
-        self.assertEqual(self.app_user.last_login, timezone.now())
-
-    @time_machine.travel("2024-01-01 00:00:00", tick=False)
-    def test_access_token_expires_after_5_minutes(self):
-        token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
-        token = token_class.for_user(self.app_user)
-
-        self.assertEqual(
-            token.access_token.payload['exp'], 
-            (timezone.now() + timedelta(minutes=5)).timestamp()
-        )
+        any_user.refresh_from_db()
+        assert any_user.last_login == timezone.now()
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
-    def test_refresh_token_expires_after_1_day(self):
+    def test_access_token_expires_after_5_minutes(self, any_user):
         token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
-        token = token_class.for_user(self.app_user)
+        token = token_class.for_user(any_user)
 
-        self.assertEqual(
-            token.payload['exp'],
-            (timezone.now() + timedelta(days=1)).timestamp()
-        )
+        assert token.access_token.payload['exp'] == (timezone.now() + timedelta(minutes=5)).timestamp()
 
-    def test_user_last_login_is_not_updated_on_token_refresh(self):
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_refresh_token_expires_after_1_day(self, any_user):
+        token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
+        token = token_class.for_user(any_user)
+
+        assert token.payload['exp'] == (timezone.now() + timedelta(days=1)).timestamp()
+
+    def test_user_last_login_is_not_updated_on_token_refresh(self, any_user, client):
         token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
 
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
-            token = token_class.for_user(self.app_user)
+            token = token_class.for_user(any_user)
 
             traveller.shift(token.access_token.lifetime + timedelta(seconds=1))
 
-            response = self.client.post(
+            response = client.post(
                 self.endpoint_refresh,
                 data={
                     'refresh': str(token),
                 }
             )
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.app_user.refresh_from_db()
-            self.assertIsNone(self.app_user.last_login)
+            assert response.status_code == status.HTTP_200_OK
+            any_user.refresh_from_db()
 
-    def test_jwt_token_includes_device_id(self):
-        response = self.client.post(
+            assert any_user.last_login is None
+
+    def test_jwt_token_includes_user_type_on_obtain(self, any_user, user_password, client):
+        response = client.post(
             self.endpoint,
             data={
-                'username': self.app_user.username,
-                'password': 'testpassword123_tmp',
-                'device_id': 'unique_id_for_device'
+                'username': any_user.username,
+                'password': user_password,
             }
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        assert response.status_code == status.HTTP_200_OK
 
         token = response.json()['access']
         decoded = jwt.decode(
@@ -252,155 +245,215 @@ class TokenAPITest(APITestCase):
             algorithms=["HS256"],
             key='dummy_secretkey'  # get from settings_dev
         )
-        self.assertEqual(decoded['device_id'], 'unique_id_for_device')
+        assert 'user_type' in decoded
+        expected_user_type = 'mobile_only' if isinstance(any_user, TigaUser) else 'regular'
+        if isinstance(any_user, (TigaUser, User)):
+            assert decoded['user_type'] == expected_user_type
+        else:
+            raise ValueError("Invalid user type")
 
-    def test_device_is_not_created_if_device_not_specified_on_login(self):
-        response = self.client.post(
+    def test_jwt_token_includes_user_type_on_refresh(self, any_user, user_password, client):
+        token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
+
+        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
+            token = token_class.for_user(any_user)
+
+            traveller.shift(token.access_token.lifetime + timedelta(seconds=1))
+
+            response = client.post(
+                self.endpoint_refresh,
+                data={
+                    'refresh': str(token),
+                }
+            )
+            assert response.status_code == status.HTTP_200_OK
+            token = response.json()['access']
+            decoded = jwt.decode(
+                token,
+                algorithms=["HS256"],
+                key='dummy_secretkey'  # get from settings_dev
+            )
+            assert 'user_type' in decoded
+            expected_user_type = 'mobile_only' if isinstance(any_user, TigaUser) else 'regular'
+            if isinstance(any_user, (TigaUser, User)):
+                assert decoded['user_type'] == expected_user_type
+            else:
+                raise ValueError("Invalid user type")
+
+    def test_jwt_token_includes_device_id_only_for_tigauser(self, any_user, user_password, client):
+        response = client.post(
             self.endpoint,
             data={
-                'username': self.app_user.username,
-                'password': 'testpassword123_tmp',
-            }
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        self.assertEqual(Device.objects.filter(user=self.app_user).count(), 0)
-    
-    def test_device_is_not_created_if_device_is_voidon_login(self):
-        response = self.client.post(
-            self.endpoint,
-            data={
-                'username': self.app_user.username,
-                'password': 'testpassword123_tmp',
-                'device_id': ''
-            }
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        self.assertEqual(Device.objects.filter(user=self.app_user).count(), 0)
-
-    @time_machine.travel("2024-01-01 00:00:00", tick=False)
-    def test_device_is_created_if_not_exist_on_login(self):
-        response = self.client.post(
-            self.endpoint,
-            data={
-                'username': self.app_user.username,
-                'password': 'testpassword123_tmp',
+                'username': any_user.username,
+                'password': user_password,
                 'device_id': 'unique_id_for_device'
             }
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        assert response.status_code == status.HTTP_200_OK
 
-        device = Device.objects.get(user=self.app_user, device_id='unique_id_for_device')
-        self.assertIsNone(device.type)
-        self.assertEqual(device.date_created, timezone.now())
-        self.assertEqual(device.last_login, timezone.now())
+        token = response.json()['access']
+        decoded = jwt.decode(
+            token,
+            algorithms=["HS256"],
+            key='dummy_secretkey'  # get from settings_dev
+        )
+        assert ('device_id' in decoded) == isinstance(any_user, TigaUser)
+        if isinstance(any_user, TigaUser):
+            # Check that the device_id is included in the token
+            assert decoded['device_id'] == 'unique_id_for_device'
 
-    def test_device_last_login_is_updated_on_token_create(self):
+    @pytest.mark.parametrize(
+        "extra_data",
+        [{}, {'device_id': ''}]
+    )
+    def test_device_is_not_created(self, any_user, user_password, client, extra_data):
+        assert Device.objects.all().count() == 0
+
+        response = client.post(
+            self.endpoint,
+            data={
+                'username': any_user.username,
+                'password': user_password,
+            } | extra_data
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+        assert Device.objects.all().count() == 0
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_device_is_created_if_not_exist_on_login(self, any_user, user_password, client):
+        assert Device.objects.all().count() == 0
+
+        response = client.post(
+            self.endpoint,
+            data={
+                'username': any_user.username,
+                'password': user_password,
+                'device_id': 'unique_id_for_device'
+            }
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+        if isinstance(any_user, TigaUser):
+            device = Device.objects.get(user=any_user, device_id='unique_id_for_device')
+            assert device.type is None
+            assert device.date_created == timezone.now()
+            assert device.last_login == timezone.now()
+        else:
+            assert Device.objects.all().count() == 0
+
+    def test_device_last_login_is_updated_on_token_create(self, app_user, user_password, client):
         device = Device.objects.create(
-            user=self.app_user,
+            user=app_user,
             device_id='unique_id_for_device'
         )
-        self.assertIsNone(device.last_login)
-        self.assertIsNotNone(device.date_created)
+        assert device.last_login is None
+        assert device.date_created is not None
         date_created = device.date_created
 
         with time_machine.travel("2024-01-01 00:00:00", tick=False):
-            response = self.client.post(
+            response = client.post(
                 self.endpoint,
                 data={
-                    'username': self.app_user.username,
-                    'password': 'testpassword123_tmp',
+                    'username': app_user.username,
+                    'password': user_password,
                     'device_id': 'unique_id_for_device'
                 }
             )
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            device.refresh_from_db()
-            self.assertEqual(device.last_login, timezone.now())
-            self.assertEqual(device.date_created, date_created)
+            assert response.status_code == status.HTTP_200_OK
 
-    def test_jwt_token_includes_device_id_after_refresh(self):
-        response = self.client.post(
+            device.refresh_from_db()
+            assert device.last_login == timezone.now()
+            assert device.date_created == date_created
+
+    def test_jwt_token_includes_device_id_after_refresh(self, any_user, user_password, client):
+        response = client.post(
             self.endpoint,
             data={
-                'username': self.app_user.username,
-                'password': 'testpassword123_tmp',
+                'username': any_user.username,
+                'password': user_password,
                 'device_id': 'unique_id_for_device'
             }
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        assert response.status_code == status.HTTP_200_OK
 
         refresh_token = response.json()['refresh']
 
-        response = self.client.post(
+        response = client.post(
             self.endpoint_refresh,
             data={
                 'refresh': str(refresh_token),
             }
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        assert response.status_code == status.HTTP_200_OK
+
         token = response.json()['access']
         decoded = jwt.decode(
             token,
             algorithms=["HS256"],
             key='dummy_secretkey'  # get from settings_dev
         )
-        self.assertEqual(decoded['device_id'], 'unique_id_for_device')
+        assert ('device_id' in decoded) == isinstance(any_user, TigaUser)
+        if isinstance(any_user, TigaUser):
+            # Check that the device_id is included in the token
+            assert decoded['device_id'] == 'unique_id_for_device'
 
-    def test_device_last_login_is_not_updated_on_token_refresh(self):
+    def test_device_last_login_is_not_updated_on_token_refresh(self, app_user, user_password, client):
         device = Device.objects.create(
-            user=self.app_user,
+            user=app_user,
             device_id='unique_id_for_device'
         )
 
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
-            response = self.client.post(
+            response = client.post(
                 self.endpoint,
                 data={
-                    'username': self.app_user.username,
-                    'password': 'testpassword123_tmp',
+                    'username': app_user.username,
+                    'password': user_password,
                     'device_id': 'unique_id_for_device'
                 }
             )
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            assert response.status_code == status.HTTP_200_OK
             refresh_token = response.json()['refresh']
 
             device.refresh_from_db()
             last_login = device.last_login
-            self.assertEqual(last_login, timezone.now())
+            assert last_login == timezone.now()
 
             traveller.shift(timedelta(seconds=30))
 
-            response = self.client.post(
+            response = client.post(
                 self.endpoint_refresh,
                 data={
                     'refresh': str(refresh_token),
                 }
             )
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            device.refresh_from_db()
-            self.assertEqual(device.last_login, last_login)
+            assert response.status_code == status.HTTP_200_OK
 
-    def test_device_is_set_to_logged_in_on_login_if_not_logged(self):
+            device.refresh_from_db()
+            assert device.last_login == last_login
+
+    def test_device_is_set_to_logged_in_on_login_if_not_logged(self, app_user, user_password, client):
         device = Device.objects.create(
-            user=self.app_user,
+            user=app_user,
             device_id='unique_id_for_device',
             registration_id='fcm_token',
             is_logged_in=False
         )
-        response = self.client.post(
+        response = client.post(
             self.endpoint,
             data={
-                'username': self.app_user.username,
-                'password': 'testpassword123_tmp',
+                'username': app_user.username,
+                'password': user_password,
                 'device_id': 'unique_id_for_device'
             }
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        device.refresh_from_db()
-        self.assertEqual(device.is_logged_in, True)
+        assert response.status_code == status.HTTP_200_OK
 
-    def test_device_is_set_to_not_logged_in_if_login_with_duplicated_device_id(self):
+        device.refresh_from_db()
+        assert device.is_logged_in
+
+    def test_device_is_set_to_not_logged_in_if_login_with_duplicated_device_id(self, app_user, user_password, client):
         dummy_user = TigaUser.objects.create()
         device = Device.objects.create(
             user=dummy_user,
@@ -409,67 +462,50 @@ class TokenAPITest(APITestCase):
             is_logged_in=True
         )
         # Login with same device_id but different user.
-        response = self.client.post(
+        response = client.post(
             self.endpoint,
             data={
-                'username': self.app_user.username,
-                'password': 'testpassword123_tmp',
+                'username': app_user.username,
+                'password': user_password,
                 'device_id': 'unique_id_for_device'
             }
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        device.refresh_from_db()
-        self.assertEqual(device.is_logged_in, False)
+        assert response.status_code == status.HTTP_200_OK
 
-    def test_access_token_verify_return_401_after_expiration(self):
+        device.refresh_from_db()
+        assert not device.is_logged_in
+
+    @pytest.mark.parametrize(
+        "token_field",
+        [
+            'access_token',
+            None  # this is for refresh token
+        ]
+    )
+    def test_token_verify_return_401_after_expiration(self, any_user, client, token_field):
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
             token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
-            token = token_class.for_user(self.app_user)
+            token = token_class.for_user(any_user)
 
             # Access token
-            response = self.client.post(
+            response = client.post(
                 self.endpoint_verify,
                 data={
-                    'token': str(token.access_token),
+                    'token': str(getattr(token, token_field) if token_field else token),
                 }
             )
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            assert response.status_code == status.HTTP_200_OK
 
             traveller.shift(token.access_token.lifetime + timedelta(seconds=1))
 
             # Access token
-            response = self.client.post(
+            response = client.post(
                 self.endpoint_verify,
                 data={
                     'token': str(token.access_token),
                 }
             )
-            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_refresh_token_verify_return_401_after_expiration(self):
-        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
-            token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
-            token = token_class.for_user(self.app_user)
-
-            # Access token
-            response = self.client.post(
-                self.endpoint_verify,
-                data={
-                    'token': str(token),
-                }
-            )
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-            traveller.shift(token.lifetime + timedelta(seconds=1))
-
-            # Access token
-            response = self.client.post(
-                self.endpoint_verify,
-                data={
-                    'token': str(token),
-                }
-            )
-            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+            assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 @pytest.mark.django_db
 class TestDeviceAPI:

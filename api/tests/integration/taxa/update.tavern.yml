@@ -8,7 +8,7 @@ marks:
     - api_live_url
     - app_user_token
     - taxon_root
-    - token_user_can_change
+    - jwt_token_user_can_change
   - parametrize:
       key: method
       vals:
@@ -34,7 +34,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/{taxon_root.pk}/"
       headers:
-        Authorization: "Token {token_user_can_change}"
+        Authorization: "Bearer {jwt_token_user_can_change}"
       method: "{method}"
     response:
       status_code: 405

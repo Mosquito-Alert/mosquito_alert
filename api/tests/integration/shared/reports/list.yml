@@ -22,7 +22,7 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
       strict: False

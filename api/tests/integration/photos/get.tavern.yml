@@ -9,7 +9,7 @@ marks:
   - usefixtures:
     - api_live_url
     - report_photo
-    - token_user
+    - jwt_token_user
 
 stages:
   - id: signup
@@ -29,13 +29,13 @@ stages:
       url: "{api_live_url}/{endpoint}/{report_photo.uuid}/"
       method: "GET"
     response:
-      status_code: 403
+      status_code: 401
   - name: User without perm view can retrieve
     request:
       url: "{api_live_url}/{endpoint}/{report_photo.uuid}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
       json: !force_format_include "{response_data_validation}"
@@ -52,7 +52,7 @@ marks:
   - usefixtures:
     - api_live_url
     - report_hidden_photo
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - name: User without perm view can retrieve
@@ -60,6 +60,6 @@ stages:
       url: "{api_live_url}/{endpoint}/{report_hidden_photo.uuid}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 404

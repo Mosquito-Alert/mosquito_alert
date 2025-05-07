@@ -8,7 +8,7 @@ marks:
     - api_live_url
     - endpoint
     - annotation
-    - token_user_can_delete
+    - jwt_token_user_can_delete
     - app_user_token
 
 
@@ -26,12 +26,12 @@ stages:
       url: "{api_live_url}/{endpoint}/{annotation.pk}/"
       method: "DELETE"
     response:
-      status_code: 403
+      status_code: 401
   - name: Delete method authenticated even users with permissions
     request:
       url: "{api_live_url}/{endpoint}/{annotation.pk}/"
       headers:
-        Authorization: "Token {token_user_can_delete}"
+        Authorization: "Bearer {jwt_token_user_can_delete}"
       method: "DELETE"
     response:
       status_code: 405

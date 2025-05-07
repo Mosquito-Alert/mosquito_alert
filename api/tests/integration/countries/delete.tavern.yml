@@ -7,7 +7,7 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user_token
-    - token_user_can_delete
+    - jwt_token_user_can_delete
     - country
 
 stages:
@@ -29,7 +29,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/{country.pk}/"
       headers:
-        Authorization: "Token {token_user_can_delete}"
+        Authorization: "Bearer {jwt_token_user_can_delete}"
       method: "DELETE"
     response:
       status_code: 405

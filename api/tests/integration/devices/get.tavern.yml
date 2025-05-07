@@ -10,7 +10,7 @@ marks:
     - api_live_url
     - app_user
     - app_user_token
-    - token_user_can_view
+    - jwt_token_user_can_view
     - device
 
 stages:
@@ -25,9 +25,9 @@ stages:
       url: "{api_live_url}/{endpoint}/{device.device_id}/"
       method: GET
       headers:
-        Authorization: "Token {token_user_can_view}"
+        Authorization: "Bearer {jwt_token_user_can_view}"
     response:
-      status_code: 401
+      status_code: 403
   - name: Authorized mobile user can get it device
     request:
       url: "{api_live_url}/{endpoint}/{device.device_id}/"

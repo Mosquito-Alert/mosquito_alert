@@ -8,7 +8,7 @@ marks:
     - api_live_url
     - app_user_token
     - identification_task
-    - token_user_can_change
+    - jwt_token_user_can_change
   - parametrize:
       key: method
       vals:
@@ -29,12 +29,12 @@ stages:
       url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       method: "{method}"
     response:
-      status_code: 403
+      status_code: 401
   - name: Update is disabeld users even with permissions
     request:
       url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       headers:
-        Authorization: "Token {token_user_can_change}"
+        Authorization: "Bearer {jwt_token_user_can_change}"
       method: "{method}"
     response:
       status_code: 405

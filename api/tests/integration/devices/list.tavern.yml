@@ -6,7 +6,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - token_user_can_view
+    - jwt_token_user_can_view
     - app_user_token
 
 stages:
@@ -21,9 +21,9 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: GET
       headers:
-        Authorization: "Token {token_user_can_view}"
+        Authorization: "Bearer {jwt_token_user_can_view}"
     response:
-      status_code: 401
+      status_code: 403
   - name: Authorized mobile user can list
     request:
       url: "{api_live_url}/{endpoint}/"

@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, Union
 
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
 
@@ -15,6 +15,9 @@ from rest_framework_simplejwt.serializers import (
 
 from tigaserver_app.models import TigaUser, Device
 
+from .tokens import RefreshToken
+
+User = get_user_model()
 
 class AppUserTokenObtainSerializer(TokenObtainSerializer):
     def __init__(self, *args, **kwargs):
@@ -23,6 +26,7 @@ class AppUserTokenObtainSerializer(TokenObtainSerializer):
 
     def validate(self, attrs):
         authenticate_kwargs = {
+            self.username_field: attrs[self.username_field],
             "uuid": attrs[self.username_field],
             "password": attrs["password"],  # or None,
         }
@@ -40,7 +44,7 @@ class AppUserTokenObtainSerializer(TokenObtainSerializer):
             )
 
         self.device = None
-        if attrs.get("device_id"):
+        if isinstance(self.user, TigaUser) and attrs.get("device_id"):
             self.device, _ = Device.objects.get_or_create(
                 device_id=attrs["device_id"],
                 user=self.user
@@ -52,11 +56,14 @@ class AppUserTokenObtainSerializer(TokenObtainSerializer):
 class AppUserTokenObtainPairSerializer(
     TokenObtainPairSerializer, AppUserTokenObtainSerializer
 ):
+
+    token_class = RefreshToken
+
     @classmethod
-    def get_token(self, user: TigaUser, device_id: Optional[str] = None) -> Token:
+    def get_token(cls, user: Union[TigaUser, 'User'], device_id: Optional[str] = None) -> Token:
         token = super().get_token(user)
 
-        if device_id:
+        if isinstance(user, TigaUser) and device_id:
             # Add custom claims to the JWT token
             token['device_id'] = device_id
 
@@ -65,7 +72,7 @@ class AppUserTokenObtainPairSerializer(
     def validate(self, attrs):
         data = super().validate(attrs)
 
-        if self.device:
+        if isinstance(self.user, TigaUser) and self.device:
             # Recreate token passing now device_id
             refresh =  self.get_token(user=self.user, device_id=self.device.device_id)
             data["refresh"] = str(refresh)

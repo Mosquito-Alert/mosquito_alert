@@ -10,7 +10,7 @@ marks:
     - api_live_url
     - app_user_token
     - identification_task
-    - token_user
+    - jwt_token_user
 
 stages:
   - name: Retrieve is not allowed for mobile users
@@ -26,13 +26,13 @@ stages:
       url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       method: "GET"
     response:
-      status_code: 403
+      status_code: 401
   - name: User without perm view can not retrieve
     request:
       url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 403
 
@@ -47,7 +47,7 @@ marks:
   - usefixtures:
     - api_live_url
     - identification_task
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - name: User with perm view can retrieve
@@ -55,7 +55,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
       json: !force_format_include "{response_data_validation}"
@@ -71,7 +71,7 @@ marks:
   - usefixtures:
     - api_live_url
     - archived_identification_task
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - name: User with regular view perm view can not retrieve
@@ -79,7 +79,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{archived_identification_task.report.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 404
 
@@ -95,8 +95,8 @@ marks:
   - usefixtures:
     - api_live_url
     - archived_identification_task
-    - token_user_can_view
-    - token_user_can_view_archived_identificationtasks
+    - jwt_token_user_can_view
+    - perm_user_can_view_archived_identificationtasks
 
 stages:
   - name: User with perm view archived can retrieve
@@ -104,6 +104,6 @@ stages:
       url: "{api_live_url}/{endpoint}/{archived_identification_task.report.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view_archived_identificationtasks:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200

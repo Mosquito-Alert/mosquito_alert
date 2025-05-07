@@ -7,7 +7,7 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user_token
-    - token_user_can_view
+    - jwt_token_user_can_view
 
 stages:
   - name: Anonymous users can not list
@@ -21,7 +21,7 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view}"
+        Authorization: "Bearer {jwt_token_user_can_view}"
     response:
       status_code: 404
   - name: List users must fail for mobile auth users

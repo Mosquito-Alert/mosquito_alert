@@ -21,7 +21,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{published_object.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       <<: *response_published_object
   - id: appuser_can_retrieve_published
@@ -47,7 +47,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{soft_deleted_object.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 404
   - id: appuser_cannot_retrieve_deleted
@@ -73,7 +73,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{unpublished_object.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response: &response_unpublished_object
       status_code: 200
       strict:
@@ -86,7 +86,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{unpublished_object.pk}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user_can_view:s}"
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response: 
       <<: *response_unpublished_object
   - id: appuser_can_retrieve_owned_unpublished
@@ -114,7 +114,7 @@ stages:
   #     url: "{api_live_url}/{endpoint}/{object_with_hidden_photos.pk:s}/"
   #     method: "GET"
   #     headers:
-  #       Authorization: "Token {token_user_can_view:s}"
+  #       Authorization: "Bearer {jwt_token_user_can_view:s}"
   #   response:
   #     status_code: 200
   #     verify_response_with:

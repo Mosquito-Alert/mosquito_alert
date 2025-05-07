@@ -10,7 +10,7 @@ marks:
     - api_live_url
     - endpoint
     - identification_task
-    - token_user
+    - jwt_token_user
     - app_user_token
 
 stages:
@@ -27,13 +27,13 @@ stages:
       url: "{api_live_url}/{endpoint}/{identification_task.photo.uuid}/"
       method: "GET"
     response:
-      status_code: 403
+      status_code: 401
   - name: User without perm view can retrieve
     request:
       url: "{api_live_url}/{endpoint}/{identification_task.photo.uuid}/"
       method: "GET"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
       json: !force_format_include "{response_data_validation}"

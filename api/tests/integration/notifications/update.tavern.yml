@@ -7,7 +7,7 @@ marks:
   - usefixtures:
     - api_live_url
     - user_notification
-    - token_user
+    - jwt_token_user
   - parametrize:
       key: method
       vals:
@@ -26,7 +26,7 @@ stages:
       url: "{api_live_url}/{endpoint}/{user_notification.pk}/"
       method: "{method}"
       headers:
-        Authorization: "Token {token_user:s}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 403
 
