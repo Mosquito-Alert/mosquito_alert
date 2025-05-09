@@ -114,3 +114,54 @@ stages:
         results:
           - observation:
               uuid: "{archived_identification_task.report.pk}"
+
+
+---
+
+test_name: 'Filters for identification task list fully_predicted'
+
+includes:
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - jwt_token_user_can_view
+    - identification_task_fully_predicted
+    - identification_task_with_pending_predictions
+
+stages:
+  - name: Filter by fully_predicted True
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      params:
+        fully_predicted: True
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - observation:
+              uuid: "{identification_task_fully_predicted.pk}"
+  - name: Filter by fully_predicted False
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      params:
+        fully_predicted: False
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - observation:
+              uuid: "{identification_task_with_pending_predictions.pk}"
