@@ -46,7 +46,7 @@ class ReportQuerySet(models.QuerySet):
         from tigacrafting.models import IdentificationTask
         return self.filter(
             models.Q(
-                identification_tasks__status=IdentificationTask.Status.DONE,
+                identification_task__status=IdentificationTask.Status.DONE,
                 _negated=not state
             )
         )
