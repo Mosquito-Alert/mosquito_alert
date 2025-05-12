@@ -32,7 +32,7 @@ var create_graph = function(id){
     .style("fill", "url(#mygrad)");
 
     var scale = d3.scaleLinear()
-        .domain([-1, 1])
+        .domain([0, 1])
         .range([margin.left, width - margin.right]);
 
     var x_axis = d3.axisBottom()
