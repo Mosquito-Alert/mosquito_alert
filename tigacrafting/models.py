@@ -1827,6 +1827,9 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
         if self.is_decisive and self.taxon is None:
             raise ValidationError("Taxon must be set when is_decisive is True.")
 
+        if all([getattr(self, fname) == 0.0 for fname in self.get_score_fieldnames()]):
+            raise ValidationError("All score fields cannot be zero.")
+
     def save(self, *args, **kwargs):
         self.clean()
 
