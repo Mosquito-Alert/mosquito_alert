@@ -1824,6 +1824,9 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
         if height is not None and self.y_br > height:
             raise ValidationError("Bottom right y-coordinate (y_br) cannot exceed the height of the photo.")
 
+        if self.is_decisive and self.taxon is None:
+            raise ValidationError("Taxon must be set when is_decisive is True.")
+
     def save(self, *args, **kwargs):
         self.clean()
 
