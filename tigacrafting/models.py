@@ -1,6 +1,5 @@
 from collections import defaultdict, Counter
 from decimal import Decimal, localcontext
-import math
 import numbers
 from typing import List, Optional, Literal, Dict, Any, Tuple
 
@@ -26,12 +25,12 @@ from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, BEFORE_SAVE, AFTE
 from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged, WhenFieldValueIs, WhenFieldValueIsNot
 from django_lifecycle.priority import HIGHEST_PRIORITY
 from treebeard.mp_tree import MP_Node
-from scipy.stats import entropy
 
 import tigacrafting.html_utils as html_utils
 
 from .managers import ExpertReportAnnotationManager, IdentificationTaskManager
 from .messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict, notsure_msg_dict
+from .stats import calculate_norm_entropy
 
 User = get_user_model()
 
@@ -262,17 +261,6 @@ class IdentificationTask(LifecycleModel):
                 Decimal,
                 Counter(taxon_confidence) + Counter(ancestors_confidence)
             )
-
-        def calculate_norm_entropy(probabilities: List[numbers.Number]) -> float:
-            """Computes normalized entropy of the given probability distribution."""
-            # Cast the probabilities list to a list of floats
-            probabilities = [float(p) for p in probabilities]
-
-            # If there's only one probability, there is no uncertainty (entropy = 0)
-            # math.log2(1) = 0 -> would raise in the division (denominator)
-            if len(probabilities) <= 1:
-                return 0.0
-            return entropy(probabilities, base=2) / math.log2(len(probabilities))
 
         # Step 1: Handle edge cases where no annotations are available.
         if not annotations:
@@ -1776,7 +1764,7 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
     }
 
     @classmethod
-    def get_score_fieldnames(cls):
+    def get_score_fieldnames(cls) -> List[str]:
         return [fname + cls.CLASS_FIELD_SUFFIX for fname, _ in cls.CLASS_FIELDNAMES_CHOICES]
 
     photo = models.OneToOneField('tigaserver_app.Photo', primary_key=True, related_name='prediction', help_text='Photo to which the score refers to', on_delete=models.CASCADE)
@@ -1817,7 +1805,9 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
 
     @property
     def uncertainty(self) -> float:
-        return 0
+        return calculate_norm_entropy(probabilities=[
+            getattr(self, fname) for fname in self.get_score_fieldnames()
+        ])
 
     def clean(self):
         # Get the linked photo dimensions
