@@ -3106,8 +3106,7 @@ class Photo(models.Model):
             return
 
         if self.report.type == Report.TYPE_ADULT:
-            if not IdentificationTask.objects.filter(report=self.report).exists():
-                IdentificationTask.create_for_report(report=self.report)
+            IdentificationTask.get_or_create_for_report(report=self.report)
         elif self.report.type == Report.TYPE_SITE:
             self.report.published_at = self.report.server_upload_time + timedelta(days=2)
             self.report.save()

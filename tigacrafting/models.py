@@ -178,14 +178,16 @@ class CrowdcraftingResponse(models.Model):
 
 class IdentificationTask(LifecycleModel):
     @classmethod
-    def create_for_report(self, report) -> Optional['IdentificationTask']:
+    def get_or_create_for_report(self, report) -> Tuple[Optional['IdentificationTask'], bool]:
         from tigaserver_app.models import Report
         if not report.photos.exists() or not report.type==Report.TYPE_ADULT:
-            return None
+            return None, False
 
-        return self.objects.create(
+        return self.objects.get_or_create(
             report=report,
-            photo=report.photos.first()
+            defaults={
+                'photo': report.photos.first()
+            }
         )
 
     @classmethod

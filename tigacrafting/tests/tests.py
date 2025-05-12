@@ -1623,21 +1623,23 @@ class TestExpertReportAnnotationModel:
 class TestIdentificationTaskModel:
     # classmethods
     @pytest.mark.parametrize('report_type', [Report.TYPE_BITE, Report.TYPE_SITE])
-    def test_create_for_report_should_return_None_if_not_adult_report(self, _report, report_type):
+    def test_get_or_create_for_report_should_return_None_if_not_adult_report(self, _report, report_type):
         report = _report
         report.type = report_type
         report.save()
 
-        result = IdentificationTask.create_for_report(report=report)
+        result, created = IdentificationTask.get_or_create_for_report(report=report)
         assert result is None
+        assert not created
 
-    def test_create_for_report_should_return_None_if_report_has_no_photos(self, adult_report):
+    def test_get_or_create_for_report_should_return_None_if_report_has_no_photos(self, adult_report):
         assert frozenset(adult_report.photos.all()) is frozenset([])
 
-        result = IdentificationTask.create_for_report(report=adult_report)
+        result, created = IdentificationTask.get_or_create_for_report(report=adult_report)
         assert result is None
+        assert not created
 
-    def test_create_for_report_in_supervised_country_should_return_task_with_exclusivity_end_date(self, user_national_supervisor, adult_report):
+    def test_get_or_create_for_report_in_supervised_country_should_return_task_with_exclusivity_end_date(self, user_national_supervisor, adult_report):
         country = user_national_supervisor.userstat.national_supervisor_of
 
         assert adult_report.country == country
@@ -1646,9 +1648,10 @@ class TestIdentificationTaskModel:
         _ = Photo.objects.create(report=adult_report, photo='./testdata/splash.png')
         IdentificationTask.objects.filter(report=adult_report).delete()
 
-        obj = IdentificationTask.create_for_report(report=adult_report)
+        obj, created = IdentificationTask.get_or_create_for_report(report=adult_report)
 
         assert obj is not None
+        assert created
         assert obj.exclusivity_end == adult_report.server_upload_time + timedelta(days=10)
 
     def test_get_taxon_consensus_empty_annotations(self):
