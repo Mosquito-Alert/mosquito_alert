@@ -1836,6 +1836,8 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
                 raise ValidationError("All score fields cannot be zero when setting is_decisive is True.")
 
     def save(self, *args, **kwargs):
+        self.taxon = Taxon.objects.filter(pk=self.PREDICTED_CLASS_TO_TAXON[self.predicted_class]).first()
+
         self.clean()
 
         if self.is_decisive:
@@ -1844,8 +1846,6 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
                 identification_task=self.identification_task,
                 is_decisive=True
             ).exclude(pk=self.pk).update(is_decisive=False)
-
-        self.taxon = Taxon.objects.filter(pk=self.PREDICTED_CLASS_TO_TAXON[self.predicted_class]).first()
 
         super().save(*args, **kwargs)
 
