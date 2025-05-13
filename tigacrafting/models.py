@@ -1824,11 +1824,16 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
         if height is not None and self.y_br > height:
             raise ValidationError("Bottom right y-coordinate (y_br) cannot exceed the height of the photo.")
 
-        if self.is_decisive and self.taxon is None:
-            raise ValidationError("Taxon must be set when is_decisive is True.")
+        if self.is_decisive:
+            if self.taxon is None:
+                raise ValidationError("Taxon must be set when is_decisive is True.")
 
-        if all([getattr(self, fname) == 0.0 for fname in self.get_score_fieldnames()]):
-            raise ValidationError("All score fields cannot be zero.")
+            # NOTE: checking scores values inside self.is_decisive due to there are two cases
+            #       when the scores can be all zero correctly:
+            #       - 'Off-topic' (the picture is not a mosquito)
+            #       - 'Unclassified' (the picture is a mosquito but none of the scores are above the threshold)
+            if all([getattr(self, fname) == 0.0 for fname in self.get_score_fieldnames()]):
+                raise ValidationError("All score fields cannot be zero when setting is_decisive is True.")
 
     def save(self, *args, **kwargs):
         self.clean()
@@ -1853,6 +1858,8 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
 
         if identification_task:
             identification_task.refresh(force=True)
+
+        return result
 
     class Meta:
         constraints = [
