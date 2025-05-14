@@ -9,10 +9,12 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
+    - app_user_token
     - jwt_token_user
+    - user_uuid
 
 stages:
-  - name: Anonymous user can not get user
+  - name: Anonymous user can not get mobile user
     request:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: GET
@@ -26,10 +28,18 @@ stages:
         Authorization: 'Bearer {jwt_token_user}'
     response:
       status_code: 403
+  - name: Mobile user can not get regular user
+    request:
+      url: "{api_live_url}/{endpoint}/{user_uuid}/"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 403
 
 ---
 
-test_name: Make sure users with permission can retrieve user
+test_name: Make sure users with permission can retrieve app users
 
 includes:
   - !include schema.yml
@@ -41,7 +51,7 @@ marks:
     - jwt_token_user_can_view
 
 stages:
-  - name: Authorized user without permission can not get user
+  - name: Authorized user with permission can get mobile user
     request:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: GET
@@ -63,9 +73,11 @@ marks:
     - app_user
     - app_user_token
     - jwt_token_user
+    - user_uuid
+    - another_user_uuid
 
 stages:
-  - name: Get user by authorized user
+  - name: Get mobile user by authorized user
     request:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: GET
@@ -87,3 +99,43 @@ stages:
         Authorization: "Bearer {token}"
     response:
       status_code: 403
+  - name: User can retrieve itself even without view permission
+    request:
+      url: "{api_live_url}/{endpoint}/{user_uuid}/"
+      method: GET
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
+  - name: User can not retrieve another user without permission
+    request:
+      url: "{api_live_url}/{endpoint}/{another_user_uuid}/"
+      method: GET
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Make sure users with permission can retrieve other regular users
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - another_user_uuid
+    - jwt_token_user_can_view_regular_user
+
+stages:
+  - name: User with view permission can retrieve other regular users
+    request:
+      url: "{api_live_url}/{endpoint}/{another_user_uuid}/"
+      method: GET
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view_regular_user}"
+    response:
+      status_code: 200

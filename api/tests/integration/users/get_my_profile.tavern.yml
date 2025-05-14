@@ -10,7 +10,8 @@ marks:
     - api_live_url
     - app_user
     - app_user_token
-    - jwt_token_user_can_view
+    - jwt_token_user
+    - user
 
 stages:
   - name: Anonymous user can not get user
@@ -24,9 +25,23 @@ stages:
       url: "{api_live_url}/me/"
       method: GET
       headers:
-        Authorization: 'Bearer {jwt_token_user_can_view}'
+        Authorization: 'Bearer {jwt_token_user}'
     response:
-      status_code: 403
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        username: "{user.username}"
+        is_guest: false
+  - name: Check schema for authorized user without permission can not get user even if they have view permissions.
+    request:
+      url: "{api_live_url}/me/"
+      method: GET
+      headers:
+        Authorization: 'Bearer {jwt_token_user}'
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
   - name: Mobile user get their profile
     request:
       url: "{api_live_url}/me/"
@@ -39,3 +54,14 @@ stages:
         - json:off
       json:
         uuid: "{app_user.pk}"
+        username: "{app_user.pk}"
+        is_guest: true
+  - name: Check schema for mobile user get their profile
+    request:
+      url: "{api_live_url}/me/"
+      method: GET
+      headers:
+        Authorization: 'Bearer {app_user_token}'
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"

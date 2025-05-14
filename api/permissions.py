@@ -72,6 +72,29 @@ class UserObjectPermissions(FullDjangoModelPermissions):
 
         return super().has_object_permission(request, view, obj)
 
+class UserPermissions(FullDjangoModelPermissions):
+    def has_permission(self, request, view):
+        # Always require authentication
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if view.action == 'list':
+            return super().has_permission(request, view)
+
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        if obj == request.user:
+            if view.action == 'retrieve':
+                return True
+            if view.action in ['update', 'partial_update']:
+                return not isinstance(request.user, User)
+
+        if isinstance(request.user, TigaUser):
+            return False
+
+        perms = self.get_required_permissions(request.method, obj._meta.model)
+        return request.user.has_perms(perms)
 
 class NotificationObjectPermissions(UserObjectPermissions):
     def has_permission(self, request, view):

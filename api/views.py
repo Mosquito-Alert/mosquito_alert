@@ -1,4 +1,5 @@
 from typing import Optional
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -78,6 +79,7 @@ from .serializers import (
     UserNotificationCreateSerializer,
 )
 from .permissions import (
+    UserPermissions,
     NotificationObjectPermissions,
     MyNotificationPermissions,
     ReportPermissions,
@@ -372,7 +374,24 @@ class UserViewSet(
     queryset = TigaUser.objects.all()
     serializer_class = UserSerializer
 
+    permission_classes = (UserPermissions,)
+
     lookup_url_kwarg = "uuid"
+
+    def get_object(self):
+        try:
+            # Perform the lookup filtering.
+            lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+            obj = User.objects.get(pk=uuid.UUID(self.kwargs[lookup_url_kwarg]).int)
+            self.check_object_permissions(self.request, obj)
+            return obj
+        except User.DoesNotExist:
+            return super().get_object()
+
+    def update(self, request, *args, **kwargs):
+        if isinstance(self.get_object(), User):
+            self.permission_denied(request)
+        return super().update(request, *args, **kwargs)
 
 
 @extend_schema_view(
@@ -382,7 +401,7 @@ class UserViewSet(
         description="Get Current User's Profile"
     )
 )
-class MyUserViewSet(UserViewSet, GenericMobileOnlyViewSet):
+class MyUserViewSet(UserViewSet):
     def get_object(self):
         user = self.request.user
         # May raise a permission denied
