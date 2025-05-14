@@ -7,7 +7,6 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
-    - jwt_token_user_can_change
   - parametrize:
       key: method
       vals:
@@ -23,7 +22,44 @@ stages:
       status_code: 401
 
 ---
-test_name: Only auth user with can_change perm can update
+
+test_name: Make sure regular users can not be updated even with permissions
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - jwt_token_user_can_change_regular_user
+    - user_uuid
+    - another_user_uuid
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - name: Auth regular users can not update itself even with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/{user_uuid}/"
+      method: "{method}"
+      headers:
+        Authorization: 'Bearer {jwt_token_user_can_change_regular_user}'
+    response:
+      status_code: 403
+  - name: Auth regular users can not update other users even with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/{another_user_uuid}/"
+      method: "{method}"
+      headers:
+        Authorization: 'Bearer {jwt_token_user_can_change_regular_user}'
+    response:
+      status_code: 403
+
+---
+test_name: Auth user with can_change perm can update
 
 includes:
   - !include schema.yml
@@ -40,7 +76,7 @@ marks:
         - PATCH
 
 stages:
-  - name: Auth user can not update
+  - name: Auth user can update only if they have can_change permission
     request:
       url: "{api_live_url}/{endpoint}/{app_user.pk}/"
       method: "{method}"

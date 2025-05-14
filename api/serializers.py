@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -1070,6 +1071,24 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_language_iso(self, obj) -> str:
         return obj.language_iso2
+
+    def to_representation(self, instance):
+        if isinstance(instance, User):
+            # NOTE: this must be the same structure as defined.
+            data = {}
+            data['uuid'] = uuid.UUID(int=instance.pk)
+            data['username'] = instance.get_username()
+            data['registration_time'] = instance.date_joined
+            data['locale'] = 'en'
+            data['language_iso'] = 'en'
+            data['is_guest'] = False
+            data['score'] = {
+                'value': 0,
+                'updated_at': None
+            }
+            return data
+
+        return super().to_representation(instance)
 
     class Meta:
         model = TigaUser

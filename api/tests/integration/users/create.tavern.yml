@@ -6,11 +6,29 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - app_user_token
+    - jwt_token_user_can_add
 
 stages:
-  - name: Create user does not exist
+  - name: Create method not exist for mobile users
     request:
       url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "POST"
+    response:
+      status_code: 404
+  - name: Create method non authenticated users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+    response:
+      status_code: 404
+  - name: Create method users even with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_add}"
       method: "POST"
     response:
       status_code: 404
