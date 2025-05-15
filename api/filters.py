@@ -200,7 +200,7 @@ class AnnotationFilter(filters.FilterSet):
         )
 
     order_by = filters.OrderingFilter(
-        fields=("created_at", "updated_at")
+        fields=(("created", "created_at"), ("last_modified", "updated_at"))
     )
 
     class Meta:
