@@ -1,8 +1,26 @@
-from tigacrafting.models import PhotoPrediction
+from tigacrafting.models import PhotoPrediction, Taxon
 from tigaserver_app.models import Photo
 
 
 def create_photo_prediction(photo: Photo) -> PhotoPrediction:
+    # Needs to be sure that exists a taxon for the predicted_class
+    predicted_class = PhotoPrediction.CLASS_FIELDNAMES_CHOICES[0][0]
+
+    try:
+        Taxon.objects.get(pk=PhotoPrediction.PREDICTED_CLASS_TO_TAXON[predicted_class])
+    except Taxon.DoesNotExist:
+        taxon_root = Taxon.get_root() or Taxon.add_root(
+            rank=Taxon.TaxonomicRank.CLASS,
+            name="Insecta",
+            common_name=""
+        )
+        taxon_root.add_child(
+            pk=PhotoPrediction.PREDICTED_CLASS_TO_TAXON[predicted_class],
+            rank=Taxon.TaxonomicRank.SPECIES,
+            name=PhotoPrediction.CLASS_FIELDNAMES_CHOICES[0][1],
+            is_relevant=True
+        )
+
     return PhotoPrediction.objects.create(
         photo=photo,
         identification_task=photo.report.identification_task,
