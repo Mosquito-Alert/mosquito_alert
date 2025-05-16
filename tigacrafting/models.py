@@ -1762,7 +1762,7 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
         'ae_japonicus': 114,
         'ae_koreicus': 115,
         'other_species': 1,
-        'not_sure': None,
+        'not_sure': 1,
         None: None
     }
 
