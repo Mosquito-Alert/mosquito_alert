@@ -106,7 +106,7 @@ class PhotoPredictionInlineAdmin(admin.StackedInline):
         ('insect_confidence', 'predicted_class', 'threshold_deviation'),
         'classifier_version',
         ('x_tl', 'x_br', 'y_tl', 'y_br'),
-        PhotoPrediction.get_score_fieldnames(),
+        tuple(PhotoPrediction.get_score_fieldnames()),
         ('created_at', 'updated_at')
     )
     def get_readonly_fields(self, request, obj=None):
