@@ -1,0 +1,150 @@
+---
+
+test_name: New identification tasks assignations can not be created by not regular users with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - app_user_token
+    - jwt_token_user
+
+stages:
+  - name: Assignation is not allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/assign/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "POST"
+    response:
+      status_code: 403
+  - name: Non auth user can not assign new identification tasks.
+    request:
+      url: "{api_live_url}/{endpoint}/assign/"
+      method: "POST"
+    response:
+      status_code: 401
+  - name: User without perm can not assign new identification tasks.
+    request:
+      url: "{api_live_url}/{endpoint}/assign/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Identification tasks assignations can be made only by authenticated users with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - jwt_token_user
+    - perm_user_can_add_annotations
+
+stages:
+  - name: User with perm can assign new identification tasks.
+    request:
+      url: "{api_live_url}/{endpoint}/assign/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 201
+      json: !force_format_include "{response_data_validation}"
+
+---
+
+test_name: Ensure user is in assignments
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - jwt_token_user
+    - perm_user_can_add_annotations
+
+stages:
+  - name: User with perm can assign new identification tasks.
+    request:
+      url: "{api_live_url}/{endpoint}/assign/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 201
+      strict:
+        - json:off
+      json: 
+        assignments:
+          - user:
+              id: !int "{user.pk}"
+              username: "{user.username}"
+              first_name: "{user.first_name}"
+              last_name: "{user.last_name}"
+              full_name: "{user.first_name} {user.last_name}"
+            annotation_id: null
+
+---
+
+test_name: Assign identification tasks return pending annotations if any.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - assigned_only_identification_task
+    - user
+    - jwt_token_user
+    - perm_user_can_add_annotations
+
+stages:
+  - name: User with perm can assign new identification tasks.
+    request:
+      url: "{api_live_url}/{endpoint}/assign/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 201
+      strict:
+        - json:off
+      json:
+        observation:
+          uuid: "{assigned_only_identification_task.report.pk}"
+
+---
+
+test_name: Assign identification tasks return 204 if not available annotations
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - jwt_token_user
+    - perm_user_can_add_annotations
+
+stages:
+  - name: User with perm can assign new identification tasks.
+    request:
+      url: "{api_live_url}/{endpoint}/assign/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 204

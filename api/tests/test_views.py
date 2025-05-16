@@ -747,8 +747,15 @@ class TestIdentificationTaskAnnotationsApi:
         annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
         assert annotation.status == expected_result
 
+    @pytest.mark.parametrize(
+        "pre_assign",
+        [True, False]
+    )
+    def test_POST_always_saves_validation_complete_True(self, pre_assign, api_client, endpoint, identification_task, user, common_post_data, with_add_permission):
+        if pre_assign:
+            identification_task.assign_to_user(user=user)
+            annotation = ExpertReportAnnotation.objects.get(user=user, identification_task=identification_task)
 
-    def test_POST_always_saves_validation_complete_True(self, api_client, endpoint, common_post_data, with_add_permission):
         response = api_client.post(
             endpoint,
             data=common_post_data,
@@ -756,7 +763,10 @@ class TestIdentificationTaskAnnotationsApi:
         )
         assert response.status_code == status.HTTP_201_CREATED
 
-        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
+        if pre_assign:
+            annotation.refresh_from_db()
+        else:
+            annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
         assert annotation.validation_complete
 
     def test_classification_null_shoud_set_status_to_hidden(self, api_client, endpoint, common_post_data, with_add_permission):

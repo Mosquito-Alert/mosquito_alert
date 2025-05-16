@@ -276,10 +276,23 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
         return self.filter(
             models.Exists(
-                ExpertReportAnnotation.objects.filter(
+                ExpertReportAnnotation.objects.is_annotation().filter(
                     identification_task=models.OuterRef('pk'),
                     user__in=users,
-                    validation_complete=True,
+                )
+            )
+        )
+
+    def assigned_to(self,  users: List[User]) -> QuerySet:
+        # NOTE: this queryset only returns assignments, discarding for example
+        #       assignees that has reviewed (revise=False)
+        from .models import ExpertReportAnnotation
+
+        return self.filter(
+            models.Exists(
+                ExpertReportAnnotation.objects.is_assignment().filter(
+                    identification_task=models.OuterRef('pk'),
+                    user__in=users
                 )
             )
         )
@@ -300,9 +313,15 @@ IdentificationTaskManager = models.Manager.from_queryset(IdentificationTaskQuery
 
 class ExpertReportAnnotationQuerySet(models.QuerySet):
     def is_annotation(self) -> QuerySet:
-        return self.completed().exclude(
+        return self.is_assignment().completed()
+
+    def is_assignment(self) -> QuerySet:
+        # Revisions from superexpert are not assignments.
+        return self.exclude(
             user__groups__name='superexpert',
             revise=False
+        ).filter(
+            identification_task__isnull=False
         )
 
     def completed(self, state: bool = True) -> QuerySet:

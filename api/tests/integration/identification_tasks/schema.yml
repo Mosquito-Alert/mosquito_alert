@@ -25,7 +25,7 @@ variables:
     public_photo:
       uuid: !anystr
       url: !anystr
-    annotators: !anylist
+    assignments: !anylist
     status: !anystr
     is_flagged: !anybool
     is_safe: !anybool

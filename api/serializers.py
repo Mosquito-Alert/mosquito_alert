@@ -852,18 +852,29 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
                 'agreement': {'min_value': 0, 'max_value': 1},
             }
 
+    class AssignmentSerializer(serializers.ModelSerializer):
+        user = SimpleAnnotatorUserSerializer()
+        annotation_id = serializers.SerializerMethodField(allow_null=True)
+
+        def get_annotation_id(self, obj) -> Optional[int]:
+            return obj.pk if obj.validation_complete else None
+
+        class Meta:
+            model = ExpertReportAnnotation
+            fields = ("user", "annotation_id")
+
     observation = SimplifiedObservationSerializer(source='report', read_only=True)
     public_photo = SimplePhotoSerializer(source='photo', required=True)
     review = IdentificationTaskReviewSerializer(source='*', allow_null=True, read_only=True)
     result = IdentificationTaskResultSerializer(source='*', read_only=True)
-    annotators = SimpleAnnotatorUserSerializer(many=True, read_only=True)
+    assignments = AssignmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = IdentificationTask
         fields = (
             'observation',
             'public_photo',
-            'annotators',
+            'assignments',
             'status',
             'is_flagged',
             'is_safe',

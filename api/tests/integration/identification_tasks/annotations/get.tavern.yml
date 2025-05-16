@@ -177,7 +177,7 @@ marks:
     - another_user
     - annotation_from_another_user
     - jwt_token_user_can_view
-    - perm_user_can_view_annotators
+    - perm_user_can_view_assignees
 
 stages:
   - name: User with perm view can retrieve full name
