@@ -935,6 +935,8 @@
            value="{{ tiger_certainty }}">
     <input id="site_certainty_input" type="text" name="site_certainty" style="display: none;"
            value="{{ site_certainty }}">
+    <input id="result_source_input" type="text" name="result_source" style="display: none;"
+           value="{{ result_source }}">
     <input id="status_input" type="text" name="status" style="display: none;" value="{{ status }}">
     <input id="final_status_input" type="text" name="final_status" style="display: none;"
            value="{{ final_status }}">
@@ -1133,6 +1135,17 @@
                                         <option value="public">Public</option>
                                         <option value="flagged">Flagged</option>
                                         <option value="hidden">Hidden</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="result_source_select" class="col-sm-4 control-label">Result source:</label>
+
+                                <div class="col-sm-8">
+                                    <select id="result_source_select" class="selectpicker show-tick form-control">
+                                        <option value="all">All</option>
+                                        <option value="expert">Experts</option>
+                                        <option value="ai">Artificial Inteligence</option>
                                     </select>
                                 </div>
                             </div>
@@ -2085,6 +2098,7 @@
             $("#orderby_input").val('date');
             $("#tiger_certainty_input").val('all');
             $("#site_certainty_input").val('all');
+            $("#result_source_input").val('all');
             $("#status_input").val('all');
             $("#final_status_input").val('na');
             $("#version_uuid_input").val('na');
@@ -2311,17 +2325,20 @@
                 var this_orderby = $("#orderby_select").val();
                 var this_tiger_certainty = $("#tiger_certainty_select").val();
                 var this_site_certainty = $("#site_certainty_select").val();
+                var this_result_source = $("#result_source_select").val();
                 var this_status = $("#status_select").val();
                 var this_ns_exec = $("#ns_select").val();
                 $("#orderby_input").val(this_orderby);
                 $("#tiger_certainty_input").val(this_tiger_certainty);
                 $("#site_certainty_input").val(this_site_certainty);
+                $("#result_source_input").val(this_result_source);
                 $("#status_input").val(this_status);
                 $("#ns_id_input").val(this_ns_exec);
                 $("#pending_input").val(pending);
                 var qp = '?orderby=' + this_orderby;
                 qp += '&tiger_certainty=' + this_tiger_certainty;
                 qp += '&site_certainty=' + this_site_certainty;
+                qp += '&result_source=' + this_result_source;
                 qp += '&status=' + this_status;
                 qp += '&pending=' + pending;
                 qp += '&ns_exec=' + this_ns_exec;
@@ -2347,6 +2364,7 @@
             $("#tiger_certainty_select").val("{{ tiger_certainty }}");
             $("#ns_select").val("{{ ns_exec }}");
             $("#site_certainty_select").val("{{ site_certainty }}");
+            $("#result_source_select").val("{{ result_source }}");
             $("#status_select").val("{{ status }}");
             var pending_btn = $("#pending_btn"), complete_btn = $("#complete_btn"), favorite_btn = $('#favorite_btn');
             pending == "complete" ? complete_btn.addClass("active") : (pending == "pending" ? pending_btn.addClass("active") : (pending == "favorite" ? favorite_btn.addClass("active") : {} ));

@@ -519,7 +519,7 @@ def report_expiration(request, country_id=None):
 
 @transaction.atomic
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', ns_exec='all', edit_mode='off', tags_filter='na'):
+def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', result_source='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', ns_exec='all', edit_mode='off', tags_filter='na'):
     this_user = request.user
 
     if settings.SHOW_USER_AGREEMENT_ENTOLAB:
@@ -549,6 +549,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         orderby = request.POST.get('orderby', orderby)
         tiger_certainty = request.POST.get('tiger_certainty', tiger_certainty)
         site_certainty = request.POST.get('site_certainty', site_certainty)
+        result_source = request.POST.get('result_source', result_source)
         pending = request.POST.get('pending', pending)
         status = request.POST.get('status', status)
         final_status = request.POST.get('final_status', final_status)
@@ -573,7 +574,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         page = request.POST.get('page')
         if not page:
             page = '1'
-        return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.parse.quote_plus(tags_filter)) if tags_filter else ''))
+        return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&result_source='+result_source) if result_source else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.parse.quote_plus(tags_filter)) if tags_filter else ''))
     else:
         tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
         note_language = request.GET.get('note_language', note_language)
@@ -581,6 +582,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         orderby = request.GET.get('orderby', orderby)
         tiger_certainty = request.GET.get('tiger_certainty', tiger_certainty)
         site_certainty = request.GET.get('site_certainty', site_certainty)
+        result_source = request.GET.get('result_source', result_source)
         pending = request.GET.get('pending', pending)
         status = request.GET.get('status', status)
         final_status = request.GET.get('final_status', final_status)
@@ -650,6 +652,11 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
                 try:
                     this_certainty = int(site_certainty)
                     all_annotations = all_annotations.filter(site_certainty_category=this_certainty)
+                except ValueError:
+                    pass
+            if result_source and result_source != 'all':
+                try:
+                    all_annotations = all_annotations.filter(identification_task__result_source=result_source)
                 except ValueError:
                     pass
             if ns_exec and ns_exec != 'all':
@@ -729,6 +736,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             else:
                 args['tiger_certainty_label'] = 'all'
         args['site_certainty'] = site_certainty
+        args['result_source'] = result_source
         args['pending'] = pending
         args['checked'] = checked
         args['status'] = status
@@ -1053,9 +1061,12 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
             reports_qs = reports_qs.filter(country=country)
 
     if aithr:
-        reports_qs = reports_qs.filter(ia_filter_1__lte=float(aithr))
+        reports_qs = reports_qs.filter(
+            models.Q(identification_task__pred_insect_confidence__isnull=True)
+            | models.Q(identification_task__pred_insect_confidence__lte=float(aithr))
+        )
 
-    reports_qs = reports_qs.prefetch_related('photos').select_related('country').order_by('-server_upload_time')
+    reports_qs = reports_qs.prefetch_related('photos').select_related('country', 'identification_task').order_by('-server_upload_time')
     paginator = Paginator(
         reports_qs,
         int(tasks_per_page)

@@ -3,17 +3,19 @@ from datetime import timedelta
 import jwt
 import pytest
 import time_machine
+import pytest
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.module_loading import import_string
 
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
 from rest_framework_simplejwt.settings import api_settings
 
-from tigacrafting.models import ExpertReportAnnotation
+from tigacrafting.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction
 from tigaserver_app.models import TigaUser, Report, Device, MobileApp
 
 from api.tests.clients import AppAPIClient
@@ -23,6 +25,9 @@ from api.tests.integration.bites.factories import create_bite_object
 from api.tests.integration.identification_tasks.factories import create_annotation
 from api.tests.factories import create_report_object
 from api.tests.utils import grant_permission_to_user
+from api.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
+
+from .utils import grant_permission_to_user
 
 User = get_user_model()
 
@@ -167,6 +172,50 @@ class TestObservationAPI(BaseReportTest):
     @pytest.fixture
     def report_object(self, app_user):
         return create_observation_object(user=app_user)
+
+@pytest.mark.django_db
+class TestIdentificationTaskPredictionAPI:
+    @classmethod
+    def build_url(cls, identification_task, photo_uuid: str = None):
+        result = f"/api/v1/identification-tasks/{identification_task.pk}/predictions/"
+        if photo_uuid:
+            result += f"{photo_uuid}/"
+        return result
+
+    @pytest.fixture
+    def permitted_user(self, user):
+        grant_permission_to_user(type='change', model_class=PhotoPrediction, user=user)
+        Token.objects.create(user=user)
+        return user
+
+    @pytest.fixture()
+    def api_client(self, permitted_user):
+        from rest_framework.test import APIClient
+
+        client = APIClient()
+        token = Token.objects.get(user=permitted_user)
+        client.credentials(HTTP_AUTHORIZATION=f"Token {str(token)}")
+        return client
+
+    @pytest.mark.parametrize("is_decisive", [False, True])
+    def test_is_decisive_False_does_not_set_identification_task(self, api_client, identification_task, is_decisive):
+        assert identification_task.result_source != IdentificationTask.ResultSource.AI
+
+        photo = identification_task.photo
+        _ = create_photo_prediction(photo=photo)
+
+        response = api_client.patch(
+            self.build_url(identification_task=identification_task, photo_uuid=photo.uuid),
+            data={
+                "is_decisive": is_decisive
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+        identification_task.refresh_from_db()
+        assert (identification_task.result_source == IdentificationTask.ResultSource.AI) == is_decisive
+        assert identification_task.report.published == is_decisive
 
 
 @pytest.mark.django_db

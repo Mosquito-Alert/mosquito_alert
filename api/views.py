@@ -27,10 +27,11 @@ from rest_framework.mixins import (
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, SAFE_METHODS
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import Token
 
-from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction
 from tigaserver_app.models import (
     TigaUser,
     EuropeCountry,
@@ -70,7 +71,9 @@ from .serializers import (
     AnnotationSerializer,
     IdentificationTaskSerializer,
     TaxonSerializer,
-    TaxonTreeNodeSerializer
+    TaxonTreeNodeSerializer,
+    PhotoPredictionSerializer,
+    CreatePhotoPredictionSerializer
 )
 from .serializers import (
     CreateNotificationSerializer,
@@ -358,6 +361,7 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_ADULT)
 
+
 @extend_schema_view(
     list=extend_schema(
         tags=['observations'],
@@ -418,6 +422,48 @@ class PhotoViewSet(
 
     lookup_field = 'uuid'
     lookup_url_kwarg = 'uuid'
+
+    @action(
+        detail=True,
+        methods=['GET', 'PUT', 'PATCH', 'DELETE'],
+        authentication_classes=GenericNoMobileViewSet.authentication_classes,
+        permission_classes=GenericNoMobileViewSet.permission_classes,
+        parser_classes=GenericViewSet.parser_classes,
+        serializer_class=PhotoPredictionSerializer,
+        queryset=PhotoPrediction.objects.all(),
+        lookup_field='photo__uuid',
+        filter_backends=[]
+    )
+    def prediction(self, request, uuid=None):
+        if request.method == 'GET':
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        elif request.method == 'POST':
+            serializer = self.get_serializer(data=request.data)
+            serializer.context['photo__uuid'] = uuid
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self._get_location_header(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        elif request.method in ['PUT', 'PATCH']:
+            partial = request.method == 'PATCH'
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        elif request.method == 'DELETE':
+            instance = self.get_object()
+            instance.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def _get_location_header(self, data):
+        try:
+            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        except (TypeError, KeyError):
+            return {}
 
 class DeviceViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericMobileOnlyViewSet):
     queryset = Device.objects.filter(device_id__isnull=False).exclude(device_id='').select_related('mobile_app')
@@ -524,6 +570,37 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
 
         lookup_field = 'uuid'
         lookup_url_kwarg = 'uuid'
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="observation_uuid",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description="UUID of the Observation"
+            )
+        ]
+    )
+    class PhotoPredictionViewSet(NestedViewSetMixin, CreateModelMixin, RetrieveModelMixin, ListModelMixin, UpdateModelMixin, DestroyModelMixin, GenericNoMobileViewSet):
+        queryset = PhotoPrediction.objects.all()
+
+        parent_lookup_kwargs = {
+            'observation_uuid': 'identification_task__pk'
+        }
+
+        lookup_field = 'photo__uuid'
+        lookup_url_kwarg = 'photo_uuid'
+
+        def get_serializer_class(self):
+            if self.request.method == 'POST':
+                return CreatePhotoPredictionSerializer
+            return PhotoPredictionSerializer
+
+        def get_serializer_context(self):
+            result = super().get_serializer_context()
+            result['observation_uuid'] = self.kwargs['observation_uuid']
+            return result
+
 
     @extend_schema(
         parameters=[
