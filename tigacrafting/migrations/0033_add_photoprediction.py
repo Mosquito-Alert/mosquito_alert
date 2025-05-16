@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
             name='PhotoPrediction',
             fields=[
                 ('photo', models.OneToOneField(help_text='Photo to which the score refers to', on_delete=django.db.models.deletion.CASCADE, primary_key=True, related_name='prediction', serialize=False, to='tigaserver_app.photo')),
-                ('classifier_version', models.CharField(choices=[('v2023.1', 'v2023.1'), ('v2024.1', 'v2024.1'), ('v2025.1', 'v2025.1')], max_length=16)),
+                ('classifier_version', models.CharField(choices=[('v2023.1', 'v2023.1'), ('v2024.1', 'v2024.1'), ('v2025.1', 'v2025.1'), ('v2025.2', 'v2025.2'), ('v2025.3', 'v2025.3'), ('v2025.4', 'v2025.4')], max_length=16)),
                 ('is_decisive', models.BooleanField(default=False, help_text='Indicates if this prediction can close the identification task.')),
                 ('insect_confidence', models.FloatField(help_text='Insect confidence', validators=[django.core.validators.MinValueValidator(0.0), django.core.validators.MaxValueValidator(1.0)])),
                 ('predicted_class', models.CharField(null=True, choices=[('ae_albopictus', 'Aedes albopictus'), ('ae_aegypti', 'Aedes aegypti'), ('ae_japonicus', 'Aedes japonicus'), ('ae_koreicus', 'Aedes koreicus'), ('culex', 'Culex (s.p)'), ('anopheles', 'Anopheles (s.p.)'), ('culiseta', 'Culiseta (s.p.)'), ('other_species', 'Ohter species'), ('not_sure', 'Unidentifiable')], default='not_sure', max_length=32)),
