@@ -11,6 +11,9 @@ def model_class():
 def endpoint(identification_task):
     return f"identification-tasks/{identification_task.report.pk}/annotations"
 
+@pytest.fixture
+def assignation(assigned_only_identification_task, user):
+    return assigned_only_identification_task.assignments.get(user=user, identification_task=assigned_only_identification_task)
 
 @pytest.fixture
 def me_endpoint():

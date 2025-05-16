@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import MultipleObjectsReturned
 
-from rest_framework import exceptions
 from rest_framework import permissions
 
 from tigacrafting.models import ExpertReportAnnotation
@@ -137,13 +136,10 @@ class IdentificationTaskPermissions(FullDjangoModelPermissions):
 class MyIdentificationTaskPermissions(DjangoRegularUserModelPermissions):
     pass
 
-class IdentificationTaskBacklogPermissions(IsRegularUser):
+class IdentificationTaskAssignationPermissions(IsRegularUser):
     def has_permission(self, request, view):
         if not super().has_permission(request, view):
             return False
-
-        if request.method != "GET":
-            raise exceptions.MethodNotAllowed(request.method)
 
         return request.user.has_perm('%(app_label)s.add_%(model_name)s' % {
             'app_label': ExpertReportAnnotation._meta.app_label,

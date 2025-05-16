@@ -187,3 +187,37 @@ stages:
       json:
         observation_uuid: "{identification_task.report.pk}"
         classification: null
+
+---
+
+test_name: User can create a new annotation when assignment exist
+
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - assigned_only_identification_task
+    - assignation
+    - user
+    - taxon_root
+    - jwt_token_user_can_add
+
+stages:
+  - name: Create off-topic classification
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_add}"
+      method: "POST"
+      json:
+        classification: null
+    response:
+      status_code: 201
+      strict:
+        - json:off
+      json:
+        id: !int "{assignation.pk}"

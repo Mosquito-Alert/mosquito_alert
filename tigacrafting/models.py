@@ -414,6 +414,10 @@ class IdentificationTask(LifecycleModel):
     def annotations(self) -> models.QuerySet:
         return self.expert_report_annotations.all().is_annotation()
 
+    @cached_property
+    def assignments(self) -> models.QuerySet:
+        return self.expert_report_annotations.all().is_assignment()
+
     @property
     def confidence_label(self) -> str:
         return get_confidence_label(value=self.confidence)

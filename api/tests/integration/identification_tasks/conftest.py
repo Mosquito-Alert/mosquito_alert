@@ -31,6 +31,11 @@ def archived_identification_task(identification_task):
     return identification_task
 
 @pytest.fixture
+def assigned_only_identification_task(identification_task, user):
+    identification_task.assign_to_user(user)
+    return identification_task
+
+@pytest.fixture
 def perm_user_can_view_archived_identificationtasks(user, model_class):
     return grant_permission_to_user(
         codename="view_archived_identificationtasks", model_class=model_class, user=user
@@ -54,7 +59,7 @@ def perm_user_can_add_annotations(user):
     )
 
 @pytest.fixture
-def perm_user_can_view_annotators(user):
+def perm_user_can_view_assignees(user):
     return grant_permission_to_user(
         type="view", model_class=UserStat, user=user
     )

@@ -86,7 +86,7 @@ from .permissions import (
     MyReportPermissions,
     IdentificationTaskPermissions,
     MyIdentificationTaskPermissions,
-    IdentificationTaskBacklogPermissions,
+    IdentificationTaskAssignationPermissions,
     AnnotationPermissions,
     MyAnnotationPermissions,
     TaxaPermissions,
@@ -446,7 +446,19 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         'report__nuts_2_fk',
         'report__nuts_3_fk',
         'report__lau_fk'
-    ).prefetch_related('assignees')
+    ).prefetch_related(
+        models.Prefetch(
+            "assignees",
+            queryset=User.objects.filter(
+                models.Exists(
+                    ExpertReportAnnotation.objects.is_assignment().filter(
+                        user=models.OuterRef('pk'),
+                        identification_task_id=models.OuterRef(models.OuterRef('identificationtask'))
+                    )
+                )
+            )
+        )
+    )
     serializer_class = IdentificationTaskSerializer
     filterset_class = IdentificationTaskFilter
     permission_classes = (IdentificationTaskPermissions,)
@@ -464,21 +476,33 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         return qs
 
     @extend_schema(
+        request=None,
         responses={
-            200: IdentificationTaskSerializer,
-            204: OpenApiResponse(description="No available tasks in backlog"),
+            201: IdentificationTaskSerializer,
+            204: OpenApiResponse(description="No available tasks pending to assign"),
         },
-        description="Retrieve the next identification task from the backlog.",
+        operation_id='identificationtasks_assign_new',
+        description="Assign the next available identification task.",
     )
-    @action(detail=False, methods=["GET"], url_path="backlog/next", permission_classes=[IdentificationTaskBacklogPermissions,])
-    def backlog_next(self, request):
-        task = IdentificationTask.objects.backlog(user=request.user).first()
-
+    @action(detail=False, methods=["POST",], url_path="assign", permission_classes=[IdentificationTaskAssignationPermissions,])
+    def assign_new(self, request):
+        # Checking if there are any task with pending annotation for that user.
+        task = IdentificationTask.objects.filter(
+            pk=models.Subquery(
+                ExpertReportAnnotation.objects.is_assignment().completed(False).filter(
+                    user=request.user
+                ).order_by('-created').values('identification_task_id')[:1]
+            )
+        ).first()
         if not task:
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            task = IdentificationTask.objects.backlog(user=request.user).first()
+            if not task:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            task.assign_to_user(user=request.user)
+            task.refresh_from_db()
 
         serializer = self.get_serializer(task)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
         parameters=[
@@ -534,6 +558,22 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             result['observation_uuid'] = self.kwargs['observation_uuid']
             return result
 
+        def create(self, request, *args, **kwargs):
+            # Check if it was assigned only (not completed)
+            pending_annotation = ExpertReportAnnotation.objects.is_assignment().completed(False).filter(
+                identification_task_id=self.kwargs['observation_uuid'],
+                user=request.user
+            ).first()
+            if pending_annotation:
+                # Update values
+                serializer = self.get_serializer(pending_annotation, data=request.data, partial=False)
+                serializer.is_valid(raise_exception=True)
+                self.perform_create(serializer)
+                # Mimic creation response
+                headers = self.get_success_headers(serializer.data)
+                return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+            return super().create(request, *args, **kwargs)
 
 @extend_schema_view(
     list=extend_schema(

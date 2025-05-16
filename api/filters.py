@@ -111,6 +111,17 @@ class IdentificationTaskFilter(filters.FilterSet):
             return queryset
         return queryset.annotated_by(users=value)
 
+    assignee_ids = filters.ModelMultipleChoiceFilter(
+        field_name="assignees",
+        queryset=User.objects.all(),
+        method="filter_by_assignees"
+    )
+
+    def filter_by_assignees(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.assigned_to(users=value)
+
     num_annotations = filters.RangeFilter(field_name="total_finished_annotations")
 
     created_at = filters.IsoDateTimeFromToRangeFilter(
