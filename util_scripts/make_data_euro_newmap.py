@@ -386,7 +386,7 @@ cursor.execute("CREATE TABLE map_aux_reports_newmap (id serial primary key,versi
                "nuts3_code character varying(5)," \
                "nuts3_name character varying(150)," \
                "validation integer," \
-               "validation_type varying(16)," \
+               "validation_type character varying(16)," \
                "ia_value double precision," \
                "larvae boolean," \
                "bite_count integer," \
