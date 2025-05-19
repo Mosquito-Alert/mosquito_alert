@@ -1,5 +1,5 @@
 from django.contrib import admin
-from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, UserStat, Taxon, IdentificationTask
+from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, UserStat, Taxon, IdentificationTask, PhotoPrediction
 from tigaserver_app.models import NutsEurope
 import csv
 from django.utils.encoding import smart_str
@@ -96,6 +96,42 @@ class ExpertReportAnnotationInlineAdmin(admin.StackedInline):
     def has_delete_permission(self, request, obj=None):
         return False
 
+class PhotoPredictionInlineAdmin(admin.StackedInline):
+    model = PhotoPrediction
+
+    ordering = ('created_at',)
+    fields = (
+        'photo',
+        ('taxon', 'is_decisive', 'confidence', 'uncertainty'),
+        ('insect_confidence', 'predicted_class', 'threshold_deviation'),
+        'classifier_version',
+        ('x_tl', 'x_br', 'y_tl', 'y_br'),
+        tuple(PhotoPrediction.get_score_fieldnames()),
+        ('created_at', 'updated_at')
+    )
+    def get_readonly_fields(self, request, obj=None):
+        # Make all fields read-only by getting the model's fields dynamically
+        return [field.name for field in self.model._meta.fields] + ['confidence', 'uncertainty']
+
+    def confidence(self, obj):
+        return obj.confidence
+
+    def uncertainty(self, obj):
+        return obj.uncertainty
+
+    extra = 0
+    can_delete = False
+    show_change_link = True
+
+    def has_add_permission(self, request, obj):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 @admin.register(IdentificationTask)
 class IdentificationTaskAdmin(NumericFilterModelAdmin):
     search_fields = ("report__pk", "taxon__name")
@@ -129,10 +165,11 @@ class IdentificationTaskAdmin(NumericFilterModelAdmin):
         return [field.name for field in self.model._meta.fields] + ['exclusivity_end', 'in_exclusivity_period', "confidence_label"]
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('report__country', 'taxon', 'photo')
+        return super().get_queryset(request).select_related('report__country', 'taxon', 'photo').prefetch_related('expert_report_annotations', 'photo_predictions')
 
     inlines = [
         ExpertReportAnnotationInlineAdmin,
+        PhotoPredictionInlineAdmin
     ]
 
 class UserStatAdmin(admin.ModelAdmin):

@@ -92,7 +92,10 @@ def update_larvae(cursor):
 
 def update_ia_value(cursor):
     cursor.execute(
-        """update map_aux_reports_newmap set ia_value=r.ia_filter_1 from (select \"version_UUID\", ia_filter_1 from tigaserver_app_report) as r where version_uuid = r.\"version_UUID\""""
+        """UPDATE map_aux_reports_newmap
+            SET ia_value = t.pred_insect_confidence
+            FROM tigacrafting_identificationtask t
+            WHERE map_aux_reports_newmap.version_uuid = t.report_id"""
     )
     cursor.execute(
         """UPDATE map_aux_reports_newmap set ia_value=NULL where expert_validated<>2;"""
@@ -383,6 +386,7 @@ cursor.execute("CREATE TABLE map_aux_reports_newmap (id serial primary key,versi
                "nuts3_code character varying(5)," \
                "nuts3_name character varying(150)," \
                "validation integer," \
+               "validation_type varying(16)," \
                "ia_value double precision," \
                "larvae boolean," \
                "bite_count integer," \
@@ -643,6 +647,22 @@ for file in filenames:
 
 
 print ("Updating database")
+cursor.execute("""
+    UPDATE map_aux_reports_newmap
+    SET validation_type = 'human'
+    FROM tigacrafting_identificationtask
+    WHERE map_aux_reports_newmap.version_uuid = tigacrafting_identificationtask.report_id
+      AND tigacrafting_identificationtask.result_source = 'expert';
+""")
+
+cursor.execute("""
+    UPDATE map_aux_reports_newmap
+    SET validation_type = 'ai'
+    FROM tigacrafting_identificationtask
+    WHERE map_aux_reports_newmap.version_uuid = tigacrafting_identificationtask.report_id
+      AND tigacrafting_identificationtask.result_source = 'ai';
+""")
+
 # special points -> site#-4 are auto validated
 cursor.execute(
     """UPDATE map_aux_reports_newmap set expert_validation_result = 'site#-4' where version_uuid in (select report_id from tigacrafting_expertreportannotation where site_certainty_notes='auto');""")
