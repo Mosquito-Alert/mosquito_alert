@@ -207,6 +207,13 @@ class AnnotationFilter(filters.FilterSet):
         method="filter_by_confidence_label"
     )
 
+    created_at = filters.IsoDateTimeFromToRangeFilter(
+        field_name="created", label="Created at"
+    )
+    updated_at = filters.IsoDateTimeFromToRangeFilter(
+        field_name="last_modified", label="Updated at"
+    )
+
     def filter_by_confidence_label(self, queryset, name, value):
         if not value:
             return queryset
