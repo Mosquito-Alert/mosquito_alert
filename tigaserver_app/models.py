@@ -3088,7 +3088,7 @@ class Photo(models.Model):
                 </figcaption>
             '''.format(
                 self.prediction.predicted_class,
-                self.prediction.taxon.name if self.prediction.taxon else "Uncertain"
+                self.prediction.taxon.name if self.prediction.taxon else "Off-topic"
             )
 
         return '''
