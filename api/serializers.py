@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 import uuid
 
 from django.contrib.auth import get_user_model
@@ -573,6 +573,12 @@ class BaseReportWithPhotosSerializer(BaseReportSerializer):
     class Meta(BaseReportSerializer.Meta):
         fields = BaseReportSerializer.Meta.fields + ("photos",)
 
+class BaseSimplifiedReportSerializerWithPhoto(BaseSimplifiedReportSerializer):
+    photos = BaseReportWithPhotosSerializer().fields['photos']
+    class Meta(BaseSimplifiedReportSerializer.Meta):
+        fields = BaseSimplifiedReportSerializer.Meta.fields + ('photos',)
+        read_only_fields = BaseSimplifiedReportSerializer.Meta.read_only_fields + ('photos',)
+
 class SimpleTaxonSerializer(serializers.ModelSerializer):
     rank = serializers.ChoiceField(choices=[x.lower() for x in Taxon.TaxonomicRank.names])
 
@@ -629,6 +635,9 @@ class SimplifiedObservationSerializer(BaseSimplifiedReportSerializer):
     class Meta(BaseSimplifiedReportSerializer.Meta):
         pass
 
+class SimplifiedObservationSerializerWithPhotos(BaseSimplifiedReportSerializerWithPhoto):
+    class Meta(BaseSimplifiedReportSerializerWithPhoto.Meta):
+        pass
 
 class SimpleAnnotatorUserSerializer(SimpleUserSerializer):
     def to_representation(self, instance):
@@ -804,6 +813,21 @@ class SimpleAnnotationSerializer(serializers.ModelSerializer):
             "is_decisive"
         )
 
+class BaseAssignmentSerializer(serializers.ModelSerializer):
+    annotation_type = serializers.SerializerMethodField()
+
+    def get_annotation_type(self, obj) -> Literal['short', 'long']:
+        return 'short' if obj.simplified_annotation else 'long'
+
+    class Meta:
+        model = ExpertReportAnnotation
+        fields = ('annotation_type',)
+
+class AssignmentSerializer(BaseAssignmentSerializer):
+    observation = SimplifiedObservationSerializerWithPhotos(source='report', read_only=True)
+    class Meta(BaseAssignmentSerializer.Meta):
+        fields = ('observation', ) + BaseAssignmentSerializer.Meta.fields
+
 class IdentificationTaskSerializer(serializers.ModelSerializer):
     class IdentificationTaskReviewSerializer(serializers.ModelSerializer):
         type = serializers.ChoiceField(source='review_type',choices=IdentificationTask.Review.choices)
@@ -858,22 +882,21 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
                 'agreement': {'min_value': 0, 'max_value': 1},
             }
 
-    class AssignmentSerializer(serializers.ModelSerializer):
+    class UserAssignmentSerializer(BaseAssignmentSerializer):
         user = SimpleAnnotatorUserSerializer()
         annotation_id = serializers.SerializerMethodField(allow_null=True)
 
         def get_annotation_id(self, obj) -> Optional[int]:
             return obj.pk if obj.validation_complete else None
 
-        class Meta:
-            model = ExpertReportAnnotation
-            fields = ("user", "annotation_id")
+        class Meta(BaseAssignmentSerializer.Meta):
+            fields = ("user", "annotation_id",) + BaseAssignmentSerializer.Meta.fields
 
-    observation = SimplifiedObservationSerializer(source='report', read_only=True)
+    observation = SimplifiedObservationSerializerWithPhotos(source='report', read_only=True)
     public_photo = SimplePhotoSerializer(source='photo', required=True)
     review = IdentificationTaskReviewSerializer(source='*', allow_null=True, read_only=True)
     result = IdentificationTaskResultSerializer(source='*', read_only=True)
-    assignments = AssignmentSerializer(many=True, read_only=True)
+    assignments = UserAssignmentSerializer(many=True, read_only=True)
 
     class Meta:
         model = IdentificationTask

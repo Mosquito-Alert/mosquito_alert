@@ -136,7 +136,7 @@ class IdentificationTaskPermissions(FullDjangoModelPermissions):
 class MyIdentificationTaskPermissions(DjangoRegularUserModelPermissions):
     pass
 
-class IdentificationTaskAssignationPermissions(IsRegularUser):
+class IdentificationTaskAssignmentPermissions(IsRegularUser):
     def has_permission(self, request, view):
         if not super().has_permission(request, view):
             return False

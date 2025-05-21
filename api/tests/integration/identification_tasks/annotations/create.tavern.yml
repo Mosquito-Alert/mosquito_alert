@@ -201,7 +201,7 @@ marks:
     - api_live_url
     - endpoint
     - assigned_only_identification_task
-    - assignation
+    - assignment
     - user
     - taxon_root
     - jwt_token_user_can_add
@@ -220,4 +220,4 @@ stages:
       strict:
         - json:off
       json:
-        id: !int "{assignation.pk}"
+        id: !int "{assignment.pk}"

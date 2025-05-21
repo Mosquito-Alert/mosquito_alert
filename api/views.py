@@ -69,6 +69,7 @@ from .serializers import (
     DeviceSerializer,
     DeviceUpdateSerializer,
     AnnotationSerializer,
+    AssignmentSerializer,
     IdentificationTaskSerializer,
     TaxonSerializer,
     TaxonTreeNodeSerializer,
@@ -89,7 +90,7 @@ from .permissions import (
     MyReportPermissions,
     IdentificationTaskPermissions,
     MyIdentificationTaskPermissions,
-    IdentificationTaskAssignationPermissions,
+    IdentificationTaskAssignmentPermissions,
     AnnotationPermissions,
     MyAnnotationPermissions,
     TaxaPermissions,
@@ -503,6 +504,10 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
                     )
                 )
             )
+        ),
+        models.Prefetch(
+            "report__photos",
+            queryset=Photo.objects.visible(),
         )
     )
     serializer_class = IdentificationTaskSerializer
@@ -524,52 +529,30 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     @extend_schema(
         request=None,
         responses={
-            201: IdentificationTaskSerializer,
+            201: AssignmentSerializer,
             204: OpenApiResponse(description="No available tasks pending to assign"),
         },
-        operation_id='identificationtasks_assign_new',
+        operation_id='identificationtasks_assign_next',
         description="Assign the next available identification task.",
     )
-    @action(detail=False, methods=["POST",], url_path="assign", permission_classes=[IdentificationTaskAssignationPermissions,])
-    def assign_new(self, request):
-        # Checking if there are any task with pending annotation for that user.
-        task = IdentificationTask.objects.filter(
-            pk=models.Subquery(
-                ExpertReportAnnotation.objects.is_assignment().completed(False).filter(
-                    user=request.user
-                ).order_by('-created').values('identification_task_id')[:1]
-            )
-        ).first()
-        if not task:
+    @action(detail=False, methods=["POST",], url_path="assignments/next", permission_classes=[IdentificationTaskAssignmentPermissions,], serializer_class=AssignmentSerializer)
+    def assign_next(self, request):
+        # Checking if there are any assignments with pending annotation for that user.
+        assignment = ExpertReportAnnotation.objects.is_assignment().completed(False).filter(
+            user=request.user
+        ).order_by('-created').first()
+        if not assignment:
             task = IdentificationTask.objects.backlog(user=request.user).first()
             if not task:
                 return Response(status=status.HTTP_204_NO_CONTENT)
             task.assign_to_user(user=request.user)
-            task.refresh_from_db()
-
-        serializer = self.get_serializer(task)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    @extend_schema(
-        parameters=[
-            OpenApiParameter(
-                name="observation_uuid",
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.PATH,
-                description="UUID of the Observation"
+            assignment = ExpertReportAnnotation.objects.completed(False).get(
+                identification_task=task,
+                user=request.user
             )
-        ]
-    )
-    class PhotoViewSet(NestedViewSetMixin, ListModelMixin, RetrieveModelMixin, GenericNoMobileViewSet):
-        queryset = Photo.objects.visible()
-        serializer_class = SimplePhotoSerializer
 
-        parent_lookup_kwargs = {
-            'observation_uuid': 'report__identification_task__pk'
-        }
-
-        lookup_field = 'uuid'
-        lookup_url_kwarg = 'uuid'
+        serializer = self.get_serializer(assignment)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
         parameters=[

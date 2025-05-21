@@ -107,3 +107,34 @@ stages:
         Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
+
+---
+
+test_name: Hiden photos are not returned
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - report_hidden_photo
+    - jwt_token_user_can_view
+
+stages:
+  - name: Hidden photo is not shown
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.helpers:validate_content
+        extra_kwargs:
+          comparisons:
+            - jmespath: "observation.photos[?uuid=='{report_hidden_photo.uuid}']"
+              operator: "count_eq"
+              expected: 0
