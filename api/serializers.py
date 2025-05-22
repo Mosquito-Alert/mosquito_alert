@@ -635,7 +635,7 @@ class SimplifiedObservationSerializer(BaseSimplifiedReportSerializer):
     class Meta(BaseSimplifiedReportSerializer.Meta):
         pass
 
-class SimplifiedObservationSerializerWithPhotos(BaseSimplifiedReportSerializerWithPhoto):
+class SimplifiedObservationWithPhotosSerializer(BaseSimplifiedReportSerializerWithPhoto):
     class Meta(BaseSimplifiedReportSerializerWithPhoto.Meta):
         pass
 
@@ -824,7 +824,7 @@ class BaseAssignmentSerializer(serializers.ModelSerializer):
         fields = ('annotation_type',)
 
 class AssignmentSerializer(BaseAssignmentSerializer):
-    observation = SimplifiedObservationSerializerWithPhotos(source='report', read_only=True)
+    observation = SimplifiedObservationWithPhotosSerializer(source='report', read_only=True)
     class Meta(BaseAssignmentSerializer.Meta):
         fields = ('observation', ) + BaseAssignmentSerializer.Meta.fields
 
@@ -892,7 +892,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         class Meta(BaseAssignmentSerializer.Meta):
             fields = ("user", "annotation_id",) + BaseAssignmentSerializer.Meta.fields
 
-    observation = SimplifiedObservationSerializerWithPhotos(source='report', read_only=True)
+    observation = SimplifiedObservationWithPhotosSerializer(source='report', read_only=True)
     public_photo = SimplePhotoSerializer(source='photo', required=True)
     review = IdentificationTaskReviewSerializer(source='*', allow_null=True, read_only=True)
     result = IdentificationTaskResultSerializer(source='*', read_only=True)
