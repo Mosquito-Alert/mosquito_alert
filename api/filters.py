@@ -256,6 +256,17 @@ class AnnotationFilter(filters.FilterSet):
         fields = {}
 
 class TaxonFilter(filters.FilterSet):
+    rank = filters.MultipleChoiceFilter(
+        choices=[(name.lower(), value) for name, value in zip(Taxon.TaxonomicRank.names, Taxon.TaxonomicRank.values)],
+        method='filter_by_rank',
+    )
+
+    def filter_by_rank(self, queryset, name, value):
+        # Map from name.lower() to actual values
+        name_to_value = {name.lower(): val for name, val in zip(Taxon.TaxonomicRank.names, Taxon.TaxonomicRank.values)}
+        mapped_values = [name_to_value.get(v) for v in value if v in name_to_value]
+        return queryset.filter(rank__in=mapped_values)
+
     class Meta:
         model = Taxon
         fields = {
