@@ -721,7 +721,16 @@ class IdentificationTask(LifecycleModel):
         if not self.report.is_browsable:
             self.status = self.Status.ARCHIVED
 
-        return super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
+
+        if self.result_source == self.ResultSource.AI:
+            # Ensure that superexpert and national supervisor can see in old entolab.
+            # TODO: remove this when old entolab is removed.
+            if superexpert := User.objects.filter(pk=25).first():
+                self.assign_to_user(user=superexpert)
+            if country := self.report.country:
+                for ns in UserStat.objects.filter(national_supervisor_of=country).select_related('user'):
+                    self.assign_to_user(user=ns.user)
 
     class Meta:
         permissions = [
