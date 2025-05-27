@@ -655,6 +655,10 @@ class SimpleAnnotatorUserSerializer(SimpleUserSerializer):
 
 class AnnotationSerializer(serializers.ModelSerializer):
     class AnnotationFeedbackSerializer(serializers.ModelSerializer):
+        def validate_user_note(self, value):
+            # message_for_user can not be null, cast to blank.
+            return value or ""
+
         def to_representation(self, instance):
             ret = super().to_representation(instance)
             # Ensure public_note and user_note will be None instead of blank
