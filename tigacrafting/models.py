@@ -512,6 +512,7 @@ class IdentificationTask(LifecycleModel):
         self.public_note = None
         self.message_for_user = None
         self.taxon = None
+        self.result_source = None
         self.confidence = self._meta.get_field('confidence').default
         self.uncertainty = self._meta.get_field('uncertainty').default
         self.agreement = self._meta.get_field('agreement').default
@@ -615,40 +616,39 @@ class IdentificationTask(LifecycleModel):
                     )
                 else:
                     if self.total_finished_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
-                        # Case 3: Sufficient annotations for final decision
                         self.status = self.Status.DONE
-                        self.result_source = self.ResultSource.EXPERT
-                        taxon, confidence, uncertainty, agreement = self.get_taxon_consensus(
-                            annotations=list(finished_experts_annotations_qs)
-                        )
-                        if uncertainty > 0.92:
-                            self.taxon = Taxon.get_root()
-                            self.confidence = Decimal('1.0')
-                            self.uncertainty = 1.0
-                            self.agreement = 0.0
-                            self.status = self.Status.CONFLICT
-                        else:
-                            self.taxon = taxon
-                            self.confidence = confidence
-                            self.uncertainty = uncertainty
-                            self.agreement = agreement
 
-                            if self.agreement == 0 and finished_experts_annotations_qs.filter(taxon__is_relevant=True).exists():
-                                # All experts has choosen different things.
-                                self.status = self.Status.CONFLICT
-
-                        if self.taxon:
-                            taxon_filter = {
-                                'taxon__in': Taxon.get_tree(parent=self.taxon)
-                            }
-                        else:
-                            taxon_filter = {
-                                'taxon__isnull': True
-                            }
-                        self.photo_id = get_most_voted_field(field_name='best_photo', lookup_filter=taxon_filter)
-                        self.public_note = get_most_voted_field(field_name='edited_user_notes', lookup_filter=taxon_filter)
+                    # Case 3: Sufficient annotations for final decision
+                    self.result_source = self.ResultSource.EXPERT
+                    taxon, confidence, uncertainty, agreement = self.get_taxon_consensus(
+                        annotations=list(finished_experts_annotations_qs)
+                    )
+                    if uncertainty > 0.92:
+                        self.taxon = Taxon.get_root()
+                        self.confidence = Decimal('1.0')
+                        self.uncertainty = 1.0
+                        self.agreement = 0.0
+                        self.status = self.Status.CONFLICT
                     else:
-                        self._reset_fields()
+                        self.taxon = taxon
+                        self.confidence = confidence
+                        self.uncertainty = uncertainty
+                        self.agreement = agreement
+
+                        if self.agreement == 0 and finished_experts_annotations_qs.filter(taxon__is_relevant=True).exists():
+                            # All experts has choosen different things.
+                            self.status = self.Status.CONFLICT
+
+                    if self.taxon:
+                        taxon_filter = {
+                            'taxon__in': Taxon.get_tree(parent=self.taxon)
+                        }
+                    else:
+                        taxon_filter = {
+                            'taxon__isnull': True
+                        }
+                    self.photo_id = get_most_voted_field(field_name='best_photo', lookup_filter=taxon_filter)
+                    self.public_note = get_most_voted_field(field_name='edited_user_notes', lookup_filter=taxon_filter)
 
                     self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_HIDDEN).exists()
                     self.is_flagged = finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists()
