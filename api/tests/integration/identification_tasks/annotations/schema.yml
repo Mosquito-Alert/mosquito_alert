@@ -15,7 +15,10 @@ variables:
       full_name: !anystr
     best_photo: !anything
     classification: !anything
-    feedback: !anything
+    feedback:
+      public_note: !anything
+      internal_note: !anything
+      user_note: !anything
     is_flagged: !anybool
     is_decisive: !anybool
     created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z

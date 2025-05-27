@@ -87,6 +87,7 @@ stages:
           is_high_confidence: true
         feedback:
           public_note: null
+          internal_note: null
           user_note: null
         is_flagged: false
         is_decisive: false
@@ -148,6 +149,7 @@ stages:
           is_high_confidence: true
         feedback:
           public_note: null
+          internal_note: null
           user_note: null
         is_flagged: false
         is_decisive: false
