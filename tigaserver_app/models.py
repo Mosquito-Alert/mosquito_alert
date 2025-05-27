@@ -2359,15 +2359,19 @@ class Report(TimeZoneModelMixin, models.Model):
         if identification_task.status == IdentificationTask.Status.CONFLICT:
             return "Conflict"
 
+        suffix = ""
+        if identification_task.result_source == IdentificationTask.ResultSource.AI:
+            suffix = "({})".format(identification_task.result_source).upper()
+
         res = "Other species"
         if identification_task.taxon.is_relevant:
             with translation.override('en'):
-                res = "{} {}".format(identification_task.confidence_label, identification_task.taxon.name)
+                res = "{} {}".format(
+                    identification_task.confidence_label if identification_task.result_source != IdentificationTask.ResultSource.AI else "",
+                    identification_task.taxon.name
+                )
 
-        if identification_task.result_source == IdentificationTask.ResultSource.AI:
-            res = res + " ({})".format(identification_task.result_source)
-
-        return res
+        return f"{res} {suffix}".strip()
 
     # This is just a formatter of get_final_combined_expert_category_euro_struct. Takes the exact same output and makes it
     # template friendly, also adds explicit ids for category and complex

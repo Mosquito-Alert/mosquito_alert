@@ -1813,7 +1813,11 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
 
     @property
     def confidence(self) -> float:
-        return 0.75
+        return getattr(
+            self,
+            f'{self.predicted_class}{type(self).CLASS_FIELD_SUFFIX}',
+            0.0
+        ) if self.predicted_class else 1.0
 
     @property
     def uncertainty(self) -> float:
