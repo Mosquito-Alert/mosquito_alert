@@ -3070,6 +3070,7 @@ class Photo(models.Model):
     def medium_image_for_validation_(self, show_prediction: bool = False):
         caption_html = ""
         if show_prediction and hasattr(self, 'prediction') and self.prediction:
+            border_style = "border: 2px solid red;" if self.prediction.threshold_deviation >= 0 else ""
             caption_html = '''
                 <figcaption title="AI label: {0}" style="
                     position: absolute;
@@ -3082,13 +3083,15 @@ class Photo(models.Model):
                     border-bottom-right-radius: 4px;
                     z-index: 1;
                     cursor: default;
+                    {2}
                 ">
                     <i class="fa fa-magic"></i>
                     <span>{1}</span>
                 </figcaption>
             '''.format(
                 self.prediction.predicted_class,
-                self.prediction.taxon.name if self.prediction.taxon else "Off-topic"
+                self.prediction.taxon.name if self.prediction.taxon else "Off-topic",
+                border_style
             )
 
         return '''
