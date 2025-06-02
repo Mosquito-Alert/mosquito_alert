@@ -902,14 +902,14 @@ class BaseAssignmentSerializer(serializers.ModelSerializer):
         fields = ('annotation_type',)
 
 class AssignmentSerializer(BaseAssignmentSerializer):
-    class SimplifiedObservation(SimplifiedObservationWithPhotosSerializer):
+    class AssignedObservationSerializer(SimplifiedObservationWithPhotosSerializer):
         user = SimpleUserSerializer(read_only=True)
         class Meta(SimplifiedObservationWithPhotosSerializer.Meta):
             fields = tuple(
                 fname for fname in SimplifiedObservationWithPhotosSerializer.Meta.fields if fname != 'user_uuid'
             ) + ("user",)
 
-    observation = SimplifiedObservation(source='report', read_only=True)
+    observation = AssignedObservationSerializer(source='report', read_only=True)
     class Meta(BaseAssignmentSerializer.Meta):
         fields = ('observation', ) + BaseAssignmentSerializer.Meta.fields
 
