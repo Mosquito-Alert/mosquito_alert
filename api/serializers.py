@@ -49,7 +49,7 @@ from .fields import (
 User = get_user_model()
 
 
-class SimpleUserSerializer(serializers.ModelSerializer):
+class SimpleRegularUserSerializer(serializers.ModelSerializer):
 
     full_name = serializers.SerializerMethodField()
 
@@ -122,6 +122,73 @@ class FixSerializer(serializers.ModelSerializer):
             "received_at": {"source": "server_upload_time"},
         }
 
+class UserSerializer(serializers.ModelSerializer):
+    class UserScoreSerializer(serializers.ModelSerializer):
+        value = serializers.IntegerField(source="score_v2", min_value=0, read_only=True)
+        updated_at = serializers.DateTimeField(source="last_score_update", read_only=True, allow_null=True)
+
+        class Meta:
+            model = TigaUser
+            fields = ("value", "updated_at")
+
+    uuid = serializers.UUIDField(source="user_UUID", read_only=True)
+    language_iso = serializers.SerializerMethodField(help_text='ISO 639-1 code', default='en')
+    username = serializers.SerializerMethodField()
+    is_guest = serializers.SerializerMethodField()
+    score = UserScoreSerializer(source='*', read_only=True)
+
+    def get_is_guest(self, obj) -> bool:
+        return True
+
+    def get_username(self, obj) -> str:
+        return obj.get_username()
+
+    def get_language_iso(self, obj) -> str:
+        return obj.language_iso2
+
+    def to_representation(self, instance):
+        if isinstance(instance, User):
+            # NOTE: this must be the same structure as defined.
+            data = {}
+            data['uuid'] = uuid.UUID(int=instance.pk)
+            data['username'] = instance.get_username()
+            data['registration_time'] = instance.date_joined
+            data['locale'] = 'en'
+            data['language_iso'] = 'en'
+            data['is_guest'] = False
+            data['score'] = {
+                'value': 0,
+                'updated_at': None
+            }
+            return data
+
+        return super().to_representation(instance)
+
+    class Meta:
+        model = TigaUser
+        fields = (
+            "uuid",
+            "username",
+            "registration_time",
+            "locale",
+            "language_iso",
+            "is_guest",
+            "score",
+        )
+        read_only_fields = (
+            "registration_time",
+            "score",
+        )
+        extra_kwargs = {
+            "locale": {"default": "en"},
+        }
+
+class SimpleUserSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        fields = (
+            "uuid",
+            "locale"
+        )
 
 #### START NOTIFICATION SERIALIZERS ####
 class NotificationSerializer(serializers.ModelSerializer):
@@ -639,7 +706,7 @@ class SimplifiedObservationWithPhotosSerializer(BaseSimplifiedReportSerializerWi
     class Meta(BaseSimplifiedReportSerializerWithPhoto.Meta):
         pass
 
-class SimpleAnnotatorUserSerializer(SimpleUserSerializer):
+class SimpleAnnotatorUserSerializer(SimpleRegularUserSerializer):
     def to_representation(self, instance):
         # Get the request user
         user = self.context.get('request').user
@@ -835,7 +902,14 @@ class BaseAssignmentSerializer(serializers.ModelSerializer):
         fields = ('annotation_type',)
 
 class AssignmentSerializer(BaseAssignmentSerializer):
-    observation = SimplifiedObservationWithPhotosSerializer(source='report', read_only=True)
+    class SimplifiedObservation(SimplifiedObservationWithPhotosSerializer):
+        user = SimpleUserSerializer(read_only=True)
+        class Meta(SimplifiedObservationWithPhotosSerializer.Meta):
+            fields = tuple(
+                fname for fname in SimplifiedObservationWithPhotosSerializer.Meta.fields if fname != 'user_uuid'
+            ) + ("user",)
+
+    observation = SimplifiedObservation(source='report', read_only=True)
     class Meta(BaseAssignmentSerializer.Meta):
         fields = ('observation', ) + BaseAssignmentSerializer.Meta.fields
 
@@ -1097,68 +1171,6 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
         }
 
 #### END REPORT SERIALIZERS ####
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class UserScoreSerializer(serializers.ModelSerializer):
-        value = serializers.IntegerField(source="score_v2", min_value=0, read_only=True)
-        updated_at = serializers.DateTimeField(source="last_score_update", read_only=True, allow_null=True)
-
-        class Meta:
-            model = TigaUser
-            fields = ("value", "updated_at")
-
-    uuid = serializers.UUIDField(source="user_UUID", read_only=True)
-    language_iso = serializers.SerializerMethodField(help_text='ISO 639-1 code', default='en')
-    username = serializers.SerializerMethodField()
-    is_guest = serializers.SerializerMethodField()
-    score = UserScoreSerializer(source='*', read_only=True)
-
-    def get_is_guest(self, obj) -> bool:
-        return True
-
-    def get_username(self, obj) -> str:
-        return obj.get_username()
-
-    def get_language_iso(self, obj) -> str:
-        return obj.language_iso2
-
-    def to_representation(self, instance):
-        if isinstance(instance, User):
-            # NOTE: this must be the same structure as defined.
-            data = {}
-            data['uuid'] = uuid.UUID(int=instance.pk)
-            data['username'] = instance.get_username()
-            data['registration_time'] = instance.date_joined
-            data['locale'] = 'en'
-            data['language_iso'] = 'en'
-            data['is_guest'] = False
-            data['score'] = {
-                'value': 0,
-                'updated_at': None
-            }
-            return data
-
-        return super().to_representation(instance)
-
-    class Meta:
-        model = TigaUser
-        fields = (
-            "uuid",
-            "username",
-            "registration_time",
-            "locale",
-            "language_iso",
-            "is_guest",
-            "score",
-        )
-        read_only_fields = (
-            "registration_time",
-            "score",
-        )
-        extra_kwargs = {
-            "locale": {"default": "en"},
-        }
 
 
 class PhotoSerializer(serializers.ModelSerializer):
