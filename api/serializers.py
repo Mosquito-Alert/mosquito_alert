@@ -723,6 +723,10 @@ class SimpleAnnotatorUserSerializer(SimpleRegularUserSerializer):
 
 class AnnotationSerializer(serializers.ModelSerializer):
     class AnnotationFeedbackSerializer(serializers.ModelSerializer):
+        def validate_public_note(self, value):
+            # edited_user_notes can not be null, cast to blank.
+            return value or ""
+
         def validate_internal_note(self, value):
             # tiger_certainty_notes can not be null, cast to blank.
             return value or ""
