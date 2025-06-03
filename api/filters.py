@@ -4,7 +4,7 @@ from django.utils import timezone
 
 from django_filters import rest_framework as filters
 
-from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, FavoritedReports
 from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry, Photo
 
 User = get_user_model()
@@ -246,6 +246,22 @@ class AnnotationFilter(filters.FilterSet):
                 _negated=not value
             )
         )
+
+    is_favourite = filters.BooleanFilter(
+        method="filter_by_is_favourite"
+    )
+
+    def filter_by_is_favourite(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.annotate(
+            is_favourite=models.Exists(
+                FavoritedReports.objects.filter(
+                    user=models.OuterRef('user'),
+                    report=models.OuterRef('report'),
+                )
+            )
+        ).filter(is_favourite=value)
 
     order_by = filters.OrderingFilter(
         fields=(("created", "created_at"), ("last_modified", "updated_at"))

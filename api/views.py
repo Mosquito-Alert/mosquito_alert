@@ -31,7 +31,7 @@ from rest_framework.settings import api_settings
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import Token
 
-from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, FavoritedReports
 from tigaserver_app.models import (
     TigaUser,
     EuropeCountry,
@@ -601,6 +601,13 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             'report',
             'best_photo',
             'taxon',
+        ).annotate(
+            is_favourite=models.Exists(
+                FavoritedReports.objects.filter(
+                    user=models.OuterRef('user'),
+                    report=models.OuterRef('report')
+                )
+            )
         )
         serializer_class = AnnotationSerializer
         filterset_class = AnnotationFilter

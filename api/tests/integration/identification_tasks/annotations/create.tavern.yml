@@ -91,6 +91,7 @@ stages:
           user_note: null
         is_flagged: false
         is_decisive: false
+        is_favourite: false
         tags: !anylist
         created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
         updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
@@ -153,6 +154,7 @@ stages:
           user_note: null
         is_flagged: false
         is_decisive: false
+        is_favourite: false
         tags: !anylist
         created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
         updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z

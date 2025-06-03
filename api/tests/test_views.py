@@ -15,7 +15,7 @@ from rest_framework.test import APIClient
 
 from rest_framework_simplejwt.settings import api_settings
 
-from tigacrafting.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction
+from tigacrafting.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction, FavoritedReports
 from tigaserver_app.models import TigaUser, Report, Device, MobileApp
 
 from api.tests.clients import AppAPIClient
@@ -795,6 +795,53 @@ class TestIdentificationTaskAnnotationsApi:
 
         annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
         assert annotation.status == expected_result
+
+    @pytest.mark.parametrize(
+        "is_favourite",
+        [True, False]
+    )
+    def test_is_favourite_creates_FavoritedReports(self, api_client, endpoint, common_post_data, with_add_permission, is_favourite):
+        post_data = common_post_data
+        post_data['is_favourite'] = is_favourite
+
+        response = api_client.post(
+            endpoint,
+            data=post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['is_favourite'] == is_favourite
+
+        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
+        assert annotation.is_favourite == is_favourite
+        assert FavoritedReports.objects.filter(
+            report=annotation.identification_task.report,
+            user=annotation.user
+        ).exists() == is_favourite
+
+    def test_is_favourite_does_nothing_if_already_exists_FavoritedReports(self, api_client, user, identification_task, endpoint, common_post_data, with_add_permission):
+        FavoritedReports.objects.create(
+            report=identification_task.report,
+            user=user
+        )
+
+        post_data = common_post_data
+        post_data['is_favourite'] = True
+
+        response = api_client.post(
+            endpoint,
+            data=post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['is_favourite'] is True
+
+        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
+        assert annotation.is_favourite
+        assert FavoritedReports.objects.filter(
+            report=annotation.identification_task.report,
+            user=annotation.user
+        ).exists()
 
     @pytest.mark.parametrize(
         "pre_assign",

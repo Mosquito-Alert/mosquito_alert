@@ -865,6 +865,10 @@ class ExpertReportAnnotation(LifecycleModel):
             return False
         return get_is_high_confidence(value=self.confidence)
 
+    @cached_property
+    def is_favourite(self) -> bool:
+        return FavoritedReports.objects.filter(user=self.user, report=self.report).exists()
+
     @classmethod
     def _get_auto_message(cls, category: 'Categories', validation_value: int, locale: str = 'en') -> Optional[str]:
         msg_dict = other_insect_msg_dict

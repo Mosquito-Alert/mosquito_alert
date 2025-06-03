@@ -18,7 +18,8 @@ from tigacrafting.models import (
     Taxon,
     ExpertReportAnnotation,
     UserStat,
-    PhotoPrediction
+    PhotoPrediction,
+    FavoritedReports
 )
 from tigaserver_app.models import (
     NotificationContent,
@@ -815,11 +816,19 @@ class AnnotationSerializer(serializers.ModelSerializer):
         default=False,
     )
 
+    is_favourite = WritableSerializerMethodField(
+        field_class=serializers.BooleanField,
+        default=False,
+    )
+
     def get_is_flagged(self, obj) -> bool:
         return obj.status == ExpertReportAnnotation.STATUS_FLAGGED
 
     def get_is_decisive(self, obj) -> bool:
         return obj.validation_complete_executive or obj.revise
+
+    def get_is_favourite(self, obj) -> bool:
+        return obj.is_favourite
 
     def validate(self, data):
         data['user'] = data.pop('user_hidden_obj')
@@ -847,6 +856,33 @@ class AnnotationSerializer(serializers.ModelSerializer):
 
         return data
 
+    def create(self, validated_data):
+        is_favourite = validated_data.pop("is_favourite", False)
+        with transaction.atomic():
+            instance = super().create(validated_data)
+            if is_favourite:
+                FavoritedReports.objects.get_or_create(
+                    user=instance.user,
+                    report=instance.report,
+                )
+        return instance
+
+    def update(self, instance, validated_data):
+        is_favourite = validated_data.pop("is_favourite", False)
+        with transaction.atomic():
+            instance = super().update(instance, validated_data)
+            if is_favourite:
+                FavoritedReports.objects.get_or_create(
+                    user=instance.user,
+                    report=instance.report,
+                )
+            else:
+                FavoritedReports.objects.filter(
+                    user=instance.user,
+                    report=instance.report,
+                ).delete()
+        return instance
+
     class Meta:
         model = ExpertReportAnnotation
         fields = (
@@ -860,6 +896,7 @@ class AnnotationSerializer(serializers.ModelSerializer):
             "feedback",
             "is_flagged",
             "is_decisive",
+            "is_favourite",
             "tags",
             "created_at",
             "updated_at",
