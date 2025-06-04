@@ -16,7 +16,7 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.settings import api_settings
 
 from tigacrafting.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction, FavoritedReports
-from tigaserver_app.models import TigaUser, Report, Device, MobileApp
+from tigaserver_app.models import TigaUser, Report, Device, MobileApp, Photo
 
 from api.tests.clients import AppAPIClient
 from api.tests.integration.observations.factories import create_observation_object
@@ -842,6 +842,43 @@ class TestIdentificationTaskAnnotationsApi:
             report=annotation.identification_task.report,
             user=annotation.user
         ).exists()
+
+    @pytest.mark.parametrize(
+        "sex, is_blood_fed, is_gravid, expected_genre_blood",
+        [
+            ('male', False, False, Photo.BLOOD_GENRE_MALE),
+            ('male', False, True, Photo.BLOOD_GENRE_MALE),
+            ('male', True, False, Photo.BLOOD_GENRE_MALE),
+            ('male', True, True, Photo.BLOOD_GENRE_MALE),
+            ('female', False, False, Photo.BLOOD_GENRE_FEMALE),
+            ('female', False, True, Photo.BLOOD_GENRE_FEMALE_GRAVID),
+            ('female', True, False, Photo.BLOOD_GENRE_FEMALE_BLOOD_FED),
+            ('female', True, True, Photo.BLOOD_GENRE_FEMALE_GRAVID_BLOOD_FED),
+            (None, False, False, Photo.BLOOD_GENRE_UNKNOWN),
+            (None, False, True, Photo.BLOOD_GENRE_UNKNOWN),
+            (None, True, False, Photo.BLOOD_GENRE_UNKNOWN),
+            (None, True, True, Photo.BLOOD_GENRE_UNKNOWN),
+        ]
+    )
+    def test_characteristics_sets_Photo_blood_genre_field(self, api_client, endpoint, identification_task, common_post_data, with_add_permission, sex, is_blood_fed, is_gravid, expected_genre_blood):
+        post_data = common_post_data
+        post_data['best_photo_uuid'] = identification_task.photo.uuid
+        post_data['characteristics'] = {
+            'sex': sex,
+            'is_blood_fed': is_blood_fed,
+            'is_gravid': is_gravid
+        }
+
+        response = api_client.post(
+            endpoint,
+            data=post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
+        photo = annotation.best_photo
+        assert photo.blood_genre == expected_genre_blood
 
     @pytest.mark.parametrize(
         "pre_assign",

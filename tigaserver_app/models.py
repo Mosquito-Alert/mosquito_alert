@@ -2983,12 +2983,19 @@ def make_image_uuid(path):
     return wrapper
 '''
 
-BLOOD_GENRE = (('male', 'Male'), ('female', 'Female'), ('fblood', 'Female blood'), ('fgravid', 'Female gravid'), ('fgblood', 'Female gravid + blood'), ('dk', 'Dont know') )
-
 class Photo(models.Model):
     """
     Photo uploaded by user.
     """
+    BLOOD_GENRE_MALE = 'male'
+    BLOOD_GENRE_FEMALE = 'female'
+    BLOOD_GENRE_FEMALE_BLOOD_FED = 'fblood'
+    BLOOD_GENRE_FEMALE_GRAVID = 'fgravid'
+    BLOOD_GENRE_FEMALE_GRAVID_BLOOD_FED = 'fgblood'
+    BLOOD_GENRE_UNKNOWN = 'dk'
+
+    BLOOD_GENRE = ((BLOOD_GENRE_MALE, 'Male'), (BLOOD_GENRE_FEMALE, 'Female'), (BLOOD_GENRE_FEMALE_BLOOD_FED, 'Female blood'), (BLOOD_GENRE_FEMALE_GRAVID, 'Female gravid'), (BLOOD_GENRE_FEMALE_GRAVID_BLOOD_FED, 'Female gravid + blood'), (BLOOD_GENRE_UNKNOWN, 'Dont know') )
+
     photo = ProcessedImageField(
         upload_to=make_image_uuid,
         processors=[ResizeToFit(height=2160, upscale=False)],
