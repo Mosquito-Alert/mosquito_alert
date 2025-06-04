@@ -19,6 +19,7 @@ variables:
       public_note: !anything
       internal_note: !anything
       user_note: !anything
+    type: !anystr
     is_flagged: !anybool
     is_decisive: !anybool
     is_favourite: !anybool

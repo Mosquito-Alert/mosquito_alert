@@ -809,6 +809,7 @@ class AnnotationSerializer(serializers.ModelSerializer):
     best_photo_uuid = serializers.UUIDField(write_only=True, required=False)
     best_photo = SimplePhotoSerializer(read_only=True, allow_null=True)
     tags = TagListSerializerField(required=False, allow_empty=True)
+    type = serializers.SerializerMethodField()
 
     is_flagged = WritableSerializerMethodField(
         field_class=serializers.BooleanField,
@@ -824,6 +825,9 @@ class AnnotationSerializer(serializers.ModelSerializer):
         field_class=serializers.BooleanField,
         default=False,
     )
+
+    def get_type(self, obj) -> Literal['short', 'long']:
+        return 'short' if obj.simplified_annotation else 'long'
 
     def get_is_flagged(self, obj) -> bool:
         return obj.status == ExpertReportAnnotation.STATUS_FLAGGED
@@ -898,6 +902,7 @@ class AnnotationSerializer(serializers.ModelSerializer):
             "best_photo",
             "classification",
             "feedback",
+            "type",
             "is_flagged",
             "is_decisive",
             "is_favourite",

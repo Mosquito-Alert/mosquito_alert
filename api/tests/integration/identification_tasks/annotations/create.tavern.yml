@@ -89,6 +89,7 @@ stages:
           public_note: null
           internal_note: null
           user_note: null
+        type: !anystr
         is_flagged: false
         is_decisive: false
         is_favourite: false
@@ -152,6 +153,7 @@ stages:
           public_note: null
           internal_note: null
           user_note: null
+        type: !anystr
         is_flagged: false
         is_decisive: false
         is_favourite: false

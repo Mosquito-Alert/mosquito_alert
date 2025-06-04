@@ -280,6 +280,7 @@ SPECTACULAR_SETTINGS = {
         'ReportTypeEnum': 'tigaserver_app.models.Report.TYPE_CHOICES',
         "DeviceTypeEnum": 'fcm_django.models.DeviceType',
         "ValidationErrorEnum": "drf_standardized_errors.openapi_serializers.ValidationErrorEnum.choices",
+        "AnnotationTypeEnum": ['short', 'long'],
         "ClientErrorEnum": "drf_standardized_errors.openapi_serializers.ClientErrorEnum.choices",
         "ServerErrorEnum": "drf_standardized_errors.openapi_serializers.ServerErrorEnum.choices",
         "ErrorCode401Enum": "api.error_serializers.ErrorCode401Enum.choices",

@@ -263,6 +263,15 @@ class AnnotationFilter(filters.FilterSet):
             )
         ).filter(is_favourite=value)
 
+    type = filters.ChoiceFilter(
+        choices=[('short', 'short'), ('long', 'long')],
+        method="filter_by_type"
+    )
+    def filter_by_type(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.filter(simplified_annotation=(value == 'short'))
+
     order_by = filters.OrderingFilter(
         fields=(("created", "created_at"), ("last_modified", "updated_at"))
     )
