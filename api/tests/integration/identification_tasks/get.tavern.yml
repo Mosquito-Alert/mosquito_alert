@@ -62,6 +62,31 @@ stages:
 
 ---
 
+test_name: Identification tasks can be read by annotators that has annotated that identification task.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - annotation
+    - jwt_token_user
+
+stages:
+  - name: User with perm view can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
+
+---
+
 test_name: Archived identification tasks can not be retrieved.
 
 includes:

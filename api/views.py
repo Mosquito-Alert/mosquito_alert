@@ -521,7 +521,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         qs = super().get_queryset()
 
         user = self.request.user
-        if not (user and user.has_perm("tigacrafting.view_archived_identificationtasks")):
+        if isinstance(user, TigaUser) or not (user and user.has_perm("tigacrafting.view_archived_identificationtasks")):
             qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
 
         return qs

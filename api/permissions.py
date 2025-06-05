@@ -131,7 +131,27 @@ class MyReportPermissions(ReportPermissions):
         return False
 
 class IdentificationTaskPermissions(FullDjangoModelPermissions):
-    pass
+    def has_permission(self, request, view):
+        # Always require authentication
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if view.action == 'retrieve':
+            return True
+
+        return super().has_permission(request, view)
+
+    def has_object_permission(self, request, view, obj):
+        if isinstance(request.user, TigaUser):
+            return False
+
+        if obj.annotators.filter(pk=request.user.pk).exists():
+            # If it's a user that has annotated this task, allow access
+            if view.action == 'retrieve':
+                return True
+
+        perms = self.get_required_permissions(request.method, obj._meta.model)
+        return request.user.has_perms(perms)
 
 class MyIdentificationTaskPermissions(DjangoRegularUserModelPermissions):
     pass
