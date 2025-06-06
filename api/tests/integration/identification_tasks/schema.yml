@@ -44,6 +44,9 @@ variables:
       agreement: !anyfloat
     created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
     updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+  response_retrieve_data_validation:
+    <<: *retrieve_validation
+    annotations: !anylist
   response_list_data_validation: &response_list_validation
     count: !anyint
     next: !anything

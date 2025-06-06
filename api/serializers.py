@@ -418,6 +418,52 @@ class PartnerSerializer(serializers.ModelSerializer):
             "url": {"source": "page_url"},
         }
 
+class PredictionSerializer(serializers.ModelSerializer):
+    class BoundingBoxSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = PhotoPrediction
+            fields = (
+                'x_min',
+                'y_min',
+                'x_max',
+                'y_max',
+            )
+            extra_kwargs = {
+                "x_min": {"source": "x_tl"},
+                "y_min": {"source": "y_tl"},
+                "x_max": {"source": "x_br"},
+                "y_max": {"source": "y_br"},
+            }
+
+    class PredictionScoreSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = PhotoPrediction
+            fields = [fname.replace(PhotoPrediction.CLASS_FIELD_SUFFIX, '')  for fname in PhotoPrediction.get_score_fieldnames()]
+            extra_kwargs = {
+                fname.replace(PhotoPrediction.CLASS_FIELD_SUFFIX, ''): {"source": fname}
+                for fname in PhotoPrediction.get_score_fieldnames()
+            }
+
+    bbox = BoundingBoxSerializer(source='*')
+    scores = PredictionScoreSerializer(source='*')
+
+    class Meta:
+        model = PhotoPrediction
+        fields = (
+            'bbox',
+            'insect_confidence',
+            'predicted_class',
+            'threshold_deviation',
+            'is_decisive',
+            'scores',
+            'classifier_version',
+            'created_at',
+            'updated_at'
+        )
+        extra_kwargs = {
+            'predicted_class': {'required': True}
+        }
+
 #### START REPORT SERIALIZERS ####
 
 class SimplePhotoSerializer(serializers.ModelSerializer):
@@ -434,6 +480,11 @@ class SimplePhotoSerializer(serializers.ModelSerializer):
             "uuid",
         )
 
+class PhotoWithPredictionSerializer(SimplePhotoSerializer):
+    prediction = PredictionSerializer(allow_null=True)
+
+    class Meta(SimplePhotoSerializer.Meta):
+        fields = SimplePhotoSerializer.Meta.fields + ('prediction',)
 
 class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
@@ -705,6 +756,12 @@ class SimplifiedObservationSerializer(BaseSimplifiedReportSerializer):
 
 class SimplifiedObservationWithPhotosSerializer(BaseSimplifiedReportSerializerWithPhoto):
     class Meta(BaseSimplifiedReportSerializerWithPhoto.Meta):
+        pass
+
+class SimplifiedObservationWithPhotosPredictionSerializer(SimplifiedObservationWithPhotosSerializer):
+    photos = PhotoWithPredictionSerializer(required=True, many=True)
+
+    class Meta(SimplifiedObservationWithPhotosSerializer.Meta):
         pass
 
 class SimpleAnnotatorUserSerializer(SimpleRegularUserSerializer):
@@ -1099,6 +1156,13 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
             'updated_at': {'read_only': True},
         }
 
+class IdentificationTaskDetailSerializer(IdentificationTaskSerializer):
+    observation = SimplifiedObservationWithPhotosPredictionSerializer(source='report', read_only=True)
+    annotations = AnnotationSerializer(many=True)
+
+    class Meta(IdentificationTaskSerializer.Meta):
+        fields = IdentificationTaskSerializer.Meta.fields + ("annotations",)
+
 class ObservationSerializer(BaseReportWithPhotosSerializer):
     class IdentificationSerializer(serializers.ModelSerializer):
         photo = SimplePhotoSerializer(required=True)
@@ -1380,53 +1444,12 @@ class DeviceUpdateSerializer(DeviceSerializer):
             "manufacturer",
             "model"
         )
-class PhotoPredictionSerializer(serializers.ModelSerializer):
-    class BoundingBoxSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = PhotoPrediction
-            fields = (
-                'x_min',
-                'y_min',
-                'x_max',
-                'y_max',
-            )
-            extra_kwargs = {
-                "x_min": {"source": "x_tl"},
-                "y_min": {"source": "y_tl"},
-                "x_max": {"source": "x_br"},
-                "y_max": {"source": "y_br"},
-            }
 
-    class PredictionScoreSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = PhotoPrediction
-            fields = [fname.replace(PhotoPrediction.CLASS_FIELD_SUFFIX, '')  for fname in PhotoPrediction.get_score_fieldnames()]
-            extra_kwargs = {
-                fname.replace(PhotoPrediction.CLASS_FIELD_SUFFIX, ''): {"source": fname}
-                for fname in PhotoPrediction.get_score_fieldnames()
-            }
-
+class PhotoPredictionSerializer(PredictionSerializer):
     photo = SimplePhotoSerializer(read_only=True)
-    bbox = BoundingBoxSerializer(source='*')
-    scores = PredictionScoreSerializer(source='*')
 
-    class Meta:
-        model = PhotoPrediction
-        fields = (
-            'photo',
-            'bbox',
-            'insect_confidence',
-            'predicted_class',
-            'threshold_deviation',
-            'is_decisive',
-            'scores',
-            'classifier_version',
-            'created_at',
-            'updated_at'
-        )
-        extra_kwargs = {
-            'predicted_class': {'required': True}
-        }
+    class Meta(PredictionSerializer.Meta):
+        fields = ("photo",) + PredictionSerializer.Meta.fields
 
 class CreatePhotoPredictionSerializer(PhotoPredictionSerializer):
     photo_uuid = serializers.UUIDField(source='photo__uuid', required=True, write_only=True)

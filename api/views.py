@@ -71,6 +71,7 @@ from .serializers import (
     AnnotationSerializer,
     AssignmentSerializer,
     IdentificationTaskSerializer,
+    IdentificationTaskDetailSerializer,
     TaxonSerializer,
     TaxonTreeNodeSerializer,
     PhotoPredictionSerializer,
@@ -525,6 +526,11 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
 
         return qs
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return IdentificationTaskDetailSerializer
+        return super().get_serializer_class()
 
     @extend_schema(
         request=None,

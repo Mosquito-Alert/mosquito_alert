@@ -58,7 +58,7 @@ stages:
         Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
-      json: !force_format_include "{response_data_validation}"
+      json: !force_format_include "{response_retrieve_data_validation}"
 
 ---
 
@@ -83,7 +83,7 @@ stages:
         Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
-      json: !force_format_include "{response_data_validation}"
+      json: !force_format_include "{response_retrieve_data_validation}"
 
 ---
 
