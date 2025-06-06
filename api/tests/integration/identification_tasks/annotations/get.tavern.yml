@@ -75,7 +75,6 @@ marks:
     - api_live_url
     - endpoint
     - annotation
-    - annotation_from_another_user
     - jwt_token_user
 
 stages:
@@ -87,7 +86,48 @@ stages:
         Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
-  - name: User without perm view can not retrieve if not owned annotation
+
+---
+
+test_name: Annotation can be retrieved by users without permissions if from a identification task they have annotate.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - annotation_from_another_user
+    - jwt_token_user
+
+stages:
+  - name: User without perm view can retrieve if annotation from the same task
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+
+---
+
+test_name: Annotation can not be retrieved by users if not owned and they have not annotated in the same identification task.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation_from_another_user
+    - jwt_token_user
+
+stages:
+  - name: User without perm view can not retrieve if not owned annotation and not annotator from the identification task
     request:
       url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
       method: "GET"

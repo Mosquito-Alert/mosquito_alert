@@ -3,7 +3,7 @@ from django.core.exceptions import MultipleObjectsReturned
 
 from rest_framework import permissions
 
-from tigacrafting.models import ExpertReportAnnotation
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation
 from tigaserver_app.models import TigaUser, Notification
 
 from .utils import get_fk_fieldnames
@@ -28,6 +28,11 @@ class DjangoRegularUserModelPermissions(permissions.DjangoModelPermissions):
         return isinstance(
             request.user, User
         ) and super().has_permission(request, view)
+
+    def has_object_permission(self, request, view, obj):
+        return isinstance(
+            request.user, User
+        ) and super().has_object_permission(request, view, obj)
 
 class FullDjangoModelPermissions(DjangoRegularUserModelPermissions):
     perms_map = {
@@ -130,28 +135,46 @@ class MyReportPermissions(ReportPermissions):
             return super().has_permission(request=request, view=view)
         return False
 
-class IdentificationTaskPermissions(FullDjangoModelPermissions):
-    def has_permission(self, request, view):
-        # Always require authentication
-        if not request.user or not request.user.is_authenticated:
-            return False
 
-        if view.action == 'retrieve':
-            return True
-
-        return super().has_permission(request, view)
-
-    def has_object_permission(self, request, view, obj):
+class BaseIdentificationTaskPermissions(FullDjangoModelPermissions):
+    def _check_is_annotator(self, request, view, obj) -> bool:
         if isinstance(request.user, TigaUser):
             return False
 
-        if obj.annotators.filter(pk=request.user.pk).exists():
-            # If it's a user that has annotated this task, allow access
+        if isinstance(obj, IdentificationTask):
+            task = obj
+        else:
+            inferred_fieldnames = get_fk_fieldnames(
+                model=obj._meta.model, related_model=IdentificationTask
+            )
+            if len(inferred_fieldnames) > 1:
+                raise MultipleObjectsReturned(
+                    "Model {obj._meta.model} has {len(inferred_fieldnames)} relation to model {TigaUser}."
+                )
+            task_fname = inferred_fieldnames[0]
+            if not hasattr(obj, task_fname):
+                return False
+            task = getattr(obj, task_fname)
+        return task.annotators.filter(pk=request.user.pk).exists()
+
+    def has_permission(self, request, view):
+        if request.user and request.user.is_authenticated:
             if view.action == 'retrieve':
                 return True
+        return super().has_permission(request, view)
+
+    def has_object_permission(self, request, view, obj):
+        if not super().has_object_permission(request, view,obj):
+            return False
+
+        if view.action == 'retrieve' and self._check_is_annotator(request, view, obj):
+            return True
 
         perms = self.get_required_permissions(request.method, obj._meta.model)
         return request.user.has_perms(perms)
+
+class IdentificationTaskPermissions(BaseIdentificationTaskPermissions):
+    pass
 
 class MyIdentificationTaskPermissions(DjangoRegularUserModelPermissions):
     pass
@@ -166,23 +189,22 @@ class IdentificationTaskAssignmentPermissions(IsRegularUser):
             'model_name': ExpertReportAnnotation._meta.model_name
         })
 
-class AnnotationPermissions(FullDjangoModelPermissions):
-    # Always allow retrieve owned annotations
+class BaseIdentificationTaskAttributePermissions(BaseIdentificationTaskPermissions):
+    pass
 
-    def has_permission(self, request, view):
-        if request.user and request.user.is_authenticated and view.action == 'retrieve':
-            return True
-        return super().has_permission(request=request, view=view)
-
+class AnnotationPermissions(BaseIdentificationTaskAttributePermissions):
+    # Always allow retrieve owned attributes
     def has_object_permission(self, request, view, obj):
         # Allow retrieve if user is the owner
         if view.action == 'retrieve':
             if obj.user == request.user:
                 return True
-            return super().has_permission(request=request, view=view)
         return super().has_object_permission(request, view, obj)
 
 class MyAnnotationPermissions(DjangoRegularUserModelPermissions):
+    pass
+
+class PhotoPredictionPermissions(BaseIdentificationTaskAttributePermissions):
     pass
 
 class TaxaPermissions(UserObjectPermissions):

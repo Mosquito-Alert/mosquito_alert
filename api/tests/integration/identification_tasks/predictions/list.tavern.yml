@@ -26,12 +26,36 @@ stages:
       method: "GET"
     response:
       status_code: 401
-  - name: User without perm view can retrieve
+  - name: User without perm view can not retrieve
     request:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
       headers:
         Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Predictions can be list only by authenticated users with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - photo_prediction
+    - jwt_token_user_can_view
+
+stages:
+  - name: User without perm view can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
       json: !force_format_include "{response_list_data_validation}"

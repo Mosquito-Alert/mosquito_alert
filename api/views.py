@@ -93,6 +93,7 @@ from .permissions import (
     IdentificationTaskAssignmentPermissions,
     AnnotationPermissions,
     MyAnnotationPermissions,
+    PhotoPredictionPermissions,
     TaxaPermissions,
     CountriesPermissions
 )
@@ -566,6 +567,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     )
     class PhotoPredictionViewSet(NestedViewSetMixin, CreateModelMixin, RetrieveModelMixin, ListModelMixin, UpdateModelMixin, DestroyModelMixin, GenericNoMobileViewSet):
         queryset = PhotoPrediction.objects.all()
+        permission_classes = (PhotoPredictionPermissions, )
 
         parent_lookup_kwargs = {
             'observation_uuid': 'identification_task__pk'
