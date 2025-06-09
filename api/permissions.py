@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import MultipleObjectsReturned
 
@@ -190,6 +192,15 @@ class IdentificationTaskAssignmentPermissions(IsRegularUser):
         })
 
 class BaseIdentificationTaskAttributePermissions(BaseIdentificationTaskPermissions):
+    def __init__(self, identification_task, *args, **kwargs):
+        self.identification_task = identification_task
+        super().__init__(*args, **kwargs)
+
+    def has_permission(self, request, view):
+        if view.action == 'list' and self.identification_task:
+            if self._check_is_annotator(request, view, obj=self.identification_task):
+                return True
+        return super().has_permission(request, view)
     pass
 
 class AnnotationPermissions(BaseIdentificationTaskAttributePermissions):

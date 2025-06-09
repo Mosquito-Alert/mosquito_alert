@@ -55,6 +55,7 @@ from .filters import (
     AnnotationFilter,
     TaxonFilter
 )
+from .mixins import IdentificationTaskNestedAttribute
 from .serializers import (
     PartnerSerializer,
     CampaignSerializer,
@@ -565,7 +566,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             )
         ]
     )
-    class PhotoPredictionViewSet(NestedViewSetMixin, CreateModelMixin, RetrieveModelMixin, ListModelMixin, UpdateModelMixin, DestroyModelMixin, GenericNoMobileViewSet):
+    class PhotoPredictionViewSet(IdentificationTaskNestedAttribute, NestedViewSetMixin, CreateModelMixin, RetrieveModelMixin, ListModelMixin, UpdateModelMixin, DestroyModelMixin, GenericNoMobileViewSet):
         queryset = PhotoPrediction.objects.all()
         permission_classes = (PhotoPredictionPermissions, )
 
@@ -597,7 +598,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             )
         ]
     )
-    class AnnotationViewSet(NestedViewSetMixin, ListModelMixin, RetrieveModelMixin, CreateModelMixin, GenericNoMobileViewSet):
+    class AnnotationViewSet(IdentificationTaskNestedAttribute, NestedViewSetMixin, ListModelMixin, RetrieveModelMixin, CreateModelMixin, GenericNoMobileViewSet):
         queryset = ExpertReportAnnotation.objects.is_annotation().select_related(
             'user',
             'report',

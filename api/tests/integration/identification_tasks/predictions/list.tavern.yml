@@ -59,3 +59,30 @@ stages:
     response:
       status_code: 200
       json: !force_format_include "{response_list_data_validation}"
+
+
+---
+
+test_name: Predictions can be list by users without permissions if from a identification task they have annotate.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - photo_prediction
+    - jwt_token_user
+
+stages:
+  - name: User without perm view can list if annotation from the same task
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_list_data_validation}"
