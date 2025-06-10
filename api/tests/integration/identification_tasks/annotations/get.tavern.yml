@@ -172,7 +172,7 @@ stages:
 
 ---
 
-test_name: Annotator name is anonymous if user has no permissions and not owned annotation.
+test_name: Annotator real name is hidden if user has no permissions and not owned annotation.
 
 includes:
   - !include schema.yml
@@ -198,10 +198,10 @@ stages:
       json:
         user:
           id: -1
-          username: 'anonymous'
-          first_name: 'Anonymous'
-          last_name: 'User'
-          full_name: 'Anonymous User'
+          username: 'expert'
+          first_name: 'Expert'
+          last_name: 'Annotator'
+          full_name: 'Expert Annotator'
 
 ---
 

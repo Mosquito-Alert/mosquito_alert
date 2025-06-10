@@ -717,7 +717,7 @@ class SimpleAnnotatorUserSerializer(SimpleRegularUserSerializer):
             'app_label': UserStat._meta.app_label,
             'model_name': UserStat._meta.model_name
         }):
-            new_instance = User(id=-1, username='anonymous', first_name='Anonymous', last_name='User')
+            new_instance = User(id=-1, username='expert', first_name='Expert', last_name='Annotator')
 
         return super().to_representation(new_instance)
 
