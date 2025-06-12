@@ -1410,6 +1410,9 @@ class AnnotateCoarseTestCase(APITestCase):
             category_text = classification['category']
             category_id = int(classification['category_id'])
             value = classification['value']
+            if category.pk == 9:
+                # Not sure is displayed as 'Other species'
+                category = Categories.objects.get(pk=2)
             self.assertEqual(category_text, category.name, "Category should be {0}, is {1}".format(category.name, category_text))
             self.assertEqual(category_id, category.id, "Category id should be {0}, is {1}".format(category.id, category_id))
             if category.specify_certainty_level:

@@ -499,9 +499,9 @@ class IdentificationTask(LifecycleModel):
         )
 
     def get_display_identification_label(self) -> str:
-        if not self.is_done:
+        if not self.is_done or not self.taxon:
             return _("species_unclassified")
-        if not self.taxon:
+        if self.taxon.is_root():
             return _("species_notsure")
 
         return self.taxon.get_display_friendly_common_name()
@@ -1115,11 +1115,13 @@ class ExpertReportAnnotation(LifecycleModel):
             return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
         elif self.report.type == 'adult':
             if not self.taxon:
-                return "Not sure"
+                return "Unclassified"
             if self.taxon.is_relevant:
                 with translation.override('en'):
                     return "{} {}".format(self.confidence_label, self.taxon.name)
             if self.taxon.is_root():
+                if self.category_id == 9: # Not sure
+                    return "Not sure"
                 return "Other species"
             return "Other species - " + self.taxon.name
 
@@ -1522,6 +1524,9 @@ class Taxon(MP_Node):
             return other_species.taxa.first()
 
         if category:
+            # Special case for 'Not sure':
+            if category.pk == 9:
+                return cls.get_root()
             return category.taxa.first()
 
         return None

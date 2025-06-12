@@ -42,6 +42,9 @@ def set_expertreportannotation_taxon(apps, schema_editor):
         )
     )
 
+    # Case 'Not sure':
+    expert_report_annotation_qs.filter(category_id=9).update(taxon_id=1)
+
     # Otherwise, use category.
     expert_report_annotation_qs.filter(category__isnull=False).update(
         taxon=models.Subquery(

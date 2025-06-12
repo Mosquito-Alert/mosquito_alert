@@ -2355,6 +2355,7 @@ class Report(TimeZoneModelMixin, models.Model):
         if not identification_task:
             return "Unclassified"
         if not identification_task.taxon:
+            # TODO: At some point this should be rename to Off-topic.
             return "Not sure"
         if identification_task.status == IdentificationTask.Status.CONFLICT:
             return "Conflict"
