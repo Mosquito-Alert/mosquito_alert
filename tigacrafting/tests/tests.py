@@ -2110,6 +2110,10 @@ class TestIdentificationTaskFlow:
         categories = []
         for i in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT):
             category = Categories.objects.create(name='specie {}'.format(i))
+            # NOTE: pk=9 is reserved for Not sure.
+            if category.pk == 9:
+                category.pk = 10
+                category.save()
             categories.append(category)
             _ = genus.add_child(
                 name=category.name,
