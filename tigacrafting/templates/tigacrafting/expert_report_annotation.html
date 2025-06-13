@@ -1474,6 +1474,7 @@
                 }else if ( species_categories.indexOf(category) >= 0 ){
                     $('#container_value_' + input_id).show();
                     $('#container_mix_' + input_id).hide();
+                    $('#container_other_' + input_id).hide();
                     $('#categoryvalue_' + input_id).selectpicker("val",value);
                     $('#category_' + input_id).selectpicker("val",category);
                 }else{
@@ -1522,6 +1523,7 @@
             }else if ( species_categories.indexOf(category) >= 0 ){
                 $('#container_value_' + input_id).show();
                 $('#container_mix_' + input_id).hide();
+                $('#container_other_' + input_id).hide();
                 $('#categoryvalue_' + input_id).val(value);
             }else{
                 $('#container_mix_' + input_id).hide();
