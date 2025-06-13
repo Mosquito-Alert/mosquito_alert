@@ -140,12 +140,12 @@ def grant_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_exp
 
 def get_icon_for_blood_genre(blood_genre) -> str:
     blood_genre_table = {
-        BLOOD_GENRE[0][0]: '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i> Male</label>',
-        BLOOD_GENRE[1][0]: '<label title="Female"><i class="fa fa-venus fa-lg" aria-hidden="true"></i> Female</label>',
-        BLOOD_GENRE[2][0]: '<label title="Female blood"><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed</label>',
-        BLOOD_GENRE[3][0]: '<label title="Female gravid"><i class="moon" aria-hidden="true"></i> Gravid</label>',
-        BLOOD_GENRE[4][0]: '<label title="Female gravid + blood"><i class="moon" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed and gravid</label>',
-        BLOOD_GENRE[5][0]: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i> Dont know</label>'
+        Photo.BLOOD_GENRE_MALE: '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i> Male</label>',
+        Photo.BLOOD_GENRE_FEMALE: '<label title="Female"><i class="fa fa-venus fa-lg" aria-hidden="true"></i> Female</label>',
+        Photo.BLOOD_GENRE_FEMALE_BLOOD_FED: '<label title="Female blood"><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed</label>',
+        Photo.BLOOD_GENRE_FEMALE_GRAVID: '<label title="Female gravid"><i class="moon" aria-hidden="true"></i> Gravid</label>',
+        Photo.BLOOD_GENRE_FEMALE_GRAVID_BLOOD_FED: '<label title="Female gravid + blood"><i class="moon" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed and gravid</label>',
+        Photo.BLOOD_GENRE_UNKNOWN: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i> Dont know</label>'
     }
     if blood_genre is None:
         return ''
