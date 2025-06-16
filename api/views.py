@@ -604,7 +604,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             'report',
             'best_photo',
             'taxon',
-        ).annotate(
+        ).prefetch_related('tags').annotate(
             is_favourite=models.Exists(
                 FavoritedReports.objects.filter(
                     user=models.OuterRef('user'),
