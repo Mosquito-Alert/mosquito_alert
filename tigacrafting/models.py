@@ -647,7 +647,11 @@ class IdentificationTask(LifecycleModel):
                         taxon_filter = {
                             'taxon__isnull': True
                         }
-                    self.photo_id = get_most_voted_field(field_name='best_photo', lookup_filter=taxon_filter)
+                    self.photo_id = get_most_voted_field(
+                        field_name='best_photo',
+                        lookup_filter=taxon_filter,
+                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                    )
                     self.public_note = get_most_voted_field(field_name='edited_user_notes', lookup_filter=taxon_filter)
 
                     self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_HIDDEN).exists()
