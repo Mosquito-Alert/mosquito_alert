@@ -1821,6 +1821,9 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
     y_tl = models.PositiveIntegerField(help_text="photo bounding box coordinates top left y")
     y_br = models.PositiveIntegerField(help_text="photo bounding box coordinates bottom right y")
 
+    height = models.PositiveIntegerField(null=True)
+    width = models.PositiveIntegerField(null=True)
+
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
 
@@ -1839,18 +1842,12 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
         ])
 
     def clean(self):
-        # Get the linked photo dimensions
-        try:
-            width, height = self.photo.photo.width, self.photo.photo.height
-        except FileNotFoundError:
-            width = height = None
-
         # Check if x_br is greater than the photo width
-        if width is not None and self.x_br > width:
+        if self.width is not None and self.x_br > self.width:
             raise ValidationError("Bottom right x-coordinate (x_br) cannot exceed the width of the photo.")
 
         # Check if y_br is greater than the photo height
-        if height is not None and self.y_br > height:
+        if self.height is not None and self.y_br > self.height:
             raise ValidationError("Bottom right y-coordinate (y_br) cannot exceed the height of the photo.")
 
         if self.is_decisive:
@@ -1866,6 +1863,11 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
 
     def save(self, *args, **kwargs):
         self.taxon = Taxon.objects.filter(pk=self.PREDICTED_CLASS_TO_TAXON[self.predicted_class]).first()
+
+        try:
+            self.width, self.height = self.photo.photo.width, self.photo.photo.height
+        except FileNotFoundError:
+            self.width = self.height = None
 
         self.clean()
 
