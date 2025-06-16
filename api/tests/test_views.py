@@ -796,13 +796,10 @@ class TestIdentificationTaskAnnotationsApi:
         annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
         assert annotation.status == expected_result
 
-    @pytest.mark.parametrize(
-        "is_favourite",
-        [True, False]
-    )
-    def test_is_favourite_creates_FavoritedReports(self, api_client, endpoint, common_post_data, with_add_permission, is_favourite):
+    def test_empty_observation_flags(self, api_client, endpoint, common_post_data, with_add_permission):
         post_data = common_post_data
-        post_data['is_favourite'] = is_favourite
+        # Ensure observation_flags is not set
+        post_data.pop('observation_flags', None)
 
         response = api_client.post(
             endpoint,
@@ -810,7 +807,50 @@ class TestIdentificationTaskAnnotationsApi:
             format='json'
         )
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['is_favourite'] == is_favourite
+
+        assert response.data['observation_flags']['is_favourite'] == False
+        assert response.data['observation_flags']['is_visible'] == True
+
+    @pytest.mark.parametrize(
+        "is_visible, expected_result",
+        [
+            (True, ExpertReportAnnotation.STATUS_PUBLIC),
+            (False, ExpertReportAnnotation.STATUS_HIDDEN),
+        ]
+    )
+    def test_is_visible_sets_status_to_public(self, api_client, endpoint, common_post_data, with_add_permission, is_visible, expected_result):
+        post_data = common_post_data
+        post_data['observation_flags'] = {
+            'is_visible': is_visible
+        }
+
+        response = api_client.post(
+            endpoint,
+            data=post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
+        assert annotation.status == expected_result
+
+    @pytest.mark.parametrize(
+        "is_favourite",
+        [True, False]
+    )
+    def test_is_favourite_creates_FavoritedReports(self, api_client, endpoint, common_post_data, with_add_permission, is_favourite):
+        post_data = common_post_data
+        post_data['observation_flags'] = {
+            'is_favourite': is_favourite
+        }
+
+        response = api_client.post(
+            endpoint,
+            data=post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['observation_flags']['is_favourite'] == is_favourite
 
         annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
         assert annotation.is_favourite == is_favourite
@@ -834,7 +874,7 @@ class TestIdentificationTaskAnnotationsApi:
             format='json'
         )
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['is_favourite'] is True
+        assert response.data['observation_flags']['is_favourite'] is True
 
         annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
         assert annotation.is_favourite
@@ -905,6 +945,10 @@ class TestIdentificationTaskAnnotationsApi:
     def test_classification_null_shoud_set_status_to_hidden(self, api_client, endpoint, common_post_data, with_add_permission):
         post_data = common_post_data
         post_data['classification'] = None
+        # NOTE: force is_visible. Should set to hidden anyways.
+        post_data['observation_flags'] = {
+            "is_visible": True
+        }
 
         response = api_client.post(
             endpoint,

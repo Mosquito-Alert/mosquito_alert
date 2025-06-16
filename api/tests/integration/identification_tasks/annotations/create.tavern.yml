@@ -92,7 +92,9 @@ stages:
         type: !anystr
         is_flagged: false
         is_decisive: false
-        is_favourite: false
+        observation_flags:
+          is_favourite: false
+          is_visible: true
         tags: !anylist
         created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
         updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
@@ -156,7 +158,9 @@ stages:
         type: !anystr
         is_flagged: false
         is_decisive: false
-        is_favourite: false
+        observation_flags:
+          is_favourite: false
+          is_visible: true
         tags: !anylist
         created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
         updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z

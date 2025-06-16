@@ -22,7 +22,9 @@ variables:
     type: !anystr
     is_flagged: !anybool
     is_decisive: !anybool
-    is_favourite: !anybool
+    observation_flags:
+      is_favourite: !anybool
+      is_visible: !anybool
     created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
     updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
     tags: !anylist

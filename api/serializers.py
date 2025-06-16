@@ -831,6 +831,29 @@ class AnnotationSerializer(serializers.ModelSerializer):
         class Meta:
             fields = ("sex", "is_blood_fed", "is_gravid")
 
+    class ObservationFlagsSerializer(serializers.ModelSerializer):
+        is_favourite = WritableSerializerMethodField(
+            field_class=serializers.BooleanField,
+            default=False,
+        )
+        is_visible = WritableSerializerMethodField(
+            field_class=serializers.BooleanField,
+            default=True,
+        )
+
+        def get_is_favourite(self, obj) -> bool:
+            return obj.is_favourite
+
+        def get_is_visible(self, obj) -> bool:
+            return obj.status != ExpertReportAnnotation.STATUS_HIDDEN
+
+        class Meta:
+            model = ExpertReportAnnotation
+            fields = (
+                "is_favourite",
+                "is_visible"
+            )
+
     user_hidden_obj = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     user = SimpleAnnotatorUserSerializer(read_only=True)
@@ -842,6 +865,7 @@ class AnnotationSerializer(serializers.ModelSerializer):
     best_photo = SimplePhotoSerializer(read_only=True, allow_null=True)
     tags = TagListSerializerField(required=False, allow_empty=True)
     type = serializers.SerializerMethodField()
+    observation_flags = ObservationFlagsSerializer(source='*', required=False)
 
     is_flagged = WritableSerializerMethodField(
         field_class=serializers.BooleanField,
@@ -849,11 +873,6 @@ class AnnotationSerializer(serializers.ModelSerializer):
     )
 
     is_decisive = WritableSerializerMethodField(
-        field_class=serializers.BooleanField,
-        default=False,
-    )
-
-    is_favourite = WritableSerializerMethodField(
         field_class=serializers.BooleanField,
         default=False,
     )
@@ -866,9 +885,6 @@ class AnnotationSerializer(serializers.ModelSerializer):
 
     def get_is_decisive(self, obj) -> bool:
         return obj.validation_complete_executive or obj.revise
-
-    def get_is_favourite(self, obj) -> bool:
-        return obj.is_favourite
 
     def validate(self, data):
         data['user'] = data.pop('user_hidden_obj')
@@ -886,11 +902,15 @@ class AnnotationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("The photo does not does not exist or does not belong to the observation.")
 
         is_flagged = data.pop("is_flagged")
-        if is_flagged:
-            data["status"] = ExpertReportAnnotation.STATUS_FLAGGED
-        elif not data.get("status", None):
-            # Only set to PUBLIC if not set to HIDDEN
-            data["status"] = ExpertReportAnnotation.STATUS_PUBLIC
+        is_visible = data.pop("is_visible", self.ObservationFlagsSerializer().fields['is_visible'].default)
+        # Only if status not set yet (for example classification None sets it to hidden).
+        if not data.get("status", None):
+            if not is_visible:
+                data["status"] = ExpertReportAnnotation.STATUS_HIDDEN
+            elif is_flagged:
+                data["status"] = ExpertReportAnnotation.STATUS_FLAGGED
+            else:
+                data["status"] = ExpertReportAnnotation.STATUS_PUBLIC
 
         data['validation_complete_executive'] = data.pop("is_decisive")
 
@@ -951,7 +971,7 @@ class AnnotationSerializer(serializers.ModelSerializer):
             "type",
             "is_flagged",
             "is_decisive",
-            "is_favourite",
+            "observation_flags",
             "tags",
             "created_at",
             "updated_at",
