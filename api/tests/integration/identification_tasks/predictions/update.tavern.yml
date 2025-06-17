@@ -39,10 +39,10 @@ stages:
       method: "{method}"
       json:
         bbox:
-          x_min: 50
-          y_min: 50
-          x_max: 51
-          y_max: 51
+          x_min: 0.50
+          y_min: 0.50
+          x_max: 0.51
+          y_max: 0.51
         insect_confidence: 0.2
         predicted_class: 'not_sure'
         threshold_deviation: 0.9
@@ -88,10 +88,10 @@ stages:
       method: "{method}"
       json:
         bbox:
-          x_min: 50
-          y_min: 50
-          x_max: 51
-          y_max: 51
+          x_min: 0.50
+          y_min: 0.50
+          x_max: 0.51
+          y_max: 0.51
         insect_confidence: 0.2
         predicted_class: 'not_sure'
         threshold_deviation: 0.9
@@ -115,10 +115,10 @@ stages:
           uuid: "{photo_prediction.photo.uuid}"
           url: !anystr
         bbox:
-          x_min: 50
-          y_min: 50
-          x_max: 51
-          y_max: 51
+          x_min: 0.50
+          y_min: 0.50
+          x_max: 0.51
+          y_max: 0.51
         insect_confidence: 0.2
         predicted_class: 'not_sure'
         threshold_deviation: 0.9
