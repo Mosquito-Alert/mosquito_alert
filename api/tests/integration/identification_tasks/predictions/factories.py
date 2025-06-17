@@ -38,7 +38,7 @@ def create_photo_prediction(photo: Photo) -> PhotoPrediction:
         other_species_score=0.01,
         not_sure_score=0,
         x_tl=0,
-        x_br=photo.photo.width / 2,
+        x_br=0.5,
         y_tl=0,
-        y_br=photo.photo.height / 2
+        y_br=0.5
     )

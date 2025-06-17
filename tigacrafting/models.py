@@ -1816,13 +1816,22 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
         ],
     )
 
-    x_tl = models.PositiveIntegerField(help_text="photo bounding box coordinates top left x")
-    x_br = models.PositiveIntegerField(help_text="photo bounding box coordinates bottom right x")
-    y_tl = models.PositiveIntegerField(help_text="photo bounding box coordinates top left y")
-    y_br = models.PositiveIntegerField(help_text="photo bounding box coordinates bottom right y")
-
-    height = models.PositiveIntegerField(null=True)
-    width = models.PositiveIntegerField(null=True)
+    x_tl = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text="photo bounding box relative coordinates top left x"
+    )
+    x_br = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text="photo bounding box relative coordinates bottom right x"
+    )
+    y_tl = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text="photo bounding box relative coordinates top left y"
+    )
+    y_br = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text="photo bounding box relative coordinates bottom right y"
+    )
 
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
@@ -1842,14 +1851,6 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
         ])
 
     def clean(self):
-        # Check if x_br is greater than the photo width
-        if self.width is not None and self.x_br > self.width:
-            raise ValidationError("Bottom right x-coordinate (x_br) cannot exceed the width of the photo.")
-
-        # Check if y_br is greater than the photo height
-        if self.height is not None and self.y_br > self.height:
-            raise ValidationError("Bottom right y-coordinate (y_br) cannot exceed the height of the photo.")
-
         if self.is_decisive:
             if self.taxon is None:
                 raise ValidationError("Taxon must be set when is_decisive is True.")
@@ -1863,11 +1864,6 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
 
     def save(self, *args, **kwargs):
         self.taxon = Taxon.objects.filter(pk=self.PREDICTED_CLASS_TO_TAXON[self.predicted_class]).first()
-
-        try:
-            self.width, self.height = self.photo.photo.width, self.photo.photo.height
-        except FileNotFoundError:
-            self.width = self.height = None
 
         self.clean()
 
@@ -1903,6 +1899,26 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
             models.CheckConstraint(
                 check=models.Q(y_tl__lte=models.F('y_br')),
                 name='y_tl_less_equal_y_br'
+            ),
+            # Ensure x_tl is between 0 and 1
+            models.CheckConstraint(
+                check=models.Q(x_tl__range=(0, 1)),
+                name="%(app_label)s_%(class)s_x_tl_between_0_and_1",
+            ),
+            # Ensure x_br is between 0 and 1
+            models.CheckConstraint(
+                check=models.Q(x_br__range=(0, 1)),
+                name="%(app_label)s_%(class)s_x_br_between_0_and_1",
+            ),
+            # Ensure y_tl is between 0 and 1
+            models.CheckConstraint(
+                check=models.Q(y_tl__range=(0, 1)),
+                name="%(app_label)s_%(class)s_y_tl_between_0_and_1",
+            ),
+            # Ensure y_br is between 0 and 1
+            models.CheckConstraint(
+                check=models.Q(y_br__range=(0, 1)),
+                name="%(app_label)s_%(class)s_y_br_between_0_and_1",
             ),
             # Ensure only one final prediction per task
             models.UniqueConstraint(

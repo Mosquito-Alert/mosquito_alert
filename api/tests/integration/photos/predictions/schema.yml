@@ -9,10 +9,10 @@ variables:
       uuid: !anystr
       url: !anystr
     bbox:
-      x_min: !anyint
-      y_min: !anyint
-      x_max: !anyint
-      y_max: !anyint
+      x_min: !anyfloat
+      y_min: !anyfloat
+      x_max: !anyfloat
+      y_max: !anyfloat
     insect_confidence: !anyfloat
     predicted_class: !anystr
     is_decisive: !anybool
