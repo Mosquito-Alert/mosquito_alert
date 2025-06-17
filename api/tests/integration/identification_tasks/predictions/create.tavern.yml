@@ -91,6 +91,7 @@ stages:
           y_max: 0.5
         insect_confidence: 0.9
         predicted_class: 'ae_albopictus'
+        taxon: !anything
         is_decisive: false
         threshold_deviation: 0.9
         scores:

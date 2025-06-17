@@ -433,7 +433,7 @@ class PhotoViewSet(
         permission_classes=GenericNoMobileViewSet.permission_classes,
         parser_classes=GenericViewSet.parser_classes,
         serializer_class=PhotoPredictionSerializer,
-        queryset=PhotoPrediction.objects.all(),
+        queryset=PhotoPrediction.objects.all().select_related("taxon"),
         lookup_field='photo__uuid',
         filter_backends=[]
     )
@@ -567,7 +567,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         ]
     )
     class PhotoPredictionViewSet(IdentificationTaskNestedAttribute, NestedViewSetMixin, CreateModelMixin, RetrieveModelMixin, ListModelMixin, UpdateModelMixin, DestroyModelMixin, GenericNoMobileViewSet):
-        queryset = PhotoPrediction.objects.all()
+        queryset = PhotoPrediction.objects.all().select_related("taxon")
         permission_classes = (PhotoPredictionPermissions, )
 
         parent_lookup_kwargs = {

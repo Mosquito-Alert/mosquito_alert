@@ -15,6 +15,7 @@ variables:
       y_max: !anyfloat
     insect_confidence: !anyfloat
     predicted_class: !anystr
+    taxon: !anything
     is_decisive: !anybool
     threshold_deviation: !anyfloat
     scores:

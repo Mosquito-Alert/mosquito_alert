@@ -1429,6 +1429,7 @@ class PhotoPredictionSerializer(serializers.ModelSerializer):
     photo = SimplePhotoSerializer(read_only=True)
     bbox = BoundingBoxSerializer(source='*')
     scores = PredictionScoreSerializer(source='*')
+    taxon = SimpleTaxonSerializer(allow_null=True, read_only=True)
 
     class Meta:
         model = PhotoPrediction
@@ -1437,6 +1438,7 @@ class PhotoPredictionSerializer(serializers.ModelSerializer):
             'bbox',
             'insect_confidence',
             'predicted_class',
+            'taxon',
             'threshold_deviation',
             'is_decisive',
             'scores',

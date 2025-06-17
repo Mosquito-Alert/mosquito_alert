@@ -217,6 +217,19 @@ class TestIdentificationTaskPredictionAPI:
         assert (identification_task.result_source == IdentificationTask.ResultSource.AI) == is_decisive
         assert identification_task.report.published == is_decisive
 
+    def test_taxon_is_null(self, api_client, user, identification_task):
+        photo = identification_task.photo
+        photo_prediction = create_photo_prediction(photo=photo)
+        PhotoPrediction.objects.filter(pk=photo_prediction.pk).update(taxon=None)
+
+        grant_permission_to_user(type='view', model_class=PhotoPrediction, user=user)
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task, photo_uuid=photo.uuid),
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['taxon'] is None
 
 @pytest.mark.django_db
 class TestTokenAPI:
