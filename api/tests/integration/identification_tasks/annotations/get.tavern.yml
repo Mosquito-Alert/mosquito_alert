@@ -164,7 +164,7 @@ stages:
         - json:off
       json:
         user:
-          id: !int "{user.pk}"
+          uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
           username: "{user.username}"
           first_name: "{user.first_name}"
           last_name: "{user.last_name}"
@@ -197,7 +197,7 @@ stages:
         - json:off
       json:
         user:
-          id: -1
+          uuid: '00000000-0000-0000-0000-000000000000'
           username: 'expert'
           first_name: 'Expert'
           last_name: 'Annotator'
@@ -232,7 +232,7 @@ stages:
         - json:off
       json:
         user:
-          id: !int "{another_user.pk}"
+          uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
           username: "{another_user.username}"
           first_name: "{another_user.first_name}"
           last_name: "{another_user.last_name}"

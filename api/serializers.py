@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Literal, Optional
-import uuid
+from uuid import UUID
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -52,7 +52,11 @@ User = get_user_model()
 
 class SimpleRegularUserSerializer(serializers.ModelSerializer):
 
+    uuid = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
+
+    def get_uuid(self, obj) -> UUID:
+        return UUID(int=obj.pk)
 
     def get_full_name(self, obj) -> str:
         return obj.get_full_name()
@@ -60,7 +64,7 @@ class SimpleRegularUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id',
+            'uuid',
             'username',
             'first_name',
             'last_name',
@@ -151,7 +155,7 @@ class UserSerializer(serializers.ModelSerializer):
         if isinstance(instance, User):
             # NOTE: this must be the same structure as defined.
             data = {}
-            data['uuid'] = uuid.UUID(int=instance.pk)
+            data['uuid'] = UUID(int=instance.pk)
             data['username'] = instance.get_username()
             data['registration_time'] = instance.date_joined
             data['locale'] = 'en'
@@ -717,7 +721,7 @@ class SimpleAnnotatorUserSerializer(SimpleRegularUserSerializer):
             'app_label': UserStat._meta.app_label,
             'model_name': UserStat._meta.model_name
         }):
-            new_instance = User(id=-1, username='expert', first_name='Expert', last_name='Annotator')
+            new_instance = User(id=0, username='expert', first_name='Expert', last_name='Annotator')
 
         return super().to_representation(new_instance)
 
