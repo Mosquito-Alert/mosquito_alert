@@ -11,6 +11,7 @@ from .routers import NestedSimpleRouter, SimpleRouter
 from .views import (
     UserViewSet,
     MyUserViewSet,
+    MyPermissionViewSet,
     FixViewSet,
     CampaignsViewSet,
     PartnersViewSet,
@@ -84,6 +85,7 @@ api_urlpatterns = [
 
 api_urlpatterns += [
     path("me/", MyUserViewSet.as_view({'get': 'retrieve'}), name='my-user'),
+    path("me/permissions/", MyPermissionViewSet.as_view({'get': 'retrieve'}), name='my-permissions'),
     path("me/notifications/", MyNotificationViewSet.as_view({'get': 'list'}), name='my-notifications'),
     path("me/observations/", MyObservationViewSest.as_view({'get': 'list'}), name='my-observations'),
     path("me/bites/", MyBiteViewSet.as_view({'get': 'list'}), name='my-bites'),

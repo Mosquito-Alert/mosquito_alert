@@ -6,6 +6,7 @@ import time_machine
 import pytest
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.utils import timezone
 from django.utils.module_loading import import_string
 
@@ -974,3 +975,118 @@ class TestIdentificationTaskAnnotationsApi:
         annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
         assert annotation.status == ExpertReportAnnotation.STATUS_HIDDEN
         assert annotation.taxon is None
+
+@pytest.mark.django_db
+class TestPermissionsApi:
+    @pytest.fixture
+    def me_endpoint(self):
+        return f'/api/v1/me/permissions/'
+
+    @pytest.fixture
+    def api_client(self, user):
+        api_client = APIClient()
+        api_client.force_login(user=user)
+
+        return api_client
+
+    def test_general_role_base(self, api_client, me_endpoint):
+        response = api_client.get(
+            me_endpoint,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['general']['role'] == 'base'
+
+    def test_general_role_annotator(self, api_client, user, me_endpoint):
+        expert_group, _ = Group.objects.get_or_create(name='expert')
+        user.groups.add(expert_group)
+
+        response = api_client.get(
+            me_endpoint,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['general']['role'] == 'annotator'
+        assert not response.data['general']['permissions']['review']['add']
+        assert not response.data['general']['permissions']['review']['view']
+
+    def test_general_role_reviewer(self, api_client, user, me_endpoint):
+        superexpert_group, _ = Group.objects.get_or_create(name='superexpert')
+        user.groups.add(superexpert_group)
+
+        response = api_client.get(
+            me_endpoint,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['general']['role'] == 'reviewer'
+        assert response.data['general']['permissions']['review']['add']
+        assert response.data['general']['permissions']['review']['view']
+
+    def test_general_role_admin(self, api_client, user, me_endpoint):
+        user.is_superuser = True
+        user.save()
+
+        response = api_client.get(
+            me_endpoint,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['general']['role'] == 'admin'
+
+    @pytest.mark.parametrize(
+        "is_staff",
+        [True, False]
+    )
+    def test_general_is_staff(self, user, api_client, me_endpoint, is_staff):
+        user.is_staff = is_staff
+        user.save()
+
+        response = api_client.get(
+            me_endpoint,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['general']['is_staff'] == is_staff
+
+    def test_countries_role_supervisor(self, api_client, user, me_endpoint, country):
+        expert_group, _ = Group.objects.get_or_create(name='expert')
+        user.groups.add(expert_group)
+
+        userstat = user.userstat
+        userstat.national_supervisor_of = country
+        userstat.save()
+
+        response = api_client.get(
+            me_endpoint,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['general']['role'] == 'annotator'
+        assert response.data['countries'][0]['country']['id'] == country.pk
+        assert response.data['countries'][0]['role'] == 'supervisor'
+        assert response.data['countries'][0]['permissions']['annotation']['mark_as_decisive']
+        assert response.data['countries'][0]['permissions']['identification_task']['view']
+        assert not response.data['countries'][0]['permissions']['review']['add']
+        assert not response.data['countries'][0]['permissions']['review']['view']
+
+    def test_countries_role_annotator(self, api_client, user, me_endpoint, country):
+        expert_group, _ = Group.objects.get_or_create(name='expert')
+        user.groups.add(expert_group)
+
+        userstat = user.userstat
+        userstat.native_of = country
+        userstat.save()
+
+        response = api_client.get(
+            me_endpoint,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['general']['role'] == 'annotator'
+        assert response.data['countries'][0]['role'] == 'annotator'
+        assert response.data['countries'][0]['country']['id'] == country.pk
+        assert not response.data['countries'][0]['permissions']['annotation']['mark_as_decisive']
+        assert not response.data['countries'][0]['permissions']['identification_task']['view']
+        assert not response.data['countries'][0]['permissions']['review']['add']
+        assert not response.data['countries'][0]['permissions']['review']['view']

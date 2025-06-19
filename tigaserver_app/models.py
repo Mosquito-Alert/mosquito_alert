@@ -42,6 +42,7 @@ from taggit.managers import TaggableManager
 from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
 from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, IdentificationTask, Complex
+from tigacrafting.permissions import Permissions, AnnotationPermission, IdentificationTaskPermission, ReviewPermission
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
@@ -166,6 +167,14 @@ class RankingData(models.Model):
 
 
 class TigaUser(AbstractBaseUser, AnonymousUser):
+
+    @classmethod
+    def get_permissions(cls) -> Permissions:
+        return Permissions(
+            annotation=AnnotationPermission(),
+            identification_task=IdentificationTaskPermission(),
+            review=ReviewPermission()
+        )
 
     AVAILABLE_LANGUAGES = [
         (standarize_language_tag(code), Language.get(code).autonym().title()) for code, _ in settings.LANGUAGES

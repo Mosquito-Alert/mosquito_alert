@@ -1,0 +1,108 @@
+---
+
+test_name: Anonymous user can not get permissions
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  - name: Anonymous user can not get permissions
+    request:
+      url: "{api_live_url}/me/permissions/"
+      method: GET
+    response:
+      status_code: 401
+
+---
+
+test_name: Mobile users get permissions
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - app_user_token
+
+stages:
+  - name: Mobile users get permissions.
+    request:
+      url: "{api_live_url}/me/permissions/"
+      method: GET
+      headers:
+        Authorization: 'Bearer {app_user_token}'
+    response:
+      status_code: 200
+      json:
+        general:
+          role: "base"
+          permissions:
+            annotation:
+              add: false
+              change: false
+              view: false
+              delete: false
+              mark_as_decisive: false
+            identification_task:
+              add: false
+              change: false
+              view: false
+              delete: false
+            review:
+              add: false
+              change: false
+              view: false
+              delete: false
+          is_staff: false
+        countries: []
+
+---
+
+test_name: Regular users get permissions
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user
+    - jwt_token_user
+
+stages:
+  - name: Regular users get permissions.
+    request:
+      url: "{api_live_url}/me/permissions/"
+      method: GET
+      headers:
+        Authorization: 'Bearer {jwt_token_user}'
+    response:
+      status_code: 200
+      json:
+        general:
+          role: "base"
+          permissions:
+            annotation:
+              add: false
+              change: false
+              view: false
+              delete: false
+              mark_as_decisive: false
+            identification_task:
+              add: false
+              change: false
+              view: false
+              delete: false
+            review:
+              add: false
+              change: false
+              view: false
+              delete: false
+          is_staff: false
+        countries: []
