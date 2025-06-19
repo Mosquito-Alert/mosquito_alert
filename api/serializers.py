@@ -49,31 +49,6 @@ from .fields import (
 
 User = get_user_model()
 
-
-class SimpleRegularUserSerializer(serializers.ModelSerializer):
-
-    uuid = serializers.SerializerMethodField()
-    full_name = serializers.SerializerMethodField()
-
-    def get_uuid(self, obj) -> UUID:
-        return UUID(int=obj.pk)
-
-    def get_full_name(self, obj) -> str:
-        return obj.get_full_name()
-
-    class Meta:
-        model = User
-        fields = (
-            'uuid',
-            'username',
-            'first_name',
-            'last_name',
-            'full_name'
-        )
-        extra_kwargs = {
-            "id": {"read_only": True},
-        }
-
 class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model = OWCampaigns
@@ -139,6 +114,9 @@ class UserSerializer(serializers.ModelSerializer):
     uuid = serializers.UUIDField(source="user_UUID", read_only=True)
     language_iso = serializers.SerializerMethodField(help_text='ISO 639-1 code', default='en')
     username = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
     is_guest = serializers.SerializerMethodField()
     score = UserScoreSerializer(source='*', read_only=True)
 
@@ -147,6 +125,21 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_username(self, obj) -> str:
         return obj.get_username()
+
+    def get_first_name(self, obj) -> str:
+        if isinstance(obj, User):
+            return obj.first_name
+        return 'Anonymous'
+
+    def get_last_name(self, obj) -> str:
+        if isinstance(obj, User):
+            return obj.last_name
+        return 'User'
+
+    def get_full_name(self, obj) -> str:
+        if isinstance(obj, User):
+            return obj.get_full_name()
+        return 'Anonymous User'
 
     def get_language_iso(self, obj) -> str:
         return obj.language_iso2
@@ -157,6 +150,9 @@ class UserSerializer(serializers.ModelSerializer):
             data = {}
             data['uuid'] = UUID(int=instance.pk)
             data['username'] = instance.get_username()
+            data['first_name'] = self.get_first_name(obj=instance)
+            data['last_name'] = self.get_last_name(obj=instance)
+            data['full_name'] = self.get_full_name(obj=instance)
             data['registration_time'] = instance.date_joined
             data['locale'] = 'en'
             data['language_iso'] = 'en'
@@ -165,7 +161,10 @@ class UserSerializer(serializers.ModelSerializer):
                 'value': 0,
                 'updated_at': None
             }
-            return data
+            return {
+                k: v for k, v in data.items()
+                if k in self.fields.keys()
+            }
 
         return super().to_representation(instance)
 
@@ -174,6 +173,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             "uuid",
             "username",
+            "first_name",
+            "last_name",
+            "full_name",
             "registration_time",
             "locale",
             "language_iso",
@@ -189,6 +191,23 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
 class SimpleUserSerializer(UserSerializer):
+
+    uuid = serializers.SerializerMethodField()
+
+    def get_uuid(self, obj) -> UUID:
+        return UUID(int=obj.pk)
+
+    class Meta(UserSerializer.Meta):
+        model = User
+        fields = (
+            'uuid',
+            'username',
+            'first_name',
+            'last_name',
+            'full_name'
+        )
+
+class MinimalUserSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
         fields = (
             "uuid",
@@ -711,7 +730,7 @@ class SimplifiedObservationWithPhotosSerializer(BaseSimplifiedReportSerializerWi
     class Meta(BaseSimplifiedReportSerializerWithPhoto.Meta):
         pass
 
-class SimpleAnnotatorUserSerializer(SimpleRegularUserSerializer):
+class SimpleAnnotatorUserSerializer(SimpleUserSerializer):
     def to_representation(self, instance):
         # Get the request user
         user = self.context.get('request').user
@@ -1019,7 +1038,7 @@ class BaseAssignmentSerializer(serializers.ModelSerializer):
 
 class AssignmentSerializer(BaseAssignmentSerializer):
     class AssignedObservationSerializer(SimplifiedObservationWithPhotosSerializer):
-        user = SimpleUserSerializer(read_only=True)
+        user = MinimalUserSerializer(read_only=True)
         class Meta(SimplifiedObservationWithPhotosSerializer.Meta):
             fields = tuple(
                 fname for fname in SimplifiedObservationWithPhotosSerializer.Meta.fields if fname != 'user_uuid'

@@ -32,6 +32,9 @@ stages:
         - json:off
       json:
         username: "{user.username}"
+        first_name: "{user.first_name}"
+        last_name: "{user.last_name}"
+        full_name: "{user.first_name} {user.last_name}"
         is_guest: false
   - name: Check schema for authorized user without permission can not get user even if they have view permissions.
     request:
@@ -55,6 +58,9 @@ stages:
       json:
         uuid: "{app_user.pk}"
         username: "{app_user.pk}"
+        first_name: "Anonymous"
+        last_name: "User"
+        full_name: "Anonymous User"
         is_guest: true
   - name: Check schema for mobile user get their profile
     request:
