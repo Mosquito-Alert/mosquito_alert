@@ -30,6 +30,7 @@ import tigacrafting.html_utils as html_utils
 
 from .managers import ExpertReportAnnotationManager, IdentificationTaskManager
 from .messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict, notsure_msg_dict
+from .permissions import AnnotationPermission, IdentificationTaskPermission, ReviewPermission, Permissions
 from .stats import calculate_norm_entropy
 
 User = get_user_model()
@@ -1315,6 +1316,30 @@ class ExpertReportAnnotation(LifecycleModel):
         return result
 
 class UserStat(models.Model):
+    @classmethod
+    def get_permissions(cls, role: str) -> Permissions:
+        return Permissions(
+            annotation=AnnotationPermission(
+                add=role in ['annotator', 'supervisor', 'reviewer', 'admin'],
+                mark_as_decisive=role in ['supervisor', 'admin'],
+                change=role in ['admin'],
+                view=role in ['supervisor', 'reviewer', 'admin'],
+                delete=role in ['admin'],
+            ),
+            identification_task=IdentificationTaskPermission(
+                add=False,
+                change=role in ['admin'],
+                view=role in ['supervisor', 'reviewer', 'admin'],
+                delete=role in ['admin'],
+            ),
+            review=ReviewPermission(
+                add=role in ['reviewer', 'admin'],
+                change=role in ['admin'],
+                view=role in ['reviewer', 'admin'],
+                delete=role in ['admin'],
+            )
+        )
+
     user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE, )
     grabbed_reports = models.IntegerField('Grabbed reports', default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified')
     national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', on_delete=models.PROTECT, )
@@ -1349,6 +1374,18 @@ class UserStat(models.Model):
     @property
     def num_pending_annotations(self) -> int:
         return self.pending_annotations.count()
+
+    def get_role(self, country: Optional['tigaserver_app.EuropeCountry'] = None) -> Literal['base', 'annotator', 'supervisor', 'reviewer', 'admin']:
+        if self.user.is_superuser:
+            return 'admin'
+        if self.is_superexpert():
+            return 'reviewer'
+        if self.is_expert():
+            if country:
+                if self.national_supervisor_of == country:
+                    return 'supervisor'
+            return 'annotator'
+        return 'base'
 
     @transaction.atomic
     def assign_reports(self, country: Optional['EuropeCountry'] = None) -> List[Optional[IdentificationTask]]:

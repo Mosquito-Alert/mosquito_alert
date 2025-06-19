@@ -1,0 +1,36 @@
+---
+
+name: Common test information
+description: Login information for test server
+
+variables:
+  endpoint: "permissions"
+  response_data_validation:
+    general:
+      role: !anystr
+      permissions: &retrieve_validation
+        annotation:
+          add: !anybool
+          change: !anybool
+          view: !anybool
+          delete: !anybool
+          mark_as_decisive: !anybool
+        identification_task:
+          add: !anybool
+          change: !anybool
+          view: !anybool
+          delete: !anybool
+        review:
+          add: !anybool
+          change: !anybool
+          view: !anybool
+          delete: !anybool
+      is_staff: !anybool
+    countries:
+      country:
+        id: !anyint
+        name_en: !anystr
+        iso3_code: !anystr
+      role: !anystr
+      permissions:
+        <<: *retrieve_validation
