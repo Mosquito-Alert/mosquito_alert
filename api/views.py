@@ -75,7 +75,8 @@ from .serializers import (
     TaxonSerializer,
     TaxonTreeNodeSerializer,
     PhotoPredictionSerializer,
-    CreatePhotoPredictionSerializer
+    CreatePhotoPredictionSerializer,
+    UserPermissionSerializer
 )
 from .serializers import (
     CreateNotificationSerializer,
@@ -416,6 +417,22 @@ class MyUserViewSet(UserViewSet):
 
         return user
 
+@extend_schema_view(
+    retrieve=extend_schema(
+        tags=['permissions'],
+        operation_id='permissions_retrieve_mine',
+        description="Get Current User's Permissions"
+    )
+)
+class MyPermissionViewSet(MyUserViewSet):
+    serializer_class = UserPermissionSerializer
+
+    def get_object(self):
+        user = self.request.user
+        # May raise a permission denied
+        self.check_object_permissions(self.request, user)
+
+        return user
 
 class PhotoViewSet(
     RetrieveModelMixin, GenericNoMobileViewSet

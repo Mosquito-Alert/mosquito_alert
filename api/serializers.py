@@ -1,5 +1,6 @@
+from abc import abstractmethod
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 from uuid import UUID
 
 from django.contrib.auth import get_user_model
@@ -11,6 +12,7 @@ from drf_spectacular.helpers import lazy_serializer
 from rest_framework import serializers
 
 from drf_extra_fields.geo_fields import PointField
+from rest_framework_dataclasses.serializers import DataclassSerializer
 from taggit.serializers import TaggitSerializer
 
 from tigacrafting.models import (
@@ -21,6 +23,7 @@ from tigacrafting.models import (
     PhotoPrediction,
     FavoritedReports
 )
+from tigacrafting.permissions import Permissions
 from tigaserver_app.models import (
     NotificationContent,
     Notification,
@@ -101,6 +104,82 @@ class FixSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "received_at": {"source": "server_upload_time"},
         }
+
+class PermissionsSerializer(DataclassSerializer):
+    class Meta:
+        dataclass = Permissions
+
+class BaseRolePermissionSerializer(serializers.Serializer):
+    role = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
+
+    @abstractmethod
+    def _get_role(self, obj: User):
+        raise NotImplementedError()
+
+    def get_role(self, obj: Union[User, TigaUser]) -> Literal['base', 'annotator', 'supervisor', 'reviewer', 'admin']:
+        if isinstance(obj, User):
+            return self._get_role(obj=obj)
+        return 'base'
+
+    @extend_schema_field(PermissionsSerializer)
+    def get_permissions(self, obj: Union[User, TigaUser]):
+        permissions = []
+        if isinstance(obj, User):
+            permissions = UserStat.get_permissions(
+                role=self.get_role(obj=obj)
+            )
+        elif isinstance(obj, TigaUser):
+            permissions = TigaUser.get_permissions()
+        return PermissionsSerializer(permissions).data
+
+class UserPermissionSerializer(serializers.Serializer):
+    class GeneralPermissionSerializer(BaseRolePermissionSerializer):
+        is_staff = serializers.BooleanField()
+
+        def _get_role(self, obj: User):
+            userstat = UserStat.objects.filter(user=obj).first()
+            if userstat:
+                return userstat.get_role()
+            return 'base'
+
+    class CountryPermissionSerializer(BaseRolePermissionSerializer):
+        def __init__(self, *args, **kwargs):
+            self.country = kwargs.pop('country', None)
+            super().__init__(*args, **kwargs)
+
+        country = serializers.SerializerMethodField()
+
+        def _get_role(self, obj: User):
+            userstat = UserStat.objects.filter(user=obj).first()
+            if userstat:
+                return userstat.get_role(country=self.country)
+            return 'base'
+
+        @extend_schema_field(CountrySerializer)
+        def get_country(self, obj: Union[User, TigaUser]):
+            return CountrySerializer(self.country).data
+
+    general = serializers.SerializerMethodField()
+    countries = serializers.SerializerMethodField()
+
+    @extend_schema_field(GeneralPermissionSerializer)
+    def get_general(self, obj: Union[User, TigaUser]):
+        return self.GeneralPermissionSerializer(obj).data
+
+    @extend_schema_field(CountryPermissionSerializer(many=True))
+    def get_countries(self, obj: Union[User, TigaUser]):
+        if not isinstance(obj, User):
+            return self.CountryPermissionSerializer(many=True).data
+        userstat = UserStat.objects.filter(user=obj).first()
+        if userstat:
+            result = []
+            for country in [userstat.national_supervisor_of, userstat.native_of]:
+                if not country:
+                    continue
+                result.append(self.CountryPermissionSerializer(instance=obj, country=country).data)
+            return result
+        return self.CountryPermissionSerializer(many=True).data
 
 class UserSerializer(serializers.ModelSerializer):
     class UserScoreSerializer(serializers.ModelSerializer):
