@@ -7,6 +7,7 @@ import random
 from rest_framework.authtoken.models import Token
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Polygon, MultiPolygon
 from django.utils import timezone
@@ -25,6 +26,11 @@ from .factories import create_mobile_user, create_regular_user
 User = get_user_model()
 TEST_DATA_PATH = Path(Path(__file__).parent.absolute(), "test_data/")
 
+
+@pytest.fixture
+def taxa(db):
+    call_command('loaddata', '/app/tigacrafting/fixtures/taxon.json')
+    call_command('loaddata', '/app/tigaserver_app/fixtures/categories.json')
 
 @pytest.fixture
 def user_password():
@@ -240,7 +246,7 @@ def test_non_image_path():
 
 @pytest.fixture
 def taxon_root():
-    return Taxon.add_root(
+    return Taxon.get_root() or Taxon.add_root(
         rank=Taxon.TaxonomicRank.CLASS,
         name="Insecta",
         common_name=""

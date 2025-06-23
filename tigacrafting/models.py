@@ -1204,7 +1204,7 @@ class ExpertReportAnnotation(LifecycleModel):
 
         if not taxon:
             # Set as 'Off-topic'. This is not a mosquito observation.
-            self.category = Categories.objects.filter(pk=9).first()
+            self.category = Categories.objects.filter(pk=1).first()
             return
 
         _taxon_content_object = taxon.content_object

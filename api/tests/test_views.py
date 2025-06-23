@@ -676,6 +676,7 @@ class TestDeviceAPI:
         assert Device.objects.filter(user=app_user).count() == 1
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("taxa")
 class TestIdentificationTaskAnnotationsApi:
     @pytest.fixture
     def endpoint(self, identification_task):
