@@ -221,7 +221,16 @@ class BaseIdentificationTaskPermissions(FullDjangoModelPermissions):
         return request.user.has_perms(perms)
 
 class IdentificationTaskPermissions(BaseIdentificationTaskPermissions):
-    pass
+    def has_permission(self, request, view):
+        role_perm = False
+        if view.action == 'list':
+            role_perm = UserRolePermission().check_permissions(
+                user=request.user,
+                action='add',
+                obj_or_klass=ExpertReportAnnotation
+            )
+
+        return super().has_permission(request, view) or role_perm
 
 class MyIdentificationTaskPermissions(DjangoRegularUserModelPermissions):
     pass
