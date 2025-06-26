@@ -119,18 +119,20 @@ class BaseRolePermissionSerializer(serializers.Serializer):
         if isinstance(obj, User):
             obj = UserStat.objects.filter(user=obj).first()
             if not obj:
-                return Role.BASE
+                return TigaUser().get_role()
         return self._get_role(obj=obj)
 
     @extend_schema_field(PermissionsSerializer)
     def get_permissions(self, obj: Union[User, TigaUser]):
         role = self.get_role(obj=obj)
+
         if isinstance(obj, User):
             obj = UserStat.objects.filter(user=obj).first()
-        if obj:
-            permissions = obj.get_role_permissions(role=role)
-        else:
-            permissions = Permissions()
+
+        if not obj:
+            obj = TigaUser()
+
+        permissions = obj.get_role_permissions(role=role)
         return PermissionsSerializer(permissions).data
 
 class UserPermissionSerializer(serializers.Serializer):

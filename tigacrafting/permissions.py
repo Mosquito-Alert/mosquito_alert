@@ -13,10 +13,10 @@ class Role(models.TextChoices):
 
 @dataclass
 class BasePermission:
-    add: bool = False
-    change: bool = False
-    view: bool = False
-    delete: bool = False
+    add: bool
+    change: bool
+    view: bool
+    delete: bool
 
 @dataclass
 class IdentificationTaskPermission(BasePermission):
@@ -24,7 +24,7 @@ class IdentificationTaskPermission(BasePermission):
 
 @dataclass
 class AnnotationPermission(BasePermission):
-    mark_as_decisive: bool = False
+    mark_as_decisive: bool
     pass
 
 @dataclass
@@ -33,9 +33,9 @@ class ReviewPermission(BasePermission):
 
 @dataclass
 class Permissions:
-    annotation: AnnotationPermission = AnnotationPermission()
-    identification_task: IdentificationTaskPermission = IdentificationTaskPermission()
-    review: ReviewPermission = ReviewPermission()
+    annotation: AnnotationPermission
+    identification_task: IdentificationTaskPermission
+    review: ReviewPermission
 
 class UserRolePermissionMixin:
     @abstractmethod
