@@ -237,3 +237,105 @@ stages:
           first_name: "{another_user.first_name}"
           last_name: "{another_user.last_name}"
           full_name: "{another_user.first_name} {another_user.last_name}"
+
+---
+
+test_name: Annotation can be retireved if user role is annotator
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - annotation_from_another_user
+    - user_with_role_annotator
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation can retrieve owned annotation
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+  - name: User with role annotation can retrieve annotation from another user
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+
+---
+
+test_name: Annotation can be retireved if user role is supervisor in country
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - annotation_from_another_user
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation can retrieve owned annotation
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+  - name: User with role annotation can retrieve annotation from another user
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+
+---
+
+test_name: Annotation can be retireved if user role is reviewer
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - annotation_from_another_user
+    - user_with_role_reviewer
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation can retrieve owned annotation
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 404  # Annotation from reviewer is considered a reivew
+  - name: User with role annotation can retrieve annotation from another user
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200

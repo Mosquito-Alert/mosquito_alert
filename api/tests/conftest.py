@@ -6,6 +6,7 @@ import random
 
 from rest_framework.authtoken.models import Token
 
+from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.contrib.auth import get_user_model
@@ -18,7 +19,7 @@ from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
 from api.tests.utils import grant_permission_to_user
 from api.tests.clients import AppAPIClient
 
-from tigacrafting.models import IdentificationTask, Taxon
+from tigacrafting.models import IdentificationTask, Taxon, UserStat
 from tigaserver_app.models import EuropeCountry, Report, Photo
 
 from .factories import create_mobile_user, create_regular_user
@@ -251,3 +252,46 @@ def taxon_root():
         name="Insecta",
         common_name=""
     )
+
+@pytest.fixture
+def group_expert():
+    group, _ = Group.objects.get_or_create(name="expert")
+    return group
+
+@pytest.fixture
+def group_superexpert():
+    group, _ = Group.objects.get_or_create(name="superexpert")
+    return group
+
+@pytest.fixture
+def user_with_role_annotator(user, group_expert):
+    user.groups.add(group_expert)
+    return user
+
+@pytest.fixture
+def user_with_role_annotator_in_country(user_with_role_annotator, es_country):
+    user_stat = UserStat.objects.get(user=user_with_role_annotator)
+    user_stat.native_of = es_country
+    user_stat.save()
+
+    return user_with_role_annotator
+
+@pytest.fixture
+def user_with_role_supervisor_in_country(user, group_expert, es_country):
+    user.groups.add(group_expert)
+    user_stat = UserStat.objects.get(user=user)
+    user_stat.national_supervisor_of = es_country
+    user_stat.save()
+
+    return user
+
+@pytest.fixture
+def user_with_role_reviewer(user, group_superexpert):
+    user.groups.add(group_superexpert)
+    return user
+
+@pytest.fixture
+def user_with_role_admin(user):
+    user.is_superuser = True
+    user.save()
+    return user

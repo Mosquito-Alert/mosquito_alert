@@ -34,3 +34,72 @@ stages:
       method: "POST"
     response:
       status_code: 405
+
+---
+
+test_name: Create is disabled for annotator
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_with_role_annotator
+    - jwt_token_user
+
+stages:
+  - name: Create method is disabled
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+    response:
+      status_code: 403
+
+---
+
+test_name: Create is disabled for supervisor in country
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+
+stages:
+  - name: Create method is disabled
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+    response:
+      status_code: 403
+
+---
+
+test_name: Create is disabled for reviewer
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_with_role_reviewer
+    - jwt_token_user
+
+stages:
+  - name: Create method is disabled
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+    response:
+      status_code: 403

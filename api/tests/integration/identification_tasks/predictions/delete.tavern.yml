@@ -53,3 +53,81 @@ stages:
       method: "DELETE"
     response:
       status_code: 204
+
+---
+
+test_name: Delete is disabled if annotator
+
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - photo_prediction
+    - user_with_role_annotator
+    - jwt_token_user
+
+stages:
+  - name: Delete classification
+    request:
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.pk}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "DELETE"
+    response:
+      status_code: 403
+
+---
+
+test_name: Delete is disabled if supervisor
+
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - photo_prediction
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+
+stages:
+  - name: Delete classification
+    request:
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.pk}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "DELETE"
+    response:
+      status_code: 403
+
+---
+
+test_name: Delete is disabled if reviewer
+
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - photo_prediction
+    - user_with_role_reviewer
+    - jwt_token_user
+
+stages:
+  - name: Delete classification
+    request:
+      url: "{api_live_url}/{endpoint}/{photo_prediction.photo.pk}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "DELETE"
+    response:
+      status_code: 403

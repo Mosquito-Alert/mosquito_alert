@@ -64,6 +64,117 @@ stages:
           - observation:
               uuid: "{identification_task.report.pk}"
 
+
+---
+
+test_name: Identification tasks can be list if user role is annotator
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - another_identification_task
+    - user_with_role_annotator
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation add can retrieve
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0
+
+---
+
+test_name: Identification tasks can be list if user role is annotator and has annotated
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - annotation
+    - identification_task
+    - another_identification_task
+    - user_with_role_annotator
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation add can retrieve
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - observation:
+              uuid: "{identification_task.report.pk}"
+
+---
+
+test_name: Identification tasks can be list if user role is supervisor in country
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+
+stages:
+  - name: User with role supervisor add can retrieve
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+
+---
+
+test_name: Identification tasks can be list if user role is reviewer
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - user_with_role_reviewer
+    - jwt_token_user
+
+stages:
+  - name: User with role reviewer add can retrieve
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+
 ---
 
 test_name: My identification tasks can be list not return non annotated identification tasks.

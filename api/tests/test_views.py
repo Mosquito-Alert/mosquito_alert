@@ -754,7 +754,7 @@ class TestIdentificationTaskAnnotationsApi:
         "is_decisive",
         [True, False]
     )
-    def test_is_decisive_sets_validation_complete_executive(self, api_client, endpoint, common_post_data, with_add_permission, is_decisive):
+    def test_is_decisive_sets_validation_complete_executive(self, api_client, endpoint, user_with_role_supervisor_in_country, common_post_data, with_add_permission, is_decisive):
         post_data = common_post_data
         post_data['is_decisive'] = is_decisive
 
@@ -997,9 +997,8 @@ class TestPermissionsApi:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['general']['role'] == 'base'
 
-    def test_general_role_annotator(self, api_client, user, me_endpoint):
-        expert_group, _ = Group.objects.get_or_create(name='expert')
-        user.groups.add(expert_group)
+    def test_general_role_annotator(self, api_client, user, group_expert, me_endpoint):
+        user.groups.add(group_expert)
 
         response = api_client.get(
             me_endpoint,
@@ -1010,9 +1009,8 @@ class TestPermissionsApi:
         assert not response.data['general']['permissions']['review']['add']
         assert not response.data['general']['permissions']['review']['view']
 
-    def test_general_role_reviewer(self, api_client, user, me_endpoint):
-        superexpert_group, _ = Group.objects.get_or_create(name='superexpert')
-        user.groups.add(superexpert_group)
+    def test_general_role_reviewer(self, api_client, user, group_superexpert, me_endpoint):
+        user.groups.add(group_superexpert)
 
         response = api_client.get(
             me_endpoint,
@@ -1049,9 +1047,8 @@ class TestPermissionsApi:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['general']['is_staff'] == is_staff
 
-    def test_countries_role_supervisor(self, api_client, user, me_endpoint, country):
-        expert_group, _ = Group.objects.get_or_create(name='expert')
-        user.groups.add(expert_group)
+    def test_countries_role_supervisor(self, api_client, user, group_expert, me_endpoint, country):
+        user.groups.add(group_expert)
 
         userstat = user.userstat
         userstat.national_supervisor_of = country
@@ -1070,9 +1067,8 @@ class TestPermissionsApi:
         assert not response.data['countries'][0]['permissions']['review']['add']
         assert not response.data['countries'][0]['permissions']['review']['view']
 
-    def test_countries_role_annotator(self, api_client, user, me_endpoint, country):
-        expert_group, _ = Group.objects.get_or_create(name='expert')
-        user.groups.add(expert_group)
+    def test_countries_role_annotator(self, api_client, user, group_expert, me_endpoint, country):
+        user.groups.add(group_expert)
 
         userstat = user.userstat
         userstat.native_of = country

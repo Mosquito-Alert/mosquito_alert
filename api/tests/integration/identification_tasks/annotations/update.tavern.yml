@@ -39,3 +39,96 @@ stages:
       method: "{method}"
     response:
       status_code: 405
+
+---
+
+test_name: Update is disabled if annotator
+
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - user_with_role_annotator
+    - jwt_token_user
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - name: Update annotation
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "{method}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Update is disabled if supervisor
+
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - name: Update annotation
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "{method}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Update is disabled if reviewer
+
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - user_with_role_reviewer
+    - jwt_token_user
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - name: Update annotation
+    request:
+      url: "{api_live_url}/{endpoint}/{annotation.pk}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "{method}"
+    response:
+      status_code: 403

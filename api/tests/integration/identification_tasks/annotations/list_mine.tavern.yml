@@ -64,3 +64,97 @@ stages:
         count: 1
         results:
           - id: !int "{annotation.pk}"
+
+---
+
+test_name: Annotation can be listed if user role is annotator
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - me_endpoint
+    - annotation
+    - annotation_from_another_user
+    - user_with_role_annotator
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation can retrieve owned annotation
+    request:
+      url: "{api_live_url}/{me_endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{annotation.pk}"
+
+---
+
+test_name: Annotation can be listed if user role is supervisor in country
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - me_endpoint
+    - annotation
+    - annotation_from_another_user
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation can retrieve owned annotation
+    request:
+      url: "{api_live_url}/{me_endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{annotation.pk}"
+
+---
+
+test_name: Annotation can be listed if user role is reviewer
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - me_endpoint
+    - annotation
+    - annotation_from_another_user
+    - user_with_role_reviewer
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation can retrieve owned annotation
+    request:
+      url: "{api_live_url}/{me_endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0

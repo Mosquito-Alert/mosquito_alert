@@ -86,3 +86,82 @@ stages:
     response:
       status_code: 200
       json: !force_format_include "{response_list_data_validation}"
+
+---
+
+test_name: Prediction can be retireved if user role is annotator and have annotated
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - annotation
+    - photo_prediction
+    - user_with_role_annotator
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation can retrieve photo_prediction
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_list_data_validation}"
+
+---
+
+test_name: Annotation can be retireved if user role is supervisor in country
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - photo_prediction
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+
+stages:
+  - name: User with role supervisor can retrieve photo_prediction
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_list_data_validation}"
+
+---
+
+test_name: Annotation can be retireved if user role is reviewer
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - photo_prediction
+    - user_with_role_reviewer
+    - jwt_token_user
+
+stages:
+  - name: User with role reviewer can retrieve photo_prediction
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_list_data_validation}"

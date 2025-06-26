@@ -63,7 +63,7 @@ class UserRolePermissionMixin:
     def get_role_annotation_permission(self, role: Role) -> AnnotationPermission:
         return AnnotationPermission(
             add=role in [Role.ANNOTATOR, Role.SUPERVISOR, Role.REVIEWER, Role.ADMIN],
-            mark_as_decisive=role in [Role.SUPERVISOR, Role.ADMIN],
+            mark_as_decisive=role in [Role.SUPERVISOR, Role.REVIEWER, Role.ADMIN],
             change=role in [Role.ADMIN],
             view=role in [Role.ANNOTATOR, Role.SUPERVISOR, Role.REVIEWER, Role.ADMIN],
             delete=role in [Role.ADMIN],
@@ -100,16 +100,21 @@ class UserRolePermissionMixin:
         )
 
     def has_role_permission_by_model(self, action, model, country: Optional['tigaserver_app.EuropeCountry'] = None) -> BasePermission:
-        permission = self._get_role_permission_by_model(model=model, country=country)
-        return getattr(permission, action, False)
+        countries = set([None, country])
+        for country in countries:
+            permission = self._get_role_permission_by_model(model=model, country=country)
+            if getattr(permission, action, False):
+                return True
+        return False
 
-    def has_role_permission(self, action, obj_or_klass, *args, **kwargs) -> bool:
+    def has_role_permission(self, action, obj_or_klass) -> bool:
+        countries = [None]
         if isinstance(obj_or_klass, type):
             model = obj_or_klass
-            countries = [None,] + self.get_countries_with_roles()
+            countries += self.get_countries_with_roles()
         else:
             model = obj_or_klass.__class__
-            countries = [obj_or_klass.country]
+            countries += [obj_or_klass.country]
 
         for country in countries:
             if self.has_role_permission_by_model(action=action, model=model, country=country):

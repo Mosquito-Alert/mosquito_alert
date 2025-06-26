@@ -1005,7 +1005,18 @@ class AnnotationSerializer(serializers.ModelSerializer):
                 data["status"] = ExpertReportAnnotation.STATUS_PUBLIC
 
         data['validation_complete_executive'] = data.pop("is_decisive")
-
+        user_role = data['user']
+        if isinstance(user_role, User):
+            user_role = UserStat.objects.filter(user=user_role).first()
+        can_set_is_decisive = False
+        if user_role:
+            can_set_is_decisive = user_role.has_role_permission_by_model(
+                action='mark_as_decisive',
+                model=ExpertReportAnnotation,
+                country=data['report'].country
+            )
+        if not can_set_is_decisive:
+            data['validation_complete_executive'] = False
         return data
 
     def create(self, validated_data):

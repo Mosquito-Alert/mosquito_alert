@@ -3,7 +3,7 @@ import pytest
 from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, UserStat
 
 from api.tests.utils import grant_permission_to_user
-from tigaserver_app.models import Photo
+from tigaserver_app.models import Photo, Report
 
 from ..observations.factories import create_observation_object
 from .predictions.factories import create_photo_prediction
@@ -27,6 +27,32 @@ def annotation_from_another_user(identification_task, another_user):
         identification_task=identification_task,
         user=another_user
     )
+
+@pytest.fixture
+def another_identification_task(app_user, dummy_image):
+    observation = create_observation_object(user=app_user)
+    photo = Photo.objects.create(
+        photo=dummy_image,
+        report=observation,
+    )
+    return observation.identification_task
+
+@pytest.fixture
+def annotation_from_another_user_another_identification_task(another_identification_task, another_user):
+    return create_annotation(
+        identification_task=another_identification_task,
+        user=another_user
+    )
+
+@pytest.fixture
+def another_identification_task_another_country(app_user, dummy_image, country):
+    observation = create_observation_object(user=app_user)
+    photo = Photo.objects.create(
+        photo=dummy_image,
+        report=observation,
+    )
+    Report.objects.filter(pk=observation.pk).update(country=country)
+    return observation.identification_task
 
 @pytest.fixture
 def identification_task_fully_predicted(app_user, dummy_image):
