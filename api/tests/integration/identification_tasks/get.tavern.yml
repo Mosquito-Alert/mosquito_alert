@@ -34,7 +34,7 @@ stages:
       headers:
         Authorization: "Bearer {jwt_token_user:s}"
     response:
-      status_code: 403
+      status_code: 404
 
 ---
 

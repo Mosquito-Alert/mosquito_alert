@@ -30,7 +30,7 @@ import tigacrafting.html_utils as html_utils
 
 from .managers import ExpertReportAnnotationManager, IdentificationTaskManager
 from .messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict, notsure_msg_dict
-from .permissions import AnnotationPermission, IdentificationTaskPermission, ReviewPermission, Permissions
+from .permissions import UserRolePermissionMixin, Role, AnnotationPermission, IdentificationTaskPermission, BasePermission
 from .stats import calculate_norm_entropy
 
 User = get_user_model()
@@ -419,6 +419,10 @@ class IdentificationTask(LifecycleModel):
     @property
     def confidence_label(self) -> str:
         return get_confidence_label(value=self.confidence)
+
+    @cached_property
+    def country(self) -> Optional['tigaserver_app.EuropeCountry']:
+        return self.report.country
 
     # LEGACY
     @property
@@ -847,6 +851,10 @@ class ExpertReportAnnotation(LifecycleModel):
                 name='expertreportannotation_confidence_between_0_and_1'
             )
         ]
+
+    @cached_property
+    def country(self) -> Optional['tigaserver_app.EuropeCountry']:
+        return self.report.country
 
     def is_superexpert(self):
         return self.user.groups.filter(name='superexpert').exists()
@@ -1315,31 +1323,7 @@ class ExpertReportAnnotation(LifecycleModel):
 
         return result
 
-class UserStat(models.Model):
-    @classmethod
-    def get_permissions(cls, role: str) -> Permissions:
-        return Permissions(
-            annotation=AnnotationPermission(
-                add=role in ['annotator', 'supervisor', 'reviewer', 'admin'],
-                mark_as_decisive=role in ['supervisor', 'admin'],
-                change=role in ['admin'],
-                view=role in ['supervisor', 'reviewer', 'admin'],
-                delete=role in ['admin'],
-            ),
-            identification_task=IdentificationTaskPermission(
-                add=False,
-                change=role in ['admin'],
-                view=role in ['supervisor', 'reviewer', 'admin'],
-                delete=role in ['admin'],
-            ),
-            review=ReviewPermission(
-                add=role in ['reviewer', 'admin'],
-                change=role in ['admin'],
-                view=role in ['reviewer', 'admin'],
-                delete=role in ['admin'],
-            )
-        )
-
+class UserStat(UserRolePermissionMixin, models.Model):
     user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE, )
     grabbed_reports = models.IntegerField('Grabbed reports', default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified')
     national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', on_delete=models.PROTECT, )
@@ -1375,18 +1359,6 @@ class UserStat(models.Model):
     def num_pending_annotations(self) -> int:
         return self.pending_annotations.count()
 
-    def get_role(self, country: Optional['tigaserver_app.EuropeCountry'] = None) -> Literal['base', 'annotator', 'supervisor', 'reviewer', 'admin']:
-        if self.user.is_superuser:
-            return 'admin'
-        if self.is_superexpert():
-            return 'reviewer'
-        if self.is_expert():
-            if country:
-                if self.national_supervisor_of == country:
-                    return 'supervisor'
-            return 'annotator'
-        return 'base'
-
     @transaction.atomic
     def assign_reports(self, country: Optional['EuropeCountry'] = None) -> List[Optional[IdentificationTask]]:
         task_queue = IdentificationTask.objects.exclude(assignees=self.user).select_related('report')
@@ -1416,6 +1388,47 @@ class UserStat(models.Model):
         # NOTE: self.save() is called in assign_reports
         self.last_emergency_mode_grab = country
         return self.assign_reports(country=country)
+
+    # NOTE: override UserRolePermissionMixin
+    def get_countries_with_roles(self) -> List['tigaserver_app.EuropeCountry']:
+        countries = []
+        if country := self.native_of:
+            countries.append(country)
+        if country := self.national_supervisor_of:
+            countries.append(country)
+        return countries
+
+    # NOTE: override UserRolePermissionMixin
+    def get_role(self, country: Optional['tigaserver_app.EuropeCountry'] = None) -> Role:
+        if self.user.is_superuser:
+            return Role.ADMIN
+        if self.is_superexpert():
+            return Role.REVIEWER
+        if self.is_expert():
+            if country and self.national_supervisor_of == country:
+                return Role.SUPERVISOR
+            return Role.ANNOTATOR
+        return Role.BASE
+
+    def _update_permissions_from_django_perms(self, perm_obj: BasePermission, model_class: models.Model):
+        app_label = model_class._meta.app_label
+        model_name = model_class._meta.model_name
+        perm_template = f"{app_label}.{{action}}_{model_name}"
+
+        for action in ['add', 'view', 'change', 'delete']:
+            if self.user.has_perm(perm_template.format(action=action)):
+                setattr(perm_obj, action, True)
+        return perm_obj
+
+    # NOTE: override UserRolePermissionMixin
+    def get_role_annotation_permission(self, role: Role) -> AnnotationPermission:
+        perm = super().get_role_annotation_permission(role=role)
+        return self._update_permissions_from_django_perms(perm, ExpertReportAnnotation)
+
+    # NOTE: override UserRolePermissionMixin
+    def get_role_identification_task_permission(self, role: Role) -> IdentificationTaskPermission:
+        perm = super().get_role_identification_task_permission(role=role)
+        return self._update_permissions_from_django_perms(perm, IdentificationTask)
 
     def has_accepted_license(self):
         return self.license_accepted

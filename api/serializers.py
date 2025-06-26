@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from datetime import datetime
 from typing import Literal, Optional, Union
 from uuid import UUID
@@ -23,7 +22,7 @@ from tigacrafting.models import (
     PhotoPrediction,
     FavoritedReports
 )
-from tigacrafting.permissions import Permissions
+from tigacrafting.permissions import Permissions, Role
 from tigaserver_app.models import (
     NotificationContent,
     Notification,
@@ -113,35 +112,30 @@ class BaseRolePermissionSerializer(serializers.Serializer):
     role = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
 
-    @abstractmethod
-    def _get_role(self, obj: User):
-        raise NotImplementedError()
+    def _get_role(self, obj: Union[User, TigaUser]) -> Role:
+        return obj.get_role()
 
-    def get_role(self, obj: Union[User, TigaUser]) -> Literal['base', 'annotator', 'supervisor', 'reviewer', 'admin']:
+    def get_role(self, obj: Union[User, TigaUser]) -> Role:
         if isinstance(obj, User):
-            return self._get_role(obj=obj)
-        return 'base'
+            obj = UserStat.objects.filter(user=obj).first()
+            if not obj:
+                return Role.BASE
+        return self._get_role(obj=obj)
 
     @extend_schema_field(PermissionsSerializer)
     def get_permissions(self, obj: Union[User, TigaUser]):
-        permissions = []
+        role = self.get_role(obj=obj)
         if isinstance(obj, User):
-            permissions = UserStat.get_permissions(
-                role=self.get_role(obj=obj)
-            )
-        elif isinstance(obj, TigaUser):
-            permissions = TigaUser.get_permissions()
+            obj = UserStat.objects.filter(user=obj).first()
+        if obj:
+            permissions = obj.get_role_permissions(role=role)
+        else:
+            permissions = Permissions()
         return PermissionsSerializer(permissions).data
 
 class UserPermissionSerializer(serializers.Serializer):
     class GeneralPermissionSerializer(BaseRolePermissionSerializer):
         is_staff = serializers.BooleanField()
-
-        def _get_role(self, obj: User):
-            userstat = UserStat.objects.filter(user=obj).first()
-            if userstat:
-                return userstat.get_role()
-            return 'base'
 
     class CountryPermissionSerializer(BaseRolePermissionSerializer):
         def __init__(self, *args, **kwargs):
@@ -150,11 +144,8 @@ class UserPermissionSerializer(serializers.Serializer):
 
         country = serializers.SerializerMethodField()
 
-        def _get_role(self, obj: User):
-            userstat = UserStat.objects.filter(user=obj).first()
-            if userstat:
-                return userstat.get_role(country=self.country)
-            return 'base'
+        def _get_role(self, obj: Union[User, TigaUser]) -> Role:
+            return obj.get_role(country=self.country)
 
         @extend_schema_field(CountrySerializer)
         def get_country(self, obj: Union[User, TigaUser]):
@@ -169,14 +160,11 @@ class UserPermissionSerializer(serializers.Serializer):
 
     @extend_schema_field(CountryPermissionSerializer(many=True))
     def get_countries(self, obj: Union[User, TigaUser]):
-        if not isinstance(obj, User):
-            return self.CountryPermissionSerializer(many=True).data
-        userstat = UserStat.objects.filter(user=obj).first()
-        if userstat:
+        if isinstance(obj, User):
+            obj = UserStat.objects.filter(user=obj).first()
+        if obj:
             result = []
-            for country in [userstat.national_supervisor_of, userstat.native_of]:
-                if not country:
-                    continue
+            for country in obj.get_countries_with_roles():
                 result.append(self.CountryPermissionSerializer(instance=obj, country=country).data)
             return result
         return self.CountryPermissionSerializer(many=True).data

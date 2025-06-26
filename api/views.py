@@ -31,7 +31,7 @@ from rest_framework.settings import api_settings
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import Token
 
-from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, FavoritedReports
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, FavoritedReports, UserStat
 from tigaserver_app.models import (
     TigaUser,
     EuropeCountry,
@@ -85,6 +85,7 @@ from .serializers import (
     UserNotificationCreateSerializer,
 )
 from .permissions import (
+    UserRolePermission,
     UserPermissions,
     NotificationObjectPermissions,
     MyNotificationPermissions,
@@ -531,19 +532,48 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     )
     serializer_class = IdentificationTaskSerializer
     filterset_class = IdentificationTaskFilter
-    permission_classes = (IdentificationTaskPermissions,)
+    permission_classes = (IdentificationTaskPermissions | UserRolePermission,)
 
     lookup_field = 'pk'
     lookup_url_kwarg = 'observation_uuid'
 
     def get_queryset(self):
         qs = super().get_queryset()
-
         user = self.request.user
-        if isinstance(user, TigaUser) or not (user and user.has_perm("tigacrafting.view_archived_identificationtasks")):
+
+        view_archived_perm = '%(app_label)s.view_archived_identificationtasks' % {
+            'app_label': IdentificationTask._meta.app_label,
+        }
+        # Exclude archived tasks unless user is a full User and has permission
+        if not user.has_perm(view_archived_perm):
             qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
 
-        return qs
+        view_perm = '%(app_label)s.view_%(model_name)s' % {
+            'app_label': IdentificationTask._meta.app_label,
+            'model_name': IdentificationTask._meta.model_name
+        }
+        has_view_perm = user.has_perm(view_perm)
+
+        user_role = user
+        if isinstance(user, User):
+            user_role = UserStat.objects.filter(user=user).first()
+        has_role_view_perm = user_role and user_role.has_role_permission_by_model(action='view', model=IdentificationTask, country=None)
+
+        if has_view_perm or has_role_view_perm:
+            return qs
+
+        if isinstance(user, User):
+            # If user is a regular User, filter by their own tasks
+            qs_annotated = qs.annotated_by(users=[user])
+        else:
+            qs_annotated = qs.none()
+
+        # Filter by countries if user has region-specific permissions
+        countries = user_role.get_countries_with_permissions(action='view', model=IdentificationTask) if user_role else []
+        if countries:
+            return qs_annotated | qs.filter(report__country__in=countries)
+
+        return qs_annotated
 
     @extend_schema(
         request=None,
@@ -631,7 +661,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         )
         serializer_class = AnnotationSerializer
         filterset_class = AnnotationFilter
-        permission_classes = (AnnotationPermissions, )
+        permission_classes = (AnnotationPermissions | UserRolePermission, )
 
         parent_lookup_kwargs = {
             'observation_uuid': 'identification_task__pk'
