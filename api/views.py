@@ -25,7 +25,7 @@ from rest_framework.mixins import (
     DestroyModelMixin,
 )
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import AllowAny, SAFE_METHODS
+from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -425,8 +425,10 @@ class MyUserViewSet(UserViewSet):
         description="Get Current User's Permissions"
     )
 )
-class MyPermissionViewSet(MyUserViewSet):
+class MyPermissionViewSet(RetrieveModelMixin, GenericViewSet):
+    queryset = None
     serializer_class = UserPermissionSerializer
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         user = self.request.user

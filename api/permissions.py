@@ -222,6 +222,9 @@ class BaseIdentificationTaskPermissions(FullDjangoModelPermissions):
 
 class IdentificationTaskPermissions(BaseIdentificationTaskPermissions):
     def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+
         role_perm = False
         if view.action == 'list':
             role_perm = UserRolePermission().check_permissions(
