@@ -43,6 +43,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - annotation
     - identification_task
     - jwt_token_user_can_view
 

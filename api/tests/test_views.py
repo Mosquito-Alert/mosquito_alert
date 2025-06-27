@@ -175,6 +175,44 @@ class TestObservationAPI(BaseReportTest):
         return create_observation_object(user=app_user)
 
 @pytest.mark.django_db
+class TestIdentificationTaskAPI:
+    @classmethod
+    def build_url(cls, identification_task):
+        return f"/api/v1/identification-tasks/{identification_task.pk}/"
+
+    @pytest.fixture
+    def permitted_user(self, user):
+        grant_permission_to_user(type='view', model_class=IdentificationTask, user=user)
+        Token.objects.create(user=user)
+        return user
+
+    @pytest.fixture
+    def api_client(self, user):
+        api_client = APIClient()
+        api_client.force_login(user=user)
+
+        return api_client
+
+    @pytest.mark.parametrize(
+        "result_source, expect_null",
+        [
+            (IdentificationTask.ResultSource.AI, False),
+            (IdentificationTask.ResultSource.EXPERT, False),
+            (None, True)
+        ]
+    )
+    def test_result(self, api_client, permitted_user, identification_task, result_source, expect_null):
+        identification_task.result_source = result_source
+        identification_task.save()
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task),
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert (response.data['result'] == None) == expect_null
+
+@pytest.mark.django_db
 class TestIdentificationTaskPredictionAPI:
     @classmethod
     def build_url(cls, identification_task, photo_uuid: str = None):

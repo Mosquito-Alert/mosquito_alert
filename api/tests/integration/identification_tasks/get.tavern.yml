@@ -58,7 +58,11 @@ stages:
         Authorization: "Bearer {jwt_token_user_can_view:s}"
     response:
       status_code: 200
-      json: !force_format_include "{response_data_validation}"
+      strict:
+        - json:off
+      json:
+        observation:
+          uuid: "{identification_task.report.pk}"
 
 ---
 

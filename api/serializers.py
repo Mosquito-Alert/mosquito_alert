@@ -1171,7 +1171,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         confidence = serializers.FloatField(min_value=0, max_value=1, read_only=True)
         confidence_label = serializers.SerializerMethodField()
         is_high_confidence = serializers.SerializerMethodField()
-        source = serializers.ChoiceField(source='result_source',choices=IdentificationTask.ResultSource.choices, allow_null=True)
+        source = serializers.ChoiceField(source='result_source',choices=IdentificationTask.ResultSource.choices)
 
         def get_confidence_label(self, obj) -> str:
             return obj.confidence_label
@@ -1180,7 +1180,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
             return obj.is_high_confidence
 
         def to_representation(self, instance):
-            if self.allow_null and not instance.is_done:
+            if self.allow_null and not instance.result_source:
                 return None  # Return None or an empty dict as needed
             return super().to_representation(instance)
 
@@ -1214,7 +1214,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
     observation = SimplifiedObservationWithPhotosSerializer(source='report', read_only=True)
     public_photo = SimplePhotoSerializer(source='photo', required=True)
     review = IdentificationTaskReviewSerializer(source='*', allow_null=True, read_only=True)
-    result = IdentificationTaskResultSerializer(source='*', read_only=True)
+    result = IdentificationTaskResultSerializer(source='*', read_only=True, allow_null=True)
     assignments = UserAssignmentSerializer(many=True, read_only=True)
 
     class Meta:
