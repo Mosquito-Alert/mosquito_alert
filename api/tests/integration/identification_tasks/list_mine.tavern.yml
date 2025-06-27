@@ -150,6 +150,10 @@ stages:
         Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0
 
 ---
 
@@ -174,6 +178,10 @@ stages:
         Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0
 
 ---
 
