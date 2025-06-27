@@ -313,10 +313,11 @@ class IdentificationTaskQuerySet(models.QuerySet):
     def browsable(self, user: Union[User, 'tigaserver_app.TigaUser']) -> QuerySet:
         from tigacrafting.models import IdentificationTask, UserStat
 
+        qs = self
+
         view_archived_perm = '%(app_label)s.view_archived_identificationtasks' % {
             'app_label': IdentificationTask._meta.app_label,
         }
-        qs = self
         # Exclude archived tasks unless user is a full User and has permission
         if not user.has_perm(view_archived_perm):
             qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
