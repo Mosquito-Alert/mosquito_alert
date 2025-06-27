@@ -25,13 +25,13 @@ from rest_framework.mixins import (
     DestroyModelMixin,
 )
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import AllowAny, SAFE_METHODS
+from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import Token
 
-from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, FavoritedReports
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, FavoritedReports, UserStat
 from tigaserver_app.models import (
     TigaUser,
     EuropeCountry,
@@ -75,7 +75,8 @@ from .serializers import (
     TaxonSerializer,
     TaxonTreeNodeSerializer,
     PhotoPredictionSerializer,
-    CreatePhotoPredictionSerializer
+    CreatePhotoPredictionSerializer,
+    UserPermissionSerializer
 )
 from .serializers import (
     CreateNotificationSerializer,
@@ -84,6 +85,7 @@ from .serializers import (
     UserNotificationCreateSerializer,
 )
 from .permissions import (
+    UserRolePermission,
     UserPermissions,
     NotificationObjectPermissions,
     MyNotificationPermissions,
@@ -416,6 +418,24 @@ class MyUserViewSet(UserViewSet):
 
         return user
 
+@extend_schema_view(
+    retrieve=extend_schema(
+        tags=['permissions'],
+        operation_id='permissions_retrieve_mine',
+        description="Get Current User's Permissions"
+    )
+)
+class MyPermissionViewSet(RetrieveModelMixin, GenericViewSet):
+    queryset = None
+    serializer_class = UserPermissionSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        user = self.request.user
+        # May raise a permission denied
+        self.check_object_permissions(self.request, user)
+
+        return user
 
 class PhotoViewSet(
     RetrieveModelMixin, GenericNoMobileViewSet
@@ -514,19 +534,13 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     )
     serializer_class = IdentificationTaskSerializer
     filterset_class = IdentificationTaskFilter
-    permission_classes = (IdentificationTaskPermissions,)
+    permission_classes = (IdentificationTaskPermissions | UserRolePermission,)
 
     lookup_field = 'pk'
     lookup_url_kwarg = 'observation_uuid'
 
     def get_queryset(self):
-        qs = super().get_queryset()
-
-        user = self.request.user
-        if isinstance(user, TigaUser) or not (user and user.has_perm("tigacrafting.view_archived_identificationtasks")):
-            qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
-
-        return qs
+        return super().get_queryset().browsable(user=self.request.user)
 
     @extend_schema(
         request=None,
@@ -614,7 +628,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         )
         serializer_class = AnnotationSerializer
         filterset_class = AnnotationFilter
-        permission_classes = (AnnotationPermissions, )
+        permission_classes = (AnnotationPermissions | UserRolePermission, )
 
         parent_lookup_kwargs = {
             'observation_uuid': 'identification_task__pk'

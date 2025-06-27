@@ -1,11 +1,9 @@
-from typing import Optional
-
 from django.contrib.auth import get_user_model
 from django.core.exceptions import MultipleObjectsReturned
 
 from rest_framework import permissions
 
-from tigacrafting.models import IdentificationTask, ExpertReportAnnotation
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, UserStat
 from tigaserver_app.models import TigaUser, Notification
 
 from .utils import get_fk_fieldnames
@@ -137,6 +135,51 @@ class MyReportPermissions(ReportPermissions):
             return super().has_permission(request=request, view=view)
         return False
 
+class UserRolePermission(permissions.BasePermission):
+    ACTION_TO_PERMISSION = {
+        'retrieve': 'view',
+        'list': 'view',
+        'update': 'change',
+        'create': 'add',
+        'destroy': 'delete'
+    }
+
+    def check_permissions(self, user, action, obj_or_klass) -> bool:
+        if isinstance(user, User):
+            user = UserStat.objects.filter(user=user).first()
+            if not user:
+                return False
+
+        return user.has_role_permission(
+            action=action,
+            obj_or_klass=obj_or_klass
+        ) if action is not None else False
+
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if not view.action:
+            return False
+
+        return self.check_permissions(
+            user=request.user,
+            action=self.ACTION_TO_PERMISSION.get(view.action),
+            obj_or_klass=view.get_queryset().model
+        )
+
+    def has_object_permission(self, request, view, obj):
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        if not view.action:
+            return False
+
+        return self.check_permissions(
+            user=request.user,
+            action=self.ACTION_TO_PERMISSION.get(view.action),
+            obj_or_klass=obj
+        )
 
 class BaseIdentificationTaskPermissions(FullDjangoModelPermissions):
     def _check_is_annotator(self, request, view, obj) -> bool:
@@ -160,6 +203,8 @@ class BaseIdentificationTaskPermissions(FullDjangoModelPermissions):
         return task.annotators.filter(pk=request.user.pk).exists()
 
     def has_permission(self, request, view):
+        if isinstance(request.user, TigaUser):
+            return False
         if request.user and request.user.is_authenticated:
             if view.action == 'retrieve':
                 return True
@@ -176,7 +221,19 @@ class BaseIdentificationTaskPermissions(FullDjangoModelPermissions):
         return request.user.has_perms(perms)
 
 class IdentificationTaskPermissions(BaseIdentificationTaskPermissions):
-    pass
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        role_perm = False
+        if view.action == 'list':
+            role_perm = UserRolePermission().check_permissions(
+                user=request.user,
+                action='add',
+                obj_or_klass=ExpertReportAnnotation
+            )
+
+        return super().has_permission(request, view) or role_perm
 
 class MyIdentificationTaskPermissions(DjangoRegularUserModelPermissions):
     pass
@@ -189,19 +246,15 @@ class IdentificationTaskAssignmentPermissions(IsRegularUser):
         return request.user.has_perm('%(app_label)s.add_%(model_name)s' % {
             'app_label': ExpertReportAnnotation._meta.app_label,
             'model_name': ExpertReportAnnotation._meta.model_name
-        })
+        }) or UserRolePermission().check_permissions(
+            user=request.user,
+            action='add',
+            obj_or_klass=ExpertReportAnnotation
+        )
 
 class BaseIdentificationTaskAttributePermissions(BaseIdentificationTaskPermissions):
-    def __init__(self, identification_task, *args, **kwargs):
-        self.identification_task = identification_task
-        super().__init__(*args, **kwargs)
-
-    def has_permission(self, request, view):
-        if view.action == 'list' and self.identification_task:
-            if self._check_is_annotator(request, view, obj=self.identification_task):
-                return True
-        return super().has_permission(request, view)
     pass
+
 
 class AnnotationPermissions(BaseIdentificationTaskAttributePermissions):
     # Always allow retrieve owned attributes

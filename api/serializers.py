@@ -1,5 +1,6 @@
+from abc import abstractmethod
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 from uuid import UUID
 
 from django.contrib.auth import get_user_model
@@ -11,6 +12,7 @@ from drf_spectacular.helpers import lazy_serializer
 from rest_framework import serializers
 
 from drf_extra_fields.geo_fields import PointField
+from rest_framework_dataclasses.serializers import DataclassSerializer
 from taggit.serializers import TaggitSerializer
 
 from tigacrafting.models import (
@@ -21,6 +23,7 @@ from tigacrafting.models import (
     PhotoPrediction,
     FavoritedReports
 )
+from tigacrafting.permissions import Permissions, Role
 from tigaserver_app.models import (
     NotificationContent,
     Notification,
@@ -101,6 +104,88 @@ class FixSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "received_at": {"source": "server_upload_time"},
         }
+
+class PermissionsSerializer(DataclassSerializer):
+    class Meta:
+        dataclass = Permissions
+
+class BaseRolePermissionSerializer(serializers.Serializer):
+    role = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
+
+    @abstractmethod
+    def _get_role(self, obj: Union[User, TigaUser]) -> Role:
+        raise NotImplementedError
+
+    def get_role(self, obj: Union[User, TigaUser]) -> Role:
+        if isinstance(obj, User):
+            try:
+                obj = obj.userstat
+            except UserStat.DoesNotExist:
+                obj = None
+
+        if not obj:
+            obj = TigaUser()
+        return self._get_role(obj=obj)
+
+    @extend_schema_field(PermissionsSerializer)
+    def get_permissions(self, obj: Union[User, TigaUser]):
+        if isinstance(obj, User):
+            try:
+                obj = obj.userstat
+            except UserStat.DoesNotExist:
+                obj = None
+
+        if not obj:
+            obj = TigaUser()
+
+        permissions = obj.get_role_permissions(
+            role=self.get_role(obj=obj)
+        )
+        return PermissionsSerializer(permissions).data
+
+class UserPermissionSerializer(serializers.Serializer):
+    class GeneralPermissionSerializer(BaseRolePermissionSerializer):
+        is_staff = serializers.BooleanField()
+
+        def _get_role(self, obj: Union[User, TigaUser]) -> Role:
+            return obj.get_role()
+
+    class CountryPermissionSerializer(BaseRolePermissionSerializer):
+        def __init__(self, *args, **kwargs):
+            self.country = kwargs.pop('country', None)
+            super().__init__(*args, **kwargs)
+
+        country = serializers.SerializerMethodField()
+
+        def _get_role(self, obj: Union[User, TigaUser]) -> Role:
+            return obj.get_role(country=self.country)
+
+        @extend_schema_field(CountrySerializer)
+        def get_country(self, obj: Union[User, TigaUser]):
+            return CountrySerializer(self.country).data
+
+    general = serializers.SerializerMethodField()
+    countries = serializers.SerializerMethodField()
+
+    @extend_schema_field(GeneralPermissionSerializer)
+    def get_general(self, obj: Union[User, TigaUser]):
+        return self.GeneralPermissionSerializer(obj).data
+
+    @extend_schema_field(CountryPermissionSerializer(many=True))
+    def get_countries(self, obj: Union[User, TigaUser]):
+        if isinstance(obj, User):
+            try:
+                obj = obj.userstat
+            except UserStat.DoesNotExist:
+                obj = None
+        if not obj:
+            return self.CountryPermissionSerializer(many=True).data
+
+        result = []
+        for country in obj.get_countries_with_roles():
+            result.append(self.CountryPermissionSerializer(instance=obj, country=country).data)
+        return result
 
 class UserSerializer(serializers.ModelSerializer):
     class UserScoreSerializer(serializers.ModelSerializer):
@@ -936,7 +1021,21 @@ class AnnotationSerializer(serializers.ModelSerializer):
                 data["status"] = ExpertReportAnnotation.STATUS_PUBLIC
 
         data['validation_complete_executive'] = data.pop("is_decisive")
-
+        user_role = data['user']
+        if isinstance(user_role, User):
+            try:
+                user_role = user_role.userstat
+            except UserStat.DoesNotExist:
+                user_role = None
+        can_set_is_decisive = False
+        if user_role:
+            can_set_is_decisive = user_role.has_role_permission_by_model(
+                action='mark_as_decisive',
+                model=ExpertReportAnnotation,
+                country=data['report'].country
+            )
+        if not can_set_is_decisive:
+            data['validation_complete_executive'] = False
         return data
 
     def create(self, validated_data):

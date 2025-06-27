@@ -231,3 +231,123 @@ stages:
         - json:off
       json:
         id: !int "{assignment.pk}"
+
+---
+
+test_name: User can create a new annotation if annotator
+
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - user_with_role_annotator
+    - jwt_token_user
+    - taxon_root
+  - parametrize:
+      key: is_decisive
+      vals:
+        - true
+        - false
+
+stages:
+  - name: Create classification
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+      json:
+        classification:
+          taxon_id: !int "{taxon_root.pk}"
+          confidence_label: 'definitely'
+        is_decisive: "{is_decisive}"
+    response:
+      status_code: 201
+      strict:
+        - json:off
+      json:
+        is_decisive: false
+
+---
+
+test_name: User can create a new annotation if supervisor
+
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+    - taxon_root
+  - parametrize:
+      key: is_decisive
+      vals:
+        - true
+        - false
+
+stages:
+  - name: Create classification
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+      json:
+        classification:
+          taxon_id: !int "{taxon_root.pk}"
+          confidence_label: 'definitely'
+        is_decisive: "{is_decisive}"
+    response:
+      status_code: 201
+      strict:
+        - json:off
+      json:
+        is_decisive: !bool "{is_decisive}"
+
+---
+
+test_name: User can create a new annotation if reviewer
+
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - user_with_role_reviewer
+    - jwt_token_user
+    - taxon_root
+  - parametrize:
+      key: is_decisive
+      vals:
+        - true
+        - false
+
+stages:
+  - name: Create classification
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+      json:
+        classification:
+          taxon_id: !int "{taxon_root.pk}"
+          confidence_label: 'definitely'
+        is_decisive: "{is_decisive}"
+    response:
+      status_code: 201
+      strict:
+        - json:off
+      json:
+        is_decisive: !bool "{is_decisive}"

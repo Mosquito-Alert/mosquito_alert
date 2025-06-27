@@ -16,6 +16,7 @@ django-leaflet==0.28.3
 git+https://github.com/bgunebakan/django-messages.git@1d2b29476d11555e4fdf88a787e731c0c4490873
 drf-nested-routers==0.93.4
 django-timezone-field==5.1
+djangorestframework-dataclasses==1.4.0
 djangorestframework-simplejwt==5.2.2
 drf-extra-fields==3.3.0
 drf-spectacular==0.27.1

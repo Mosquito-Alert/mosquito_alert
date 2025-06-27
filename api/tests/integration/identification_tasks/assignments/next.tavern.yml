@@ -113,3 +113,78 @@ stages:
         Authorization: "Bearer {jwt_token_user:s}"
     response:
       status_code: 204
+
+---
+
+test_name: User can assign identification tasks if role is annotator
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - user_with_role_annotator
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation add can assign next
+    request:
+      url: "{api_live_url}/{endpoint}/next/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 201
+      json: !force_format_include "{response_data_validation}"
+
+---
+
+test_name: User can assign identification tasks if role is supervisor in country
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation add can assign next
+    request:
+      url: "{api_live_url}/{endpoint}/next/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 201
+      json: !force_format_include "{response_data_validation}"
+
+---
+
+test_name: User can assign identification tasks if role is reviewer
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - user_with_role_reviewer
+    - jwt_token_user
+
+stages:
+  - name: User with role annotation add can assign next
+    request:
+      url: "{api_live_url}/{endpoint}/next/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 201
+      json: !force_format_include "{response_data_validation}"

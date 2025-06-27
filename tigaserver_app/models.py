@@ -12,7 +12,7 @@ from PIL import Image
 import pydenticon
 import os
 from slugify import slugify
-from typing import Optional, Union
+from typing import List, Optional, Union
 import uuid
 
 from django.conf import settings
@@ -42,6 +42,7 @@ from taggit.managers import TaggableManager
 from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
 from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, IdentificationTask, Complex
+from tigacrafting.permissions import UserRolePermissionMixin, Role
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
@@ -164,9 +165,7 @@ class RankingData(models.Model):
     score_v2 = models.IntegerField()
     last_update = models.DateTimeField(help_text="Last time ranking data was updated", null=True, blank=True)
 
-
-class TigaUser(AbstractBaseUser, AnonymousUser):
-
+class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
     AVAILABLE_LANGUAGES = [
         (standarize_language_tag(code), Language.get(code).autonym().title()) for code, _ in settings.LANGUAGES
     ]
@@ -238,6 +237,18 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
     def __str__(self):
         return str(self.user_UUID)
 
+    def get_user_permissions(self, obj=None):
+        return set()
+
+    def get_all_permissions(self, obj=None):
+        return set()
+
+    def has_perm(self, perm, obj=None):
+        return False
+
+    def has_module_perms(self, module):
+        return False
+
     def get_identicon(self):
         file_path = settings.MEDIA_ROOT + "/identicons/" + str(self.user_UUID) + ".png"
         if not os.path.exists(file_path):
@@ -247,6 +258,12 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
             f.write(identicon_png)
             f.close()
         return settings.MEDIA_URL + "identicons/" + str(self.user_UUID) + ".png"
+
+    def get_role(self, country: Optional['tigaserver_app.EuropeCountry'] = None) -> Role:
+        return Role.BASE
+
+    def get_countries_with_roles(self) -> List['tigaserver_app.EuropeCountry']:
+        return []
 
     def update_score(self, commit: bool = True) -> None:
         # NOTE: placing import here due to circular import
