@@ -49,6 +49,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - identification_task
     - user_with_role_annotator
     - jwt_token_user
   - parametrize:
@@ -60,7 +61,7 @@ marks:
 stages:
   - name: Update method is disabled
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       headers:
         Authorization: "Bearer {jwt_token_user}"
       method: "{method}"
@@ -77,6 +78,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - identification_task
     - user_with_role_supervisor_in_country
     - jwt_token_user
   - parametrize:
@@ -88,7 +90,7 @@ marks:
 stages:
   - name: Update method is disabled
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       headers:
         Authorization: "Bearer {jwt_token_user}"
       method: "{method}"
@@ -105,6 +107,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - identification_task
     - user_with_role_reviewer
     - jwt_token_user
   - parametrize:
@@ -116,7 +119,7 @@ marks:
 stages:
   - name: Update method is disabled
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/"
       headers:
         Authorization: "Bearer {jwt_token_user}"
       method: "{method}"
