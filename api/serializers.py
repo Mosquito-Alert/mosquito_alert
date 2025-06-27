@@ -119,22 +119,29 @@ class BaseRolePermissionSerializer(serializers.Serializer):
 
     def get_role(self, obj: Union[User, TigaUser]) -> Role:
         if isinstance(obj, User):
-            obj = UserStat.objects.filter(user=obj).first()
-            if not obj:
-                return self._get_role(obj=TigaUser())
+            try:
+                obj = obj.userstat
+            except UserStat.DoesNotExist:
+                obj = None
+
+        if not obj:
+            obj = TigaUser()
         return self._get_role(obj=obj)
 
     @extend_schema_field(PermissionsSerializer)
     def get_permissions(self, obj: Union[User, TigaUser]):
-        role = self.get_role(obj=obj)
-
         if isinstance(obj, User):
-            obj = UserStat.objects.filter(user=obj).first()
+            try:
+                obj = obj.userstat
+            except UserStat.DoesNotExist:
+                obj = None
 
         if not obj:
             obj = TigaUser()
 
-        permissions = obj.get_role_permissions(role=role)
+        permissions = obj.get_role_permissions(
+            role=self.get_role(obj=obj)
+        )
         return PermissionsSerializer(permissions).data
 
 class UserPermissionSerializer(serializers.Serializer):
@@ -168,13 +175,17 @@ class UserPermissionSerializer(serializers.Serializer):
     @extend_schema_field(CountryPermissionSerializer(many=True))
     def get_countries(self, obj: Union[User, TigaUser]):
         if isinstance(obj, User):
-            obj = UserStat.objects.filter(user=obj).first()
-        if obj:
-            result = []
-            for country in obj.get_countries_with_roles():
-                result.append(self.CountryPermissionSerializer(instance=obj, country=country).data)
-            return result
-        return self.CountryPermissionSerializer(many=True).data
+            try:
+                obj = obj.userstat
+            except UserStat.DoesNotExist:
+                obj = None
+        if not obj:
+            return self.CountryPermissionSerializer(many=True).data
+
+        result = []
+        for country in obj.get_countries_with_roles():
+            result.append(self.CountryPermissionSerializer(instance=obj, country=country).data)
+        return result
 
 class UserSerializer(serializers.ModelSerializer):
     class UserScoreSerializer(serializers.ModelSerializer):
@@ -1012,7 +1023,10 @@ class AnnotationSerializer(serializers.ModelSerializer):
         data['validation_complete_executive'] = data.pop("is_decisive")
         user_role = data['user']
         if isinstance(user_role, User):
-            user_role = UserStat.objects.filter(user=user_role).first()
+            try:
+                user_role = user_role.userstat
+            except UserStat.DoesNotExist:
+                user_role = None
         can_set_is_decisive = False
         if user_role:
             can_set_is_decisive = user_role.has_role_permission_by_model(
