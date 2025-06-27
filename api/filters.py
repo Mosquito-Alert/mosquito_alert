@@ -178,7 +178,7 @@ class IdentificationTaskFilter(filters.FilterSet):
     result_confidence = filters.RangeFilter(field_name="confidence")
     result_uncertainty = filters.RangeFilter(field_name="uncertainty")
     result_agreement = filters.RangeFilter(field_name="agreement")
-    result_source = filters.ChoiceFilter(
+    result_source = filters.MultipleChoiceFilter(
         choices=IdentificationTask.ResultSource.choices
     )
 
