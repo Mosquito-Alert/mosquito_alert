@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from datetime import datetime
 from typing import Literal, Optional, Union
 from uuid import UUID
@@ -112,14 +113,15 @@ class BaseRolePermissionSerializer(serializers.Serializer):
     role = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
 
+    @abstractmethod
     def _get_role(self, obj: Union[User, TigaUser]) -> Role:
-        return obj.get_role()
+        raise NotImplementedError
 
     def get_role(self, obj: Union[User, TigaUser]) -> Role:
         if isinstance(obj, User):
             obj = UserStat.objects.filter(user=obj).first()
             if not obj:
-                return TigaUser().get_role()
+                return self._get_role(obj=TigaUser())
         return self._get_role(obj=obj)
 
     @extend_schema_field(PermissionsSerializer)
@@ -138,6 +140,9 @@ class BaseRolePermissionSerializer(serializers.Serializer):
 class UserPermissionSerializer(serializers.Serializer):
     class GeneralPermissionSerializer(BaseRolePermissionSerializer):
         is_staff = serializers.BooleanField()
+
+        def _get_role(self, obj: Union[User, TigaUser]) -> Role:
+            return obj.get_role()
 
     class CountryPermissionSerializer(BaseRolePermissionSerializer):
         def __init__(self, *args, **kwargs):
