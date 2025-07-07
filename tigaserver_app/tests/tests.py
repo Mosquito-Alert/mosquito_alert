@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import pytest
 import uuid
 
 # Create your tests here.
@@ -2027,6 +2028,29 @@ class ReportModelTest(TestCase):
         self.assertEqual(report.published_at, timezone.now())
         self.assertEqual(report.published, True)
 
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_bite_is_not_published_if_country_does_not_allow_public_on_create(self):
+        disabled_publish_country = EuropeCountry.objects.create(
+            cntr_id="RD", name_engl="Random", iso3_code="RND", fid="RD",
+            geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
+            reports_can_be_published=False,
+        )
+        point_on_surface = disabled_publish_country.geom.point_on_surface
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_BITE,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=point_on_surface.x,
+            current_location_lat=point_on_surface.y,
+        )
+        self.assertEqual(report.country, disabled_publish_country)
+        self.assertIsNone(report.published_at)
+        self.assertEqual(report.published, False)
+
     def test_breeding_site_with_picture_is_published_in_two_days_on_create(self):
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
             report = Report.objects.create(
@@ -2065,6 +2089,29 @@ class ReportModelTest(TestCase):
         self.assertEqual(report.published_at, timezone.now())
         self.assertEqual(report.published, True)
 
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_breeding_site_without_picture_is_not_published_if_country_does_not_allow_public_on_create(self):
+        disabled_publish_country = EuropeCountry.objects.create(
+            cntr_id="RD", name_engl="Random", iso3_code="RND", fid="RD",
+            geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
+            reports_can_be_published=False,
+        )
+        point_on_surface = disabled_publish_country.geom.point_on_surface
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_SITE,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=point_on_surface.x,
+            current_location_lat=point_on_surface.y,
+        )
+        self.assertEqual(report.country, disabled_publish_country)
+        self.assertIsNone(report.published_at)
+        self.assertEqual(report.published, False)
+
     def test_adult_without_picture_is_published_on_create(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -2078,6 +2125,29 @@ class ReportModelTest(TestCase):
             current_location_lat=2,
         )
         self.assertEqual(report.published, True)
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_adult_without_picture_is_not_published_if_country_does_not_allow_public_on_create(self):
+        disabled_publish_country = EuropeCountry.objects.create(
+            cntr_id="RD", name_engl="Random", iso3_code="RND", fid="RD",
+            geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
+            reports_can_be_published=False,
+        )
+        point_on_surface = disabled_publish_country.geom.point_on_surface
+        report = Report.objects.create(
+            user=TigaUser.objects.create(),
+            report_id='1234',
+            phone_upload_time=timezone.now(),
+            creation_time=timezone.now(),
+            version_time=timezone.now(),
+            type=Report.TYPE_ADULT,
+            location_choice=Report.LOCATION_CURRENT,
+            current_location_lon=point_on_surface.x,
+            current_location_lat=point_on_surface.y,
+        )
+        self.assertEqual(report.country, disabled_publish_country)
+        self.assertIsNone(report.published_at)
+        self.assertEqual(report.published, False)
 
     def test_adult_with_picture_is_not_published_on_create(self):
         report = Report.objects.create(

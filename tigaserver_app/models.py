@@ -662,6 +662,8 @@ class EuropeCountry(models.Model):
     pending_crisis_reports = models.IntegerField(blank=True, null=True, help_text='Number of reports in country assignable to non-supervisors')
     last_crisis_report_n_update = models.DateTimeField(help_text="Last time count was updated", null=True, blank=True)
 
+    reports_can_be_published = models.BooleanField(default=True)
+
     class Meta:
         managed = True
         ordering = ['name_engl']
@@ -2069,10 +2071,7 @@ class Report(TimeZoneModelMixin, models.Model):
                 getattr(self, fname) for fname in bite_fieldnames
             )
 
-        if self.type not in self.PUBLISHABLE_TYPES:
-            self.published_at = None
-
-        if not self.is_browsable:
+        if (self.type not in self.PUBLISHABLE_TYPES) or (not self.is_browsable) or (self.country and not self.country.reports_can_be_published):
             self.published_at = None
 
         super(Report, self).save(*args, **kwargs)

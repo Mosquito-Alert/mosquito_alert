@@ -214,6 +214,17 @@ def move_masked_location_report_to_trash_layer(cursor):
         cursor.execute("""UPDATE map_aux_reports_newmap set private_webmap_layer='trash_layer' WHERE version_uuid=%s;""",
                        (uuid,))
 
+def move_not_publsihed_report_to_trash_layer(cursor):
+    cursor.execute("""
+        UPDATE map_aux_reports_newmap 
+        SET private_webmap_layer = 'trash_layer' 
+        WHERE version_uuid IN (
+            SELECT "version_UUID"
+            FROM tigaserver_app_report 
+            WHERE published_at IS NULL OR published_at > NOW()
+        );
+    """)
+
 def add_photo_to_not_yet_filtered_adults(cursor):
     cursor.execute(
         """SELECT m.version_uuid,p.photo FROM map_aux_reports_newmap m,tigaserver_app_photo p WHERE p.report_id = m.version_uuid and private_webmap_layer='not_yet_validated' and n_photos > 0 and photo_url='' and p.hide=false;""")
@@ -764,6 +775,7 @@ add_photo_to_unfiltered_sites(cursor)
 add_photo_to_not_yet_filtered_adults(cursor)
 move_hidden_adult_report_to_trash_layer(cursor)
 move_masked_location_report_to_trash_layer(cursor)
+move_not_publsihed_report_to_trash_layer(cursor)
 
 cursor.execute(
     """UPDATE map_aux_reports_newmap set validation=1 where expert_validated=1;""")
