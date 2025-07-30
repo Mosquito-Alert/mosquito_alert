@@ -93,20 +93,17 @@ PhotoManager = models.Manager.from_queryset(PhotoQuerySet)
 
 class NotificationQuerySet(models.QuerySet):
     def for_user(self, user: 'TigaUser'):
-        from .models import SentNotification
+        from .models import NotificationTopic
 
-        sent_notifications_subquery = SentNotification.objects.filter(
-            notification=models.OuterRef('pk')
-        ).filter(
-            models.Q(sent_to_user=user) |
-            models.Q(sent_to_topic__topic_code='global') |
-            models.Q(sent_to_topic__topic_users__user=user)
-        ).values('notification').distinct('notification')
+        topics = NotificationTopic.objects.filter(
+            models.Q(topic_users__user=user) | models.Q(topic_code='global')
+        ).distinct()
 
         return self.filter(
             models.Q(user=user) | 
             #models.Q(report__user=user) | 
-            models.Q(pk__in=models.Subquery(sent_notifications_subquery))
+            models.Q(notification_sendings__sent_to_user=user) |
+            models.Q(notification_sendings__sent_to_topic__in=topics)
         )
 
     def seen_by_user(self, user: 'TigaUser', state: bool = True):
