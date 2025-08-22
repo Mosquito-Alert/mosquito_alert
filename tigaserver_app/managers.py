@@ -125,7 +125,7 @@ class DeviceQuerySet(FCMDeviceQuerySet):
     def deactivate_devices_with_error_results(self, *args, **kwargs):
         deactivated_ids = super().deactivate_devices_with_error_results(*args, **kwargs)
 
-        self.filter(registration_id__in=deactivated_ids).update(is_logged_in=False)
+        self.filter(registration_id__in=deactivated_ids).update(active_session=False)
 
         return deactivated_ids
 

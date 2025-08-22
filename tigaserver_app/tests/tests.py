@@ -107,7 +107,7 @@ class ReportEndpointTestCase(APITestCase):
         Device.objects.create(
             user=t,
             active=True,
-            is_logged_in=True,
+            active_session=True,
             registration_id="caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT"
         )
 
@@ -615,7 +615,7 @@ class ReportEndpointTestCase(APITestCase):
         self.assertEqual(device.os_version, "testVersion")
         self.assertEqual(device.os_locale, "es-ES")
         self.assertEqual(device.mobile_app, report.mobile_app)
-        self.assertEqual(device.is_logged_in, True)
+        self.assertEqual(device.active_session, True)
         self.assertEqual(device.last_login, timezone.now())
 
         self.assertIsNone(device.registration_id)
@@ -631,7 +631,7 @@ class ReportEndpointTestCase(APITestCase):
             user=user,
             model=None,
             active=True,
-            is_logged_in=True,
+            active_session=True,
             last_login=timezone.now()-timedelta(days=1)
         )
         self.assertIsNone(device.model)
@@ -663,7 +663,7 @@ class ReportEndpointTestCase(APITestCase):
         self.assertEqual(device.os_version, "testVersion")
         self.assertEqual(device.os_locale, "es-ES")
         self.assertEqual(device.mobile_app, mobile_app)
-        self.assertTrue(device.is_logged_in)
+        self.assertTrue(device.active_session)
         self.assertTrue(device.active)
         self.assertEqual(device.last_login, timezone.now())
         self.assertEqual(device.registration_id, fcm_token)
@@ -676,7 +676,7 @@ class ReportEndpointTestCase(APITestCase):
             user=user,
             model="test_model",
             active=True,
-            is_logged_in=True,
+            active_session=True,
             last_login=timezone.now()-timedelta(days=1)
         )
         self.assertIsNone(device.type)
@@ -708,7 +708,7 @@ class ReportEndpointTestCase(APITestCase):
         self.assertEqual(device.os_version, "testVersion")
         self.assertEqual(device.os_locale, "es-ES")
         self.assertEqual(device.mobile_app, mobile_app)
-        self.assertEqual(device.is_logged_in, True)
+        self.assertEqual(device.active_session, True)
         self.assertEqual(device.last_login, timezone.now())
 
     def test_POST_with_not_valid_version_number_raise_400(self):
@@ -977,7 +977,7 @@ class NotificationTestCase(APITestCase):
         Device.objects.create(
             user=t,
             active=True,
-            is_logged_in=True,
+            active_session=True,
             registration_id='caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT'
         )
 
@@ -1943,7 +1943,7 @@ class ReportModelTest(TestCase):
                 model="test_model",
                 registration_id="fcm_token",
                 active=True,
-                is_logged_in=True,
+                active_session=True,
                 last_login=timezone.now() - timedelta(days=1)
             )
             _ = Report.objects.create(
@@ -1975,7 +1975,7 @@ class ReportModelTest(TestCase):
                 model=None,
                 registration_id="new_fcm_token",
                 active=True,
-                is_logged_in=True,
+                active_session=True,
                 last_login=timezone.now() - timedelta(minutes=1)
             )
 
@@ -1984,7 +1984,7 @@ class ReportModelTest(TestCase):
                 model=None,
                 registration_id="new_fcm_token2",
                 active=True,
-                is_logged_in=True,
+                active_session=True,
                 last_login=timezone.now()
             )
 
@@ -2376,7 +2376,7 @@ class ApiTokenViewTest(APITestCase):
             registration_id=fcm_token
         )
         self.assertTrue(device.active)
-        self.assertTrue(device.is_logged_in)
+        self.assertTrue(device.active_session)
         self.assertEqual(device.last_login, timezone.now())
         self.assertIsNone(device.model)
 
@@ -2390,7 +2390,7 @@ class ApiTokenViewTest(APITestCase):
             user=self.tiga_user,
             registration_id=fcm_token,
             active=True,
-            is_logged_in=True,
+            active_session=True,
             last_login=timezone.now() - timedelta(days=1)
         )
 
@@ -2411,7 +2411,7 @@ class ApiTokenViewTest(APITestCase):
 
         self.assertEqual(device.registration_id, fcm_token)
         self.assertTrue(device.active)
-        self.assertTrue(device.is_logged_in)
+        self.assertTrue(device.active_session)
         self.assertEqual(device.last_login, timezone.now())
 
 

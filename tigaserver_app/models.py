@@ -364,9 +364,9 @@ class MobileApp(models.Model):
 
 class Device(AbstractFCMDevice):
     # NOTE: self.active : If the FCM TOKEN is active
-    #       self.is_logged_in : If the Device is is_logged_in for the user
+    #       self.active_session : If the Device has and active logged session for the user
 
-    # NOTE: if ever work on a logout method, set is_logged_in/active to False on logout.
+    # NOTE: if ever work on a logout method, set active_session/active to False on logout.
     # Override user to make FK to TigaUser instead of User
     user = models.ForeignKey(
         TigaUser,
@@ -376,7 +376,7 @@ class Device(AbstractFCMDevice):
     )
 
     mobile_app = models.ForeignKey(MobileApp, null=True, on_delete=models.PROTECT)
-    is_logged_in = models.BooleanField(default=False)
+    active_session = models.BooleanField(default=False)
 
     registration_id = models.TextField(null=True, db_index=True, verbose_name='Registration token')
 
@@ -422,7 +422,7 @@ class Device(AbstractFCMDevice):
             'name',
             'date_created',
             'updated_at',
-            'is_logged_in',
+            'active_session',
             'last_login',
             'user'
         ],
@@ -462,12 +462,7 @@ class Device(AbstractFCMDevice):
         if self.os_locale:
             self.os_locale = standarize_language_tag(self.os_locale)
 
-        _fields_with_changes = self.__get_changed_fields(update_fields=kwargs.get('update_fields'))
-        if self.registration_id and 'registration_id' in _fields_with_changes:
-            self.active = True
-
-        if not self.registration_id or not self.is_logged_in:
-            self.active = False
+        self.active = bool(self.registration_id and self.active_session)
 
         if self.active and self.registration_id:
             update_device_qs = Device.objects.filter(active=True, registration_id=self.registration_id)
@@ -480,19 +475,20 @@ class Device(AbstractFCMDevice):
                 device._change_reason = 'Another user has created/update a device with the same registration_id'
                 device.save()
 
-        if self.is_logged_in and self.device_id:
-            update_device_qs = Device.objects.filter(is_logged_in=True, device_id=self.device_id)
+        if self.active_session and self.device_id:
+            update_device_qs = Device.objects.filter(active_session=True, device_id=self.device_id)
             if self.pk:
                 update_device_qs = update_device_qs.exclude(pk=self.pk)
 
             for device in update_device_qs.iterator():
-                device.is_logged_in = False
+                device.active_session = False
                 # For simple history
                 device._change_reason = 'Another user has created/update a device with the same device_id'
                 device.save()
 
         if self.pk:
             _tracked_fields = [field.name for field in self.__class__.history.model._meta.get_fields()]
+            _fields_with_changes = self.__get_changed_fields(update_fields=kwargs.get('update_fields'))
             if not any(element in _tracked_fields for element in _fields_with_changes):
                 # Only will create history if at least one tracked field has changed.
                 self.skip_history_when_saving = True
@@ -524,9 +520,9 @@ class Device(AbstractFCMDevice):
                 condition=models.Q(active=True, registration_id__isnull=False) & ~models.Q(registration_id__exact=''),
             ),
             models.UniqueConstraint(
-                fields=['is_logged_in', 'device_id'],
-                name='unique_is_logged_in_device_id',
-                condition=models.Q(is_logged_in=True, device_id__isnull=False) & ~models.Q(device_id__exact=''),
+                fields=['active_session', 'device_id'],
+                name='unique_active_session_device_id',
+                condition=models.Q(active_session=True, device_id__isnull=False) & ~models.Q(device_id__exact=''),
             ),
             models.UniqueConstraint(
                 fields=['user', 'device_id'],
@@ -1995,7 +1991,7 @@ class Report(TimeZoneModelMixin, models.Model):
                 ).select_for_update().order_by('-last_login').first() or Device.objects.filter(
                     user=self.user,
                     model__isnull=True,
-                    is_logged_in=True,
+                    active_session=True,
                     pk__in=models.Subquery(
                         Device.objects.filter(
                             user=models.OuterRef('user'),
@@ -2035,7 +2031,7 @@ class Report(TimeZoneModelMixin, models.Model):
                 device.os_version = self.os_version
                 device.os_locale = self.os_language
                 device.mobile_app = self.mobile_app
-                device.is_logged_in = True
+                device.active_session = True
                 device.active = True
                 device.last_login = timezone.now()
 
