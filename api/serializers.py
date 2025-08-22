@@ -736,6 +736,7 @@ class BaseSimplifiedReportSerializer(serializers.ModelSerializer):
 class BaseReportWithPhotosSerializer(BaseReportSerializer):
     photos = SimplePhotoSerializer(required=True, many=True)
 
+    @transaction.atomic
     def create(self, validated_data):
         photos = validated_data.pop("photos", [])
 
