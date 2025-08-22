@@ -293,7 +293,8 @@ class BaseReportViewSet(
             if device.mobile_app:
                 kwargs['mobile_app'] = device.mobile_app
                 kwargs['package_name'] = device.mobile_app.package_name
-                kwargs['package_version'] = device.mobile_app.package_version
+                v = device.mobile_app.package_version
+                kwargs['package_version'] = int(f"{v.major}{v.minor:02d}")
         serializer.save(**kwargs)
 
     def perform_update(self, serializer):

@@ -22,6 +22,7 @@ from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance as DistanceMeasure
+from django.core.validators import RegexValidator
 from django.db import transaction
 from django.db.models import Count, Q
 from django.db.models.signals import post_save
@@ -36,6 +37,8 @@ from django.utils.translation import ugettext_lazy as _
 from fcm_django.models import AbstractFCMDevice, DeviceType
 from imagekit.processors import ResizeToFit
 from langcodes import Language, closest_supported_match, standardize_tag as standarize_language_tag, tag_is_valid as language_tag_is_valid
+from semantic_version import Version
+from semantic_version.django_fields import VersionField
 from simple_history.models import HistoricalRecords
 from timezone_field import TimeZoneField
 from taggit.managers import TaggableManager
@@ -333,8 +336,16 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
 
 
 class MobileApp(models.Model):
+    # NOTE: At some point we should adjust the package_version which 'build' value is 'legacy'
+    #       since this version were creating from Report.package_version (which is an IntegerField)
+    #       and it's a number which is not related with the Mobile App pubspeck.yaml package version.
     package_name = models.CharField(max_length=128)
-    package_version = models.CharField(max_length=32)
+    package_version = VersionField(max_length=32, validators=[
+        RegexValidator(
+            regex=Version.version_re,
+            code='invalid_version'
+        )
+    ])
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1961,11 +1972,19 @@ class Report(TimeZoneModelMixin, models.Model):
             # in order to avoid publishing on bulk_create
             self.published_at = timezone.now()
 
-            # Set mobile_app
-            if self.package_name and self.package_version:
+            # Set mobile_app (case legacy API)
+            if not self.mobile_app and self.package_name and self.package_version:
+                # NOTE: changing this will require a migration that matches the logic.
                 self.mobile_app, _ = MobileApp.objects.get_or_create(
                     package_name=self.package_name,
-                    package_version=self.package_version
+                    package_version=str(
+                        Version(
+                            major=0,
+                            minor=int(self.package_version),
+                            patch=0,
+                            build=('legacy',)
+                        )
+                    )
                 )
             # Update device according to the information provided in the report.
             with transaction.atomic():

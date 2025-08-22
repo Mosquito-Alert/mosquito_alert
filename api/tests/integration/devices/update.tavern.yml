@@ -46,7 +46,7 @@ stages:
           locale: es-ES
         mobile_app:
           package_name: new_test_package_name
-          package_version: new_test_package_version
+          package_version: "2.3.4+5678"
     response:
       status_code: 200
       strict:
@@ -59,7 +59,7 @@ stages:
           locale: es-ES
         mobile_app:
           package_name: new_test_package_name
-          package_version: new_test_package_version
+          package_version: "2.3.4+5678"
   # Now simulate another user trying to access the first user data
   - id: signup
     type: ref

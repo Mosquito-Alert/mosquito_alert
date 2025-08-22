@@ -30,6 +30,7 @@ import json
 import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
 import time_machine
+import semantic_version
 
 import io
 import piexif
@@ -537,7 +538,7 @@ class ReportEndpointTestCase(APITestCase):
 
     def test_mobile_app_fk_is_created_if_not_exist(self):
         self.assertEqual(
-            MobileApp.objects.filter(package_name='testapp', package_version='100').count(),
+            MobileApp.objects.filter(package_name='testapp', package_version='0.100.0+legacy').count(),
             0
         )
         response = self.client.post(
@@ -552,20 +553,19 @@ class ReportEndpointTestCase(APITestCase):
             format="json"
         )
         self.assertEqual(response.status_code, 201)
-
         self.assertEqual(
-            MobileApp.objects.filter(package_name='testapp', package_version='100').count(),
+            MobileApp.objects.filter(package_name='testapp', package_version='0.100.0+legacy').count(),
             1
         )
-        mobile_app = MobileApp.objects.get(package_name='testapp', package_version='100')
+        mobile_app = MobileApp.objects.get(package_name='testapp', package_version='0.100.0+legacy')
         self.assertEqual(mobile_app.package_name, 'testapp')
-        self.assertEqual(mobile_app.package_version, '100')
+        self.assertEqual(mobile_app.package_version, semantic_version.Version(major=0, minor=100, patch=0, build=('legacy',)))
 
         report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
         self.assertEqual(report.mobile_app, mobile_app)
 
     def test_mobile_app_fk_is_set_correctly_if_exist(self):
-        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='100')
+        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='0.100.0+legacy')
         response = self.client.post(
             "/api/reports/",
             {
@@ -635,7 +635,7 @@ class ReportEndpointTestCase(APITestCase):
             last_login=timezone.now()-timedelta(days=1)
         )
         self.assertIsNone(device.model)
-        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='100')
+        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='0.100.0+legacy')
 
         response = self.client.post(
             "/api/reports/",
@@ -680,7 +680,7 @@ class ReportEndpointTestCase(APITestCase):
             last_login=timezone.now()-timedelta(days=1)
         )
         self.assertIsNone(device.type)
-        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='100')
+        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='0.100.0+legacy')
 
         response = self.client.post(
             "/api/reports/",
@@ -1905,7 +1905,15 @@ class ReportModelTest(TestCase):
         )
         self.assertEqual(MobileApp.objects.all().count(), 1)
 
-        mobile_app = MobileApp.objects.get(package_name=report.package_name, package_version=report.package_version)
+        mobile_app = MobileApp.objects.get(
+            package_name=report.package_name,
+            package_version=semantic_version.Version(
+                major=0,
+                minor=int(report.package_version),
+                patch=0,
+                build=('legacy',)
+            )
+        )
 
         with self.assertRaises(IntegrityError) as context:
             # Trying to create a new report with the same PK, which will raise.
@@ -1925,7 +1933,7 @@ class ReportModelTest(TestCase):
             )
 
         mobile_app.refresh_from_db()
-        self.assertEqual(mobile_app.package_version, "100")
+        self.assertEqual(str(mobile_app.package_version), "0.100.0+legacy")
 
     def test_device_is_updated_if_previous_model_exist_and_new_model_None_also(self):
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
