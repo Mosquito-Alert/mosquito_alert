@@ -1463,6 +1463,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 
         return data
 
+    @transaction.atomic
     def create(self, validated_data):
         # Extract the user and model from the data
         user = validated_data.get('user')

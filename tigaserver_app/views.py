@@ -1051,7 +1051,7 @@ def token(request):
             registration_id=token,
             defaults={
                 'active': True,
-                'is_logged_in': True,
+                'active_session': True,
                 'last_login': timezone.now()
             }
         )

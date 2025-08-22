@@ -78,8 +78,10 @@ class AppUserTokenObtainPairSerializer(
             data["refresh"] = str(refresh)
             data["access"] = str(refresh.access_token)
 
-            self.device.is_logged_in = True
-            _update_fields=["is_logged_in"]
+            self.device.active_session = True
+            # NOTE: adding 'active' in the update_fields is important.
+            #       The save() method will trigger active = False depending on the value of active_session.
+            _update_fields=["active_session", "active"]
             # Update last_login device
             if api_settings.UPDATE_LAST_LOGIN:
                 self.device.last_login = timezone.now()

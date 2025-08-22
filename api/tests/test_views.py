@@ -539,8 +539,9 @@ class TestTokenAPI:
             user=app_user,
             device_id='unique_id_for_device',
             registration_id='fcm_token',
-            is_logged_in=False
+            active_session=False
         )
+        assert not device.active
         response = client.post(
             self.endpoint,
             data={
@@ -552,7 +553,8 @@ class TestTokenAPI:
         assert response.status_code == status.HTTP_200_OK
 
         device.refresh_from_db()
-        assert device.is_logged_in
+        assert device.active_session
+        assert device.active
 
     def test_device_is_set_to_not_logged_in_if_login_with_duplicated_device_id(self, app_user, user_password, client):
         dummy_user = TigaUser.objects.create()
@@ -560,8 +562,9 @@ class TestTokenAPI:
             user=dummy_user,
             device_id='unique_id_for_device',
             registration_id='fcm_token',
-            is_logged_in=True
+            active_session=True
         )
+        assert device.active
         # Login with same device_id but different user.
         response = client.post(
             self.endpoint,
@@ -574,7 +577,8 @@ class TestTokenAPI:
         assert response.status_code == status.HTTP_200_OK
 
         device.refresh_from_db()
-        assert not device.is_logged_in
+        assert not device.active_session
+        assert not device.active
 
     @pytest.mark.parametrize(
         "token_field",
@@ -654,7 +658,7 @@ class TestDeviceAPI:
             os_name='android',
             os_version='32',
             active=False,
-            is_logged_in=True
+            active_session=True
         )
         response = app_api_client.patch(
             self.endpoint + f"{device.device_id}/",
