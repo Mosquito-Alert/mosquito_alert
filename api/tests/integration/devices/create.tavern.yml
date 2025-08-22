@@ -59,7 +59,7 @@ stages:
           locale: en-US
         mobile_app:
           package_name: test_package_name
-          package_version: test_package_version
+          package_version: "1.2.3+4567"
     response:
       status_code: 201
       json:
@@ -74,7 +74,7 @@ stages:
           locale: "en-US"
         mobile_app:
           package_name: "test_package_name"
-          package_version: "test_package_version"
+          package_version: "1.2.3+4567"
         user_uuid: "{app_user.pk}"
         last_login: !anything
         created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z

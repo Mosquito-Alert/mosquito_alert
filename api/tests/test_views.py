@@ -77,7 +77,7 @@ class BaseReportTest:
                 device_id='unique_device_id',
                 mobile_app=MobileApp.objects.create(
                     package_name='testapp',
-                    package_version=1234
+                    package_version="1.2.3+4567"
                 )
             )
         )
@@ -94,7 +94,7 @@ class BaseReportTest:
         report = self.queryset.get(pk=response.data.get('uuid'))
 
         assert report.package_name == 'testapp'
-        assert report.package_version == 1234
+        assert report.package_version == 102     # NOTE: only major and minor version are considered.
         assert report.app_language == 'es'
 
     def test_device_is_set_on_report_create(self, app_user, data_create_request):
