@@ -158,6 +158,7 @@
 
 {% block main_body %}
     <div class="container">
+        {% include "tigacrafting/entolab_deprecation_notice.html" with new_path='identification_tasks/'|add:version_uuid %}
         <div class="starter-template">
             <h1>Single Report View</h1>
             {% if version_uuid %}
