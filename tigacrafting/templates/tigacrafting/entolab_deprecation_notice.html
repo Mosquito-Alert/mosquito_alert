@@ -1,0 +1,22 @@
+<div class="container" style="padding: 1rem 0;">
+    <div class="alert alert-danger" style="margin: 0 0;" role="alert">
+        <strong class="alert-heading">⚠️ Important Notice:</strong>
+        <p>
+            This Entolab version is <strong>deprecated and no longer maintained</strong>.  
+            Please migrate to the new Entolab at  
+            <a href="https://app.mosquitoalert.com" target="_blank" class="underline text-red-700 hover:text-red-900">
+            https://app.mosquitoalert.com
+            </a> using your existing credentials. Starting from <strong>November 1st</strong>, this version will be permanently discontinued, and only the new platform will be accessible.  
+            If you encounter any bugs or issues, please report them to us.
+        </p>
+        {% if new_path %}
+            <hr/>
+            <p>
+                Go to new page: 
+                <a href="https://app.mosquitoalert.com/{{ new_path }}" target="_blank" class="underline text-red-700 hover:text-red-900">
+                https://app.mosquitoalert.com/{{ new_path }}
+                </a>
+            </p>
+        {% endif %}
+    </div>
+</div>
