@@ -12,8 +12,10 @@ application = get_wsgi_application()
 
 ### CODE STARTS HERE
 
-from tigaserver_app.models import *
+from tqdm import tqdm
 import pandas as pd
+
+from tigaserver_app.models import *
 
 titles = {
 	"en": "Inspire other users this November!",
@@ -75,7 +77,7 @@ df = pd.DataFrame(
 	).filter(last_report__year__gte=2023).values('pk','locale')
 )
 
-for locale in df.locale.unique():
+for locale in tqdm(df.locale.unique()):
     notification_content = NotificationContent.objects.create(
         title_en=titles.get("en"),
         body_html_en=generate_email(language="en"),
