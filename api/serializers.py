@@ -421,7 +421,7 @@ class CreateNotificationSerializer(serializers.ModelSerializer):
             title_en=titles.get("en"),
             body_html_en=bodies.get("en"),
             title_es=titles.get("es"),
-            body_html_es=bodies.get("en"),
+            body_html_es=bodies.get("es"),
             title_ca=titles.get("ca"),
             body_html_ca=bodies.get("ca"),
             title_native=titles.get(user.locale) if user else None,
