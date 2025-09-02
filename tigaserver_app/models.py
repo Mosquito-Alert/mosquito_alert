@@ -3332,10 +3332,10 @@ class NotificationContent(models.Model):
         soup = BeautifulSoup(body_html, 'html.parser')
         body = soup.find('body')  # Try to find the <body> tag
         if body:
-            return body.get_text(separator='\n', strip=True)  # If <body> is found, extract text
+            return body.get_text(separator=' ', strip=True)  # If <body> is found, extract text
         else:
             # If no <body> tag is found, return text from the entire HTML document
-            return soup.get_text(separator='\n', strip=True)
+            return soup.get_text(separator=' ', strip=True)
 
     def save(self, *args, **kwargs):
         if not (self.title_native and self.body_html_native):
