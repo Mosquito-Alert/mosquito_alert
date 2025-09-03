@@ -1019,6 +1019,97 @@ class TestIdentificationTaskAnnotationsApi:
         assert annotation.taxon is None
 
 @pytest.mark.django_db
+@pytest.mark.usefixtures("taxa")
+class TestIdentificationTaskReviewApi:
+    @pytest.fixture
+    def endpoint(self, identification_task):
+        return f'/api/v1/identification-tasks/{identification_task.report.pk}/review/'
+
+    @pytest.fixture
+    def api_client(self, user_with_role_reviewer):
+        api_client = APIClient()
+        api_client.force_login(user=user_with_role_reviewer)
+
+        return api_client
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_agree_review_create_expertreportannotation(self, api_client, endpoint, user_with_role_reviewer, identification_task):
+        assert ExpertReportAnnotation.objects.filter(
+            identification_task=identification_task,
+            user=user_with_role_reviewer
+        ).count() == 0
+
+        # NOTE: this is needed due to the way the review process is structured
+        identification_task.is_safe = True
+        identification_task.save()
+
+        response = api_client.post(
+            endpoint,
+            data={
+                'action': 'agree'
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        annotation = ExpertReportAnnotation.objects.get(
+            identification_task=identification_task,
+            user=user_with_role_reviewer
+        )
+        assert not annotation.validation_complete_executive
+        assert annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
+        assert annotation.validation_complete
+        assert annotation.best_photo is None
+        assert annotation.simplified_annotation
+        assert not annotation.revise
+
+        identification_task.refresh_from_db()
+        assert identification_task.review_type == IdentificationTask.Review.AGREE
+        assert identification_task.reviewed_at == timezone.now()
+
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
+    def test_overwrite_review_create_expertreportannotation(self, api_client, endpoint, user_with_role_reviewer, identification_task, taxon_root):
+        assert ExpertReportAnnotation.objects.filter(
+            identification_task=identification_task,
+            user=user_with_role_reviewer
+        ).count() == 0
+
+        response = api_client.post(
+            endpoint,
+            data={
+                'action': 'overwrite',
+                'public_photo_uuid': identification_task.photo.uuid,
+                'is_safe': True,
+                'public_note': 'new test public note',
+                'result': {
+                    'taxon_id': taxon_root.pk,
+                    'confidence_label': 'definitely'
+                }
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        annotation = ExpertReportAnnotation.objects.get(
+            identification_task=identification_task,
+            user=user_with_role_reviewer
+        )
+        assert not annotation.validation_complete_executive
+        assert annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
+        assert annotation.validation_complete
+        assert annotation.best_photo.uuid == identification_task.photo.uuid
+        assert not annotation.simplified_annotation
+        assert annotation.revise
+
+        identification_task.refresh_from_db()
+        assert identification_task.review_type == IdentificationTask.Review.OVERWRITE
+        assert identification_task.reviewed_at == timezone.now()
+        assert identification_task.is_safe
+        assert identification_task.public_note == 'new test public note'
+        assert identification_task.taxon == taxon_root
+        assert identification_task.confidence == 1
+
+@pytest.mark.django_db
 class TestPermissionsApi:
     @pytest.fixture
     def me_endpoint(self):

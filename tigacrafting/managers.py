@@ -8,6 +8,8 @@ from django.db.models.functions import Coalesce
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
+from .permissions import ReviewPermission
+
 class IdentificationTaskQuerySet(models.QuerySet):
     """
     QuerySet for IdentificationTask model providing querysets to filter tasks based on their 
@@ -335,8 +337,9 @@ class IdentificationTaskQuerySet(models.QuerySet):
             except UserStat.DoesNotExist:
                 user_role = None
         has_role_view_perm = user_role and user_role.has_role_permission_by_model(action='view', model=IdentificationTask, country=None)
+        has_role_review_perm = user_role and user_role.has_role_permission_by_model(action='review', model=ReviewPermission, country=None)
 
-        if has_view_perm or has_role_view_perm:
+        if has_view_perm or has_role_view_perm or has_role_review_perm:
             return qs
 
         if isinstance(user, User):
@@ -346,8 +349,9 @@ class IdentificationTaskQuerySet(models.QuerySet):
             qs_annotated = qs.none()
 
         # Filter by countries if user has region-specific permissions
-        countries = user_role.get_countries_with_permissions(action='view', model=IdentificationTask) if user_role else []
-        if countries:
+        view_countries = user_role.get_countries_with_permissions(action='view', model=IdentificationTask) if user_role else []
+        review_countries = user_role.get_countries_with_permissions(action='review', model=ReviewPermission) if user_role else []
+        if countries := set(view_countries + review_countries):
             return qs_annotated | qs.filter(report__country__in=countries)
 
         return qs_annotated

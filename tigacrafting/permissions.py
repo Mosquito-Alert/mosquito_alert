@@ -91,6 +91,8 @@ class UserRolePermissionMixin:
             return self.get_role_identification_task_permission(role=self.get_role(country=country))
         elif model == ExpertReportAnnotation:
             return self.get_role_annotation_permission(role=self.get_role(country=country))
+        elif model == ReviewPermission:
+            return self.get_role_review_permission(role=self.get_role(country=country))
 
         return BasePermission(
             add=False,
