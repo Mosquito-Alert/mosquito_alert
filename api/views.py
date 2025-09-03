@@ -76,7 +76,9 @@ from .serializers import (
     TaxonTreeNodeSerializer,
     PhotoPredictionSerializer,
     CreatePhotoPredictionSerializer,
-    UserPermissionSerializer
+    UserPermissionSerializer,
+    CreateAgreeReviewSerializer,
+    CreateOverwriteReviewSerializer
 )
 from .serializers import (
     CreateNotificationSerializer,
@@ -94,6 +96,7 @@ from .permissions import (
     IdentificationTaskPermissions,
     MyIdentificationTaskPermissions,
     IdentificationTaskAssignmentPermissions,
+    IdentificationTaskReviewPermissions,
     AnnotationPermissions,
     MyAnnotationPermissions,
     PhotoPredictionPermissions,
@@ -570,6 +573,55 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
 
         serializer = self.get_serializer(assignment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        request=PolymorphicProxySerializer(
+            component_name="MetaCreateIdentificationTaskReview",
+            serializers={
+                CreateAgreeReviewSerializer().fields['action'].get_default(): CreateAgreeReviewSerializer,
+                CreateOverwriteReviewSerializer().fields['action'].get_default(): CreateOverwriteReviewSerializer,
+            },
+            resource_type_field_name="action",
+        ),
+        responses={
+            201: OpenApiResponse(
+                response=IdentificationTaskSerializer.IdentificationTaskReviewSerializer
+            )
+        }
+    )
+    @action(detail=True, methods=["POST"], permission_classes=[IdentificationTaskReviewPermissions,])
+    def review(self, request, observation_uuid):
+        task = self.get_object()
+
+        review_type = self.request.data.get("action")
+        agree_value = CreateAgreeReviewSerializer().fields['action'].get_default()
+        overwrite_value = CreateOverwriteReviewSerializer().fields['action'].get_default()
+        if review_type == agree_value:
+            serializer_klass = CreateAgreeReviewSerializer
+        elif review_type == overwrite_value:
+            serializer_klass = CreateOverwriteReviewSerializer
+        else:
+            raise ValidationError(
+                f"Invalid 'review_type'. Must be '{agree_value}' or '{overwrite_value}'"
+            )
+
+        context = self.get_serializer_context()
+        context['report'] = task.report
+
+        serializer = serializer_klass(context=context, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        headers = self._get_location_header(serializer.data)
+
+        response_serializer = IdentificationTaskSerializer.IdentificationTaskReviewSerializer(serializer.instance)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def _get_location_header(self, data):
+        try:
+            return {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        except (TypeError, KeyError):
+            return {}
 
     @extend_schema(
         parameters=[

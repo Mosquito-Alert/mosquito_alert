@@ -1150,7 +1150,7 @@ class AssignmentSerializer(BaseAssignmentSerializer):
 
 class IdentificationTaskSerializer(serializers.ModelSerializer):
     class IdentificationTaskReviewSerializer(serializers.ModelSerializer):
-        type = serializers.ChoiceField(source='review_type',choices=IdentificationTask.Review.choices)
+        action = serializers.ChoiceField(source='review_type',choices=IdentificationTask.Review.choices)
 
         def to_representation(self, instance):
             if self.allow_null and instance.review_type is None:
@@ -1160,7 +1160,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         class Meta:
             model = IdentificationTask
             fields = (
-                "type",
+                "action",
                 "created_at"
             )
             extra_kwargs = {
@@ -1172,7 +1172,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         confidence = serializers.FloatField(min_value=0, max_value=1, read_only=True)
         confidence_label = serializers.SerializerMethodField()
         is_high_confidence = serializers.SerializerMethodField()
-        source = serializers.ChoiceField(source='result_source',choices=IdentificationTask.ResultSource.choices)
+        source = serializers.ChoiceField(source='result_source',read_only=True, choices=IdentificationTask.ResultSource.choices)
 
         def get_confidence_label(self, obj) -> str:
             return obj.confidence_label
@@ -1213,7 +1213,8 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
             fields = ("user", "annotation_id",) + BaseAssignmentSerializer.Meta.fields
 
     observation = SimplifiedObservationWithPhotosSerializer(source='report', read_only=True)
-    public_photo = SimplePhotoSerializer(source='photo', required=True)
+    public_photo_uuid = serializers.UUIDField(source='photo__uuid', write_only=True)
+    public_photo = SimplePhotoSerializer(source='photo', read_only=True)
     review = IdentificationTaskReviewSerializer(source='*', allow_null=True, read_only=True)
     result = IdentificationTaskResultSerializer(source='*', read_only=True, allow_null=True)
     assignments = UserAssignmentSerializer(many=True, read_only=True)
@@ -1222,6 +1223,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         model = IdentificationTask
         fields = (
             'observation',
+            'public_photo_uuid',
             'public_photo',
             'assignments',
             'status',
@@ -1235,11 +1237,96 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
             'updated_at'
         )
         extra_kwargs = {
-            'status': {'default': IdentificationTask.Status.OPEN},
+            'status': {'default': IdentificationTask.Status.OPEN, 'read_only': True},
             'public_note': {'allow_null': True, 'allow_blank': True},
             'num_annotations': {'source': 'total_finished_annotations','min_value': 0},
             'created_at': {'read_only': True},
             'updated_at': {'read_only': True},
+        }
+
+class CreateReviewSerializer(serializers.ModelSerializer):
+    action = serializers.HiddenField(default=None)
+
+    def validate(self, data):
+        del data['review_type']
+        data['validation_complete'] = True
+        data['simplified_annotation'] = True
+        data['report'] = self.context.get('report')
+
+        return data
+
+    def create(self, validated_data):
+        report = validated_data.pop('report')
+
+        # TODO: Create a Review model for this.
+        ExpertReportAnnotation.objects.update_or_create(
+            user=self.context.get('request').user,
+            report=report,
+            defaults=validated_data
+        )
+
+        identification_task = report.identification_task
+        identification_task.refresh_from_db()
+        return identification_task
+
+    class Meta:
+        model = IdentificationTask
+        fields = (
+            'action',
+        )
+        extra_kwargs = {
+            'action': {'source': 'review_type','read_only': False},
+        }
+
+class CreateAgreeReviewSerializer(CreateReviewSerializer):
+    action = serializers.ChoiceField(source='review_type', choices=[IdentificationTask.Review.AGREE.value], default=IdentificationTask.Review.AGREE.value)
+
+    def validate(self, data):
+        data = super().validate(data)
+
+        data['revise'] = False
+        data['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not data['report'].identification_task.is_safe else ExpertReportAnnotation.STATUS_PUBLIC
+
+        return data
+
+    class Meta(CreateReviewSerializer.Meta):
+        fields = (
+            'action',
+        )
+
+class CreateOverwriteReviewSerializer(CreateReviewSerializer):
+    action = serializers.ChoiceField(source='review_type', choices=[IdentificationTask.Review.OVERWRITE.value], default=IdentificationTask.Review.OVERWRITE.value)
+
+    public_photo_uuid = serializers.UUIDField(source='photo__uuid', write_only=True)
+    result = AnnotationSerializer.AnnotationClassificationSerializer(source='*', required=True, allow_null=True)
+
+    def validate(self, data):
+        data = super().validate(data)
+
+        data['revise'] = True
+        data['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not data.pop('is_safe') else ExpertReportAnnotation.STATUS_PUBLIC
+        data['simplified_annotation'] = False
+        data['edited_user_notes'] = data.pop('public_note', None)
+
+        if public_photo_uuid := data.pop('photo__uuid', None):
+            try:
+                data['best_photo'] = Photo.objects.get(report=data['report'], uuid=public_photo_uuid)
+            except Photo.DoesNotExist:
+                raise serializers.ValidationError("The photo does not does not exist or does not belong to the observation.")
+
+        return data
+
+    class Meta(CreateReviewSerializer.Meta):
+        fields = (
+            'action',
+            'public_photo_uuid',
+            'is_safe',
+            'public_note',
+            'result',
+        )
+        extra_kwargs = {
+            'is_safe': {'read_only': False},
+            'public_note': {'allow_null': True, 'allow_blank': False, 'read_only': False}
         }
 
 class ObservationSerializer(BaseReportWithPhotosSerializer):

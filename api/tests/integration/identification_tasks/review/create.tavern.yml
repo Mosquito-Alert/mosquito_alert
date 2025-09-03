@@ -1,0 +1,100 @@
+---
+
+test_name: New identification tasks review can not be created by not regular users with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - app_user_token
+    - jwt_token_user
+
+stages:
+  - name: Review is not allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "POST"
+    response:
+      status_code: 403
+  - name: Non auth user can not review new identification tasks.
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+    response:
+      status_code: 401
+  - name: User without perm can not review new identification tasks.
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Identification tasks reviews (agree) can be made only by authenticated users with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - user_with_role_reviewer
+    - jwt_token_user
+
+stages:
+  - name: User with perm can review identification tasks.
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+      json:
+        action: 'agree'
+    response:
+      status_code: 201
+      json:
+        action: 'agree'
+        created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+
+
+---
+
+test_name: Identification tasks reviews (overwrite) can be made only by authenticated users with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - user_with_role_reviewer
+    - jwt_token_user
+
+stages:
+  - name: User with perm can review identification tasks.
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+      json:
+        action: 'overwrite'
+        public_photo_uuid: "{identification_task.photo.uuid}"
+        is_safe: True
+        public_note: "Test new public note"
+        result: null
+    response:
+      status_code: 201
+      json:
+        action: 'overwrite'
+        created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z

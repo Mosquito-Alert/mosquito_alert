@@ -4,6 +4,7 @@ from django.core.exceptions import MultipleObjectsReturned
 from rest_framework import permissions
 
 from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, UserStat
+from tigacrafting.permissions import ReviewPermission
 from tigaserver_app.models import TigaUser, Notification
 
 from .utils import get_fk_fieldnames
@@ -250,6 +251,17 @@ class IdentificationTaskAssignmentPermissions(IsRegularUser):
             user=request.user,
             action='add',
             obj_or_klass=ExpertReportAnnotation
+        )
+
+class IdentificationTaskReviewPermissions(IsRegularUser):
+    def has_permission(self, request, view):
+        if not super().has_permission(request, view):
+            return False
+
+        return UserRolePermission().check_permissions(
+            user=request.user,
+            action='add',
+            obj_or_klass=ReviewPermission
         )
 
 class BaseIdentificationTaskAttributePermissions(BaseIdentificationTaskPermissions):
