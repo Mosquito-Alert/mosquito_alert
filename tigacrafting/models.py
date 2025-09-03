@@ -418,6 +418,7 @@ class IdentificationTask(LifecycleModel):
 
     @property
     def confidence_label(self) -> str:
+        # TODO: check that API does not fix this as enum. This changes according to language.
         return get_confidence_label(value=self.confidence)
 
     @cached_property
@@ -1396,7 +1397,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
             countries.append(country)
         if country := self.national_supervisor_of:
             countries.append(country)
-        return countries
+        return list(set(countries))
 
     # NOTE: override UserRolePermissionMixin
     def get_role(self, country: Optional['tigaserver_app.EuropeCountry'] = None) -> Role:
