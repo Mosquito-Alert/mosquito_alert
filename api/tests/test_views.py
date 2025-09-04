@@ -1068,17 +1068,22 @@ class TestIdentificationTaskReviewApi:
         assert identification_task.reviewed_at == timezone.now()
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
-    def test_overwrite_review_create_expertreportannotation(self, api_client, endpoint, user_with_role_reviewer, identification_task, taxon_root):
+    def test_overwrite_review_create_expertreportannotation(self, api_client, endpoint, user_with_role_reviewer, identification_task, taxon_root, dummy_image):
         assert ExpertReportAnnotation.objects.filter(
             identification_task=identification_task,
             user=user_with_role_reviewer
         ).count() == 0
 
+        another_photo = Photo.objects.create(
+            photo=dummy_image,
+            report=identification_task.report,
+        )
+
         response = api_client.post(
             endpoint,
             data={
                 'action': 'overwrite',
-                'public_photo_uuid': identification_task.photo.uuid,
+                'public_photo_uuid': another_photo.uuid,
                 'is_safe': True,
                 'public_note': 'new test public note',
                 'result': {
@@ -1097,7 +1102,7 @@ class TestIdentificationTaskReviewApi:
         assert not annotation.validation_complete_executive
         assert annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
         assert annotation.validation_complete
-        assert annotation.best_photo.uuid == identification_task.photo.uuid
+        assert annotation.best_photo.uuid == another_photo.uuid
         assert not annotation.simplified_annotation
         assert annotation.revise
 
@@ -1108,6 +1113,7 @@ class TestIdentificationTaskReviewApi:
         assert identification_task.public_note == 'new test public note'
         assert identification_task.taxon == taxon_root
         assert identification_task.confidence == 1
+        assert identification_task.photo == another_photo
 
 @pytest.mark.django_db
 class TestPermissionsApi:
