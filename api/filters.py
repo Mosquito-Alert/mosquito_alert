@@ -182,12 +182,19 @@ class IdentificationTaskFilter(filters.FilterSet):
         choices=IdentificationTask.ResultSource.choices
     )
 
+    # NOTE: See for fix for using null_label https://github.com/tfranzel/drf-spectacular/pull/1450
+    review_action = filters.ChoiceFilter(
+        choices=IdentificationTask.Review.choices + [("null", None)],
+        field_name="review_type",
+        null_label="null",
+        empty_label=None
+    )
+
     class Meta:
         model = IdentificationTask
         fields = {
             "is_flagged": ["exact"],
             "is_safe": ["exact"],
-            "review_type": ["exact"],
         }
 
 class AnnotationFilter(filters.FilterSet):
