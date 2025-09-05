@@ -1304,14 +1304,15 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer):
     def validate(self, data):
         data = super().validate(data)
 
-        data['revise'] = True
-        data['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not data.pop('is_safe') else ExpertReportAnnotation.STATUS_PUBLIC
-        data['simplified_annotation'] = False
-        data['edited_user_notes'] = data.pop('public_note', None) or ""
         # Case Not an insect will be empty taxon. In case of update we need to for it to None
         data['taxon'] = data.pop('taxon', None)
         data['validation_value'] = data.pop('validation_value', None)
         data['confidence'] = data.pop('confidence', 0)
+
+        data['revise'] = True
+        data['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not data.pop('is_safe') or data['taxon'] is None else ExpertReportAnnotation.STATUS_PUBLIC
+        data['simplified_annotation'] = False
+        data['edited_user_notes'] = data.pop('public_note', None) or ""
 
         if public_photo_uuid := data.pop('photo__uuid', None):
             try:
