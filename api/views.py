@@ -590,7 +590,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         }
     )
     @action(detail=True, methods=["POST"], permission_classes=[IdentificationTaskReviewPermissions,])
-    def review(self, request, observation_uuid):
+    def review(self, request, *args, **kwargs):
         task = self.get_object()
 
         review_type = self.request.data.get("action")
