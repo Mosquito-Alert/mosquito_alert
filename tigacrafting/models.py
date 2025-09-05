@@ -1284,7 +1284,6 @@ class ExpertReportAnnotation(LifecycleModel):
 
         if self.simplified_annotation:
             self.message_for_user = ""
-            self.best_photo = None
 
         if not self.identification_task or str(self.identification_task.pk) != str(self.report.pk):
             self.identification_task = IdentificationTask.objects.filter(report=self.report).first()
