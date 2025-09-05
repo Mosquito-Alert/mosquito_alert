@@ -1002,13 +1002,13 @@ class AnnotationSerializer(serializers.ModelSerializer):
         try:
             data['report'] = Report.objects.get(type='adult', pk=self.context.get('observation_uuid'))
         except Report.DoesNotExist:
-            raise serializers.ValidationError("The observation does not does not exist.")
+            raise serializers.ValidationError("The observation does not exist.")
 
         if best_photo_uuid := data.pop('best_photo_uuid', None):
             try:
                 data['best_photo'] = Photo.objects.get(report=data['report'], uuid=best_photo_uuid)
             except Photo.DoesNotExist:
-                raise serializers.ValidationError("The photo does not does not exist or does not belong to the observation.")
+                raise serializers.ValidationError("The photo does not exist or does not belong to the observation.")
 
         is_flagged = data.pop("is_flagged")
         is_visible = data.pop("is_visible", self.ObservationFlagsSerializer().fields['is_visible'].default)
@@ -1318,7 +1318,7 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer):
             try:
                 data['best_photo'] = Photo.objects.get(report=data['report'], uuid=public_photo_uuid)
             except Photo.DoesNotExist:
-                raise serializers.ValidationError("The photo does not does not exist or does not belong to the observation.")
+                raise serializers.ValidationError("The photo does not exist or does not belong to the observation.")
 
         return data
 
