@@ -572,7 +572,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             )
 
         serializer = self.get_serializer(assignment)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=self._get_location_header(serializer.data))
 
     @extend_schema(
         request=PolymorphicProxySerializer(
