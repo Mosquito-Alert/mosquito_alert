@@ -1259,11 +1259,12 @@ class CreateReviewSerializer(serializers.ModelSerializer):
         report = validated_data.pop('report')
 
         # TODO: Create a Review model for this.
-        ExpertReportAnnotation.objects.update_or_create(
+        obj, _ = ExpertReportAnnotation.objects.update_or_create(
             user=self.context.get('request').user,
             report=report,
             defaults=validated_data
         )
+        obj.create_replicas()
 
         identification_task = report.identification_task
         identification_task.refresh_from_db()
@@ -1306,7 +1307,11 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer):
         data['revise'] = True
         data['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not data.pop('is_safe') else ExpertReportAnnotation.STATUS_PUBLIC
         data['simplified_annotation'] = False
-        data['edited_user_notes'] = data.pop('public_note', None)
+        data['edited_user_notes'] = data.pop('public_note', None) or ""
+        # Case Not an insect will be empty taxon. In case of update we need to for it to None
+        data['taxon'] = data.pop('taxon', None)
+        data['validation_value'] = data.pop('validation_value', None)
+        data['confidence'] = data.pop('confidence', 0)
 
         if public_photo_uuid := data.pop('photo__uuid', None):
             try:
