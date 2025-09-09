@@ -261,7 +261,9 @@ SPECTACULAR_SETTINGS = {
             'x-role': 'responsible developer'
     },
     'LICENSE': {
-        'name': 'GPL-3',
+        # NOTE: identifier is necessary for the openapi-generator python SDK to work.
+        # If every update to openapi 3.1.0, a new field 'identifier' can be added
+        'name': 'GPL-3.0-only',  # IMPORTANT: for openapi 3.0.3 must be a valid SPDX identifier. See: https://spdx.org/licenses/
         'url': 'https://github.com/Mosquito-Alert/mosquito_alert/blob/master/LICENSE.md'
     },
     'SERVERS': [
