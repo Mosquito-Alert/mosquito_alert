@@ -17,6 +17,7 @@ from drf_spectacular.utils import (
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
@@ -242,7 +243,8 @@ class BaseReportViewSet(
 
     lookup_url_kwarg = "uuid"
 
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    search_fields = ("report_id", "pk")
 
     permission_classes = (ReportPermissions,)
 
@@ -538,6 +540,8 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     )
     serializer_class = IdentificationTaskSerializer
     filterset_class = IdentificationTaskFilter
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    search_fields = ("report__report_id", "pk")
     permission_classes = (IdentificationTaskPermissions | UserRolePermission,)
 
     lookup_field = 'pk'

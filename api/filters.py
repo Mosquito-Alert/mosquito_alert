@@ -170,6 +170,7 @@ class IdentificationTaskFilter(filters.FilterSet):
         field_name="report__country",
         queryset=EuropeCountry.objects.all(),
     )
+    observation_short_id = filters.CharFilter(field_name="report__report_id", label="Observation short ID")
 
     result_taxon_ids = filters.ModelMultipleChoiceFilter(
         field_name="taxon",
