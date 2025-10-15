@@ -239,12 +239,14 @@ class BaseReportViewSet(
             "photos",
             queryset=Photo.objects.visible()
         )
+    ).annotate(
+        pk_str=models.functions.Cast('pk', output_field=models.CharField()),
     ).non_deleted().filter(point__isnull=False).order_by('-server_upload_time')
 
     lookup_url_kwarg = "uuid"
 
     filter_backends = (DjangoFilterBackend, SearchFilter)
-    search_fields = ("report_id", "pk")
+    search_fields = ("report_id", "pk_str")
 
     permission_classes = (ReportPermissions,)
 
@@ -537,11 +539,13 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             "report__photos",
             queryset=Photo.objects.visible(),
         )
+    ).annotate(
+        pk_str=models.functions.Cast('pk', output_field=models.CharField()),
     )
     serializer_class = IdentificationTaskSerializer
     filterset_class = IdentificationTaskFilter
     filter_backends = (DjangoFilterBackend, SearchFilter)
-    search_fields = ("report__report_id", "pk")
+    search_fields = ("report__report_id", "pk_str")
     permission_classes = (IdentificationTaskPermissions | UserRolePermission,)
 
     lookup_field = 'pk'
@@ -682,9 +686,14 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
                     report=models.OuterRef('report')
                 )
             )
+        ).annotate(
+            report_pk_str=models.functions.Cast('report', output_field=models.CharField()),
         )
+
         serializer_class = AnnotationSerializer
+        filter_backends = (DjangoFilterBackend, SearchFilter)
         filterset_class = AnnotationFilter
+        search_fields = ("report__report_id", "report_pk_str")
         permission_classes = (AnnotationPermissions | UserRolePermission, )
 
         parent_lookup_kwargs = {
