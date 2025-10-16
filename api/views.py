@@ -693,7 +693,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         serializer_class = AnnotationSerializer
         filter_backends = (DjangoFilterBackend, SearchFilter)
         filterset_class = AnnotationFilter
-        search_fields = ("report__report_id", "report_pk_str")
+        search_fields = ("report_pk_str",) #NOTE: not filtering by 'report__report_id' because in not being shown in the response.
         permission_classes = (AnnotationPermissions | UserRolePermission, )
 
         parent_lookup_kwargs = {
