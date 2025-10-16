@@ -17,6 +17,7 @@ from drf_spectacular.utils import (
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
@@ -238,11 +239,14 @@ class BaseReportViewSet(
             "photos",
             queryset=Photo.objects.visible()
         )
+    ).annotate(
+        pk_str=models.functions.Cast('pk', output_field=models.CharField()),
     ).non_deleted().filter(point__isnull=False).order_by('-server_upload_time')
 
     lookup_url_kwarg = "uuid"
 
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    search_fields = ("report_id", "pk_str")
 
     permission_classes = (ReportPermissions,)
 
@@ -535,9 +539,13 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             "report__photos",
             queryset=Photo.objects.visible(),
         )
+    ).annotate(
+        pk_str=models.functions.Cast('pk', output_field=models.CharField()),
     )
     serializer_class = IdentificationTaskSerializer
     filterset_class = IdentificationTaskFilter
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    search_fields = ("report__report_id", "pk_str")
     permission_classes = (IdentificationTaskPermissions | UserRolePermission,)
 
     lookup_field = 'pk'
@@ -678,9 +686,14 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
                     report=models.OuterRef('report')
                 )
             )
+        ).annotate(
+            report_pk_str=models.functions.Cast('report_id', output_field=models.CharField()),
         )
+
         serializer_class = AnnotationSerializer
+        filter_backends = (DjangoFilterBackend, SearchFilter)
         filterset_class = AnnotationFilter
+        search_fields = ("report_pk_str",) #NOTE: not filtering by 'report__report_id' because in not being shown in the response.
         permission_classes = (AnnotationPermissions | UserRolePermission, )
 
         parent_lookup_kwargs = {
@@ -736,7 +749,9 @@ class MyIdentificationTaskViewSet(IdentificationTaskViewSet):
 class MyAnnotationViewSet(ListModelMixin, GenericNoMobileViewSet):
     queryset = IdentificationTaskViewSet.AnnotationViewSet.queryset
     serializer_class = IdentificationTaskViewSet.AnnotationViewSet.serializer_class
+    filter_backends = IdentificationTaskViewSet.AnnotationViewSet.filter_backends
     filterset_class = IdentificationTaskViewSet.AnnotationViewSet.filterset_class
+    search_fields = IdentificationTaskViewSet.AnnotationViewSet.search_fields
     permission_classes = (MyAnnotationPermissions, )
 
     lookup_field = 'pk'
