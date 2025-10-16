@@ -533,11 +533,10 @@ class SimplePhotoSerializer(serializers.ModelSerializer):
         source="photo", use_url=True, read_only=True,
         help_text="URL of the photo associated with the item. Note: This URL may change over time. Do not rely on it for permanent storage."
     )
-    file = serializers.ImageField(required=True, source="photo", write_only=True)
 
     class Meta:
         model = Photo
-        fields = ("uuid", "url", "file")
+        fields = ("uuid", "url")
         read_only_fields = (
             "uuid",
         )
@@ -736,7 +735,24 @@ class BaseSimplifiedReportSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 class BaseReportWithPhotosSerializer(BaseReportSerializer):
-    photos = SimplePhotoSerializer(required=True, many=True)
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get("request")
+
+        # Use different field behavior depending on request method
+        if request and request.method in ("POST", "PUT", "PATCH"):
+            # Write mode — accept uploaded image files
+            fields["photos"] = serializers.ListField(
+                child=serializers.ImageField(required=True),
+                write_only=True,
+                min_length=1,
+            )
+        else:
+            # Read mode — return nested photo serializer
+            fields["photos"] = SimplePhotoSerializer(many=True, read_only=True)
+
+        return fields
 
     @transaction.atomic
     def create(self, validated_data):
@@ -744,10 +760,20 @@ class BaseReportWithPhotosSerializer(BaseReportSerializer):
 
         instance = super().create(validated_data)
 
+        # NOTE: do not use bulk here.
         for photo in photos:
-            _ = Photo.objects.create(report=instance, **photo)
+            _ = Photo.objects.create(report=instance, photo=photo)
 
         return instance
+
+    def to_representation(self, instance):
+        """
+        Always serialize output using the read-only `photos` definition,
+        even if this serializer was initialized in write mode.
+        """
+        # Rebind `photos` temporarily for output
+        self.fields["photos"] = SimplePhotoSerializer(many=True, read_only=True)
+        return super().to_representation(instance)
 
     class Meta(BaseReportSerializer.Meta):
         fields = BaseReportSerializer.Meta.fields + ("photos",)

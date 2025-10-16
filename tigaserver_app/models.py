@@ -11,7 +11,9 @@ from numpyencoder import NumpyEncoder
 from PIL import Image
 import pydenticon
 import os
+import random
 from slugify import slugify
+import string
 from typing import List, Optional, Union
 import uuid
 
@@ -781,6 +783,9 @@ class UUIDTaggedItem(GenericUUIDTaggedItemBase, TaggedItemBase):
     class Meta(GenericUUIDTaggedItemBase.Meta, TaggedItemBase.Meta):
         abstract = False
 
+def generate_report_id():
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=4))
+
 class Report(TimeZoneModelMixin, models.Model):
     TYPE_BITE = "bite"
     TYPE_ADULT = "adult"
@@ -849,6 +854,7 @@ class Report(TimeZoneModelMixin, models.Model):
     report_id = models.CharField(
         max_length=4,
         db_index=True,
+        default=generate_report_id,
         help_text="4-digit alpha-numeric code generated on user phone to identify each unique report from that user. Digits should lbe randomly drawn from the set of all lowercase and uppercase alphabetic characters and 0-9, but excluding 0, o, and O to avoid confusion if we ever need user to be able to refer to a report ID in correspondence with MoveLab (as was previously the case when we had them sending samples).",
     )
 
