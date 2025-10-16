@@ -687,7 +687,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
                 )
             )
         ).annotate(
-            report_pk_str=models.functions.Cast('report', output_field=models.CharField()),
+            report_pk_str=models.functions.Cast('report_id', output_field=models.CharField()),
         )
 
         serializer_class = AnnotationSerializer
