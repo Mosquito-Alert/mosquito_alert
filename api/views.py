@@ -749,7 +749,9 @@ class MyIdentificationTaskViewSet(IdentificationTaskViewSet):
 class MyAnnotationViewSet(ListModelMixin, GenericNoMobileViewSet):
     queryset = IdentificationTaskViewSet.AnnotationViewSet.queryset
     serializer_class = IdentificationTaskViewSet.AnnotationViewSet.serializer_class
+    filter_backends = IdentificationTaskViewSet.AnnotationViewSet.filter_backends
     filterset_class = IdentificationTaskViewSet.AnnotationViewSet.filterset_class
+    search_fields = IdentificationTaskViewSet.AnnotationViewSet.search_fields
     permission_classes = (MyAnnotationPermissions, )
 
     lookup_field = 'pk'
