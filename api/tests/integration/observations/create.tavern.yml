@@ -42,8 +42,8 @@ stages:
         Authorization: "Bearer {app_user_token:s}"
       method: "POST"
       files:
-        photos[0]file: "{test_jpg_image_path}"
-        photos[1]file: "{test_png_image_path}"
+        photos[0]: "{test_jpg_image_path}"
+        photos[1]: "{test_png_image_path}"
       data: &request_site_data
         created_at: '2024-01-01T00:00:00Z'
         sent_at: '2024-01-01T00:30:00Z'
@@ -114,6 +114,6 @@ stages:
     request:
       <<: *request_observation
       files: 
-        photos[0]file: "{test_non_image_path}"
+        photos[0]: "{test_non_image_path}"
     response:
       status_code: 400
