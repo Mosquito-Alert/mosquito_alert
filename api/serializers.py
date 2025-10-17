@@ -965,6 +965,7 @@ class AnnotationSerializer(serializers.ModelSerializer):
                 "is_visible"
             )
 
+    observation_uuid = serializers.UUIDField(source="report_id", read_only=True)
     user_hidden_obj = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     user = SimpleAnnotatorUserSerializer(read_only=True)
@@ -1103,7 +1104,6 @@ class AnnotationSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {
             "user_id": {'read_only': True},
-            "observation_uuid": {'source': 'report', 'read_only': True},
             'created_at': {"source": "created", 'read_only': True},
             'updated_at': {"source": "last_modified", 'read_only': True},
         }

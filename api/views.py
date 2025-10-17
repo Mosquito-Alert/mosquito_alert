@@ -218,6 +218,19 @@ class PartnersViewSet(ReadOnlyModelViewSet, GenericViewSet):
     serializer_class = PartnerSerializer
 
 
+# NOTE: this can be removed if Report.version_UUID is ever changed to UUIDField (from CharField)
+REPORT_VIEW_LOOKUP_FIELD = "uuid"
+REPORT_UUID_PATH_PARAM = OpenApiParameter(
+    name=REPORT_VIEW_LOOKUP_FIELD,
+    type=OpenApiTypes.UUID,
+    location=OpenApiParameter.PATH,
+)
+@extend_schema_view(
+    retrieve=extend_schema(parameters=[REPORT_UUID_PATH_PARAM]),
+    destroy=extend_schema(parameters=[REPORT_UUID_PATH_PARAM]),
+    update=extend_schema(parameters=[REPORT_UUID_PATH_PARAM]),
+    partial_update=extend_schema(parameters=[REPORT_UUID_PATH_PARAM]),
+)
 class BaseReportViewSet(
     CreateModelMixin,
     ListModelMixin,
@@ -243,7 +256,7 @@ class BaseReportViewSet(
         pk_str=models.functions.Cast('pk', output_field=models.CharField()),
     ).non_deleted().filter(point__isnull=False).order_by('-server_upload_time')
 
-    lookup_url_kwarg = "uuid"
+    lookup_url_kwarg = REPORT_VIEW_LOOKUP_FIELD
 
     filter_backends = (DjangoFilterBackend, SearchFilter)
     search_fields = ("report_id", "pk_str")
@@ -385,6 +398,19 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
 class MyObservationViewSest(BaseMyReportViewSet, ObservationViewSest):
     pass
 
+# NOTE: this can be removed if TigaUser.user_UUID is ever changed to UUIDField (from CharField)
+USER_VIEW_LOOKUP_FIELD = "uuid"
+USER_UUID_PATH_PARAM = OpenApiParameter(
+    name=USER_VIEW_LOOKUP_FIELD,
+    type=OpenApiTypes.UUID,
+    location=OpenApiParameter.PATH,
+)
+@extend_schema_view(
+    retrieve=extend_schema(parameters=[USER_UUID_PATH_PARAM]),
+    destroy=extend_schema(parameters=[USER_UUID_PATH_PARAM]),
+    update=extend_schema(parameters=[USER_UUID_PATH_PARAM]),
+    partial_update=extend_schema(parameters=[USER_UUID_PATH_PARAM]),
+)
 class UserViewSet(
     UpdateModelMixin, RetrieveModelMixin, GenericViewSet
 ):
@@ -393,7 +419,7 @@ class UserViewSet(
 
     permission_classes = (UserPermissions,)
 
-    lookup_url_kwarg = "uuid"
+    lookup_url_kwarg = USER_VIEW_LOOKUP_FIELD
 
     def get_object(self):
         try:
@@ -513,6 +539,20 @@ class DeviceViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Gene
             return DeviceSerializer
 
 
+# NOTE: this can be removed if Report.version_UUID is ever changed to UUIDField (from CharField)
+IDENTIFICATION_TASK_VIEW_LOOKUP_FIELD = "observation_uuid"
+OBSERVATION_UUID_PATH_PARAM = OpenApiParameter(
+    name=IDENTIFICATION_TASK_VIEW_LOOKUP_FIELD,
+    type=OpenApiTypes.UUID,
+    location=OpenApiParameter.PATH,
+)
+@extend_schema_view(
+    retrieve=extend_schema(parameters=[OBSERVATION_UUID_PATH_PARAM]),
+    destroy=extend_schema(parameters=[OBSERVATION_UUID_PATH_PARAM]),
+    update=extend_schema(parameters=[OBSERVATION_UUID_PATH_PARAM]),
+    partial_update=extend_schema(parameters=[OBSERVATION_UUID_PATH_PARAM]),
+    review=extend_schema(parameters=[OBSERVATION_UUID_PATH_PARAM]),
+)
 class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMobileViewSet):
     queryset = IdentificationTask.objects.all().select_related(
         'taxon',
@@ -549,7 +589,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     permission_classes = (IdentificationTaskPermissions | UserRolePermission,)
 
     lookup_field = 'pk'
-    lookup_url_kwarg = 'observation_uuid'
+    lookup_url_kwarg = IDENTIFICATION_TASK_VIEW_LOOKUP_FIELD
 
     def get_queryset(self):
         return super().get_queryset().browsable(user=self.request.user)
