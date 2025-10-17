@@ -445,6 +445,11 @@ class UserViewSet(
     )
 )
 class MyUserViewSet(UserViewSet):
+    # NOTE: do not remove this retrieve, it is needed in order to no inherit extend_schema_view from
+    #       parent class, which forces a uuid paramenter in the path.
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
     def get_object(self):
         user = self.request.user
         # May raise a permission denied
