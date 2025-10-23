@@ -5,6 +5,7 @@ from rest_framework import parsers
 # NOTE: This class is needed to work with auto-generated OpenAPI SDKs.
 # It's important to mention that MultiParser from DRF needs from nested
 # dotted notation, e.g: location.point.latitude, location.point.longitude
+# See: https://b0uh.github.io/drf-how-to-handle-arrays-and-nested-objects-in-a-multipartform-data-request.html
 # But most OpenAPI SDKs (like openapi-generator) do not support that.
 # They only support nested JSON objects (encoded to string!), e.g:
 # location: '{"point": {"latitude": .., "longitude": ..} }'
