@@ -4,6 +4,7 @@ from typing import Literal, Optional, Union
 from uuid import UUID
 
 from django.contrib.auth import get_user_model
+from django.contrib.gis.geos import Point
 from django.db import transaction
 
 from drf_spectacular.utils import extend_schema_field
@@ -551,7 +552,23 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             source = serializers.CharField(required=True, allow_null=False)
             level = serializers.IntegerField(required=True, min_value=0)
 
-        point = PointField(required=True)
+        class PointSerializer(serializers.Serializer):
+            latitude = WritableSerializerMethodField(
+                field_class=serializers.FloatField,
+                required=True,
+            )
+            longitude = WritableSerializerMethodField(
+                field_class=serializers.FloatField,
+                required=True,
+            )
+
+            def get_latitude(self, obj: Point) -> float:
+                return obj.y
+
+            def get_longitude(self, obj: Point) -> float:
+                return obj.x
+
+        point = PointSerializer(required=True)
         timezone = TimeZoneSerializerChoiceField(read_only=True, allow_null=True)
         country = CountrySerializer(read_only=True, allow_null=True)
         adm_boundaries = AdmBoundarySerializer(many=True, read_only=True)
@@ -579,8 +596,8 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
                 preffix = "selected"
 
             point = ret.pop("point")
-            ret[f"{preffix}_location_lat"] = point.y
-            ret[f"{preffix}_location_lon"] = point.x
+            ret[f"{preffix}_location_lat"] = point['latitude']
+            ret[f"{preffix}_location_lon"] = point['longitude']
 
             return ret
 

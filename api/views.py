@@ -25,7 +25,7 @@ from rest_framework.mixins import (
     UpdateModelMixin,
     DestroyModelMixin,
 )
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
@@ -57,6 +57,7 @@ from .filters import (
     TaxonFilter
 )
 from .mixins import IdentificationTaskNestedAttribute
+from .parsers import MultiPartJsonNestedParser
 from .serializers import (
     PartnerSerializer,
     CampaignSerializer,
@@ -333,7 +334,7 @@ class BaseReportWithPhotosViewSet(BaseReportViewSet):
         # Since photos are required on POST, only allow
         # parasers that allow files.
         if self.request and self.request.method == 'POST':
-            return [MultiPartParser(), FormParser()]
+            return [MultiPartJsonNestedParser(), FormParser()]
         return super().get_parsers()
 
 class BiteViewSet(BaseReportViewSet):
