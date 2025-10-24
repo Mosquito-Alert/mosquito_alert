@@ -648,7 +648,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     created_at = TimezoneAwareDateTimeField(required=True, source="creation_time")
     created_at_local = serializers.SerializerMethodField(
-        help_text="The date and time when the record was created, displayed in the local timezone specified for this entry."
+        help_text="The date and time when the record was created, displayed without timezone field."
     )
     sent_at = TimezoneAwareDateTimeField(required=True, source="phone_upload_time")
     published = serializers.SerializerMethodField()
@@ -659,7 +659,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField(required=False, allow_empty=True)
 
     def get_created_at_local(self, obj) -> datetime:
-        return obj.creation_time_local
+        return obj.creation_time_local.replace(tzinfo=None)
 
     def get_published(self, obj) -> bool:
         return obj.published
