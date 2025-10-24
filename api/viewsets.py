@@ -1,11 +1,12 @@
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.viewsets import GenericViewSet as DRFGenericViewSet
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
+from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework_nested.viewsets import NestedViewSetMixin as OriginalNestedViewSetMixin, _force_mutable
 
 from .auth.authentication import AppUserJWTAuthentication, NonAppUserSessionAuthentication
+from .parsers import MultiPartJsonNestedParser
 from .permissions import UserObjectPermissions, IsMobileUser, DjangoRegularUserModelPermissions
 
 
@@ -31,7 +32,7 @@ class GenericViewSet(DRFGenericViewSet):
         return self._pagination_class
 
     permission_classes = (UserObjectPermissions,)
-    parser_classes = (JSONParser, FormParser, MultiPartParser)
+    parser_classes = (JSONParser, FormParser, MultiPartJsonNestedParser)
     renderer_classes = (JSONRenderer,)
 
 
