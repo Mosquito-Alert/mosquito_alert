@@ -27,22 +27,15 @@ class PasswordChangeView(generics.CreateAPIView):
     @extend_schema(
         operation_id='auth_change_password',
         responses={
-            200: PasswordChangeSerializer,
+            204: PasswordChangeSerializer,
         }
     )
     def post(self, request, format=None):
         user = request.user
         serializer = self.serializer_class(data=request.data)
 
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             user.set_password(serializer.validated_data['password'])
             user.save()
 
-            content = {'success': 'Password changed.'}
-            return Response(content, status=status.HTTP_200_OK)
-
-        else:
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(status=status.HTTP_204_NO_CONTENT)
