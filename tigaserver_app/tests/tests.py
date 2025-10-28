@@ -2460,6 +2460,9 @@ class ApiUsersViewTest(APITransactionTestCase):
         self.global_topic = NotificationTopic.objects.create(topic_code='global')
         self.language_topic = NotificationTopic.objects.create(topic_code='en')
 
+    @override_settings(
+        DEFAULT_TIGAUSER_PASSWORD='DEFAULT_PASSWORD_FOR_TESTS'
+    )
     def test_POST_new_user(self):
         self.client.force_authenticate(user=self.mobile_user)
         new_user_uuid = uuid.uuid4()
@@ -2481,6 +2484,8 @@ class ApiUsersViewTest(APITransactionTestCase):
         self.assertJSONEqual(response.content, expected_response)
 
         user = TigaUser.objects.get(pk=str(new_user_uuid))
+
+        self.assertTrue(user.check_password('DEFAULT_PASSWORD_FOR_TESTS'))
 
         # Check if the user is subscribed to the global topic
         self.assertTrue(UserSubscription.objects.filter(user=user, topic=self.global_topic).exists())

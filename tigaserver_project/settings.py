@@ -32,6 +32,9 @@ PROJECT_DIR = os.path.dirname(os.path.realpath(project_module.__file__))
 
 SECRET_KEY = 'h0v(25z3u9yquh+01+#%tj@7iyk*raq!-6)jwz+0ac^h2grd0@'
 
+# Change this in prod
+DEFAULT_TIGAUSER_PASSWORD = 'TEST_PASSWORD'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
