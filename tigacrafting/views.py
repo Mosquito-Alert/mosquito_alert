@@ -20,7 +20,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
 from random import shuffle
 from django.template.context_processors import csrf
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.urls import reverse
 from django.conf import settings
 from django.http import HttpResponse
@@ -535,6 +535,9 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
     if not (this_user_is_expert or this_user_is_superexpert):
         return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
+    if not this_user_is_superexpert:
+        return HttpResponsePermanentRedirect('https://app.mosquitoalert.com')
+
     args = {}
     args.update(csrf(request))
     args['scroll_position'] = scroll_position
@@ -786,6 +789,8 @@ def single_report_view(request,version_uuid):
     this_user = request.user
     version_uuid = request.GET.get('version_uuid', version_uuid)
     report = Report.objects.get(pk=version_uuid)
+    if not this_user.userstat.is_superexpert():
+        return HttpResponsePermanentRedirect('https://app.mosquitoalert.com/identification_tasks/'+str(version_uuid))
     who_has_list = []
     if report:
         for ano in report.expert_report_annotations.select_related('user').all():
