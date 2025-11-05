@@ -787,6 +787,10 @@ def generate_report_id():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=4))
 
 class Report(TimeZoneModelMixin, models.Model):
+    @staticmethod
+    def get_tags_from_note(note: str) -> List[str]:
+        return list(set(re.findall(r'(?<=#)\w+', note)))
+
     TYPE_BITE = "bite"
     TYPE_ADULT = "adult"
     TYPE_SITE = "site"
@@ -1966,9 +1970,14 @@ class Report(TimeZoneModelMixin, models.Model):
             self.os_language = standarize_language_tag(self.os_language)
 
         if self._state.adding:
-            if self.note and not self.tags.exists():
-                # Init tags from note hashtags
-                self.tags.set(set(re.findall(r'(?<=#)\w+', self.note)))
+            if self.note:
+                if _note_tags := self.get_tags_from_note(self.note):
+                    self.tags.set(
+                        set(
+                            list(self.tags.values_list('name', flat=True))
+                            + _note_tags
+                        )
+                    )
 
             # NOTE: setting it here and not setting the field.default
             # in order to avoid publishing on bulk_create

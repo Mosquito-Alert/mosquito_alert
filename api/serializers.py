@@ -680,6 +680,17 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
     def get_published(self, obj) -> bool:
         return obj.published
 
+    # Override from TaggitSerializer
+    def _pop_tags(self, validated_data):
+        tags, validated_data = super()._pop_tags(validated_data)
+
+        # Also extract tags from note field
+        note = validated_data.get('note', '')
+        note_tags = Report.get_tags_from_note(note)
+        tags['tags'] = list(set(tags.get('tags', []) + note_tags))
+
+        return tags, validated_data
+
     class Meta:
         model = Report
         fields = (
