@@ -13,6 +13,7 @@ from drf_spectacular.helpers import lazy_serializer
 from rest_framework import serializers
 
 from drf_extra_fields.geo_fields import PointField
+import minify_html
 from rest_framework_dataclasses.serializers import DataclassSerializer
 from taggit.serializers import TaggitSerializer
 
@@ -329,8 +330,13 @@ class NotificationSerializer(serializers.ModelSerializer):
             if user and isinstance(user, TigaUser):
                 language_code = user.locale
 
-            return obj.notification_content.get_body(
+            body_html = obj.notification_content.get_body_html(
                 language_code=language_code
+            )
+
+            return minify_html.minify(
+                body_html or "",
+                keep_closing_tags=True,
             )
         class Meta:
             model = Notification

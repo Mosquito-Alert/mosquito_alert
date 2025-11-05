@@ -32,6 +32,7 @@ gunicorn==18.0
 imageio==2.20.0
 langcodes==3.4.1
 matplotlib==3.9.2
+minify_html==0.18.1
 numpy==1.23.1
 numpyencoder==0.3.0
 odfpy==1.4.0

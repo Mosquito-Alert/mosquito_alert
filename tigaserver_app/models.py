@@ -3334,7 +3334,7 @@ class NotificationContent(models.Model):
             result_local = getattr(self, fieldname)
 
         # Return result with fallback to English
-        return result_local or result_en
+        return result_local or result_en or ""
 
     def get_title(self, language_code: Optional[str] = None) -> str:
         return self._get_localized_field(fieldname_prefix='title', language_code=language_code)
