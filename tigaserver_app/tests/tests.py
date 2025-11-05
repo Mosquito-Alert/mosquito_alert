@@ -866,6 +866,21 @@ class ReportEndpointTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 404)
 
+    def test_note_with_tags_set_tags_field(self):
+        response = self.client.post(
+            "/api/reports/",
+            {
+                **self.simple_payload,
+                **{
+                    "note": "test #tag1 note #tag1 #tag2",
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
+        self.assertEqual(list(report.tags.values_list('name', flat=True)), ["tag1", "tag2"])
+
 class FixEndpointTestCase(APITestCase):
     def setUp(self):
         user = User.objects.create_user("dummy", "dummy@test.com", "dummypassword")

@@ -44,7 +44,7 @@ stages:
         location.point.latitude: 41.67419
         location.point.longitude: 2.79036
         location.source: 'auto'
-        note: "Test"
+        note: "Test #tag1 #tag3"
         tags:
           - tag1
           - tag2
@@ -54,6 +54,8 @@ stages:
         counts.chest: 1
     response:
       status_code: 201
+      strict:
+        - json:list_any_order
       json:
         uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
         short_id: !anystr
@@ -75,8 +77,11 @@ stages:
             iso3_code: !anystr
           display_name: !anything
           adm_boundaries: !anylist
-        note: Test
-        tags: !anylist
+        note: "Test #tag1 #tag3"
+        tags:
+          - tag1
+          - tag2
+          - tag3
         published: true
         event_environment: indoors
         event_moment: now
