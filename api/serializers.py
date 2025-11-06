@@ -50,6 +50,7 @@ from .fields import (
     IntegerDefaultField,
     TagListSerializerField,
     TimeZoneSerializerChoiceField,
+    HTMLCharField
 )
 
 User = get_user_model()
@@ -321,6 +322,7 @@ class NotificationSerializer(serializers.ModelSerializer):
                 language_code=language_code
             )
 
+        @extend_schema_field(HTMLCharField)
         def get_body(self, obj) -> str:
             if obj.notification_content is None:
                 return ""
@@ -401,6 +403,7 @@ class CreateNotificationSerializer(serializers.ModelSerializer):
             help_text="Provide the message's title in all supported languages"
         )
         body = LocalizedMessageBodySerializer(
+            is_html=True,
             help_text="Provide the message's body in all supported languages"
         )
         class Meta:
