@@ -7,6 +7,8 @@ from rest_framework.fields import empty
 
 from tigaserver_app.models import TigaUser
 
+from .fields import HTMLCharField
+
 class FieldPolymorphicSerializer(serializers.Serializer):
     field_value_serializer_mapping = None
     resource_type_field_name = "type"
@@ -129,6 +131,8 @@ class LocalizedSerializerMixin:
         max_length = kwargs.pop('max_length', None)
         min_length = kwargs.pop('min_length', None)
 
+        is_html = kwargs.pop('is_html', False)
+
         super().__init__(*args, **kwargs)
 
         required_languages = kwargs.get('required_languages', ['en'])
@@ -144,4 +148,5 @@ class LocalizedSerializerMixin:
                 'min_length': min_length,
                 'help_text': name
             }
-            self.fields[code] = serializers.CharField(**field_params)
+            field_klass = HTMLCharField if is_html else serializers.CharField
+            self.fields[code] = field_klass(**field_params)

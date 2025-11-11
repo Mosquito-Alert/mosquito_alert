@@ -13,6 +13,7 @@ from drf_spectacular.helpers import lazy_serializer
 from rest_framework import serializers
 
 from drf_extra_fields.geo_fields import PointField
+import minify_html
 from rest_framework_dataclasses.serializers import DataclassSerializer
 from taggit.serializers import TaggitSerializer
 
@@ -49,6 +50,7 @@ from .fields import (
     IntegerDefaultField,
     TagListSerializerField,
     TimeZoneSerializerChoiceField,
+    HTMLCharField
 )
 
 User = get_user_model()
@@ -320,6 +322,7 @@ class NotificationSerializer(serializers.ModelSerializer):
                 language_code=language_code
             )
 
+        @extend_schema_field(HTMLCharField)
         def get_body(self, obj) -> str:
             if obj.notification_content is None:
                 return ""
@@ -329,8 +332,13 @@ class NotificationSerializer(serializers.ModelSerializer):
             if user and isinstance(user, TigaUser):
                 language_code = user.locale
 
-            return obj.notification_content.get_body(
+            body_html = obj.notification_content.get_body_html(
                 language_code=language_code
+            )
+
+            return minify_html.minify(
+                body_html or "",
+                keep_closing_tags=True,
             )
         class Meta:
             model = Notification
@@ -395,6 +403,7 @@ class CreateNotificationSerializer(serializers.ModelSerializer):
             help_text="Provide the message's title in all supported languages"
         )
         body = LocalizedMessageBodySerializer(
+            is_html=True,
             help_text="Provide the message's body in all supported languages"
         )
         class Meta:
