@@ -19,6 +19,7 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
@@ -170,6 +171,9 @@ class RankingData(models.Model):
     score_v2 = models.IntegerField()
     last_update = models.DateTimeField(help_text="Last time ranking data was updated", null=True, blank=True)
 
+def get_default_password_hash():
+    return make_password(settings.DEFAULT_TIGAUSER_PASSWORD)
+
 class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
     AVAILABLE_LANGUAGES = [
         (standarize_language_tag(code), Language.get(code).autonym().title()) for code, _ in settings.LANGUAGES
@@ -177,7 +181,7 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
 
     USERNAME_FIELD = 'pk'
 
-    password = models.CharField(_('password'), max_length=128, null=True, blank=True)
+    password = models.CharField(_('password'), max_length=128, default=get_default_password_hash)
 
     user_UUID = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False, help_text='UUID randomly generated on '
                                                                             'phone to identify each unique user. Must be exactly 36 '
