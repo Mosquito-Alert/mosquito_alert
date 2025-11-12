@@ -1405,6 +1405,12 @@ class ObservationSerializer(BaseReportWithPhotosSerializer):
         photo = SimplePhotoSerializer(required=True)
         result = IdentificationTaskSerializer.IdentificationTaskResultSerializer(source='*', allow_null=True, read_only=True)
 
+        def to_representation(self, instance):
+            ret = super().to_representation(instance)
+            if self.allow_null and not instance.report.published:
+                return None
+            return ret
+
         class Meta:
             model = IdentificationTask
             fields = (

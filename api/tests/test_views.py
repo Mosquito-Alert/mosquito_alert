@@ -174,6 +174,19 @@ class TestObservationAPI(BaseReportTest):
     def report_object(self, app_user):
         return create_observation_object(user=app_user)
 
+    @pytest.mark.parametrize("is_published", [True, False])
+    def test_observation_has_identification_only_if_published(self, app_api_client, is_published, identification_task):
+        observation = identification_task.report
+        observation.published_at = timezone.now() if is_published else None
+        observation.save()
+
+        response = app_api_client.get(
+            self.endpoint + f"{observation.pk}/"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert (response.data['identification'] is None) != is_published
+
+
 @pytest.mark.django_db
 class TestIdentificationTaskAPI:
     @classmethod

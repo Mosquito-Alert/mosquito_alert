@@ -91,7 +91,7 @@ stages:
             url: !anystr
           - uuid: !anystr
             url: !anystr
-        identification: !anydict
+        identification: !anything
         event_environment: !anything
         event_moment: !anything
         mosquito_appearance:
