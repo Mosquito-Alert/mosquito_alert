@@ -94,9 +94,7 @@ class TagListSerializerField(OriginalTagListSerializerField, serializers.ListFie
 @extend_schema_field({
     "type": "string",
     "format": "html",
-    "examples": [
-        "<body><p><strong>Welcome!</strong>this is a text in html.</p></body>"
-    ]
+    "example": "<body><p><strong>Welcome!</strong>this is a text in html.</p></body>"
 })
 class HTMLCharField(serializers.CharField):
     """
