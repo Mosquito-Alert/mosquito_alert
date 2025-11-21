@@ -946,28 +946,6 @@ def show_fix_users(request):
     return render(request, 'stats/fix_user_chart.html', context)
 
 
-def show_report_users(request):
-    real_reports = [report for report in Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))]
-    tz = get_localzone()
-    ref_date = datetime.datetime(2014, 6, 13,  tzinfo=tz)
-    end_date = tz.localize(datetime.datetime.now())
-    r0_users = []
-    r1_users = []
-    r2_users = []
-    r3_users = []
-    r4_users = []
-    while ref_date <= end_date:
-        these_reports = [r for r in real_reports if r.creation_time <= ref_date]
-        c = Counter(r.user for r in these_reports)
-        r0_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 0])})
-        r1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 1])})
-        r2_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 2])})
-        r3_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 3])})
-        r4_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 4])})
-        ref_date += timedelta(days=1)
-    context = {'r0_users': r0_users, 'r1_users': r1_users, 'r2_users': r2_users, 'r3_users': r3_users, 'r4_users': r4_users}
-    return render(request, 'stats/report_user_chart.html', context)
-
 
 @login_required
 def hashtag_map(request):

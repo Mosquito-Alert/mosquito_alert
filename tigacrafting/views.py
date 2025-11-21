@@ -25,7 +25,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.forms.models import modelformset_factory
-from tigacrafting.forms import AnnotationForm, MovelabAnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
+from tigacrafting.forms import AnnotationForm, ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, Categories,AcknowledgedNotification, UserSubscription
 from zipfile import ZipFile
 from io import BytesIO
@@ -59,15 +59,6 @@ from django.utils import timezone
 #-----------------------------------#
 
 logger_notification = logging.getLogger('mosquitoalert.notification')
-
-
-def photos_to_tasks():
-    these_photos = Photo.objects.filter(crowdcraftingtask=None).exclude(report__hide=True).visible()
-    if these_photos:
-        for p in these_photos:
-            new_task = CrowdcraftingTask()
-            new_task.photo = p
-            new_task.save()
 
 
 def import_tasks():
@@ -319,109 +310,6 @@ def annotate_tasks(request, how_many=None, which='new', scroll_position=''):
         args['formset'] = this_formset
         return render(request, 'tigacrafting/expert_validation.html', args)
 
-
-@login_required
-def movelab_annotation(request, scroll_position='', tasks_per_page='50', type='all'):
-    this_user = request.user
-    if request.user.groups.filter(name='movelab').exists():
-        args = {}
-        args.update(csrf(request))
-        args['scroll_position'] = scroll_position
-        AnnotationFormset = modelformset_factory(MoveLabAnnotation, form=MovelabAnnotationForm, extra=0)
-        if request.method == 'POST':
-            scroll_position = request.POST.get("scroll_position", '0')
-            formset = AnnotationFormset(request.POST)
-            if formset.is_valid():
-                formset.save()
-                page = request.GET.get('page')
-                if not page:
-                    page = '1'
-                if type == 'pending':
-                    return HttpResponseRedirect(reverse('movelab_annotation_pending_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
-                else:
-                    return HttpResponseRedirect(reverse('movelab_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
-            else:
-                return HttpResponse('error')
-        else:
-            photos_to_tasks()
-            import_tasks()
-            tasks_without_annotations_unfiltered = CrowdcraftingTask.objects.exclude(photo__report__hide=True).exclude(photo__hide=True).filter(movelab_annotation=None)
-            tasks_without_annotations = filter_tasks(tasks_without_annotations_unfiltered)
-            for this_task in tasks_without_annotations:
-                new_annotation = MoveLabAnnotation(task=this_task)
-                new_annotation.save()
-            all_annotations = MoveLabAnnotation.objects.all().order_by('id')
-            if type == 'pending':
-                all_annotations = all_annotations.exclude(tiger_certainty_category__in=[-2, -1, 0, 1, 2])
-            paginator = Paginator(all_annotations, int(tasks_per_page))
-            page = request.GET.get('page')
-            try:
-                objects = paginator.page(page)
-            except PageNotAnInteger:
-                objects = paginator.page(1)
-            except EmptyPage:
-                objects = paginator.page(paginator.num_pages)
-            page_query = all_annotations.filter(id__in=[object.id for object in objects])
-            this_formset = AnnotationFormset(queryset=page_query)
-            args['formset'] = this_formset
-            args['objects'] = objects
-            args['pages'] = range(1, objects.paginator.num_pages+1)
-            args['tasks_per_page_choices'] = range(25, min(200, all_annotations.count())+1, 25)
-        return render(request, 'tigacrafting/movelab_validation.html', args)
-    else:
-        return HttpResponse("You need to be logged in as a MoveLab member to view this page.")
-
-
-@login_required
-def movelab_annotation_pending(request, scroll_position='', tasks_per_page='50', type='pending'):
-    this_user = request.user
-    if request.user.groups.filter(name='movelab').exists():
-        args = {}
-        args.update(csrf(request))
-        args['scroll_position'] = scroll_position
-        AnnotationFormset = modelformset_factory(MoveLabAnnotation, form=MovelabAnnotationForm, extra=0)
-        if request.method == 'POST':
-            scroll_position = request.POST.get("scroll_position", '0')
-            formset = AnnotationFormset(request.POST)
-            if formset.is_valid():
-                formset.save()
-                page = request.GET.get('page')
-                if not page:
-                    page = '1'
-                if type == 'pending':
-                    return HttpResponseRedirect(reverse('movelab_annotation_pending_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
-                else:
-                    return HttpResponseRedirect(reverse('movelab_annotation_scroll_position', kwargs={'tasks_per_page': tasks_per_page, 'scroll_position': scroll_position}) + '?page='+page)
-            else:
-                return HttpResponse('error')
-        else:
-            photos_to_tasks()
-            import_tasks()
-            tasks_without_annotations_unfiltered = CrowdcraftingTask.objects.exclude(photo__report__hide=True).exclude(photo__hide=True).filter(movelab_annotation=None)
-            tasks_without_annotations = filter_tasks(tasks_without_annotations_unfiltered)
-            for this_task in tasks_without_annotations:
-                new_annotation = MoveLabAnnotation(task=this_task)
-                new_annotation.save()
-            all_annotations = MoveLabAnnotation.objects.all().order_by('id')
-            if type == 'pending':
-                all_annotations = all_annotations.exclude(tiger_certainty_category__in=[-2, -1, 0, 1, 2])
-            paginator = Paginator(all_annotations, int(tasks_per_page))
-            page = request.GET.get('page')
-            try:
-                objects = paginator.page(page)
-            except PageNotAnInteger:
-                objects = paginator.page(1)
-            except EmptyPage:
-                objects = paginator.page(paginator.num_pages)
-            page_query = all_annotations.filter(id__in=[object.id for object in objects])
-            this_formset = AnnotationFormset(queryset=page_query)
-            args['formset'] = this_formset
-            args['objects'] = objects
-            args['pages'] = range(1, objects.paginator.num_pages+1)
-            args['tasks_per_page_choices'] = range(25, min(200, all_annotations.count())+1, 25)
-        return render(request, 'tigacrafting/movelab_validation.html', args)
-    else:
-        return HttpResponse("You need to be logged in as a MoveLab member to view this page.")
 
 ITALY_GEOMETRY = GEOSGeometry('{"type": "Polygon","coordinates": [[[7.250976562499999,43.70759350405294],[8.96484375,44.071800467511565],[10.96435546875,41.95131994679697],[7.822265625000001,41.0130657870063],[8.1298828125,38.788345355085625],[11.865234375,37.735969208590504],[14.1064453125,36.70365959719456],[14.985351562499998,36.31512514748051],[18.80859375,40.27952566881291],[12.45849609375,44.5278427984555],[13.86474609375,45.413876460821086],[14.04052734375,46.51351558059737],[12.238769531249998,47.264320080254805],[6.8994140625,46.10370875598026],[6.43798828125,45.120052841530544],[7.250976562499999,43.70759350405294]]]}')
 
