@@ -5,7 +5,7 @@ from uuid import UUID
 
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
-from django.db import transaction
+from django.db import transaction, models
 
 from drf_spectacular.utils import extend_schema_field
 from drf_spectacular.helpers import lazy_serializer
@@ -1637,7 +1637,10 @@ class DeviceSerializer(serializers.ModelSerializer):
 
         # Check if there is a device with the same user, model, and device_id=None
         # That is for the users that are migrating from the legacy API to this.
-        device = Device.objects.filter(user=user, model=model, device_id=None).first()
+        device = Device.objects.filter(
+            models.Q(model=model) |
+            models.Q(registration_id=validated_data.get('fcm_token'))
+        ).filter(user=user, device_id=None).first()
         if device:
             Device.objects.filter(user=user, model=model, device_id=device_id).delete()
             # If device exists, update it
