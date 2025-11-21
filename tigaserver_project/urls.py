@@ -217,9 +217,6 @@ urlpatterns += i18n_patterns(
     path('aimalog/', aimalog, name='aimalog'),
     path('aimalog/apilist/', aimalog_datatable, name='aimalog_datatable'),
 
-    ## should stay out
-    #url(r'^coveragestats/$', show_fix_users),
-
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
     #url(r'^processing/$', show_processing),
     path('logout/', auth_views.LogoutView.as_view(), {'next_page': '/experts/'}, name='auth_logout'),
