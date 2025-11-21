@@ -1,5 +1,5 @@
 import floppyforms.__future__ as forms
-from tigacrafting.models import Annotation, MoveLabAnnotation, ExpertReportAnnotation
+from tigacrafting.models import Annotation, ExpertReportAnnotation
 from tigaserver_app.models import Report
 
 
@@ -18,12 +18,6 @@ class AnnotationForm(forms.ModelForm):
         widgets = {
             'tiger_certainty_percent': Slider,
         }
-
-
-class MovelabAnnotationForm(forms.ModelForm):
-    class Meta:
-        model = MoveLabAnnotation
-        fields = ('tiger_certainty_category', 'certainty_notes', 'hide', 'edited_user_notes')
 
 
 class ExpertReportAnnotationForm(forms.ModelForm):

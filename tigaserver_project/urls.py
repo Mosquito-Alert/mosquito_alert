@@ -196,13 +196,6 @@ urlpatterns += i18n_patterns(
     path('stats/user_score/<user_uuid>', stats_user_score, name='stats_user_score'),
     path('stats/user_ranking/<page>', stats_user_ranking, name='stats_user_ranking'),
     path('stats/user_ranking/<page>/<user_uuid>', stats_user_ranking, name='stats_user_ranking'),
-    #url(r'^reportstats/$', show_report_users),
-    #url(r'^movelab_annotation/$', movelab_annotation, name='movelab_annotation'),
-    #url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation, name='movelab_annotation_tasks_per_page'),
-    #url(r'^movelab_annotation/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation, name='movelab_annotation_scroll_position'),
-    #url(r'^movelab_annotation_pending/$', movelab_annotation_pending, name='movelab_annotation_pending'),
-    #url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/$', movelab_annotation_pending,name='movelab_annotation_pending_tasks_per_page'),
-    #url(r'^movelab_annotation_pending/(?P<tasks_per_page>[0-9]+)/(?P<scroll_position>\w+)/$', movelab_annotation_pending,name='movelab_annotation_pending_scroll_position'),
 
     path('experts/', expert_report_annotation, name='expert_report_annotation'),
     path('experts/geo_report_assign/', expert_geo_report_assign, name='expert_geo_report_assign'),
