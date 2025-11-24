@@ -218,7 +218,6 @@ urlpatterns += i18n_patterns(
     path('aimalog/apilist/', aimalog_datatable, name='aimalog_datatable'),
 
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
-    #url(r'^processing/$', show_processing),
     path('logout/', auth_views.LogoutView.as_view(), {'next_page': '/experts/'}, name='auth_logout'),
     # We do not include the message urls because two of the views (compose_w_data and reply_w_data) are slightly customized
     #url(r'^messages/', include('django_messages.urls')),

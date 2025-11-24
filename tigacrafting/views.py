@@ -205,10 +205,6 @@ def import_task_responses():
     return {'errors': errors, 'warnings': warnings}
 
 
-def show_processing(request):
-    return render(request, 'tigacrafting/please_wait.html')
-
-
 def filter_tasks(tasks):
     tasks_filtered = filter(lambda x: not x.photo.report.deleted, tasks)
     return tasks_filtered
