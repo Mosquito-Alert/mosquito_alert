@@ -608,11 +608,7 @@ class CoverageMonthMapFilter(filters.FilterSet):
 
 
 def get_latest_reports_qs(reports, property_filter=None):
-    if property_filter == 'movelab_cat_ge1':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'movelab_annotation') and x.movelab_annotation is not None and 'tiger_certainty_category' in x.movelab_annotation and x.movelab_annotation['tiger_certainty_category'] >= 1, reports.iterator()))
-    elif property_filter == 'movelab_cat_ge2':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: hasattr(x, 'movelab_annotation') and x.movelab_annotation is not None and 'tiger_certainty_category' in x.movelab_annotation and x.movelab_annotation['tiger_certainty_category'] == 2, reports.iterator()))
-    elif property_filter == 'embornals_fonts':
+    if property_filter == 'embornals_fonts':
         unique_report_ids = set(r.report_id for r in filter(lambda x: x.embornals or x.fonts, reports.iterator()))
     elif property_filter == 'basins':
         unique_report_ids = set(r.report_id for r in filter(lambda x: x.basins, reports.iterator()))
@@ -626,12 +622,7 @@ def get_latest_reports_qs(reports, property_filter=None):
     for this_id in unique_report_ids:
         these_reports = sorted([report for report in reports if report.report_id == this_id], key=attrgetter('version_number'))
         if these_reports[0].version_number > -1:
-            # taking the version with the highest movelab score, if this is a adult report cat_ge1 or cat_ge2 request, otherwise most recent version
-            if property_filter in ('movelab_cat_ge1', 'movelab_cat_ge2'):
-                movelab_sorted_reports = sorted(filter(lambda x: hasattr(x, 'movelab_annotation') and x.movelab_annotation is not None and 'tiger_certainty_category' in x.movelab_annotation, these_reports), key=attrgetter('movelab_score'))
-                this_version_UUID = movelab_sorted_reports[-1].version_UUID
-            else:
-                this_version_UUID = these_reports[-1].version_UUID
+            this_version_UUID = these_reports[-1].version_UUID
             result_ids.append(this_version_UUID)
     return Report.objects.filter(version_UUID__in=result_ids)
 
