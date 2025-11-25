@@ -130,25 +130,16 @@ def workload_daily_report_input(request):
         return Response([(r['day_epoch'].timestamp()*1000, r['n']) for r in qs.iterator()])
 
 
-def user_ids_string_to_int_array(user_ids_str):
-    user_ids_str_array = user_ids_str.split(',')
-    user_ids_int_array = []
-    for id in user_ids_str_array:
-        try:
-            int_id = int(id)
-            user_ids_int_array.append(int_id)
-        except ValueError:
-            user_ids_int_array = []
-    return user_ids_int_array
-
-
 @api_view(['GET'])
 def workload_available_reports(request):
     if request.method == 'GET':
         user_id_filter = settings.USERS_IN_STATS
         user_ids_str = request.query_params.get('user_ids', None)
         if user_ids_str is not None:
-            user_ids_arr = user_ids_string_to_int_array(user_ids_str)
+            try:
+                user_ids_arr = [int(x) for x in user_ids_str.split(',')]
+            except ValueError:
+                user_ids_arr = []
             if len(user_ids_arr) > 0:
                 user_id_filter = user_ids_arr
         current_pending = IdentificationTask.objects.new()
