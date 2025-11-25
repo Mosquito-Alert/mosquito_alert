@@ -1,9 +1,9 @@
 from collections import OrderedDict
-from typing import Optional, Union
+from typing import Union
 from rest_framework import serializers
 from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Report, ReportResponse,  Photo, \
-    Fix, Configuration, CoverageArea, CoverageAreaMonth, Session, EuropeCountry, OWCampaigns, OrganizationPin, AcknowledgedNotification, UserSubscription
+    Fix, CoverageAreaMonth, Session, EuropeCountry, OWCampaigns, OrganizationPin, UserSubscription
 from tigacrafting.models import Alert
 from django.contrib.auth.models import User
 from tigaserver_app.questions_table import data as the_translation_key
@@ -13,41 +13,6 @@ from django.utils import timezone
 
 from .fields import AutoTimeZoneDatetimeField
 from .mixins import AutoTimeZoneOrInstantUploadSerializerMixin
-
-def score_label(score):
-    if score > 66:
-        return "user_score_pro"
-    elif 33 < score <= 66:
-        return "user_score_advanced"
-    else:
-        return "user_score_beginner"
-
-'''
-recipient is the TigaUser to which the notification will be displayed
-'''
-def custom_render_notification(sent_notification, recipìent, locale):
-    expert_comment = sent_notification.notification.notification_content.get_title(language_code=locale)
-    expert_html = sent_notification.notification.notification_content.get_body_html(language_code=locale)
-
-    ack = False
-    if recipìent is not None:
-        ack = AcknowledgedNotification.objects.filter(user=recipìent,notification=sent_notification.notification).exists()
-
-    this_content = {
-        'id': sent_notification.notification.id,
-        'report_id': sent_notification.notification.report.version_UUID if sent_notification.notification.report is not None else None,
-        'user_id': sent_notification.sent_to_user.user_UUID if sent_notification.sent_to_user is not None else None,
-        'topic': sent_notification.sent_to_topic.topic_code if sent_notification.sent_to_topic is not None else None,
-        'user_score': sent_notification.sent_to_user.score if sent_notification.sent_to_user is not None else None,
-        'user_score_label': score_label(sent_notification.sent_to_user.score) if sent_notification.sent_to_user is not None else None,
-        'expert_id': sent_notification.notification.expert.id,
-        'date_comment': sent_notification.notification.date_comment,
-        'expert_comment': expert_comment,
-        'expert_html': expert_html,
-        'acknowledged': ack,
-        'public': sent_notification.notification.public,
-    }
-    return this_content
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -343,88 +308,9 @@ class FixSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.Mode
         fields = ['user_coverage_uuid', 'fix_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power', 'mask_size']
 
 
-class ConfigurationSerializer(serializers.ModelSerializer):
-    samples_per_day = serializers.IntegerField(help_text='Number of samples.')
-    creation_time = serializers.DateTimeField(help_text='Creation time help', read_only=True)
-
-    class Meta:
-        model = Configuration
-        fields = '__all__'
-
-
-class NearbyReportSerializer(serializers.ModelSerializer):
-    user = UserListingField
-    version_UUID = serializers.CharField()
-    version_number = serializers.IntegerField()
-    report_id = serializers.CharField()
-    server_upload_time = serializers.ReadOnlyField()
-    phone_upload_time = serializers.DateTimeField()
-    creation_time = serializers.DateTimeField()
-    version_time = serializers.DateTimeField()
-    type = serializers.CharField()
-    location_choice = serializers.CharField()
-    current_location_lon = serializers.FloatField(required=False)
-    current_location_lat = serializers.FloatField(required=False)
-    selected_location_lon = serializers.FloatField(required=False)
-    selected_location_lat = serializers.FloatField(required=False)
-    note = serializers.CharField(required=False)
-    package_name = serializers.CharField(required=False)
-    package_version = serializers.IntegerField(required=False)
-    device_manufacturer = serializers.CharField(required=False)
-    device_model = serializers.CharField(required=False)
-    os = serializers.CharField(required=False)
-    os_version = serializers.CharField(required=False)
-    os_language = serializers.CharField(required=False)
-    app_language = serializers.CharField(required=False)
-    responses = ReportResponseSerializer(many=True)
-    simplified_annotation = serializers.ReadOnlyField()
-    photos = DetailedPhotoSerializer(many=True)
-
-    class Meta:
-        model = Report
-        fields = (
-            "version_UUID",
-            "version_number",
-            "report_id",
-            "phone_upload_time",
-            "creation_time",
-            "version_time",
-            "type",
-            "location_choice",
-            "current_location_lon",
-            "current_location_lat",
-            "selected_location_lon",
-            "selected_location_lat",
-            "note",
-            "package_name",
-            "package_version",
-            "device_manufacturer",
-            "device_model",
-            "os",
-            "os_version",
-            "os_language",
-            "app_language",
-            "responses",
-            "photos",
-            "updated_at",
-            "server_upload_time",
-            "datetime_fix_offset",
-            "hide",
-            "point",
-            "nuts_2",
-            "nuts_3",
-            "user",
-            "country",
-            "session",
-            "simplified_annotation"
-        )
-
-
 class MapDataSerializer(serializers.ModelSerializer):
     version_UUID = serializers.CharField()
-    #creation_time = serializers.DateTimeField()
     creation_time = serializers.ReadOnlyField()
-    #creation_date = serializers.DateTimeField()
     creation_date = serializers.ReadOnlyField()
     creation_day_since_launch = serializers.ReadOnlyField()
     creation_year = serializers.ReadOnlyField()
@@ -503,13 +389,6 @@ class MapDataSerializer(serializers.ModelSerializer):
         )
 
 
-class CoverageMapSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = CoverageArea
-        fields = ('lat', 'lon', 'n_fixes')
-
-
 class CoverageMonthMapSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -547,8 +426,6 @@ class NotificationSerializer(serializers.ModelSerializer):
     user_id = serializers.CharField()
     expert_id = serializers.IntegerField()
     date_comment = serializers.Field()
-    #expert_comment = serializers.CharField()
-    #expert_html = serializers.CharField()
     photo_url = serializers.CharField()
     acknowledged = serializers.BooleanField()
     notification_content = NotificationContentSerializer()
@@ -557,8 +434,6 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'expert_comment', 'expert_html', 'acknowledged', 'notification_content')
-        #fields = ('id', 'report_id', 'user_id', 'expert_id', 'date_comment', 'acknowledged','notification_content', 'public')
         fields = ('id', 'report_id', 'expert_id', 'date_comment', 'notification_content', 'public', 'map_notification')
 
 
@@ -602,24 +477,6 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSubscription
         fields = ('id','user','topic','topic_code')
-
-
-class TigaUserSerializer(serializers.ModelSerializer):
-
-    device_token = serializers.SerializerMethodField()
-
-    def get_device_token(self, obj) -> Optional[str]:
-        return obj.device_token
-
-    class Meta:
-        model = TigaUser
-        fields = ('user_UUID','registration_time','device_token','score')
-
-
-class AcknowledgedNotificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AcknowledgedNotification
-        fields = '__all__'
 
 
 class EuropeCountrySimpleSerializer(serializers.ModelSerializer):

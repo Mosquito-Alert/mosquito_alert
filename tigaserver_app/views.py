@@ -1,112 +1,38 @@
-from typing import List, Dict
-
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import mixins, GenericAPIView
-from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.exceptions import ParseError, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django_filters import rest_framework as filters
-#import django_filters
-from datetime import datetime, timedelta
-import pytz
-import calendar
+from datetime import timedelta
 import json
-from operator import attrgetter
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, ConfigurationSerializer, MapDataSerializer, CoverageMapSerializer, CoverageMonthMapSerializer, TagSerializer, NearbyReportSerializer, UserAddressSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, AcknowledgedNotificationSerializer, UserSubscriptionSerializer, CoarseReportSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, Configuration, CoverageArea, CoverageAreaMonth, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse, Device
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, MapDataSerializer, CoverageMonthMapSerializer, TagSerializer, UserAddressSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse, Device
 from tigacrafting.models import FavoritedReports, UserStat
-from math import ceil
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
-from django.db.models import Count
-from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.gis.measure import Distance
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
-from tigaserver_app.serializers import custom_render_notification,score_label
-import tigaserver_project.settings as conf
-import copy
-from django.db import connection
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.template.loader import get_template
-from rest_framework.parsers import JSONParser
-from rest_framework.decorators import parser_classes
-import time
-import math
-
-#from celery.task.schedules import crontab
-#from celery.decorators import periodic_task
 
 
-
-class ReadOnlyModelViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """
-    A viewset that provides `retrieve`, and 'list` actions.
-
-    To use it, override the class and set the `.queryset` and
-    `.serializer_class` attributes.
-    """
-    pass
-
-
-class WriteOnlyModelViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    """
-    A viewset that provides`create` action.
-
-    To use it, override the class and set the `.queryset` and
-    `.serializer_class` attributes.
-    """
-    pass
-
-
-class ReadWriteOnlyModelViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet, mixins.ListModelMixin):
-    """
-    A viewset that provides `retrieve`, 'list`, and `create` actions.
-
-    To use it, override the class and set the `.queryset` and
-    `.serializer_class` attributes.
-    """
-    pass
-
-
-@api_view(['GET'])
-def get_current_configuration(request):
-    """
-API endpoint for getting most recent app configuration created by Movelab.
-
-**Fields**
-
-* id: Auto-incremented primary key record ID.
-* samples_per_day: Number of randomly-timed location samples to take per day.
-* creation_time: Date and time when this configuration was created by MoveLab. Automatically generated when
-record is saved.
-    """
-    if request.method == 'GET':
-        current_config = Configuration.objects.order_by('creation_time').last()
-        serializer = ConfigurationSerializer(current_config)
-        return Response(serializer.data)
-
-
-@api_view(['GET'])
-def get_photo(request):
-    if request.method == 'GET':
-        user_id = request.query_params.get('user_id', -1)
-        #get user reports by user id
-        these_photos = Photo.objects.filter(report__user_id=user_id)
-        serializer = PhotoSerializer(these_photos,many=True)
-        return Response(serializer.data)
-
+def score_label(score):
+    if score > 66:
+        return "user_score_pro"
+    elif 33 < score <= 66:
+        return "user_score_advanced"
+    else:
+        return "user_score_beginner"
 
 @api_view(['POST'])
 def post_photo(request):
@@ -147,7 +73,6 @@ class UserFilter(filters.FilterSet):
         model = TigaUser
         fields = ['user_UUID']
 
-# For production version, substitute WriteOnlyModelViewSet
 class UserViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     """
 API endpoint for getting and posting user registration. The only information required is a 36 digit UUID generated on
@@ -164,60 +89,7 @@ through the API.)
     filter_class = UserFilter
 
 
-class CustomBrowsableAPIRenderer(BrowsableAPIRenderer):
-    def get_default_renderer(self, view):
-        return JSONRenderer()
-
-
-# For production version, substitute WriteOnlyModelViewSet
-class ReportViewSet(ReadWriteOnlyModelViewSet):
-    """
-API endpoint for getting and posting new reports and report versions. (Every time a user edits a report,
-a new version is
-posted; user keeps only most recent version on phone but server retains all versions.) Note that photos attached to the
-report must be uploaded separately through the [photo](/api/photos/) endpoint. (Also note that the HTML form, below,
-for testing posts does not work for including responses in posted reports; use the raw/JSON format instead.)
-
-**Fields**
-
-* version_UUID: UUID randomly generated on phone to identify each unique report version. Must be exactly 36 characters (32 hex digits plus 4 hyphens).
-* version_number: The report version number. Should be an integer that increments by 1 for each repor version. Note
-that the user keeps only the most recent version on the device, but all versions are stored on the server. To
-delete a report, submit a version with version_number = -1. This will cause the report to no longer be displated on
-the server map (although it will still be retained internally).
-* user: user_UUID for the user sending this report. Must be exactly 36 characters (32 hex digits plus 4 hyphens) and user must have already registered this ID.
-* report_id: 4-digit alpha-numeric code generated on user phone to identify each unique report from that user. Digits should lbe randomly drawn from the set of all lowercase and uppercase alphabetic characters and 0-9, but excluding 0, o, and O to avoid confusion if we ever need user to be able to refer to a report ID in correspondence with MoveLab (as was previously the case when we had them sending samples).
-* phone_upload_time: Date and time on phone when it uploaded fix. Format as [ECMA 262](http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.15) date time string (e.g. "2014-05-17T12:34:56.123+01:00".
-* creation_time:Date and time on phone when first version of report was created. Format as [ECMA 262](http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.15) date time string
-(e.g. "2014-05-17T12:34:56.123+01:00".
-* version_time:Date and time on phone when this version of report was created. Format as [ECMA 262](http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.15) date time string (e
-.g. "2014-05-17T12:34:56.123+01:00".
-* type: Type of report: 'adult', 'site', or 'mission'.
-* location_choice: Did user indicate that report relates to current location of phone ("current") or to a location selected manually on the map ("selected")?
-* current_location_lon: Longitude of user's current location. In decimal degrees.
-* current_location_lat: Latitude of user's current location. In decimal degrees.
-* selected_location_lon: Latitude of location selected by user on map. In decimal degrees.
-* selected_location_lat: Longitude of location selected by user on map. In decimal degrees.
-* note: Note user attached to report.
-* package_name: Name of tigatrapp package from which this report was submitted.
-* package_version: Version number of tigatrapp package from which this report was submitted.
-* device_manufacturer: Manufacturer of device from which this report was submitted.
-* device_model: Model of device from which this report was submitted.
-* os:  Operating system of device from which this report was submitted.
-* os_version: Operating system version of device from which this report was submitted.
-* os_language: Language setting of operating system on device from which this report was submitted. 2-digit [ISO 639-1](http://www.iso.org/iso/home/standards/language_codes.htm) language code.
-* app_language:Language setting, within tigatrapp, of device from which this report was submitted. 2-digit [ISO 639-1](http://www.iso.org/iso/home/standards/language_codes.htm) language code.
-* responses:
-    * question: Question that the user responded to.
-    * answer: Answer that user selected.
-
-**Query Parameters**
-
-* user_UUID: The user_UUID for a particular user.
-* version_number: The report version number.
-* report_id: The 4-digit report ID.
-* type: The report type (adult, site, or mission).
-    """
+class ReportViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Report.objects.all().prefetch_related("responses", "photos")
     serializer_class = ReportSerializer
     filter_fields = ('user', 'version_number', 'report_id', 'type')
@@ -305,8 +177,7 @@ the server map (although it will still be retained internally).
     def perform_destroy(self, instance):
         instance.soft_delete()
 
-# For production version, substitute WriteOnlyModelViewSet
-class PhotoViewSet(ReadWriteOnlyModelViewSet):
+class PhotoViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
 
@@ -330,25 +201,9 @@ class PhotoViewSet(ReadWriteOnlyModelViewSet):
             super().perform_create(serializer=serializer)
 
 
-# For production version, substitute WriteOnlyModelViewSet
-class FixViewSet(ReadWriteOnlyModelViewSet):
+class FixViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     """
-API endpoint for getting and posting masked location fixes.
-
-**Fields**
-
-* user: The 36-digit user_UUID for the user sending this location fix.
-* fix_time: Date and time when fix was recorded on phone. Format as [ECMA 262](http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.15) date time string (e.g. "2014-05-17T12:34:56'
-                                              '.123+01:00".
-* server_upload_time: Date and time registered by server when it received fix upload. Automatically generated by server.'
-* phone_upload_time: Date and time on phone when it uploaded fix. Format as [ECMA 262](http://ecma-international.org/ecma-262/5.1/#sec-15.9.1.15) date time string (e.g. "2014-05-17T12:34:56.123+01:00".
-* masked_lon: Longitude rounded down to nearest 0.05 decimal degree (floor(lon/.05)*.05).
-* masked_lat: Latitude rounded down to nearest 0.05 decimal degree (floor(lat/.05)*.05).
-* power: Power level of phone at time fix recorded, expressed as proportion of full charge. Range: 0-1.
-
-**Query Parameters**
-
-* user_UUID: The UUID of the user sending this fix.
+    API endpoint for getting and posting masked location fixes.
     """
     queryset = Fix.objects.all()
     serializer_class = FixSerializer
@@ -378,63 +233,6 @@ A session is the full set of information uploaded by a user, usually in form of 
     def filter_queryset(self, queryset):
         queryset = super(SessionViewSet, self).filter_queryset(queryset)
         return queryset.order_by('-session_ID')
-
-
-def get_data_time_info(request):
-    # setting fixed start time based on release date to avoid the pre-release beta reports
-    start_time = settings.START_TIME
-    end_time = Report.objects.latest('creation_time').creation_time
-    days = (end_time - start_time).days + 1
-    weeks = ceil(days / 7.0)
-    months = ceil(days / 28.0)
-    json_response = {'start_time_posix': calendar.timegm(start_time.utctimetuple()), 'end_time_posix': calendar.timegm(end_time.utctimetuple()), 'n_days': days, 'n_weeks': weeks, 'n_months': months}
-    return HttpResponse(json.dumps(json_response))
-
-def filter_creation_day(queryset, days_since_launch):
-    if not days_since_launch:
-        return queryset
-    try:
-        target_day_start = settings.START_TIME + timedelta(days=int(days_since_launch))
-        target_day_end = settings.START_TIME + timedelta(days=int(days_since_launch)+1)
-        result = queryset.filter(creation_time__range=(target_day_start, target_day_end))
-        return result
-    except ValueError:
-        return queryset
-
-
-def filter_creation_week(queryset, weeks_since_launch):
-    if not weeks_since_launch:
-        return queryset
-    try:
-        target_week_start = settings.START_TIME + timedelta(weeks=int(weeks_since_launch))
-        target_week_end = settings.START_TIME + timedelta(weeks=int(weeks_since_launch)+1)
-        result = queryset.filter(creation_time__range=(target_week_start, target_week_end))
-        return result
-    except ValueError:
-        return queryset
-
-
-def filter_creation_month(queryset, months_since_launch):
-    if not months_since_launch:
-        return queryset
-    try:
-        target_month_start = settings.START_TIME + timedelta(weeks=int(months_since_launch)*4)
-        target_month_end = settings.START_TIME + timedelta(weeks=(int(months_since_launch)*4)+4)
-        result = queryset.filter(creation_time__range=(target_month_start, target_month_end))
-        return result
-    except ValueError:
-        return queryset
-
-
-def filter_creation_year(queryset, year):
-    if not year:
-        return queryset
-    try:
-        result = queryset.filter(creation_time__year=year)
-        return result
-    except ValueError:
-        return queryset
-
 
 class MapDataFilter(filters.FilterSet):
 
@@ -494,70 +292,10 @@ class MapDataFilter(filters.FilterSet):
         fields = ['day', 'week', 'month', 'year']
 
 
-class CoverageMapFilter(filters.FilterSet):
-    id_range_start = filters.NumberFilter(field_name='id', lookup_type='gte')
-    id_range_end = filters.NumberFilter(field_name='id', lookup_type='lte')
-
-    class Meta:
-        model = CoverageArea
-        fields = ['id_range_start', 'id_range_end']
-
-
-class CoverageMonthMapFilter(filters.FilterSet):
-    id_range_start = filters.NumberFilter(field_name='id', lookup_expr='gte')
-    id_range_end = filters.NumberFilter(field_name='id', lookup_expr='lte')
-
-    class Meta:
-        model = CoverageAreaMonth
-        fields = ['id_range_start', 'id_range_end']
-
-
-def get_latest_reports_qs(reports, property_filter=None):
-    if property_filter == 'embornals_fonts':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: x.embornals or x.fonts, reports.iterator()))
-    elif property_filter == 'basins':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: x.basins, reports.iterator()))
-    elif property_filter == 'buckets_wells':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: x.buckets or x.wells, reports.iterator()))
-    elif property_filter == 'other':
-        unique_report_ids = set(r.report_id for r in filter(lambda x: x.other, reports.iterator()))
-    else:
-        unique_report_ids = set([r.report_id for r in reports])
-    result_ids = list()
-    for this_id in unique_report_ids:
-        these_reports = sorted([report for report in reports if report.report_id == this_id], key=attrgetter('version_number'))
-        if these_reports[0].version_number > -1:
-            this_version_UUID = these_reports[-1].version_UUID
-            result_ids.append(this_version_UUID)
-    return Report.objects.filter(version_UUID__in=result_ids)
-
-# non_visible_report_id is veeeeery slow - try to replace with query (this is a work in progress)
-# select "version_UUID" from tigaserver_app_report where "version_UUID" in (select "version_UUID" from tigaserver_app_report where to_char(creation_time,'YYYY') = '2014')
-# UNION
-# select tigaserver_app_report."version_UUID" from tigaserver_app_report left join tigaserver_app_photo on tigaserver_app_report."version_UUID" = tigaserver_app_photo.report_id where tigaserver_app_photo.id is null
-# UNION
-# select expert_validated."version_UUID" from (select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='expert' AND an.validation_complete = True GROUP BY r."version_UUID" HAVING count(r."version_UUID") >= 3 AND min(an.status) = 1) expert_validated
-# UNION
-# select r."version_UUID" from tigaserver_app_report r,tigacrafting_expertreportannotation an,auth_user_groups g,auth_group gn WHERE r."version_UUID" = an.report_id AND an.user_id = g.user_id AND g.group_id = gn.id AND gn.name='superexpert' AND an.validation_complete = True AND an.revise = True GROUP BY r."version_UUID" HAVING min(an.status) = 1
-
-
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 100
     page_size_query_param = 'page_size'
     max_page_size = 1000
-
-
-class AcknowledgedNotificationFilter(filters.FilterSet):
-    class Meta:
-        model = AcknowledgedNotification
-        fields = ['user', 'notification']
-
-
-class AcknowledgedNotificationViewSetPaginated(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet ):
-    queryset = AcknowledgedNotification.objects.all().select_related('notification').select_related('user')
-    serializer_class = AcknowledgedNotificationSerializer
-    filter_class = AcknowledgedNotificationFilter
-    pagination_class = StandardResultsSetPagination
 
 
 @api_view(['POST'])
@@ -616,8 +354,6 @@ def mark_notif_as_ack(request):
         return Response(status=status.HTTP_204_NO_CONTENT)
     else:
         try:
-            #ack_notif = AcknowledgedNotification.objects.get(user=user,notification=notif)
-            #ack_notif.delete()
             ack_notif = AcknowledgedNotification(user=u, notification=n)
             ack_notif.save()
             map_notif = Notification.objects.get(id=notif)
@@ -626,16 +362,6 @@ def mark_notif_as_ack(request):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except AcknowledgedNotification.DoesNotExist:
             raise ParseError(detail='Acknowledged not found')
-
-
-@api_view(['POST'])
-def toggle_crisis_mode(request, user_id=None):
-    if user_id is None:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-    user = get_object_or_404(User.objects.all(), pk=user_id)
-    user.userstat.crisis_mode = not user.userstat.crisis_mode
-    user.userstat.save()
-    return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -725,119 +451,11 @@ def topics_subscribed(request):
     serializer = UserSubscriptionSerializer(subs,many=True)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
-def lon_function(this_lon, these_lons, this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time):
-    n_fixes = len([l for l in these_lons if l == this_lon])
-    if CoverageAreaMonth.objects.filter(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2]).count() > 0:
-        this_coverage_area = CoverageAreaMonth.objects.get(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2])
-        this_coverage_area.n_fixes += n_fixes
-    else:
-        this_coverage_area = CoverageAreaMonth(lat=this_lat[0], lon=this_lon[0], year=this_lat[1],month=this_lat[2], n_fixes=n_fixes)
-    if fix_list and fix_list.count() > 0:
-        this_coverage_area.latest_fix_id = fix_list.order_by('id').last().id
-    else:
-        this_coverage_area.latest_fix_id = latest_fix_id
-    if report_list and report_list.count() > 0:
-        this_coverage_area.latest_report_server_upload_time = report_list.order_by('server_upload_time').last().server_upload_time
-    else:
-        this_coverage_area.latest_report_server_upload_time = latest_report_server_upload_time
-    this_coverage_area.save()
-
-
-def lon_function_m0(this_lon, these_lons_m0, this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time):
-    n_fixes = len([l for l in these_lons_m0 if l == this_lon])
-    if CoverageAreaMonth.objects.filter(lat=this_lat[0], lon=this_lon[0], year=this_lat[1], month=0).count() > 0:
-        this_coverage_area = CoverageAreaMonth.objects.get(lat=this_lat[0], lon=this_lon[0], year=this_lat[1], month=0)
-        this_coverage_area.n_fixes += n_fixes
-    else:
-        this_coverage_area = CoverageAreaMonth(lat=this_lat[0], lon=this_lon[0], year=this_lat[1], month=0, n_fixes=n_fixes)
-    if fix_list and fix_list.count() > 0:
-        this_coverage_area.latest_fix_id = fix_list.order_by('id').last().id
-    else:
-        this_coverage_area.latest_fix_id = latest_fix_id
-    if report_list and report_list.count() > 0:
-        this_coverage_area.latest_report_server_upload_time = report_list.order_by('server_upload_time').last().server_upload_time
-    else:
-        this_coverage_area.latest_report_server_upload_time = latest_report_server_upload_time
-    this_coverage_area.save()
-
-
-def lon_function_y0(this_lon, these_lons_y0, this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time):
-    n_fixes = len([l for l in these_lons_y0 if l == this_lon])
-    if CoverageAreaMonth.objects.filter(lat=this_lat[0], lon=this_lon[0], month=this_lat[1], year=0).count() > 0:
-        this_coverage_area = CoverageAreaMonth.objects.get(lat=this_lat[0], lon=this_lon[0], month=this_lat[1], year=0)
-        this_coverage_area.n_fixes += n_fixes
-    else:
-        this_coverage_area = CoverageAreaMonth(lat=this_lat[0], lon=this_lon[0], month=this_lat[1], year=0, n_fixes=n_fixes)
-    if fix_list and fix_list.count() > 0:
-        this_coverage_area.latest_fix_id = fix_list.order_by('id').last().id
-    else:
-        this_coverage_area.latest_fix_id = latest_fix_id
-    if report_list and report_list.count() > 0:
-        this_coverage_area.latest_report_server_upload_time = report_list.order_by('server_upload_time').last().server_upload_time
-    else:
-        this_coverage_area.latest_report_server_upload_time = latest_report_server_upload_time
-    this_coverage_area.save()
-
-
-def lat_function(this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time):
-    these_lons = [(f.masked_lon, f.fix_time.year, f.fix_time.month) for f in fix_list if (f.masked_lat == this_lat[0] and f.fix_time.year == this_lat[1] and f.fix_time.month == this_lat[2])] + [(r.masked_lon, r.creation_time.year, r.creation_time.month) for r in report_list if (r.masked_lat is not None and r.masked_lat == this_lat and r.creation_time.year == this_lat[1] and r.creation_time.month == this_lat[2])]
-    unique_lons = set(these_lons)
-    [lon_function(this_lon, these_lons, this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lon in unique_lons]
-
-
-def lat_function_m0(this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time):
-    these_lons_m0 = [(f.masked_lon, f.fix_time.year) for f in fix_list if (f.masked_lat == this_lat[0] and f.fix_time.year == this_lat[1])] + [(r.masked_lon, r.creation_time.year) for r in report_list if (r.masked_lat is not None and r.masked_lat == this_lat and r.creation_time.year == this_lat[1])]
-    unique_lons_m0 = set(these_lons_m0)
-    [lon_function_m0(this_lon, these_lons_m0, this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lon in unique_lons_m0]
-
-
-def lat_function_y0(this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time):
-    these_lons_y0 = [(f.masked_lon, f.fix_time.month) for f in fix_list if (f.masked_lat == this_lat[0] and f.fix_time.month == this_lat[1])] + [(r.masked_lon, r.creation_time.month) for r in report_list if (r.masked_lat is not None and r.masked_lat == this_lat and r.creation_time.month == this_lat[1])]
-    unique_lons_y0 = set(these_lons_y0)
-    [lon_function_y0(this_lon, these_lons_y0, this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lon in unique_lons_y0]
-
-
-def update_coverage_area_month_model_manual():
-    json_response = {'updated': False}
-    # turning off for now
-    if True:
-        if CoverageAreaMonth.objects.all().count() > 0:
-            latest_report_server_upload_time = CoverageAreaMonth.objects.order_by('latest_report_server_upload_time').last().latest_report_server_upload_time
-            latest_fix_id = CoverageAreaMonth.objects.order_by('latest_fix_id').last().latest_fix_id
-        else:
-            latest_report_server_upload_time = pytz.utc.localize(datetime(1970, 1, 1))
-            latest_fix_id = 0
-        if CoverageAreaMonth.objects.all().count() == 0 or latest_report_server_upload_time < Report.objects.order_by('server_upload_time').last().server_upload_time or latest_fix_id < Fix.objects.order_by('id').last().id:
-            report_list = get_latest_reports_qs(Report.objects.exclude(hide=True).filter(Q(package_name='Tigatrapp',  creation_time__gte=settings.IOS_START_TIME) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3)).filter(server_upload_time__gt=latest_report_server_upload_time))
-            fix_list = Fix.objects.filter(fix_time__gt=settings.START_TIME, id__gt=latest_fix_id)
-            full_lat_list = [(f.masked_lat, f.fix_time.year, f.fix_time.month) for f in fix_list] + [(r.masked_lat, r.creation_time.year, r.creation_time.month) for r in report_list if r.masked_lat is not None]
-            full_lat_list_m0 = [(f.masked_lat, f.fix_time.year) for f in fix_list] + [(r.masked_lat, r.creation_time.year) for r in report_list if r.masked_lat is not None]
-            full_lat_list_y0 = [(f.masked_lat, f.fix_time.month) for f in fix_list] + [(r.masked_lat, r.creation_time.month) for r in report_list if r.masked_lat is not None]
-            unique_lats = set(full_lat_list)
-            unique_lats_m0 = set(full_lat_list_m0)
-            unique_lats_y0 = set(full_lat_list_y0)
-            [lat_function(this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lat in unique_lats]
-            [lat_function_m0(this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lat in unique_lats_m0]
-            [lat_function_y0(this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time) for this_lat in unique_lats_y0]
-            json_response['updated'] = True
-    return json.dumps(json_response)
-
-
 def coverage_month_internal():
     queryset = CoverageAreaMonth.objects.all()
     serializer = CoverageMonthMapSerializer(queryset, many=True)
     return serializer.data
 
-
-class CoverageMonthMapViewSet(ReadOnlyModelViewSet):
-    queryset = CoverageAreaMonth.objects.all()
-    serializer_class = CoverageMonthMapSerializer
-    filter_class = CoverageMonthMapFilter
-
-def filter_partial_name(queryset, name):
-    if not name:
-        return queryset
-    return queryset.filter(name__icontains=name)
 
 class TagFilter(filters.FilterSet):
     name = filters.Filter(method='filter_partial_name')
@@ -852,70 +470,10 @@ class TagFilter(filters.FilterSet):
         model = Tag
         fields = ['name']
 
-class TagViewSet(ReadOnlyModelViewSet):
+class TagViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     filter_class = TagFilter
-
-def string_par_to_bool(string_par):
-    if string_par:
-        string_lower = string_par.lower()
-        if string_lower == 'true':
-            return True
-    return False
-
-@api_view(['GET'])
-def force_refresh_cfa_reports(request):
-    if request.method == 'GET':
-        results = Report.objects.in_coarse_filter().filter(type=Report.TYPE_ADULT).order_by('-server_upload_time')
-        return Response(list(results.values('version_UUID')))
-
-@api_view(['GET'])
-def force_refresh_cfs_reports(request):
-    if request.method == 'GET':
-        results = Report.objects.in_coarse_filter().filter(type=Report.TYPE_SITE).order_by('-server_upload_time')
-        return Response(list(results.values('version_UUID')))
-
-@api_view(['POST'])
-def msg_ios(request):
-    user_id = request.query_params.get('user_id', -1)
-    alert_message = request.query_params.get('alert_message', -1)
-    link_url = request.query_params.get('link_url', -1)
-    if user_id != -1 and alert_message != -1 and link_url != -1:
-        this_user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
-        notificaiton = Notification.objects.create(
-            notification_content=NotificationContent.objects.create(
-                title_en=alert_message,
-                body_html_en=link_url
-            )
-        )
-        batch_response = notificaiton.send_to_user(user=this_user)
-        push_is_success = batch_response.success_count >= 0
-
-        return Response({'token': this_user.device_token, 'alert_message': alert_message, 'link_url':link_url, 'push_is_success': push_is_success})
-
-    else:
-        raise ParseError(detail='Invalid parameters')
-
-
-@api_view(['POST'])
-def msg_android(request):
-    user_id = request.query_params.get('user_id', -1)
-    message = request.query_params.get('message', -1)
-    title = request.query_params.get('title', -1)
-    if user_id != -1 and message != -1 and title != -1:
-        this_user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
-        notificaiton = Notification.objects.create(
-            notification_content=NotificationContent.objects.create(
-                title_en=title,
-                body_html_en=message
-            )
-        )
-        push_message_id = notificaiton.send_to_user(user=this_user)
-
-        return Response({'token': this_user.device_token, 'message': message, 'title': title, 'push_is_success': bool(push_message_id)})
-    else:
-        raise ParseError(detail='Invalid parameters')
 
 
 @api_view(['POST'])
@@ -935,18 +493,6 @@ def token(request):
         return Response({'token' : device.registration_id})
     else:
         raise ParseError(detail='Invalid parameters')
-
-
-@api_view(['GET'])
-@cache_page(60 * 5)
-def report_stats(request):
-    user_id = request.query_params.get('user_id', None)
-
-    qs = Report.objects.with_finished_validation()
-    if user_id:
-        qs = qs.filter(user=user_id)
-    content = {'report_count' : qs.count()}
-    return Response(content)
 
 
 @api_view(['GET'])
@@ -971,81 +517,6 @@ def user_count(request):
         raise ParseError(detail="Invalid filter criteria")
     content = { "user_count" : len(results) }
     return Response(content)
-
-'''
-def score_label(score):
-    if score > 66:
-        return "user_score_pro"
-    elif 33 < score <= 66:
-        return "user_score_advanced"
-    else:
-        return "user_score_beginner"
-'''
-
-
-
-@api_view(['GET'])
-def user_score_v2(request):
-    user_id = request.query_params.get('user_id', -1)
-    if user_id == -1:
-        raise ParseError(detail='user_id is mandatory')
-    user = get_object_or_404(TigaUser.objects.all(), pk=user_id)
-    user.update_score(commit=True)
-    return Response(user.score_v2_struct)
-
-
-@api_view(['GET', 'POST'])
-def user_score(request):
-    user_id = request.query_params.get('user_id', -1)
-    if user_id == -1:
-        raise ParseError(detail='user_id is mandatory')
-    queryset = TigaUser.objects.all()
-    user = get_object_or_404(queryset, pk=user_id)
-    if request.method == 'GET':
-        if user.score == 0:
-            content = {"user_id": user_id, "score": 1, "score_label": score_label(1)}
-        else:
-            content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
-        return Response(content)
-    if request.method == 'POST':
-        score = request.query_params.get('score', -1)
-        if score == -1:
-            raise ParseError(detail='score is mandatory')
-        try:
-            user.score = int(score)
-            user.save()
-        except ValueError:
-            raise ParseError(detail='Invalid score integer value')
-        content = {"user_id": user_id, "score": user.score, "score_label": score_label(user.score)}
-        return Response(content)
-
-'''
-def custom_render_notification(notification,locale):
-    expert_comment = notification.notification_content.get_title(language_code=locale)
-    expert_html = notification.notification_content.get_body_html(language_code=locale)
-    content = {
-        'id':notification.id,
-        'report_id':notification.report.version_UUID,
-        'user_id':notification.user.user_UUID,
-        'user_score':notification.user.score,
-        'user_score_label': score_label(notification.user.score),
-        'expert_id':notification.expert.id,
-        'date_comment':notification.date_comment,
-        'expert_comment':expert_comment,
-        'expert_html':expert_html,
-        'acknowledged':notification.acknowledged,
-        'public':notification.public,
-    }
-    return content
-'''
-
-'''
-def custom_render_notification_queryset(queryset,locale):
-    content = []
-    for notification in queryset:
-        content.append(custom_render_notification(notification,locale))
-    return content
-'''
 
 def custom_render_map_notifications(map_notification):
     expert_comment = map_notification.notification_content.title_es
@@ -1129,7 +600,7 @@ def user_notifications(request):
 
         acknowledgements = AcknowledgedNotification.objects.filter(user__user_UUID=user_id)
         if acknowledged != 'ignore':
-            ack_bool = string_par_to_bool(acknowledged)
+            ack_bool = acknowledged.lower() == 'true' if acknowledged else False
             acknowledged_notifs = acknowledgements.values('notification')
             if ack_bool is True:
                 notifications_all_of_them = notifications_all_of_them.filter(notification__in=acknowledged_notifs).order_by('-notification__date_comment')
@@ -1157,68 +628,11 @@ def user_notifications(request):
         if request.query_params.get('acknowledged') is not None:
             ack = request.query_params.get('acknowledged', True)
         if ack != 'ignore':
-            ack_bool = string_par_to_bool(ack)
+            ack_bool = ack.lower() == 'true' if ack else False
             this_notification.acknowledged = ack_bool
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
-    '''
-    if request.method == 'POST':
-        id = request.query_params.get('id', -1)
-        try:
-            int(id)
-        except ValueError:
-            raise ParseError(detail='Invalid id integer value')
-        queryset = Notification.objects.all()
-        this_notification = get_object_or_404(queryset,pk=id)
-        notification_content = this_notification.notification_content
-        #body_html_es = request.query_params.get('body_html_es', '-1')
-        #title_es = request.query_params.get('title_es', '-1')
-        #body_html_ca = request.query_params.get('body_html_ca', '-1')
-        #title_ca = request.query_params.get('title_ca', '-1')
-        body_html_en = request.query_params.get('body_html_en', '-1')
-        title_en = request.query_params.get('title_en', '-1')
-        body_html_native = request.query_params.get('body_html_native', '-1')
-        title_native = request.query_params.get('title_native', '-1')
-        native_locale = request.query_params.get('native_locale', '-1')
-        public = request.query_params.get('public', '-1')
-        if body_html_en != '-1':
-            notification_content.body_html_en = body_html_en
-        if title_en != '-1':
-            notification_content.title_en = title_en
-        if body_html_native != '-1':
-            notification_content.body_html_native = body_html_native
-        if title_native != '-1':
-            notification_content.title_native = title_native
-        if native_locale != '-1':
-            notification_content.native_locale = native_locale
-        if public != '-1':
-            public_bool = string_par_to_bool(public)
-            this_notification.public = public_bool
-        notification_content.save()
-        this_notification.save()
-        serializer = NotificationSerializer(this_notification)
-        return Response(serializer.data)
-    if request.method == 'PUT':
-        this_notification = Notification()
-        serializer = NotificationSerializer(this_notification,data=request.DATA)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    if request.method == 'DELETE':
-        id = request.query_params.get('id', -1)
-        try:
-            int(id)
-        except ValueError:
-            raise ParseError(detail='Invalid id integer value')
-        queryset = Notification.objects.all()
-        this_notification = get_object_or_404(queryset, pk=id)
-        notification_content = this_notification.notification_content
-        this_notification.delete()
-        notification_content.delete()
-        return HttpResponse(status=204)
-    '''
 
 
 @api_view(['PUT'])
@@ -1302,204 +716,6 @@ def send_notifications(request):
         return Response(results)
 
 
-@api_view(['GET'])
-def nearby_reports_no_dwindow(request):
-    if request.method == 'GET':
-
-        page = request.query_params.get('page', 1)
-        page_size = request.query_params.get('page_size', 10)
-        show_hidden = request.query_params.get('show_hidden', 0)
-
-        center_buffer_lat = request.query_params.get('lat', None)
-        center_buffer_lon = request.query_params.get('lon', None)
-
-        user = request.query_params.get('user', None)
-        tigauser = None
-        if user is not None:
-            tigauser = get_object_or_404(TigaUser.objects.all(), pk=user)
-
-        radius = request.query_params.get('radius', 5000)
-        try:
-            int(radius)
-            if int(radius) > 10000:
-                raise ParseError(detail='Values above 10000 not allowed for radius')
-        except ValueError:
-            raise ParseError(detail='invalid radius number must be integer')
-
-        try:
-            int(page_size)
-            if int(page_size) > 200:
-                raise ParseError(detail='page size can\'t be greater than 200')
-            if int(page_size) < 1:
-                raise ParseError(detail='page size can\'t be lower than 1')
-        except ValueError:
-            raise ParseError(detail='invalid radius number must be integer')
-
-        if center_buffer_lat is None or center_buffer_lon is None:
-            raise ParseError(detail='invalid parameters')
-
-        '''
-        sql = "SELECT \"version_UUID\"  " + \
-            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT({0} {1})'::geography) <= {2} " + \
-            "ORDER BY point::geography <-> 'SRID=4326;POINT({3} {4})'::geography "
-        '''
-
-        #Older postgis versions didn't like the second ::geography cast
-        sql = "SELECT \"version_UUID\"  " + \
-              "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT(%s %s)'::geography) <= %s " + \
-              "ORDER BY point <-> 'SRID=4326;POINT(%s %s)'"
-
-        cursor = connection.cursor()
-        cursor.execute(sql, (float(center_buffer_lon), float(center_buffer_lat), float(radius), float(center_buffer_lon), float(center_buffer_lat)))
-        data = cursor.fetchall()
-        flattened_data = [element for tupl in data for element in tupl]
-
-        reports_qs = Report.objects.non_deleted().filter(
-            version_UUID__in=flattened_data
-        ).published()
-
-        if user is not None:
-            reports_qs = reports_qs.exclude(user=user)
-
-        if show_hidden == 0:
-            reports_qs = reports_qs.browsable()
-
-        reports_adult = reports_qs.filter(type=Report.TYPE_ADULT).with_finished_validation()
-        reports_bite = reports_qs.filter(type=Report.TYPE_BITE)
-        reports_site = reports_qs.filter(type=Report.TYPE_SITE)
-
-        if user is not None:
-            user_reports = Report.objects.filter(user=user)
-            if show_hidden == 0:
-                user_reports = user_reports.non_deleted()
-            all_reports = list(reports_adult) + list(reports_bite) + list(reports_site) + list(user_reports)
-        else:
-            all_reports = list(reports_adult) + list(reports_bite) + list(reports_site)
-
-        all_reports_sorted = sorted(all_reports, key=lambda x: x.creation_time, reverse=True)
-
-        paginator = Paginator( all_reports_sorted, int(page_size) )
-
-        try:
-            current_page = paginator.page(page)
-        except EmptyPage:
-            raise ParseError(detail='Empty page')
-
-        serializer = NearbyReportSerializer(current_page.object_list, many=True)
-
-        next = current_page.next_page_number() if current_page.has_next() else None
-
-        previous = current_page.previous_page_number() if current_page.has_previous() else None
-
-        if user is not None:
-            response = { "user_uuids": [user], "count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
-        else:
-            response = {"count": paginator.count, "next": next, "previous": previous, "results": serializer.data}
-
-        return Response(response)
-
-
-@api_view(['GET'])
-def nearby_reports_fast(request):
-    if request.method == 'GET':
-        dwindow = request.query_params.get('dwindow', 90)
-        try:
-            int(dwindow)
-        except ValueError:
-            raise ParseError(detail='Invalid dwindow integer value')
-        if int(dwindow) > 365:
-            raise ParseError(detail='Values above 365 not allowed for dwindow')
-
-        date_n_days_ago = datetime.now() - timedelta(days=int(dwindow))
-
-        center_buffer_lat = request.query_params.get('lat', None)
-        center_buffer_lon = request.query_params.get('lon', None)
-
-        radius = request.query_params.get('radius', 5000)
-        if radius >= 10000:
-            raise ParseError(detail='Values above 10000 not allowed for radius')
-
-        if center_buffer_lat is None or center_buffer_lon is None:
-            return Response(status=400,data='invalid parameters')
-
-        sql = "SELECT \"version_UUID\"  " + \
-            "FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT(%s %s)'::geography) <= %s " + \
-            "ORDER BY point::geography <-> 'SRID=4326;POINT(%s %s)'::geography "
-
-        cursor = connection.cursor()
-        cursor.execute(sql, (float(center_buffer_lon), float(center_buffer_lat), float(radius), float(center_buffer_lon), float(center_buffer_lat)))
-        data = cursor.fetchall()
-        flattened_data = [element for tupl in data for element in tupl]
-
-        reports = Report.objects.browsable().with_finished_validation().filter(
-            type=Report.TYPE_ADULT,
-            version_UUID__in=flattened_data,
-        ).exclude(
-            server_upload_time__lte=date_n_days_ago
-        ).published()
-
-        classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0, reports)
-
-        if len(classified_reports_in_max_radius) < 10:
-            serializer = NearbyReportSerializer(classified_reports_in_max_radius)
-        else:
-            serializer = NearbyReportSerializer(classified_reports_in_max_radius[:10])
-        return Response(serializer.data)
-
-# This is the old method which used a Window. It is now deprecated
-
-# @api_view(['GET'])
-# def nearby_reports(request):
-#     if request.method == 'GET':
-#         dwindow = request.query_params.get('dwindow', 30)
-#         try:
-#             int(dwindow)
-#         except ValueError:
-#             raise ParseError(detail='Invalid dwindow integer value')
-#         if int(dwindow) > 365:
-#             raise ParseError(detail='Values above 365 not allowed for dwindow')
-#
-#         date_N_days_ago = datetime.now() - timedelta(days=int(dwindow))
-#
-#         center_buffer_lat = request.query_params.get('lat', None)
-#         center_buffer_lon = request.query_params.get('lon', None)
-#         radius = request.query_params.get('radius', '2500')
-#         if center_buffer_lat is None or center_buffer_lon is None:
-#             return Response(status=400,data='invalid parameters')
-#
-#         center_point_4326 = GEOSGeometry('SRID=4326;POINT(' + center_buffer_lon + ' ' + center_buffer_lat + ')')
-#         center_point_3857 = center_point_4326.transform(3857,clone=True)
-#
-#         swcorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x - float(radius)) + ' ' + str(center_point_3857.y - float(radius)) + ')')
-#         nwcorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x - float(radius)) + ' ' + str(center_point_3857.y + float(radius)) + ')')
-#         secorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x + float(radius)) + ' ' + str(center_point_3857.y - float(radius)) + ')')
-#         necorner_3857 = GEOSGeometry('SRID=3857;POINT(' + str(center_point_3857.x + float(radius)) + ' ' + str(center_point_3857.y + float(radius)) + ')')
-#
-#         swcorner_4326 = swcorner_3857.transform(4326,clone=True)
-#         nwcorner_4326 = nwcorner_3857.transform(4326, clone=True)
-#         secorner_4326 = secorner_3857.transform(4326, clone=True)
-#         necorner_4326 = necorner_3857.transform(4326, clone=True)
-#
-#         min_lon = swcorner_4326.x
-#         min_lat = swcorner_4326.y
-#
-#         max_lon = necorner_4326.x
-#         max_lat = necorner_4326.y
-#
-#         all_reports = Report.objects.exclude(creation_time__year=2014).exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
-#         #all_reports = Report.objects.exclude(note__icontains="#345").exclude(hide=True).exclude(photos__isnull=True).filter(type='adult').annotate(n_annotations=Count('expert_report_annotations')).filter(n_annotations__gte=3).exclude(creation_time__lte=date_N_days_ago)
-#         #Broad square filter
-#         all_reports = all_reports.filter(Q(location_choice='selected', selected_location_lon__range=(min_lon,max_lon),selected_location_lat__range=(min_lat, max_lat)) | Q(location_choice='current', current_location_lon__range=(min_lon,max_lon), current_location_lat__range=(min_lat, max_lat)))
-#         classified_reports = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,all_reports)
-#         serializer = NearbyReportSerializer(classified_reports)
-#         return Response(serializer.data)
-
-
-def filter_partial_name_address(queryset, name):
-    if not name:
-        return queryset
-    return queryset.filter(Q(first_name__icontains=name) | Q(last_name__icontains=name))
-
 class UserAddressFilter(filters.FilterSet):
     name = filters.Filter(method='filter_partial_name_address')
 
@@ -1513,79 +729,11 @@ class UserAddressFilter(filters.FilterSet):
         model = User
         fields = ['first_name', 'last_name']
 
-class UserAddressViewSet(ReadOnlyModelViewSet):
+class UserAddressViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.exclude(first_name='').filter(groups__name__in=['expert','superexpert'])
     serializer_class = UserAddressSerializer
     filter_class = UserAddressFilter
 
-def report_to_point(report):
-    return GEOSGeometry('SRID=4326;POINT(' + str(report.point.x) + ' ' + str(report.point.y) + ')')
-
-def distance_matrix(center_point, all_points):
-    center_point_meters = center_point.transform(3857,True)
-    points_by_distance = []
-    for report in all_points:
-        point = report_to_point(report)
-        point_meters = point.transform(3857,True)
-        distance = point_meters.distance(center_point_meters)
-        this_point_by_distance = [report,distance]
-        points_by_distance.append(this_point_by_distance)
-    sorted_list = sorted(points_by_distance, key=lambda x: x[1])
-    return sorted_list
-
-
-@api_view(['GET'])
-def nearby_reports(request):
-    if request.method == 'GET':
-        MAX_SEARCH_RADIUS = 100000
-        dwindow = request.query_params.get('dwindow', 90)
-        try:
-            int(dwindow)
-        except ValueError:
-            raise ParseError(detail='Invalid dwindow integer value')
-        if int(dwindow) > 365:
-            raise ParseError(detail='Values above 365 not allowed for dwindow')
-
-        date_N_days_ago = datetime.now() - timedelta(days=int(dwindow))
-
-        center_buffer_lat = request.query_params.get('lat', None)
-        center_buffer_lon = request.query_params.get('lon', None)
-        radius = request.query_params.get('radius', 5000)
-        if center_buffer_lat is None or center_buffer_lon is None:
-            return Response(status=400,data='invalid parameters')
-
-        center_point_4326 = GEOSGeometry('SRID=4326;POINT(' + center_buffer_lon + ' ' + center_buffer_lat + ')')
-
-        all_reports = Report.objects.browsable().with_finished_validation().filter(
-            type=Report.TYPE_ADULT,
-            server_upload_time__gt=date_N_days_ago
-        )
-        reports_in_max_radius = all_reports.filter(point__distance_lt=(center_point_4326,Distance(m=MAX_SEARCH_RADIUS)))
-        classified_reports_in_max_radius = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,reports_in_max_radius)
-        dst = distance_matrix(center_point_4326,classified_reports_in_max_radius)
-        reports_sorted_by_distance = [dst[i][0] for i in range(0,len(dst))]
-        if(len(reports_sorted_by_distance) < 10):
-            serializer = NearbyReportSerializer(reports_sorted_by_distance, many=True)
-        else:
-            serializer = NearbyReportSerializer(reports_sorted_by_distance[:10], many=True)
-        return Response(serializer.data)
-
-        '''
-        -- All points within a given distance from given coordinate - this is FAST
-        SELECT st_distance(point::geography, 'SRID=4326;POINT(2.06999 41.62729)'::geography) as d
-        FROM tigaserver_app_report where st_distance(point::geography, 'SRID=4326;POINT(2.06999 41.62729)'::geography) <= 5000
-        ORDER BY point::geography <-> 'SRID=4326;POINT(2.06999 41.62729)'::geography;
-        '''
-
-        '''
-        keep_looping = True
-        while( (len(classified_reports) < minimum_points) and keep_looping ):
-            radius = radius + RADIUS_INCREASE
-            reports_in_radius = all_reports.filter(point__distance_lt=(center_point_4326,Distance(m=radius)))
-            classified_reports = filter(lambda x: x.simplified_annotation is not None and x.simplified_annotation['score'] > 0,reports_in_radius)
-            if radius > MAX_SEARCH_RADIUS:
-                keep_looping = False
-        '''
 
 def send_unblock_email(name, email):
 
@@ -1676,18 +824,6 @@ package_filter = (
         Q(package_name='Mosquito Alert')
 )
 
-@api_view(['GET'])
-def all_reports_paginated(request):
-    if request.method == 'GET':
-        queryset = Report.objects.published().exclude(type=Report.TYPE_MISSION).filter( package_filter )\
-            .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).order_by('version_UUID')
-        f = MapDataFilter(request.GET, queryset=queryset)
-        paginator = StandardResultsSetPagination()
-        result_page = paginator.paginate_queryset(f.qs, request)
-        serializer = MapDataSerializer(result_page, many=True, context={'request':request})
-        return paginator.get_paginated_response(serializer.data)
-        #return Response(serializer.data)
-
 # this function can be called by scripts and replicates the api behaviour, without calling API. Therefore, no timeouts
 def all_reports_internal(year: int):
     queryset = Report.objects.published().filter( package_filter )\
@@ -1698,15 +834,6 @@ def all_reports_internal(year: int):
         many=True
     )
     return serializer.data
-
-@api_view(['GET'])
-def all_reports(request):
-    if request.method == 'GET':
-        queryset = Report.objects.published().filter( package_filter )\
-            .exclude(package_name='ceab.movelab.tigatrapp', package_version=10)
-        f = MapDataFilter(request.GET, queryset=queryset)
-        serializer = MapDataSerializer(f.qs, many=True)
-        return Response(serializer.data)
 
 
 def non_visible_reports_internal(year: int):
@@ -1722,34 +849,7 @@ def non_visible_reports_internal(year: int):
     return serializer.data
 
 
-@api_view(['GET'])
-def non_visible_reports_paginated(request):
-    if request.method == 'GET':
-        year = request.query_params.get('year', None)
-
-        queryset = Report.objects.published(False)
-        if year is not None:
-            queryset = queryset.filter(server_upload_time__year=year)
-
-        paginator = StandardResultsSetPagination()
-        result_page = paginator.paginate_queryset(queryset, request)
-        serializer = MapDataSerializer(result_page, many=True, context={'request': request})
-        return paginator.get_paginated_response(serializer.data)
-
-
-@api_view(['GET'])
-def non_visible_reports(request):
-    if request.method == 'GET':
-        year = request.query_params.get('year', None)
-
-        queryset = Report.objects.published(False)
-        if year is not None:
-            queryset = queryset.filter(server_upload_time__year=year)
-
-        serializer = MapDataSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-class OWCampaignsViewSet(ReadOnlyModelViewSet):
+class OWCampaignsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = OWCampaignsSerializer
     queryset = OWCampaigns.objects.all()
 
@@ -1766,7 +866,7 @@ class OWCampaignsViewSet(ReadOnlyModelViewSet):
         return qs
 
 
-class OrganizationsPinViewSet(ReadOnlyModelViewSet):
+class OrganizationsPinViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = OrganizationPinsSerializer
     queryset = OrganizationPin.objects.all()
 

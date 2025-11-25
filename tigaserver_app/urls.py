@@ -11,29 +11,11 @@ router.register(r'reports', views.ReportViewSet)
 router.register(r'sessions', views.SessionViewSet)
 router.register(r'photos', views.PhotoViewSet)
 router.register(r'fixes', views.FixViewSet)
-router.register(r'coverage_month', views.CoverageMonthMapViewSet)
-# router.register(r'all_reports', views.AllReportsMapViewSet)
-# router.register(r'all_reports_paginated', views.AllReportsMapViewSetPaginated)
-router.register(r'ack_notif', views.AcknowledgedNotificationViewSetPaginated)
-# This is no longer used, see path('hidden_reports/', views.non_visible_reports),
-# This line caused the NonVisibleReportsMapViewSet to be executed on app start. This is avoided
-# by using the new non_visible_reports endpoint, which does exactly the same
-#router.register(r'hidden_reports', views.NonVisibleReportsMapViewSet)
 router.register(r'owcampaigns', views.OWCampaignsViewSet)
 router.register(r'organizationpins', views.OrganizationsPinViewSet)
-# There was some sort of uncontrolled caching happening here. To avoid it, I build the resultset
-# record by record. This is slower. I don't care.
-#router.register(r'cfa_reports', views.CoarseFilterAdultReports)
-#router.register(r'cfs_reports', views.CoarseFilterSiteReports)
 router.register(r'tags', views.TagViewSet)
 
 urlpatterns = [
-    path('all_reports/', views.all_reports),
-    path('all_reports_paginated/', views.all_reports_paginated),
-    path('hidden_reports/', views.non_visible_reports),
-    path('hidden_reports_paginated/', views.non_visible_reports_paginated),
-    # This is disabled, we do not give users the chance to flip crisis mode
-    #path('toggle_crisis/(?P<user_id>\d+)/', views.toggle_crisis_mode),
     re_path('crisis_report_assign/(?P<user_id>\d+)/(?P<country_id>\d+)/', views.crisis_report_assign),
     path('mark_notif_as_ack/', views.mark_notif_as_ack),
     path('subscribe_to_topic/', views.subscribe_to_topic),
@@ -41,27 +23,14 @@ urlpatterns = [
     path('topics_subscribed/', views.topics_subscribed),
     path('photo_blood/', views.photo_blood),
     path('photo_blood_reset/', views.photo_blood_reset),
-    path('time_info/', views.get_data_time_info),
-    path('score_v2/', views.user_score_v2),
     path('photos/', views.post_photo),
-    path('photos_user/', views.get_photo),
-    path('configuration/', views.get_current_configuration),
     path('user_notifications/', views.user_notifications),
     path('notification_content/', views.notification_content),
     path('send_notifications/', views.send_notifications),
-    path('report_stats/', views.report_stats),
     path('user_count/', views.user_count),
-    path('user_score/', views.user_score),
     path('token/', views.token),
-    path('msg_ios/', views.msg_ios),
-    path('msg_android/', views.msg_android),
-    path('nearby_reports/', views.nearby_reports),
-    path('nearby_reports_fast/', views.nearby_reports_fast),
-    path('nearby_reports_nod/', views.nearby_reports_no_dwindow),
     path('reports_id_filtered/', views.reports_id_filtered),
     path('uuid_list_autocomplete/', views.uuid_list_autocomplete),
-    path('cfs_reports/', views.force_refresh_cfs_reports),
-    path('cfa_reports/', views.force_refresh_cfa_reports),
     re_path('clear_blocked/(?P<username>[\w.@+-]+)/', views.clear_blocked),
     re_path('clear_blocked_r/(?P<username>[\w.@+-]+)/(?P<report>[\w-]+)/', views.clear_blocked),
     path('clear_blocked_all/', views.clear_blocked_all),

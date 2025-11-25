@@ -31,4 +31,10 @@ class Migration(migrations.Migration):
         migrations.DeleteModel(
             name='MissionTrigger',
         ),
+        migrations.DeleteModel(
+            name='Configuration',
+        ),
+        migrations.DeleteModel(
+            name='CoverageArea',
+        ),
     ]

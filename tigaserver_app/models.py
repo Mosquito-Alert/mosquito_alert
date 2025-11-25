@@ -26,7 +26,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.measure import Distance as DistanceMeasure
 from django.core.validators import RegexValidator
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
@@ -1123,10 +1123,6 @@ class Report(TimeZoneModelMixin, models.Model):
             return "Unassigned"
 
     @property
-    def formatted_date(self) -> str:
-        return self.version_time.strftime("%d-%m-%Y %H:%M")
-
-    @property
     def deleted(self) -> bool:
         return self.deleted_at is not None
 
@@ -1248,16 +1244,6 @@ class Report(TimeZoneModelMixin, models.Model):
         return result
 
     @property
-    def response_string(self) -> str:
-        these_responses = self.responses.all().order_by("question")
-        result = ""
-        for this_response in these_responses:
-            result = (
-                result + "{" + this_response.question + " " + this_response.answer + "}"
-            )
-        return result
-
-    @property
     def tigaprob(self) -> float:
         response_score = 0
         total = 0
@@ -1353,17 +1339,6 @@ class Report(TimeZoneModelMixin, models.Model):
         result = {"edited_user_notes": self.get_final_public_note()}
         if self.get_final_photo_html():
             result["photo_html"] = self.get_final_photo_html().popup_image()
-            if hasattr(self.get_final_photo_html(), "crowdcraftingtask"):
-                result[
-                    "crowdcrafting_score_cat"
-                ] = (
-                    self.get_final_photo_html().crowdcraftingtask.tiger_validation_score_cat
-                )
-                result[
-                    "crowdcrafting_n_response"
-                ] = (
-                    self.get_final_photo_html().crowdcraftingtask.crowdcrafting_n_responses
-                )
         if self.type == self.TYPE_ADULT:
             result["tiger_certainty_category"] = self.get_final_expert_score()
             result[
@@ -1994,42 +1969,6 @@ class Report(TimeZoneModelMixin, models.Model):
             result += '<div id="' + str(photo.id) + '" style="border: ' + border_style + ';margin:1px;">' + photo.medium_image_for_validation_(show_prediction=True) + '</div><div>' + get_icon_for_blood_genre(photo.blood_genre) + '</div><br>'
         return result
 
-    def get_crowdcrafting_score(self):
-        if self.type not in (self.TYPE_SITE, self.TYPE_ADULT):
-            return None
-        these_photos = self.photos.visible().annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
-        if these_photos.count() == 0:
-            return None
-        if self.type == self.TYPE_SITE:
-            scores = map(lambda x: x.crowdcraftingtask.site_validation_score, these_photos.iterator())
-        else:
-            scores = map(lambda x: x.crowdcraftingtask.tiger_validation_score, these_photos.iterator())
-        if scores is None or len(scores) == 0:
-            return None
-        else:
-            return max(scores)
-
-    def get_is_crowd_validated(self):
-        if self.get_crowdcrafting_score():
-            return self.get_crowdcrafting_score() > settings.CROWD_VALIDATION_CUTOFF
-        else:
-            return False
-
-    def get_is_crowd_contravalidated(self):
-        if self.get_crowdcrafting_score():
-            return self.get_crowdcrafting_score() <= settings.CROWD_VALIDATION_CUTOFF
-        else:
-            return False
-
-    def get_validated_photo_html(self):
-        result = ''
-        if self.type not in (self.TYPE_SITE, self.TYPE_ADULT):
-            return result
-        these_photos = self.photos.visible().annotate(n_responses=Count('crowdcraftingtask__responses')).filter(n_responses__gte=30)
-        for photo in these_photos:
-            result += '<br>' + photo.small_image_() + '<br>'
-        return result
-
     def get_mean_expert_adult_score_aegypti(self):
         sum_scores = 0
         mean_score = -3
@@ -2182,26 +2121,6 @@ class Report(TimeZoneModelMixin, models.Model):
             status['aegypti_final_score'] = mean_score
 
         return status
-
-    def get_score_for_category_or_complex(self, category):
-        superexpert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert',validation_complete=True, revise=True, category=category)
-        expert_annotations = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert',validation_complete=True, category=category)
-        mean_score = -1
-        if superexpert_annotations.count() > 0:
-            cumulative_score = 0
-            for ano in superexpert_annotations:
-                cumulative_score += ano.validation_value
-            mean_score = cumulative_score/float(superexpert_annotations.count())
-        else:
-            cumulative_score = 0
-            for ano in expert_annotations:
-                cumulative_score += ano.validation_value
-            mean_score = cumulative_score / float(expert_annotations.count())
-        if mean_score > 1.5:
-            return 2
-        else:
-            return 1
-        #return mean_score
 
     def get_html_color_for_label(self) -> str:
         identification_task = getattr(self, "identification_task", None)
@@ -2538,16 +2457,6 @@ class Report(TimeZoneModelMixin, models.Model):
 
         return ", ".join(result)
 
-    def get_expert_has_been_assigned_long_validation(self):
-        for ano in self.expert_report_annotations.all().select_related('user'):
-            if not ano.user.userstat.is_superexpert():
-                if ano.simplified_annotation == False:
-                    return True
-        return False
-
-    def get_who_has_count(self):
-        return self.expert_report_annotations.all().count()
-
     def get_expert_recipients(self):
         result = []
         for ano in self.expert_report_annotations.all().select_related('user'):
@@ -2840,15 +2749,6 @@ class MakeImageUUID(object):
 
 make_image_uuid = MakeImageUUID('tigapics')
 
-'''
-def make_image_uuid(path):
-    def wrapper(instance, filename):
-        extension = filename.split('.')[-1]
-        filename = "%s.%s" % (uuid.uuid4(), extension)
-        return os.path.join(path, filename)
-    return wrapper
-'''
-
 class Photo(models.Model):
     """
     Photo uploaded by user.
@@ -3073,32 +2973,6 @@ class Fix(TimeZoneModelMixin, models.Model):
         verbose_name_plural = "fixes"
 
 
-class Configuration(models.Model):
-    id = models.AutoField(primary_key=True, help_text='Auto-incremented primary key record ID.')
-    samples_per_day = models.IntegerField(help_text="Number of randomly-timed location samples to take per day.")
-    creation_time = models.DateTimeField(help_text='Date and time when this configuration was created by MoveLab. '
-                                                   'Automatically generated when record is saved.',
-                                         auto_now_add=True)
-
-    def __unicode__(self):
-        return str(self.samples_per_day)
-
-
-class CoverageArea(models.Model):
-    lat = models.FloatField()
-    lon = models.FloatField()
-    n_fixes = models.PositiveIntegerField()
-    last_modified = models.DateTimeField(auto_now=True)
-    latest_report_server_upload_time = models.DateTimeField()
-    latest_fix_id = models.PositiveIntegerField()
-
-    def __unicode__(self):
-        return str(self.id)
-
-    class Meta:
-        unique_together = ("lat", "lon")
-
-
 class CoverageAreaMonth(models.Model):
     lat = models.FloatField()
     lon = models.FloatField()
@@ -3192,7 +3066,6 @@ class Notification(models.Model):
     public = models.BooleanField(default=False, help_text='Whether the notification is shown in the public map or not')
     # The field 'acknowledged' is kept for backwards compatibility with the map notifications. It only has meaningful content on MAP NOTIFICATIONS
     acknowledged = models.BooleanField(default=False, help_text='This is set to True through the public API, when the user signals that the message has been received')
-    # map_notification = models.BooleanField(default=False, help_text='Flag field to help discriminate notifications which have been issued from the map')
 
     objects = NotificationManager()
 
