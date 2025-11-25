@@ -468,23 +468,6 @@ def get_data_time_info(request):
     json_response = {'start_time_posix': calendar.timegm(start_time.utctimetuple()), 'end_time_posix': calendar.timegm(end_time.utctimetuple()), 'n_days': days, 'n_weeks': weeks, 'n_months': months}
     return HttpResponse(json.dumps(json_response))
 
-
-def get_n_days():
-    # setting fixed start time based on release date to avoid the pre-release beta reports
-    start_time = settings.START_TIME
-    end_time = Report.objects.latest('creation_time').creation_time
-    # adding 1 to include the last dayin the set
-    return (end_time - start_time).days + 1
-
-
-def get_n_months():
-    # setting fixed start time based on release date to avoid the pre-release beta reports
-    start_time = settings.START_TIME
-    end_time = Report.objects.latest('creation_time').creation_time
-    # adding 1 to include the last dayin the set
-    return ((end_time - start_time).days / 28) + 1
-
-
 def filter_creation_day(queryset, days_since_launch):
     if not days_since_launch:
         return queryset
