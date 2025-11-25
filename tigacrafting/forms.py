@@ -3,15 +3,6 @@ from tigacrafting.models import ExpertReportAnnotation
 from tigaserver_app.models import Report
 
 
-class Slider(forms.RangeInput):
-    min = 0
-    max = 100
-    step = 1
-    value = None
-    template_name = 'slider.html'
-
-
-
 class ExpertReportAnnotationForm(forms.ModelForm):
 
     class Meta:
