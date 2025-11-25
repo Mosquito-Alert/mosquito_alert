@@ -4,7 +4,6 @@ from datetime import date
 #from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from tigaserver_app.models import Fix, Report, CoverageArea, CoverageAreaMonth
-from tigacrafting.models import MoveLabAnnotation
 from django.views.decorators.clickjacking import xframe_options_exempt
 from tigaserver_project.settings import LANGUAGES
 from operator import attrgetter
@@ -232,14 +231,6 @@ def show_single_report_map(request, version_uuid, detail='detailed'):
     this_report = Report.objects.filter(version_UUID=version_uuid)
     context = {'report_list': this_report, 'detailed': detail}
     return render(request, 'tigamap/embedded.html', context)
-
-
-def show_validated_photo_map(request):
-    href_url_name = 'validated_photo_map'
-    redirect_path = strip_lang(reverse(href_url_name))
-    these_annotations = MoveLabAnnotation.objects.exclude(tiger_certainty_category=None).exclude(task__photo__report__type='site', tiger_certainty_category__lte=0)
-    context = {'annotation_list': these_annotations, 'redirect_to': redirect_path}
-    return render(request, 'tigamap/validated_photo_map.html', context)
 
 def get_current_domain(request):
     if request.META['HTTP_HOST'] != '':

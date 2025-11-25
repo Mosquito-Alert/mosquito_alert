@@ -47,7 +47,7 @@ from timezone_field import TimeZoneField
 from taggit.managers import TaggableManager
 from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
-from tigacrafting.models import MoveLabAnnotation, ExpertReportAnnotation, Categories, IdentificationTask, Complex
+from tigacrafting.models import ExpertReportAnnotation, Categories, IdentificationTask, Complex
 from tigacrafting.permissions import UserRolePermissionMixin, Role
 import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
@@ -1431,118 +1431,85 @@ class Report(TimeZoneModelMixin, models.Model):
     @property
     def movelab_annotation_euro(self) -> Optional[dict]:
         expert_validated = self.is_expert_validated
-        if self.creation_time.year == 2014 and not expert_validated:
+        if expert_validated:
+            result = {"edited_user_notes": self.get_final_public_note()}
+            if self.get_final_photo_html():
+                result["photo_html"] = self.get_final_photo_html().popup_image()
             if self.type == self.TYPE_ADULT:
-                max_movelab_annotation = (
-                    MoveLabAnnotation.objects.filter(task__photo__report=self)
-                    .exclude(hide=True)
-                    .order_by("tiger_certainty_category")
-                    .last()
+                classification = (
+                    self.get_final_combined_expert_category_euro_struct()
                 )
-                if max_movelab_annotation is not None:
-                    return {
-                        "tiger_certainty_category": max_movelab_annotation.tiger_certainty_category,
-                        "crowdcrafting_score_cat": max_movelab_annotation.task.tiger_validation_score_cat,
-                        "crowdcrafting_n_response": max_movelab_annotation.task.crowdcrafting_n_responses,
-                        "edited_user_notes": max_movelab_annotation.edited_user_notes,
-                        "photo_html": max_movelab_annotation.task.photo.popup_image(),
-                    }
-        else:
-            if expert_validated:
-                result = {"edited_user_notes": self.get_final_public_note()}
-                if self.get_final_photo_html():
-                    result["photo_html"] = self.get_final_photo_html().popup_image()
-                if self.type == self.TYPE_ADULT:
-                    classification = (
-                        self.get_final_combined_expert_category_euro_struct()
-                    )
-                    if classification["conflict"] is True:
-                        result["class_name"] = "Conflict"
-                        result["class_label"] = "conflict"
-                    else:
-                        if classification["category"] is not None:
-                            if classification["complex"] is not None:
-                                result["class_name"] = classification[
-                                    "complex"
-                                ].description
-                                result["class_label"] = slugify(
-                                    classification["category"].name
-                                )
-                                result["class_id"] = classification["category"].id
-                                result["class_value"] = classification["complex"].id
-                                # result['class_value'] = classification['value']
-                            else:
-                                result["class_name"] = classification["category"].name
-                                result["class_label"] = slugify(
-                                    classification["category"].name
-                                )
-                                result["class_id"] = classification["category"].id
-                                result["class_value"] = classification["value"]
-                elif self.type == self.TYPE_SITE:
-                    result["class_name"] = "site"
-                    result["class_label"] = "site"
-                    result["site_certainty_category"] = self.get_final_expert_score()
-                return result
+                if classification["conflict"] is True:
+                    result["class_name"] = "Conflict"
+                    result["class_label"] = "conflict"
+                else:
+                    if classification["category"] is not None:
+                        if classification["complex"] is not None:
+                            result["class_name"] = classification[
+                                "complex"
+                            ].description
+                            result["class_label"] = slugify(
+                                classification["category"].name
+                            )
+                            result["class_id"] = classification["category"].id
+                            result["class_value"] = classification["complex"].id
+                            # result['class_value'] = classification['value']
+                        else:
+                            result["class_name"] = classification["category"].name
+                            result["class_label"] = slugify(
+                                classification["category"].name
+                            )
+                            result["class_id"] = classification["category"].id
+                            result["class_value"] = classification["value"]
+            elif self.type == self.TYPE_SITE:
+                result["class_name"] = "site"
+                result["class_label"] = "site"
+                result["site_certainty_category"] = self.get_final_expert_score()
+            return result
         return None
 
     @property
     def movelab_annotation(self) -> Optional[dict]:
         expert_validated = self.is_expert_validated
-        if self.creation_time.year == 2014 and not expert_validated:
-            if self.type == self.TYPE_ADULT:
-                max_movelab_annotation = (
-                    MoveLabAnnotation.objects.filter(task__photo__report=self)
-                    .exclude(hide=True)
-                    .order_by("tiger_certainty_category")
-                    .last()
+        if not expert_validated:
+            return None
+        
+        result = {"edited_user_notes": self.get_final_public_note()}
+        if self.get_final_photo_html():
+            result["photo_html"] = self.get_final_photo_html().popup_image()
+            if hasattr(self.get_final_photo_html(), "crowdcraftingtask"):
+                result[
+                    "crowdcrafting_score_cat"
+                ] = (
+                    self.get_final_photo_html().crowdcraftingtask.tiger_validation_score_cat
                 )
-                if max_movelab_annotation is not None:
-                    return {
-                        "tiger_certainty_category": max_movelab_annotation.tiger_certainty_category,
-                        "crowdcrafting_score_cat": max_movelab_annotation.task.tiger_validation_score_cat,
-                        "crowdcrafting_n_response": max_movelab_annotation.task.crowdcrafting_n_responses,
-                        "edited_user_notes": max_movelab_annotation.edited_user_notes,
-                        "photo_html": max_movelab_annotation.task.photo.popup_image(),
-                    }
-        else:
-            if expert_validated:
-                result = {"edited_user_notes": self.get_final_public_note()}
-                if self.get_final_photo_html():
-                    result["photo_html"] = self.get_final_photo_html().popup_image()
-                    if hasattr(self.get_final_photo_html(), "crowdcraftingtask"):
-                        result[
-                            "crowdcrafting_score_cat"
-                        ] = (
-                            self.get_final_photo_html().crowdcraftingtask.tiger_validation_score_cat
-                        )
-                        result[
-                            "crowdcrafting_n_response"
-                        ] = (
-                            self.get_final_photo_html().crowdcraftingtask.crowdcrafting_n_responses
-                        )
-                if self.type == self.TYPE_ADULT:
-                    result["tiger_certainty_category"] = self.get_final_expert_score()
-                    result[
-                        "aegypti_certainty_category"
-                    ] = self.get_final_expert_score_aegypti()
-                    classification = self.get_mean_combined_expert_adult_score()
-                    result["score"] = int(round(classification["score"]))
-                    if result["score"] <= 0:
-                        result["classification"] = "none"
-                    else:
-                        if classification["is_aegypti"] == True:
-                            result["classification"] = "aegypti"
-                        elif classification["is_albopictus"] == True:
-                            result["classification"] = "albopictus"
-                        elif classification["is_none"] == True:
-                            result["classification"] = "none"
-                        else:
-                            # This should NEVER happen. however...
-                            result["classification"] = "conflict"
-                elif self.type == self.TYPE_SITE:
-                    result["site_certainty_category"] = self.get_final_expert_score()
-                return result
-        return None
+                result[
+                    "crowdcrafting_n_response"
+                ] = (
+                    self.get_final_photo_html().crowdcraftingtask.crowdcrafting_n_responses
+                )
+        if self.type == self.TYPE_ADULT:
+            result["tiger_certainty_category"] = self.get_final_expert_score()
+            result[
+                "aegypti_certainty_category"
+            ] = self.get_final_expert_score_aegypti()
+            classification = self.get_mean_combined_expert_adult_score()
+            result["score"] = int(round(classification["score"]))
+            if result["score"] <= 0:
+                result["classification"] = "none"
+            else:
+                if classification["is_aegypti"] == True:
+                    result["classification"] = "aegypti"
+                elif classification["is_albopictus"] == True:
+                    result["classification"] = "albopictus"
+                elif classification["is_none"] == True:
+                    result["classification"] = "none"
+                else:
+                    # This should NEVER happen. however...
+                    result["classification"] = "conflict"
+        elif self.type == self.TYPE_SITE:
+            result["site_certainty_category"] = self.get_final_expert_score()
+        return result
 
     @property
     def simplified_annotation(self) -> Optional[dict]:
@@ -1562,34 +1529,6 @@ class Report(TimeZoneModelMixin, models.Model):
                     result["classification"] = "conflict"
             return result
         return None
-
-    @property
-    def movelab_score(self) -> Optional[int]:
-        if self.type != self.TYPE_ADULT:
-            return None
-        max_movelab_annotation = (
-            MoveLabAnnotation.objects.filter(task__photo__report=self)
-            .exclude(hide=True)
-            .order_by("tiger_certainty_category")
-            .last()
-        )
-        if max_movelab_annotation is None:
-            return None
-        return max_movelab_annotation.tiger_certainty_category
-
-    @property
-    def crowd_score(self):
-        if self.type != self.TYPE_ADULT:
-            return None
-        max_movelab_annotation = (
-            MoveLabAnnotation.objects.filter(task__photo__report=self)
-            .exclude(hide=True)
-            .order_by("tiger_certainty_category")
-            .last()
-        )
-        if max_movelab_annotation is None:
-            return None
-        return max_movelab_annotation.task.tiger_validation_score_cat
 
     # Custom properties related to breeding sites
     @property

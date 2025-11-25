@@ -1,5 +1,5 @@
 import floppyforms.__future__ as forms
-from tigacrafting.models import Annotation, ExpertReportAnnotation
+from tigacrafting.models import ExpertReportAnnotation
 from tigaserver_app.models import Report
 
 
