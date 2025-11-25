@@ -1618,19 +1618,6 @@ class Alert(models.Model):
     alert_sent = models.BooleanField('flag for alert sent or not yet', default=False)
     notes = models.TextField('Notes field for varied observations', blank=True, null=True)
 
-# class Species(models.Model):
-#     species_name = models.TextField('Scientific name of the objective species or combination of species', blank=True, help_text='This is the species latin name i.e Aedes albopictus')
-#     composite = models.BooleanField(default=False, help_text='Indicates if this row is a single species or a combination')
-
-
-# VALIDATION_CATEGORIES = ((2, 'Sure'), (1, 'Probably'), (0, 'None'))
-# class Validation(models.Model):
-#     report = models.ForeignKey('tigaserver_app.Report', related_name='report_speciesvalidations')
-#     user = models.ForeignKey(User, related_name="user_speciesvalidations")
-#     validation_time = models.DateTimeField(blank=True, null=True)
-#     species = models.ForeignKey(Species, related_name='validations', blank=True, null=True)
-#     #species = models.ManyToManyField(Species)
-#     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure')
 
 class PhotoClassifierScoresMeta(ModelBase):
     CLASS_FIELDNAMES_CHOICES = [

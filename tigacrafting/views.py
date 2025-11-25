@@ -20,7 +20,6 @@ from tigaserver_app.models import Notification, EuropeCountry, SentNotification,
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
 import urllib
-from django.db import connection
 from tigaserver_app.serializers import DataTableNotificationSerializer, DataTableAimalertSerializer
 from django.db import transaction
 from tigacrafting.forms import LicenseAgreementForm
