@@ -69,7 +69,6 @@ INSTALLED_APPS = (
     'tigaserver_app',
     'tigahelp',
     'tigacrafting',
-    'tigapublic',
     'rest_framework',
     'leaflet',
     'stats',

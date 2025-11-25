@@ -144,7 +144,6 @@ urlpatterns += [
     path('project_about/tr/', RedirectView.as_view(url='/tr/project_about/', permanent=False), name="project_about_tr"),
     path('project_about/bn/', RedirectView.as_view(url='/bn/project_about/', permanent=False), name="project_about_bn"),
     path('project_about/sv/', RedirectView.as_view(url='/sv/project_about/', permanent=False), name="project_about_sv"),
-    path('tigapublic/', include('tigapublic.urls')),
 ]
 admin.site.site_header = "Mosquito Alert administration"
 admin.site.site_title = "Mosquito Alert"
