@@ -446,18 +446,6 @@ A session is the full set of information uploaded by a user, usually in form of 
         return queryset.order_by('-session_ID')
 
 
-def lookup_photo(request, token, photo_uuid, size):
-    if token == settings.PHOTO_SECRET_KEY:
-        this_photo = Photo.objects.get(uuid=photo_uuid)
-        if size == 'small':
-            url = this_photo.get_small_url()
-        elif size == 'medium':
-            url = this_photo.get_medium_url()
-        else:
-            url = this_photo.photo.url
-        return HttpResponseRedirect(url)
-
-
 def get_data_time_info(request):
     # setting fixed start time based on release date to avoid the pre-release beta reports
     start_time = settings.START_TIME
