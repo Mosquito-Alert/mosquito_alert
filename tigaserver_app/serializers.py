@@ -2,7 +2,7 @@ from collections import OrderedDict
 from typing import Optional, Union
 from rest_framework import serializers
 from taggit.models import Tag
-from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Mission, MissionTrigger, MissionItem, Report, ReportResponse,  Photo, \
+from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Report, ReportResponse,  Photo, \
     Fix, Configuration, CoverageArea, CoverageAreaMonth, Session, EuropeCountry, OWCampaigns, OrganizationPin, AcknowledgedNotification, UserSubscription
 from tigacrafting.models import Alert
 from django.contrib.auth.models import User
@@ -58,65 +58,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['user_UUID', ]
 
 
-class MissionItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MissionItem
-
-
-class MissionTriggerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MissionTrigger
-
-
-class MissionSerializer(serializers.ModelSerializer):
-    # id = serializers.IntegerField()
-    # title_catalan = serializers.CharField()
-    # title_spanish = serializers.CharField()
-    # title_english = serializers.CharField()
-    # short_description_catalan = serializers.CharField()
-    # short_description_spanish = serializers.CharField()
-    # short_description_english = serializers.CharField()
-    # long_description_catalan = serializers.CharField()
-    # long_description_spanish = serializers.CharField()
-    # long_description_english = serializers.CharField()
-    # help_text_catalan = serializers.CharField()
-    # help_text_spanish = serializers.CharField()
-    # help_text_english = serializers.CharField()
-    # creation_time = serializers.DateTimeField()
-    # expiration_time = serializers.DateTimeField()
-    # platform = serializers.CharField()
-    # url = serializers.URLField()
-    # photo_mission = serializers.BooleanField()
-    # items = MissionItemSerializer(many=True)
-    # triggers = MissionTriggerSerializer(many=True)
-    # mission_version = serializers.IntegerField()
-    id = serializers.ReadOnlyField()
-    title_catalan = serializers.ReadOnlyField()
-    title_spanish = serializers.ReadOnlyField()
-    title_english = serializers.ReadOnlyField()
-    short_description_catalan = serializers.ReadOnlyField()
-    short_description_spanish = serializers.ReadOnlyField()
-    short_description_english = serializers.ReadOnlyField()
-    long_description_catalan = serializers.ReadOnlyField()
-    long_description_spanish = serializers.ReadOnlyField()
-    long_description_english = serializers.ReadOnlyField()
-    help_text_catalan = serializers.ReadOnlyField()
-    help_text_spanish = serializers.ReadOnlyField()
-    help_text_english = serializers.ReadOnlyField()
-    creation_time = serializers.ReadOnlyField()
-    expiration_time = serializers.ReadOnlyField()
-    platform = serializers.ReadOnlyField()
-    url = serializers.ReadOnlyField()
-    photo_mission = serializers.ReadOnlyField()
-    items = MissionItemSerializer(many=True)
-    triggers = MissionTriggerSerializer(many=True)
-    mission_version = serializers.ReadOnlyField()
-
-    class Meta:
-        model = Mission
-        fields = '__all__'
-
-
 class SessionListingField(serializers.RelatedField):
     def to_native(self, value):
         return value.id
@@ -126,11 +67,6 @@ class UserListingField(serializers.RelatedField):
 
     def to_native(self, value):
         return value.user_UUID
-
-
-class MissionListingField(serializers.RelatedField):
-    def to_native(self, value):
-        return value.mission_id
 
 
 class ReportListingField(serializers.RelatedField):
@@ -180,7 +116,6 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
     creation_time = AutoTimeZoneDatetimeField()
     version_time = AutoTimeZoneDatetimeField()
     type = serializers.CharField()
-    mission = MissionListingField
     location_choice = serializers.CharField()
     current_location_lon = serializers.FloatField(required=False)
     current_location_lat = serializers.FloatField(required=False)
@@ -377,7 +312,6 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
             "nuts_2",
             "nuts_3",
             "user",
-            "mission",
             "country",
             "session"
         )
@@ -480,39 +414,10 @@ class NearbyReportSerializer(serializers.ModelSerializer):
             "nuts_2",
             "nuts_3",
             "user",
-            "mission",
             "country",
             "session",
             "simplified_annotation"
         )
-
-
-'''
-class NearbyReportSerializer(serializers.ModelSerializer):
-    version_UUID = serializers.ReadOnlyField()
-    lon = serializers.ReadOnlyField()
-    lat = serializers.ReadOnlyField()
-    simplified_annotation = serializers.ReadOnlyField()
-
-    class Meta:
-        model = Report
-        fields = ['version_UUID','lon','lat','simplified_annotation']
-        # exclude = ('version_number', 'user', 'report_id','creation_time','server_upload_time', 'phone_upload_time', 'version_time',
-        #            'location_choice', 'current_location_lon', 'current_location_lat', 'mission',
-        #            'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version',
-        #            'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide',
-        #            'type','point')
-'''
-
-class ReportIdSerializer(serializers.ModelSerializer):
-    version_UUID = serializers.CharField()
-    class Meta:
-        model = Report
-        exclude = ('version_number', 'user', 'report_id', 'server_upload_time', 'phone_upload_time', 'version_time',
-                   'location_choice', 'current_location_lon', 'current_location_lat', 'mission',
-                   'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version',
-                   'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide',
-                   'type','creation_time', 'timezone')
 
 
 class MapDataSerializer(serializers.ModelSerializer):
@@ -596,20 +501,6 @@ class MapDataSerializer(serializers.ModelSerializer):
             'cached_visible',
             'session',
         )
-
-
-class SiteMapSerializer(serializers.ModelSerializer):
-    creation_time = serializers.DateTimeField()
-    creation_date = serializers.DateTimeField()
-    creation_day_since_launch = serializers.Field()
-    type = serializers.CharField()
-    lon = serializers.Field()
-    lat = serializers.Field()
-    site_cat = serializers.Field()
-
-    class Meta:
-        model = Report
-        exclude = ('version_UUID', 'version_number', 'user', 'report_id', 'server_upload_time', 'phone_upload_time', 'version_time', 'location_choice', 'current_location_lon', 'current_location_lat', 'mission', 'selected_location_lon', 'selected_location_lat', 'note', 'package_name', 'package_version', 'device_manufacturer', 'device_model', 'os', 'os_version', 'os_language', 'app_language', 'hide', 'timezone')
 
 
 class CoverageMapSerializer(serializers.ModelSerializer):

@@ -2204,11 +2204,6 @@ components:
           description: user_UUID for the user sending this report. Must
             be exactly 36 characters (32 hex digits plus 4 hyphens) and
             user must have already registered this ID.
-        mission:
-          type: integer
-          nullable: true
-          description: If this report was a response to a mission, the
-            unique id field of that mission.
         country:
           type: string
           nullable: true

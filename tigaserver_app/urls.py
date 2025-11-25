@@ -60,7 +60,6 @@ urlpatterns = [
     path('nearby_reports_nod/', views.nearby_reports_no_dwindow),
     path('reports_id_filtered/', views.reports_id_filtered),
     path('uuid_list_autocomplete/', views.uuid_list_autocomplete),
-    path('missions/', views.get_new_missions),
     path('cfs_reports/', views.force_refresh_cfs_reports),
     path('cfa_reports/', views.force_refresh_cfa_reports),
     re_path('clear_blocked/(?P<username>[\w.@+-]+)/', views.clear_blocked),
