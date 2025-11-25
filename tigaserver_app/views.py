@@ -30,7 +30,6 @@ from django.contrib.gis.measure import Distance
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
-from tigascoring.maUsers import smmry
 from tigaserver_app.serializers import custom_render_notification,score_label
 import tigaserver_project.settings as conf
 import copy
@@ -1067,20 +1066,6 @@ def score_label(score):
         return "user_score_beginner"
 '''
 
-
-def get_user_score(user_id):
-    summary = smmry()
-    return summary.getScore(user_id)
-
-
-def refresh_user_scores():
-    summary = smmry()
-    queryset = TigaUser.objects.all()
-    for user in queryset:
-        score = summary.getScore(user.user_UUID)
-        if user.score != score[0]:
-            user.score = score[0]
-            user.save()
 
 
 @api_view(['GET'])
