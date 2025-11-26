@@ -1639,7 +1639,7 @@ class DeviceSerializer(serializers.ModelSerializer):
         # That is for the users that are migrating from the legacy API to this.
         device = Device.objects.filter(
             models.Q(model=model) |
-            models.Q(registration_id=validated_data.get('fcm_token'))
+            models.Q(registration_id=validated_data.get('registration_id'))
         ).filter(user=user, device_id=None).first()
         if device:
             Device.objects.filter(user=user, model=model, device_id=device_id).delete()

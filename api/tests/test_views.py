@@ -10,6 +10,8 @@ from django.contrib.auth.models import Group
 from django.utils import timezone
 from django.utils.module_loading import import_string
 
+from fcm_django.models import DeviceType
+
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
@@ -730,6 +732,39 @@ class TestDeviceAPI:
         assert device.device_id == 'unique_id'
         assert device.pk == device_pk
         assert Device.objects.filter(user=app_user).count() == 1
+
+    def test_device_with_same_fcm_token_is_updated_on_create(self, app_user, app_api_client):
+        device = Device.objects.create(
+            user=app_user,
+            device_id=None,
+            registration_id='fcm_unique_token',
+            type=DeviceType.ANDROID,
+            model=None,
+        )
+        response = app_api_client.post(
+            self.endpoint,
+            data={
+                'device_id': 'unique_id',
+                'fcm_token': 'fcm_unique_token',
+                'type': device.type,
+                'manufacturer': device.manufacturer,
+                'model': 'new_model',
+                'os': {
+                    'name': 'test_os_name',
+                    'version': 'test_os_version'
+                }
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert Device.objects.filter(user=app_user).count() == 1
+        device.refresh_from_db()
+        assert device.device_id == 'unique_id'
+        assert device.model == 'new_model'
+        assert device.registration_id == 'fcm_unique_token'
+        assert device.os_name == 'test_os_name'
+        assert device.os_version == 'test_os_version'
+
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("taxa")
