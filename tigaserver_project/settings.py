@@ -337,9 +337,6 @@ TEMPLATES = [
     },
 ]
 
-# This is the cuttoff score above which a photo will be considered "crowd-validated"
-CROWD_VALIDATION_CUTOFF = 0
-
 START_TIME = pytz.utc.localize(datetime(2014, 6, 13))
 
 IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
