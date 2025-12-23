@@ -11,7 +11,7 @@ from PIL.ExifTags import TAGS, GPSTAGS
 import tigaserver_project.settings as conf
 import os
 import requests
-from django.contrib.gis.geos import Polygon, MultiPolygon
+from django.contrib.gis.geos import Polygon, MultiPolygon, Point
 from django.utils import timezone
 from tigaserver_app.models import TigaUser, Report, Photo, Fix
 from tigacrafting.models import FavoritedReports
@@ -2355,6 +2355,49 @@ class ReportModelTest(TestCase):
                 self.assertEqual(report.location_choice, '')
                 self.assertIsNone(report.current_location_lon)
                 self.assertIsNone(report.current_location_lat)
+
+    def test_report_location_is_used_on_user_last_location(self):
+        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
+            user = TigaUser.objects.create(
+                last_location=None,
+                last_location_update=None
+            )
+
+            report_point = Point(x=10, y=10, srid=4326)
+            report = Report.objects.create(
+                user=user,
+                report_id='1234',
+                phone_upload_time=timezone.now(),
+                creation_time=timezone.now(),
+                version_time=timezone.now(),
+                type=Report.TYPE_ADULT,
+                location_choice="current",
+                current_location_lon=report_point.x,
+                current_location_lat=report_point.y,
+            )
+
+            user.refresh_from_db()
+            self.assertEqual(user.last_location, report_point)
+            self.assertEqual(user.last_location_update, report.server_upload_time)
+
+            traveller.shift(timedelta(days=1))
+
+            new_report_point = Point(x=5, y=5, srid=4326)
+            new_report = Report.objects.create(
+                user=user,
+                report_id='1235',
+                phone_upload_time=timezone.now(),
+                creation_time=timezone.now(),
+                version_time=timezone.now(),
+                type=Report.TYPE_ADULT,
+                location_choice="current",
+                current_location_lon=new_report_point.x,
+                current_location_lat=new_report_point.y,
+            )
+
+            user.refresh_from_db()
+            self.assertEqual(user.last_location, new_report_point)
+            self.assertEqual(user.last_location_update, new_report.server_upload_time)
 
 class ApiTokenViewTest(APITestCase):
     ENDPOINT = '/api/token/'
