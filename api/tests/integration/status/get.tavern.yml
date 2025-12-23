@@ -1,0 +1,15 @@
+---
+
+test_name: Test status endpoint
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  - name: Test status should return 200
+    request:
+      url: "{api_live_url}/status/"
+      method: "GET"
+    response:
+      status_code: 200
