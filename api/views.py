@@ -29,6 +29,7 @@ from rest_framework.parsers import FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
+from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import Token
 
@@ -108,6 +109,14 @@ from .permissions import (
 from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet, NestedViewSetMixin
 
 User = get_user_model()
+
+@extend_schema(responses=None)
+class StatusView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        return Response(status=status.HTTP_200_OK)
 
 class CampaignsViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     queryset = OWCampaigns.objects.all()

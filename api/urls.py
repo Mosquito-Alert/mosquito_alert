@@ -9,6 +9,7 @@ from drf_spectacular.views import SpectacularRedocView, SpectacularAPIView, Spec
 from .auth.views import GuestRegisterView, PasswordChangeView
 from .routers import NestedSimpleRouter, SimpleRouter
 from .views import (
+    StatusView,
     UserViewSet,
     MyUserViewSet,
     MyPermissionViewSet,
@@ -92,6 +93,10 @@ api_urlpatterns += [
     path("me/breeding-sites/", MyBreedingSiteViewSet.as_view({'get': 'list'}), name='my-breeding-sites'),
     path("me/identification-tasks/annotations/", MyAnnotationViewSet.as_view({'get': 'list'}), name='my-annotations'),
     path("me/identification-tasks/", MyIdentificationTaskViewSet.as_view({'get': 'list'}), name='my-identification-tasks'),
+]
+
+api_urlpatterns += [
+    path("status/", StatusView.as_view(), name="status"),
 ]
 
 api_urlpatterns += router.urls
