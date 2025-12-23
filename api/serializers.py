@@ -1557,7 +1557,7 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
             "has_larvae",
         )
         extra_kwargs = {
-            "site_type": {"allow_null": False, "allow_blank": False, "source": "breeding_site_type"},
+            "site_type": {"allow_null": False, "allow_blank": False, "required": True, "source": "breeding_site_type"},
             # Need to set default to None, otherwise BooleanField uses False
             "has_water": {"allow_null": True, "default": None, "source": "breeding_site_has_water"},
             "in_public_area": {"allow_null": True, "default": None, "source": "breeding_site_in_public_area"},
