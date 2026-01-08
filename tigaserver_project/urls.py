@@ -7,18 +7,15 @@ from django.contrib.gis import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from tigahelp.views import show_help, show_about, show_license, show_policies, show_terms, show_privacy, show_credit_image, show_scoring, show_about_us, show_project_about, show_app_license
-from tigamap.views import show_filterable_report_map, show_single_report_map, single_report_map_simplified
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
-from tigaserver_app.views import lookup_photo
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, single_report_view, entolab_license_agreement, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement, predefined_messages, expert_geo_report_assign, report_expiration, aimalog_datatable, aimalog, coarse_filter
 from tigaserver_messages.views import compose_w_data, reply_w_data, compose
 from django_messages.views import view,delete,undelete,trash,inbox,outbox
 from django.views.i18n import JavaScriptCatalog
 from django.urls import include,path
 from django.contrib.auth import views as auth_views
-from rest_framework.schemas import get_schema_view
 from django.views.generic import TemplateView
 
 admin.autodiscover()
@@ -147,9 +144,9 @@ urlpatterns += [
     path('project_about/tr/', RedirectView.as_view(url='/tr/project_about/', permanent=False), name="project_about_tr"),
     path('project_about/bn/', RedirectView.as_view(url='/bn/project_about/', permanent=False), name="project_about_bn"),
     path('project_about/sv/', RedirectView.as_view(url='/sv/project_about/', permanent=False), name="project_about_sv"),
-    path('tigapublic/', include('tigapublic.urls')),
-    path('get_photo/<token>/<photo_uuid>/<size>', lookup_photo),
 ]
+admin.site.site_header = "Mosquito Alert administration"
+admin.site.site_title = "Mosquito Alert"
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
@@ -162,13 +159,13 @@ urlpatterns += i18n_patterns(
     path('about_us/', show_about_us, name='help.show_about_us'),
     path('project_about/', show_project_about, name='help.show_project_about'),
     path('app_license/', show_app_license, name='help.show_app_license'),
-    path('webmap/embedded/', show_filterable_report_map, {'fullscreen': 'off', 'legend': 'on'}),
-    path('webmap/adults/', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map'),
-    path('webmap/adults/<selected_validation>/', show_filterable_report_map, {'map_type': 'adult'}, name='adult_map_type'),
-    path('webmap/sites/', show_filterable_report_map, {'map_type': 'site'}, name='site_map'),
-    path('webmap/sites/<selected_validation>/', show_filterable_report_map, {'map_type': 'site'}, name='site_map_type'),
-    path('webmap/coverage/', show_filterable_report_map, {'map_type': 'coverage'}, name='coverage_map'),
-    path('webmap/', show_filterable_report_map, name='webmap.show_map_defaults'),
+    path('webmap/embedded/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
+    path('webmap/adults/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
+    path('webmap/adults/<selected_validation>/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
+    path('webmap/sites/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
+    path('webmap/sites/<selected_validation>/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
+    path('webmap/coverage/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
+    path('webmap/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
     path('', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
     path('bcn/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
     path('single_report_map/<uuid:version_uuid>/', RedirectView.as_view(url='https://map.mosquitoalert.com/%(version_uuid)s/', permanent=True)),
@@ -217,11 +214,7 @@ urlpatterns += i18n_patterns(
     path('aimalog/', aimalog, name='aimalog'),
     path('aimalog/apilist/', aimalog_datatable, name='aimalog_datatable'),
 
-    ## should stay out
-    #url(r'^coveragestats/$', show_fix_users),
-
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
-    #url(r'^processing/$', show_processing),
     path('logout/', auth_views.LogoutView.as_view(), {'next_page': '/experts/'}, name='auth_logout'),
     # We do not include the message urls because two of the views (compose_w_data and reply_w_data) are slightly customized
     #url(r'^messages/', include('django_messages.urls')),

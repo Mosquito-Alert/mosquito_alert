@@ -308,22 +308,6 @@ def get_unrelated_awards_score( user_uuid, user_uuids ):
     return retval
 
 
-# def diff_month( date_now, date_before ):
-#     return (( date_now.year - date_before.year ) * 12 ) + (date_now.month - date_before.month)
-#
-#
-# def get_elapsed_label( date_now, date_before ):
-#     diff = date_now - date_before
-#     if diff.days >= 30:
-#         diff_months = diff_month( date_now, date_before )
-#         if diff_months > 12:
-#             return str( int(diff_months / 12) ) + _(" years ago")
-#         else:
-#             return str( diff_months ) + _(" months ago")
-#     else:
-#         return str(diff.days) + _(" days ago")
-
-
 def compute_user_score_in_xp_v2(user_uuid):
 
     # Cast UUID to string.
@@ -500,46 +484,3 @@ def compute_user_score_in_xp_v2(user_uuid):
     '''
 
     return result
-
-
-def get_all_user_reports(user_uuid):
-    user = TigaUser.objects.get(pk=user_uuid)
-
-    return Report.objects.filter(user=user)
-
-
-def get_first_report_of_season(user_uuid, current_year=None):
-    reports = get_all_user_reports(user_uuid)
-    if current_year is None:
-        current_year = datetime.datetime.now().year
-    return reports.filter(creation_time__gte=datetime.date(current_year, conf.SEASON_START_MONTH, conf.SEASON_START_DAY)).order_by('creation_time').first()
-
-
-def awards_for_first_report_of_day(user_uuid, current_year=None):
-    reports = get_all_user_reports(user_uuid)
-    if current_year is None:
-        current_year = datetime.datetime.now().year
-    reports = reports.filter(creation_time__year=current_year).order_by('creation_time')
-    current_day = -1
-    current_month = -1
-    for r in reports:
-        if r.creation_time.day != current_day:
-            current_day = r.creation_time.day
-            current_month = r.creation_time.month
-            print("Award for new day, day {0} month {1}".format( current_day, current_month ))
-        else:
-            if r.creation_time.month != current_month:
-                print("Award for first for same day, different month, day {0} month {1}".format(current_day, current_month))
-                current_day = r.creation_time.day
-                current_month = r.creation_time.month
-            else:
-                print("No award, day {0} month {1}".format( current_day, current_month ))
-
-
-
-def check_user_awards(user_uuid):
-    first_of_season = get_first_report_of_season(user_uuid)
-    if first_of_season is None:
-        print("No reports this season")
-    else:
-        print("First report of season is {0}".format(first_of_season))

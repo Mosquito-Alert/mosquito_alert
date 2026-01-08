@@ -1,17 +1,15 @@
 from django.test import TestCase
 from django.utils.translation import activate, deactivate, gettext as _
-from tigaserver_app.models import EuropeCountry, TigaUser, Report, Photo, ExpertReportAnnotation, Award, AwardCategory, \
-    Notification, NotificationContent, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
+from tigaserver_app.models import TigaUser, Report, Photo, ExpertReportAnnotation, Award, \
+    Notification, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
     ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
 from tigacrafting.models import Categories
 from tigaserver_project import settings as conf
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
-from django.utils import timezone
-from datetime import datetime, timedelta, date
+from datetime import datetime
 import pytz
 import random
 from django.template.loader import render_to_string
-import html.entities
 from django.contrib.auth.models import User, Group
 import string
 

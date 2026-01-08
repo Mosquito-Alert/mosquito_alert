@@ -20,21 +20,17 @@
 
     {% block bootstrap_css %}
         <!-- Bootstrap core CSS -->
-        <link rel="stylesheet" href={% static "tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css" %}>
-        <!--<link rel="stylesheet" href={% static "tigacrafting/bootstrap-select/css/bootstrap-select.min.css" %}>-->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
     {% endblock %}
 
-    <!--script src={% static "tigacrafting/jquery/1.11.1/jquery.min.js" %}></script-->
-    <script src={% static "tigacrafting/jquery/1.8.3/jquery-1.8.3.min.js" %}></script>
-    <!--script src={% static "tigacrafting/jquery-ui/jquery-ui.min.js" %}></script-->
-    <script src={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.min.js" %}></script>
-    <script src={% static "tigacrafting/tag-it/tag-it.min.js" %}></script>
-    <!--link rel="stylesheet" href={% static "tigacrafting/jquery-ui/jquery-ui.css" %}-->
-    <link rel="stylesheet" href={% static "tigacrafting/jquery-ui-1.8.24/jquery-ui.css" %}>
-    <link rel="stylesheet" href={% static "tigacrafting/tag-it/jquery.tagit.css" %}>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tag-it@2.0.0/js/tag-it.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.8.24/themes/base/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tag-it@2.0.0/css/jquery.tagit.min.css">
     <link rel="stylesheet" href={% static "tigacrafting/tokenize2/tokenize2.min.css" %}>
 
-    <script type="text/javascript" src={% static "tigacrafting/jquery-qrcode/jquery.qrcode.min.js" %}></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery-qrcode@1.0.0/jquery.qrcode.min.js"></script>
     <script src={% static "tigacrafting/tokenize2/tokenize2.min.js" %}></script>
     <style>
 
@@ -98,8 +94,7 @@
 
     {% block fa_css %}
         <!-- FA CSS -->
-        <!--<link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.2.0/css/font-awesome.min.css" %}>-->
-        <link rel="stylesheet" href={% static "tigacrafting/font-awesome-4.7.0/css/font-awesome.min.css" %}>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
     {% endblock %}
 
 
@@ -122,12 +117,12 @@
 
         var mosquito_icon_class = L.Icon.Default.extend({
             options: {
-                iconUrl: '{% static "tigamap/yellow_icon.png" %}'
+                iconUrl: '{% static "tigacrafting/yellow_icon.png" %}'
             }
         });
         var site_icon_class = L.Icon.Default.extend({
             options: {
-                iconUrl: '{% static "tigamap/blue_icon.png" %}'
+                iconUrl: '{% static "tigacrafting/blue_icon.png" %}'
             }
         });
 
@@ -139,7 +134,7 @@
 
                 L.marker([{{ form.instance.report.lat }}, {{ form.instance.report.lon }}], {icon:
                         {% if form.instance.report.type == 'site' %}site_icon{% else %}
-                            mosquito_icon{% endif %}}).bindPopup('<table><tbody><tr><td><strong>Lat:</strong></td><td>{{ form.instance.report.lat }}</td></tr><tr><td><strong>Lon:</strong></td><td>{{ form.instance.report.lon }}</td></tr></tbody></table><br><a style="color:white;" class="btn btn-primary btn-sm" target="_blank" href="{% url 'webmap.show_map_defaults' %}?center_lon={{ form.instance.report.lon }}&center_lat={{ form.instance.report.lat }}&zoom=14&map_type={{ form.instance.report.type }}&year={{ form.instance.report.creation_time.year }}">View on Public Map</a>{% if request.user.is_staff %}<br><br><a style="color:white;" class="btn btn-danger btn-sm" target="_blank" href="{% url 'admin:tigaserver_app_report_change' form.instance.report.version_UUID %}">View Admin</a>{% endif %}').addTo(map);
+                            mosquito_icon{% endif %}}).bindPopup('<table><tbody><tr><td><strong>Lat:</strong></td><td>{{ form.instance.report.lat }}</td></tr><tr><td><strong>Lon:</strong></td><td>{{ form.instance.report.lon }}</td></tr></tbody></table>{% if request.user.is_staff %}<br><br><a style="color:white;" class="btn btn-danger btn-sm" target="_blank" href="{% url 'admin:tigaserver_app_report_change' form.instance.report.version_UUID %}">View Admin</a>{% endif %}').addTo(map);
 
             }
         {%  endfor %}
@@ -1270,11 +1265,11 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
 
-    <script src="{% static 'tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.2.0/dist/js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="{% static 'tigacrafting/bootstrap-3.2.0-assets/js/ie10-viewport-bug-workaround.js' %}"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/js/ie10-viewport-bug-workaround.js"></script>
 
-    <script src="{% static 'tigacrafting/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.7.2/dist/js/bootstrap-select.min.js"></script>
 
     <script src="{% static 'tigacrafting/javascript/experts.js' %}"></script>
 

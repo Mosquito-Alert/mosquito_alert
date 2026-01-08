@@ -5,7 +5,7 @@ from uuid import UUID
 
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
-from django.db import transaction
+from django.db import transaction, models
 
 from drf_spectacular.utils import extend_schema_field
 from drf_spectacular.helpers import lazy_serializer
@@ -1557,7 +1557,7 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
             "has_larvae",
         )
         extra_kwargs = {
-            "site_type": {"allow_null": False, "allow_blank": False, "source": "breeding_site_type"},
+            "site_type": {"allow_null": False, "allow_blank": False, "required": True, "source": "breeding_site_type"},
             # Need to set default to None, otherwise BooleanField uses False
             "has_water": {"allow_null": True, "default": None, "source": "breeding_site_has_water"},
             "in_public_area": {"allow_null": True, "default": None, "source": "breeding_site_in_public_area"},
@@ -1637,7 +1637,10 @@ class DeviceSerializer(serializers.ModelSerializer):
 
         # Check if there is a device with the same user, model, and device_id=None
         # That is for the users that are migrating from the legacy API to this.
-        device = Device.objects.filter(user=user, model=model, device_id=None).first()
+        device = Device.objects.filter(
+            models.Q(model=model) |
+            models.Q(registration_id=validated_data.get('registration_id'))
+        ).filter(user=user, device_id=None).first()
         if device:
             Device.objects.filter(user=user, model=model, device_id=device_id).delete()
             # If device exists, update it

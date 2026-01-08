@@ -67,10 +67,8 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'api',
     'tigaserver_app',
-    'tigamap',
     'tigahelp',
     'tigacrafting',
-    'tigapublic',
     'rest_framework',
     'leaflet',
     'stats',
@@ -319,29 +317,6 @@ LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (40.0, -4.0),
     'DEFAULT_ZOOM': 6,
     'MINIMAP': True,
-    'PLUGINS': {
-        'marker_cluster_yellow': {
-            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_yellow.css'],
-            'js': 'tigamap/leaflet.markercluster.js',
-        },
-        'marker_cluster_yellow_single': {
-            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_yellow_single.css'],
-            'js': 'tigamap/leaflet.markercluster.js',
-        },
-        'marker_cluster_blue': {
-            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_blue.css'],
-            'js': 'tigamap/leaflet.markercluster.js',
-        },
-        'marker_cluster_blue_yellow': {
-            'css': ['tigamap/MarkerCluster.css', 'tigamap/MarkerCluster.tigamap_blue_yellow.css'],
-            'js': 'tigamap/leaflet.markercluster.js',
-        },
-        'oms': {
-            'css': [],
-            'js': 'tigamap/oms.min.js',
-            'auto-include': True,
-        }
-    }
 }
 
 #TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'templates')]
@@ -361,9 +336,6 @@ TEMPLATES = [
         },
     },
 ]
-
-# This is the cuttoff score above which a photo will be considered "crowd-validated"
-CROWD_VALIDATION_CUTOFF = 0
 
 START_TIME = pytz.utc.localize(datetime(2014, 6, 13))
 

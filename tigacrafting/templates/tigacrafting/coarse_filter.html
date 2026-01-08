@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html lang="{% block language %}'en'{% endblock %}">
 <head>
-    <link rel="stylesheet" href="{% static 'tigacrafting/bootstrap-3.2.0-dist/css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'tigacrafting/font-awesome-4.7.0/css/font-awesome.min.css' %}">
-    <link rel="stylesheet" href="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.2.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
     <style>
         .photo_grid {
             display: flex;
@@ -167,21 +167,21 @@
             margin: auto;
         }
     </style>
-    <script src="{% static 'tigacrafting/jquery/1.11.1/jquery.min.js' %}"></script>
-    <script src="{% static 'tigacrafting/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
-    <script src="{% static 'tigacrafting/jquery-ui/jquery-ui.min.js' %}"></script>
-    <script src="{% static 'tigacrafting/jquery_blockUI/jquery.blockUI.js' %}"></script>
-    <script src="{% static 'tigacrafting/bootstrap-3.2.0-dist/js/bootstrap.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-blockui@2.7.0/jquery.blockUI.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.2.0/dist/js/bootstrap.min.js"></script>
     <script src="{% static 'tigacrafting/javascript/coarse_filter.js' %}"></script>
-    <script src="{% static 'tigacrafting/d3/d3.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.4.4/dist/d3.min.js"></script>
     <script src="{% static 'tigacrafting/ia_graph.js' %}"></script>
     <script src="{% static 'tigacrafting/javascript/hover-preview.min.js' %}"></script>
-    <script src="{% static 'tigacrafting/toastr/toastr.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/toastr.min.js"></script>
     {% leaflet_js %}
     {% leaflet_css %}
     <script>
         const csrf_token = '{{ csrf_token }}';
-        const iconurl = '{% static "tigamap/yellow_icon.png" %}';
+        const iconurl = '{% static "tigacrafting/yellow_icon.png" %}';
     </script>
 </head>
 <body>

@@ -35,9 +35,6 @@ from .stats import calculate_norm_entropy
 
 User = get_user_model()
 
-def score_computation(n_total, n_yes, n_no, n_unknown = 0, n_undefined =0):
-    return float(n_yes - n_no)/n_total
-
 def get_confidence_label(value: numbers.Number) -> str:
     value = float(value)
     if value >= 0.9:
@@ -50,132 +47,6 @@ def get_confidence_label(value: numbers.Number) -> str:
 def get_is_high_confidence(value: numbers.Number) -> bool:
     return float(value) >= 0.9
 
-class CrowdcraftingTask(models.Model):
-    task_id = models.IntegerField(unique=True, null=True, default=None)
-    photo = models.OneToOneField('tigaserver_app.Photo', on_delete=models.PROTECT, )
-
-    def __unicode__(self):
-        return str(self.task_id)
-
-    def get_mosquito_validation_score(self):
-        n_total = CrowdcraftingResponse.objects.filter(task=self).count()
-        if n_total == 0:
-            return None
-        else:
-            n_yes = CrowdcraftingResponse.objects.filter(task=self, mosquito_question_response='mosquito-yes').count()
-            n_no = CrowdcraftingResponse.objects.filter(task=self, mosquito_question_response='mosquito-no').count()
-            return score_computation(n_total=n_total, n_yes=n_yes, n_no=n_no)
-
-    def get_tiger_validation_score(self):
-        n_total = CrowdcraftingResponse.objects.filter(task=self).count()
-        if n_total == 0:
-            return None
-        else:
-            n_yes = CrowdcraftingResponse.objects.filter(task=self, tiger_question_response='tiger-yes').count()
-            n_no = CrowdcraftingResponse.objects.filter(task=self, tiger_question_response='tiger-no').count() + CrowdcraftingResponse.objects.filter(task=self, tiger_question_response='undefined', mosquito_question_response='mosquito-no').count()
-            return score_computation(n_total=n_total, n_yes=n_yes, n_no=n_no)
-
-    def get_tiger_validation_score_cat(self):
-        if self.get_tiger_validation_score() is not None:
-            return int(round(2.499999 * self.get_tiger_validation_score(), 0))
-        else:
-            return None
-
-    def get_site_validation_score(self):
-        n_total = CrowdcraftingResponse.objects.filter(task=self).count()
-        if n_total == 0:
-            return None
-        else:
-            n_yes = CrowdcraftingResponse.objects.filter(task=self, site_question_response='site-yes').count()
-            n_no = CrowdcraftingResponse.objects.filter(task=self, site_question_response='site-no').count()
-            return score_computation(n_total=n_total, n_yes=n_yes, n_no=n_no)
-
-    def get_site_validation_score_cat(self):
-        if self.get_site_validation_score() is not None:
-            return int(round(2.499999 * self.get_site_validation_score(), 0))
-        else:
-            return None
-
-    def get_site_individual_responses_html(self):
-        n_total = CrowdcraftingResponse.objects.filter(task=self).count()
-        if n_total == 0:
-            return None
-        else:
-            n_anon_yes = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, site_question_response='site-yes').count()
-            n_anon_no = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, site_question_response='site-no').count()
-            n_reg_yes = CrowdcraftingResponse.objects.filter(task=self, site_question_response='site-yes').exclude(user__user_id=None).count()
-            n_reg_no = CrowdcraftingResponse.objects.filter(task=self, site_question_response='site-no').exclude(user__user_id=None).count()
-            n_anon_unknown = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, site_question_response='site-unknown').count()
-            n_anon_blank = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, site_question_response='undefined').count()
-            n_reg_unknown = CrowdcraftingResponse.objects.filter(task=self, site_question_response='site-unknown').exclude(user__user_id=None).count()
-            n_reg_blank = CrowdcraftingResponse.objects.filter(task=self, site_question_response='undefined').exclude(user__user_id=None).count()
-            return '<table><tr><th>Resp.</th><th>Reg. Users</th><th>Anon. Users</th><th>Total</th></tr><tr><td>Yes</td><td>' + str(n_reg_yes) + '</td><td>' + str(n_anon_yes) + '</td><td>' + str(n_reg_yes + n_anon_yes) + '</td></tr><tr><td>No</td><td>' + str(n_reg_no) + '</td><td>' + str(n_anon_no) + '</td><td>' + str(n_reg_no + n_anon_no) + '</td></tr><tr><td>Not sure</td><td>' + str(n_reg_unknown) + '</td><td>' + str(n_anon_unknown) + '</td><td>' + str(0 + n_reg_unknown + n_anon_unknown) + '</td></tr><tr><td>Blank</td><td>' + str(n_reg_blank) + '</td><td>' + str(n_anon_blank) + '</td><td>' + str(n_reg_blank + n_anon_blank) + '</td></tr><tr><td>Total</td><td>' + str(n_reg_yes + n_reg_no + n_reg_unknown + n_reg_blank) + '</td><td>' + str(n_anon_yes + n_anon_no + n_anon_unknown + n_anon_blank) + '</td><td>' + str(n_anon_yes + n_anon_no + n_anon_unknown + n_anon_blank + n_reg_yes + n_reg_no + n_reg_unknown + n_reg_blank) + '</td></tr></table>'
-
-    def get_tiger_individual_responses_html(self):
-        n_total = CrowdcraftingResponse.objects.filter(task=self).count()
-        if n_total == 0:
-            return None
-        else:
-            n_anon_yes = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, tiger_question_response='tiger-yes').count()
-            n_anon_no = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, tiger_question_response='tiger-no').count() + CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, mosquito_question_response='mosquito-no', tiger_question_response='undefined').count()
-            n_reg_yes = CrowdcraftingResponse.objects.filter(task=self, tiger_question_response='tiger-yes').exclude(user__user_id=None).count()
-            n_reg_no = CrowdcraftingResponse.objects.filter(task=self, tiger_question_response='tiger-no').exclude(user__user_id=None).count() + CrowdcraftingResponse.objects.filter(task=self, mosquito_question_response='mosquito-no', tiger_question_response='undefined').exclude(user__user_id=None).count()
-            n_anon_unknown = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, tiger_question_response='tiger-unknown').count()
-            n_anon_blank = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, tiger_question_response='undefined').exclude(mosquito_question_response='mosquito-no').count()
-            n_reg_unknown = CrowdcraftingResponse.objects.filter(task=self, tiger_question_response='tiger-unknown').exclude(user__user_id=None).count()
-            n_reg_blank = CrowdcraftingResponse.objects.filter(task=self, tiger_question_response='undefined').exclude(mosquito_question_response='mosquito-no').exclude(user__user_id=None).count()
-            return '<table><tr><th>Resp.</th><th>Reg. Users</th><th>Anon. Users</th><th>Total</th></tr><tr><td>Yes</td><td>' + str(n_reg_yes) + '</td><td>' + str(n_anon_yes) + '</td><td>' + str(n_reg_yes + n_anon_yes) + '</td></tr><tr><td>No</td><td>' + str(n_reg_no) + '</td><td>' + str(n_anon_no) + '</td><td>' + str(n_reg_no + n_anon_no) + '</td></tr><tr><td>Not sure</td><td>' + str(n_reg_unknown) + '</td><td>' + str(n_anon_unknown) + '</td><td>' + str(0 + n_reg_unknown + n_anon_unknown) + '</td></tr><tr><td>Blank</td><td>' + str(n_reg_blank) + '</td><td>' + str(n_anon_blank) + '</td><td>' + str(n_reg_blank + n_anon_blank) + '</td></tr><tr><td>Total</td><td>' + str(n_reg_yes + n_reg_no + n_reg_unknown + n_reg_blank) + '</td><td>' + str(n_anon_yes + n_anon_no + n_anon_unknown + n_anon_blank) + '</td><td>' + str(n_anon_yes + n_anon_no + n_anon_unknown + n_anon_blank + n_reg_yes + n_reg_no + n_reg_unknown + n_reg_blank) + '</td></tr></table>'
-
-    def get_mosquito_individual_responses_html(self):
-        n_total = CrowdcraftingResponse.objects.filter(task=self).count()
-        if n_total == 0:
-            return None
-        else:
-            n_anon_yes = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, mosquito_question_response='mosquito-yes').count()
-            n_anon_no = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, mosquito_question_response='mosquito-no').count()
-            n_reg_yes = CrowdcraftingResponse.objects.filter(task=self, mosquito_question_response='mosquito-yes').exclude(user__user_id=None).count()
-            n_reg_no = CrowdcraftingResponse.objects.filter(task=self, mosquito_question_response='mosquito-no').exclude(user__user_id=None).count()
-            n_anon_unknown = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, mosquito_question_response='mosquito-unknown').count()
-            n_anon_blank = CrowdcraftingResponse.objects.filter(task=self, user__user_id=None, mosquito_question_response='undefined').count()
-            n_reg_unknown = CrowdcraftingResponse.objects.filter(task=self, mosquito_question_response='mosquito-unknown').exclude(user__user_id=None).count()
-            n_reg_blank = CrowdcraftingResponse.objects.filter(task=self, mosquito_question_response='undefined').exclude(user__user_id=None).count()
-            return '<table><tr><th>Resp.</th><th>Reg. Users</th><th>Anon. Users</th><th>Total</th></tr><tr><td>Yes</td><td>' + str(n_reg_yes) + '</td><td>' + str(n_anon_yes) + '</td><td>' + str(n_reg_yes + n_anon_yes) + '</td></tr><tr><td>No</td><td>' + str(n_reg_no) + '</td><td>' + str(n_anon_no) + '</td><td>' + str(n_reg_no + n_anon_no) + '</td></tr><tr><td>Not sure</td><td>' + str(n_reg_unknown) + '</td><td>' + str(n_anon_unknown) + '</td><td>' + str(0 + n_reg_unknown + n_anon_unknown) + '</td></tr><tr><td>Blank</td><td>' + str(n_reg_blank) + '</td><td>' + str(n_anon_blank) + '</td><td>' + str(n_reg_blank + n_anon_blank) + '</td></tr><tr><td>Total</td><td>' + str(n_reg_yes + n_reg_no + n_reg_unknown + n_reg_blank) + '</td><td>' + str(n_anon_yes + n_anon_no + n_anon_unknown + n_anon_blank) + '</td><td>' + str(n_anon_yes + n_anon_no + n_anon_unknown + n_anon_blank + n_reg_yes + n_reg_no + n_reg_unknown + n_reg_blank) + '</td></tr></table>'
-
-    def get_crowdcrafting_n_responses(self):
-        return CrowdcraftingResponse.objects.filter(task=self).count()
-
-    mosquito_validation_score = property(get_mosquito_validation_score)
-    tiger_validation_score = property(get_tiger_validation_score)
-    site_validation_score = property(get_site_validation_score)
-    site_individual_responses_html = property(get_site_individual_responses_html)
-    tiger_individual_responses_html = property(get_tiger_individual_responses_html)
-    mosquito_individual_responses_html = property(get_mosquito_individual_responses_html)
-    crowdcrafting_n_responses = property(get_crowdcrafting_n_responses)
-    tiger_validation_score_cat = property(get_tiger_validation_score_cat)
-    site_validation_score_cat = property(get_site_validation_score_cat)
-
-
-class CrowdcraftingUser(models.Model):
-    user_id = models.IntegerField(blank=True, null=True)
-
-    def __unicode__(self):
-        return str(self.id)
-
-
-class CrowdcraftingResponse(models.Model):
-    response_id = models.IntegerField()
-    task = models.ForeignKey('tigacrafting.CrowdcraftingTask', related_name="responses", on_delete=models.CASCADE, )
-    user = models.ForeignKey('tigacrafting.CrowdcraftingUser', related_name="responses", blank=True, null=True, on_delete=models.SET_NULL, )
-    user_lang = models.CharField(max_length=10, blank=True)
-    mosquito_question_response = models.CharField(max_length=100)
-    tiger_question_response = models.CharField(max_length=100)
-    site_question_response = models.CharField(max_length=100)
-    created = models.DateTimeField(blank=True, null=True)
-    finish_time = models.DateTimeField(blank=True, null=True)
-    user_ip = models.GenericIPAddressField(blank=True, null=True)
-
-    def __unicode__(self):
-        return str(self.id)
 
 class IdentificationTask(LifecycleModel):
     @classmethod
@@ -765,30 +636,6 @@ class IdentificationTask(LifecycleModel):
             )
         ]
 
-
-class Annotation(models.Model):
-    user = models.ForeignKey('auth.User', related_name='annotations', on_delete=models.PROTECT, )
-    task = models.ForeignKey('tigacrafting.CrowdcraftingTask', related_name='annotations', on_delete=models.CASCADE, )
-    tiger_certainty_percent = models.IntegerField('Degree of belief',validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True, null=True)
-    value_changed = models.BooleanField(default=False)
-    notes = models.TextField(blank=True)
-    last_modified = models.DateTimeField(auto_now=True)
-    created = models.DateTimeField(auto_now_add=True)
-    working_on = models.BooleanField(default=False)
-
-    def __unicode__(self):
-        return "Annotation: " + str(self.id) + ", Task: " + str(self.task.task_id)
-
-
-class MoveLabAnnotation(models.Model):
-    task = models.OneToOneField(CrowdcraftingTask, related_name='movelab_annotation', on_delete=models.CASCADE, )
-    CATEGORIES = ((-2, 'Definitely not a tiger mosquito'), (-1, 'Probably not a tiger mosquito'), (0, 'Not sure'), (1, 'Probably a tiger mosquito'), (2, 'Definitely a tiger mosquito'))
-    tiger_certainty_category = models.IntegerField('Certainty', choices=CATEGORIES, blank=True, null=True)
-    certainty_notes = models.TextField(blank=True)
-    hide = models.BooleanField('Hide photo from public', default=False)
-    edited_user_notes = models.TextField(blank=True)
-    last_modified = models.DateTimeField(auto_now=True)
-    created = models.DateTimeField(auto_now_add=True)
 
 TIGER_CATEGORIES = ((2, 'Definitely Aedes albopictus'), (1, 'Probably Aedes albopictus'),  (0, 'Not sure'), (-1, 'Probably neither albopictus nor aegypti'), (-2, 'Definitely not albopictus or aegypti'))
 
@@ -1771,19 +1618,6 @@ class Alert(models.Model):
     alert_sent = models.BooleanField('flag for alert sent or not yet', default=False)
     notes = models.TextField('Notes field for varied observations', blank=True, null=True)
 
-# class Species(models.Model):
-#     species_name = models.TextField('Scientific name of the objective species or combination of species', blank=True, help_text='This is the species latin name i.e Aedes albopictus')
-#     composite = models.BooleanField(default=False, help_text='Indicates if this row is a single species or a combination')
-
-
-# VALIDATION_CATEGORIES = ((2, 'Sure'), (1, 'Probably'), (0, 'None'))
-# class Validation(models.Model):
-#     report = models.ForeignKey('tigaserver_app.Report', related_name='report_speciesvalidations')
-#     user = models.ForeignKey(User, related_name="user_speciesvalidations")
-#     validation_time = models.DateTimeField(blank=True, null=True)
-#     species = models.ForeignKey(Species, related_name='validations', blank=True, null=True)
-#     #species = models.ManyToManyField(Species)
-#     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure')
 
 class PhotoClassifierScoresMeta(ModelBase):
     CLASS_FIELDNAMES_CHOICES = [

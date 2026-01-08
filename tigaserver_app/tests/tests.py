@@ -1,31 +1,22 @@
 from datetime import datetime, timedelta
-import pytest
 import uuid
 
 # Create your tests here.
 from django.test import TestCase, override_settings
 from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp, UserSubscription, LauEurope
-from django.core.management import call_command
 from PIL import Image, ExifTags
-from PIL.ExifTags import TAGS, GPSTAGS
-import tigaserver_project.settings as conf
 import os
-import requests
 from django.contrib.gis.geos import Polygon, MultiPolygon, Point
 from django.utils import timezone
 from tigaserver_app.models import TigaUser, Report, Photo, Fix
 from tigacrafting.models import FavoritedReports
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
-from django.urls import reverse
+from rest_framework.test import APITestCase, APITransactionTestCase
 import io
-from rest_framework import status
 from tigacrafting.messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict, notsure_msg_dict
-from rest_framework.test import APIRequestFactory
 from django.db import transaction
 from django.db.utils import IntegrityError
-import urllib
 import json
 import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -36,70 +27,6 @@ import io
 import piexif
 from pillow_heif import HeifFile
 
-'''
-class PictureTestCase(APITestCase):
-
-    def create_report_pool(self):
-        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
-        t.save()
-        non_naive_time = timezone.now()
-        r = Report(
-            version_UUID='0001a39b-742e-4928-a8ec-91f0b866a2e5',
-            version_number=0,
-            user_id='00000000-0000-0000-0000-000000000000',
-            phone_upload_time=non_naive_time,
-            server_upload_time=non_naive_time,
-            creation_time=non_naive_time,
-            version_time=non_naive_time,
-            location_choice="current",
-            type='adult',
-        )
-        r.save()
-        user = User.objects.create_user('john', 'lennon@thebeatles.com', 'johnpassword')
-        user.save()
-        token = Token.objects.create(user=user)
-        token.save()
-
-    def test_load_picture(self):
-        img = PIL.Image.open(conf.BASE_DIR + '/tigaserver_app/fixtures/test_pictures/Canon_40D.jpg')
-        self.assertTrue(img is not None, msg="Failed to open image")
-
-    def test_images_have_metadata(self):
-        files = os.listdir(conf.BASE_DIR + '/tigaserver_app/fixtures/test_pictures/')
-        for file in files:
-            if 'jpg' in file:
-                img = PIL.Image.open(conf.BASE_DIR + '/tigaserver_app/fixtures/test_pictures/' + file)
-                try:
-                    exif = { PIL.ExifTags.TAGS[key]: value for key, value in img._getexif().items() if key in PIL.ExifTags.TAGS or key in PIL.ExifTags.GPSTAGS }
-                    self.assertTrue(len(exif) > 0, msg="Image {0} has no readable metadata!".format(file))
-                except:
-                    print("Image {0} has no metadata!".format(file))
-
-    def test_metadata_removal(self):
-        self.create_report_pool()
-        t = Token.objects.get(user__username='john')
-        auth_key = t.key
-        files = os.listdir(conf.BASE_DIR + '/tigaserver_app/fixtures/test_pictures/')
-        url = '/api/photos/'
-        numfiles = 0
-        for file in files:
-            if 'jpg' in file:
-                numfiles += 1
-                self.client.credentials(HTTP_AUTHORIZATION='Token ' + auth_key)
-                with open(conf.BASE_DIR + '/tigaserver_app/fixtures/test_pictures/' + file,'rb') as img:
-                    picture_data = io.BytesIO(img.read())
-                    data = { 'photo' : picture_data, 'report' : '0001a39b-742e-4928-a8ec-91f0b866a2e5' }
-                    response = self.client.post(url, data, format='multipart')
-                    self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        photos = Photo.objects.filter(report__version_UUID='0001a39b-742e-4928-a8ec-91f0b866a2e5')
-        self.assertEqual(len(photos), numfiles)
-        for photo in photos:
-            #print(photo.photo.path)
-            img = PIL.Image.open(photo.photo.path)
-            self.assertEqual(img._getexif(), None)
-
-'''
 
 class ReportEndpointTestCase(APITestCase):
     def setUp(self):
@@ -1087,7 +1014,6 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(response.data[0]['acknowledged'], False)
         # mark it as read
         notification_id = response.data[0]['id']
-        #response = self.client.post('/api/ack_notif/',{'user':'00000000-0000-0000-0000-000000000000','notification':notification_id},format='json')
         response = self.client.delete('/api/mark_notif_as_ack/?user=00000000-0000-0000-0000-000000000000&notif=' + str(notification_id))
         # should respond no content
         self.assertEqual(response.status_code, 204)
@@ -1166,7 +1092,6 @@ class NotificationTestCase(APITestCase):
         # should only receive the notification from the global topic
         self.assertEqual(len(response.data), 1)
         # acknowledge the notification
-        #response = self.client.post('/api/ack_notif/', {'user': '00000000-0000-0000-0000-000000000000', 'notification': n.id}, format='json')
         response = self.client.delete('/api/mark_notif_as_ack/?user=00000000-0000-0000-0000-000000000000&notif=' + str(n.id))
         # should respond no content
         self.assertEqual(response.status_code, 204)
@@ -1308,17 +1233,6 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(response.data['body_html_en'], nc.body_html_en)
         # sould be the same as params
         self.assertEqual(response.data['body_html_en'], notif_content['body_html_en'])
-        self.client.logout()
-
-    def test_push_notifications_single_user(self):
-        # send push to android
-        self.client.force_authenticate(user=self.reritja_user)
-        data = {
-            'user_id': self.regular_user.user_UUID,
-            'message': 'This is a test message',
-            'title': 'This is the message title'
-        }
-        response = self.client.post('/api/msg_android/?' + urllib.parse.urlencode(data))
         self.client.logout()
 
     def test_favorite_endpoint(self):

@@ -3,10 +3,7 @@ from django.db import connection
 
 from tigaserver_app.models import *
 from tigacrafting.models import UserStat
-from datetime import date, timedelta, datetime
-import time
-from collections import Counter
-from tzlocal import get_localzone
+from datetime import timedelta, datetime
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
@@ -133,25 +130,16 @@ def workload_daily_report_input(request):
         return Response([(r['day_epoch'].timestamp()*1000, r['n']) for r in qs.iterator()])
 
 
-def user_ids_string_to_int_array(user_ids_str):
-    user_ids_str_array = user_ids_str.split(',')
-    user_ids_int_array = []
-    for id in user_ids_str_array:
-        try:
-            int_id = int(id)
-            user_ids_int_array.append(int_id)
-        except ValueError:
-            user_ids_int_array = []
-    return user_ids_int_array
-
-
 @api_view(['GET'])
 def workload_available_reports(request):
     if request.method == 'GET':
         user_id_filter = settings.USERS_IN_STATS
         user_ids_str = request.query_params.get('user_ids', None)
         if user_ids_str is not None:
-            user_ids_arr = user_ids_string_to_int_array(user_ids_str)
+            try:
+                user_ids_arr = [int(x) for x in user_ids_str.split(',')]
+            except ValueError:
+                user_ids_arr = []
             if len(user_ids_arr) > 0:
                 user_id_filter = user_ids_arr
         current_pending = IdentificationTask.objects.new()
@@ -920,31 +908,6 @@ def workload_stats(request, country_id=None):
             return render(request, 'stats/workload.html', context)
     else:
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
-
-
-def show_fix_users(request):
-    real_fixes = Fix.objects.filter(fix_time__gt='2014-06-13')
-    tz = get_localzone()
-    ref_date = datetime.datetime(2014, 6, 13, 0, 0, 0,  tzinfo=tz)
-    end_date = tz.localize(datetime.datetime.now())
-    fix20_users = []
-    fix15_users = []
-    fix10_users = []
-    fix5_users = []
-    fix1_users = []
-
-    while ref_date <= end_date:
-        these_fixes = real_fixes.filter(fix_time__lte=ref_date, user_coverage_uuid__isnull=False)
-        c = Counter(f.user_coverage_uuid for f in these_fixes)
-        fix20_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 20])})
-        fix15_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 15])})
-        fix10_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 10])})
-        fix5_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v > 5])})
-        fix1_users.append({'date': (time.mktime(ref_date.timetuple())), 'n': len([k for k, v in c.iteritems() if v >= 1])})
-        ref_date += timedelta(hours=24)
-    context = {'fix20_users': fix20_users, 'fix15_users': fix15_users,'fix10_users': fix10_users, 'fix5_users': fix5_users, 'fix1_users': fix1_users}
-    return render(request, 'stats/fix_user_chart.html', context)
-
 
 
 @login_required
