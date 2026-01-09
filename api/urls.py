@@ -9,7 +9,7 @@ from drf_spectacular.views import SpectacularRedocView, SpectacularAPIView, Spec
 from .auth.views import GuestRegisterView, PasswordChangeView
 from .routers import NestedSimpleRouter, SimpleRouter
 from .views import (
-    StatusView,
+    ping,
     UserViewSet,
     MyUserViewSet,
     MyPermissionViewSet,
@@ -96,7 +96,7 @@ api_urlpatterns += [
 ]
 
 api_urlpatterns += [
-    path("status/", StatusView.as_view(), name="status"),
+    path("ping/", ping, name="ping"),
 ]
 
 api_urlpatterns += router.urls

@@ -7,9 +7,9 @@ marks:
     - api_live_url
 
 stages:
-  - name: Test status should return 200
+  - name: Test status should return 204 No Content
     request:
-      url: "{api_live_url}/status/"
+      url: "{api_live_url}/ping/"
       method: "GET"
     response:
-      status_code: 200
+      status_code: 204
