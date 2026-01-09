@@ -1750,7 +1750,7 @@ class Report(TimeZoneModelMixin, models.Model):
         if _old_point != self.point:
             _last_location_update = self.user.last_location_update
             _report_upload_time = self.server_upload_time or timezone.now()
-            if _last_location_update and _report_upload_time >= _last_location_update:
+            if _last_location_update is None or (_last_location_update and _report_upload_time >= _last_location_update):
                 self.user.last_location = self.point
                 self.user.last_location_update = _report_upload_time
                 self.user.save()
