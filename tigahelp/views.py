@@ -30,18 +30,6 @@ def show_credit_image(request):
     return render(request, 'tigahelp/credit_image.html', context)
 
 
-def show_help(request, platform, language):
-    context = {}
-    if language == 'ca':
-        return render(request, 'tigahelp/help_ca.html', context)
-    if language == 'es':
-        return render(request, 'tigahelp/help_es.html', context)
-    if language == 'en':
-        return render(request, 'tigahelp/help_en.html', context)
-    if language == 'zh-cn':
-        return render(request, 'tigahelp/help_zh.html', context)
-
-
 def show_license(request, platform, language):
     #language = request.LANGUAGE_CODE
     context = {}
