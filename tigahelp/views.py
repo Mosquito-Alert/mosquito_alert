@@ -2,15 +2,6 @@ from django.shortcuts import render
 from django.template.loader import TemplateDoesNotExist
 
 # Create your views here.
-def show_license(request, platform, language):
-    #language = request.LANGUAGE_CODE
-    context = {}
-    try:
-        return render(request, 'tigahelp/license_' + language + '.html', context)
-    except TemplateDoesNotExist:
-        return render(request, 'tigahelp/license_en.html', context)
-
-
 def show_privacy(request, version=None):
     language = request.LANGUAGE_CODE
     context = {}
