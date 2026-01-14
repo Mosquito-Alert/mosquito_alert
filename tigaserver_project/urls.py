@@ -33,10 +33,6 @@ urlpatterns = [
 urlpatterns += [
     path('admin/', admin.site.urls),
     path('i18n/', include('django.conf.urls.i18n')),
-    path('policies/es/', RedirectView.as_view(url='/es/policies/', permanent=False)),
-    path('policies/ca/', RedirectView.as_view(url='/ca/policies/', permanent=False)),
-    path('policies/en/', RedirectView.as_view(url='/en/policies/', permanent=False)),
-    path('policies/zh-cn/', RedirectView.as_view(url='/zh-cn/policies/', permanent=False)),
     path('terms/es/', RedirectView.as_view(url='/es/terms/', permanent=False)),
     path('terms/ca/', RedirectView.as_view(url='/ca/terms/', permanent=False)),
     path('terms/en/', RedirectView.as_view(url='/en/terms/', permanent=False), name='terms'),
