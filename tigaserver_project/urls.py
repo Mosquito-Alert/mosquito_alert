@@ -8,7 +8,7 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_scoring, show_about_us, show_project_about, show_app_license
+from tigahelp.views import show_about_us, show_project_about, show_app_license
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
@@ -35,25 +35,6 @@ urlpatterns = [
 urlpatterns += [
     path('admin/', admin.site.urls),
     path('i18n/', include('django.conf.urls.i18n')),
-    path('scoring/es/', RedirectView.as_view(url='/es/scoring/', permanent=False), name="scoring_es"),
-    path('scoring/ca/', RedirectView.as_view(url='/ca/scoring/', permanent=False), name="scoring_ca"),
-    path('scoring/en/', RedirectView.as_view(url='/en/scoring/', permanent=False), name="scoring_en"),
-    path('scoring/de/', RedirectView.as_view(url='/de/scoring/', permanent=False), name="scoring_de"),
-    path('scoring/sq/', RedirectView.as_view(url='/sq/scoring/', permanent=False), name="scoring_sq"),
-    path('scoring/el/', RedirectView.as_view(url='/el/scoring/', permanent=False), name="scoring_el"),
-    path('scoring/hu/', RedirectView.as_view(url='/hu/scoring/', permanent=False), name="scoring_hu"),
-    path('scoring/pt/', RedirectView.as_view(url='/pt/scoring/', permanent=False), name="scoring_pt"),
-    path('scoring/sl/', RedirectView.as_view(url='/sl/scoring/', permanent=False), name="scoring_sl"),
-    path('scoring/bg/', RedirectView.as_view(url='/bg/scoring/', permanent=False), name="scoring_bg"),
-    path('scoring/ro/', RedirectView.as_view(url='/ro/scoring/', permanent=False), name="scoring_ro"),
-    path('scoring/hr/', RedirectView.as_view(url='/hr/scoring/', permanent=False), name="scoring_hr"),
-    path('scoring/mk/', RedirectView.as_view(url='/mk/scoring/', permanent=False), name="scoring_mk"),
-    path('scoring/sr/', RedirectView.as_view(url='/sr/scoring/', permanent=False), name="scoring_sr"),
-    path('scoring/lb/', RedirectView.as_view(url='/lb/scoring/', permanent=False), name="scoring_lb"),
-    path('scoring/nl/', RedirectView.as_view(url='/nl/scoring/', permanent=False), name="scoring_nl"),
-    path('scoring/tr/', RedirectView.as_view(url='/tr/scoring/', permanent=False), name="scoring_tr"),
-    path('scoring/bn/', RedirectView.as_view(url='/bn/scoring/', permanent=False), name="scoring_bn"),
-    path('scoring/sv/', RedirectView.as_view(url='/sv/scoring/', permanent=False), name="scoring_sv"),
     path('about_us/es/', RedirectView.as_view(url='/es/about_us/', permanent=False), name="about_us_es"),
     path('about_us/ca/', RedirectView.as_view(url='/ca/about_us/', permanent=False), name="about_us_ca"),
     path('about_us/en/', RedirectView.as_view(url='/en/about_us/', permanent=False), name="about_us_en"),
@@ -111,7 +92,12 @@ urlpatterns += i18n_patterns(
             f"https://app.mosquitoalert.com/{get_language() or 'en'}/legal/privacy"
         ),
     ),
-    path('scoring/', show_scoring, name='help.show_scoring'),
+    path(
+        'scoring/',
+        lambda request: HttpResponsePermanentRedirect(
+            f"https://app.mosquitoalert.com/{get_language() or 'en'}/info/score"
+        ),
+    ),
     path('about_us/', show_about_us, name='help.show_about_us'),
     path('project_about/', show_project_about, name='help.show_project_about'),
     path('app_license/', show_app_license, name='help.show_app_license'),

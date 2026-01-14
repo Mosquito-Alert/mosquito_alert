@@ -649,12 +649,9 @@ def get_page_of_index(index, page_size):
 
 
 def stats_user_ranking(request, page=1, user_uuid=None):
-    current_locale = request.LANGUAGE_CODE
+    current_locale = getattr(request, "LANGUAGE_CODE", "en")
+    info_url = f'https://app.mosquitoalert.com/{current_locale}/info/score'
     user_has_score = False
-    try:
-        info_url = reverse('scoring_' + current_locale)
-    except NoReverseMatch:
-        info_url = reverse('scoring_en')
     user = None
     if user_uuid is not None:
         try:
