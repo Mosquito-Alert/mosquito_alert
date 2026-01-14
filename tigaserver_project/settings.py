@@ -73,8 +73,6 @@ INSTALLED_APPS = (
     'stats',
     'floppyforms',
     'taggit',
-    'django_messages',
-    'tigaserver_messages',
     'tigascoring',
     'drf_spectacular',
     'django.contrib.sites',
@@ -342,7 +340,6 @@ IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
 
 SOUTH_MIGRATION_MODULES = {
     'taggit': 'taggit.south_migrations',
-    'django_messages': 'django_messages.south_migrations',
 }
 
 USERS_IN_STATS = [16, 33, 18, 17, 31, 32, 35, 34, 54, 55, 49, 130, 123, 126, 131, 129, 127, 124, 128, 125]
@@ -438,9 +435,6 @@ SPECTACULAR_SETTINGS['EXTENSIONS_INFO']['x-logo']['url'] = STATIC_URL + SPECTACU
 
 # Disable history reverting
 SIMPLE_HISTORY_REVERT_DISABLED=True
-
-# Disable notifications for messaging system. It falls back to email if pinax not present
-DJANGO_MESSAGES_NOTIFY = False
 
 # Mainly concerning files in media (i.e pictures). In some cases, the files have 0600 permissions, so they can't be
 # opened from a internet browser. This ensures that all files in media will be world (and group) readable

@@ -2444,10 +2444,6 @@ class Report(TimeZoneModelMixin, models.Model):
             return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
         return result
 
-    def get_single_report_view_link(self):
-        result = reverse('single_report_view', kwargs={"version_uuid": self.version_UUID})
-        return result
-
     def get_who_has(self):
         result = []
         for ano in self.expert_report_annotations.all().select_related('user'):
@@ -2456,20 +2452,6 @@ class Report(TimeZoneModelMixin, models.Model):
             )
 
         return ", ".join(result)
-
-    def get_expert_recipients(self):
-        result = []
-        for ano in self.expert_report_annotations.all().select_related('user'):
-            if not ano.user.userstat.is_superexpert():
-                result.append(ano.user.username)
-        return '+'.join(result)
-
-    def get_superexpert_completed_recipients(self):
-        result = []
-        for ano in self.expert_report_annotations.all().select_related('user'):
-            if ano.validation_complete and ano.user.userstat.is_superexpert():
-                result.append(ano.user.username)
-        return '+'.join(result)
 
     def get_who_has_bootstrap(self):
         result = []
