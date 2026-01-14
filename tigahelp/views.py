@@ -51,11 +51,6 @@ def show_license(request, platform, language):
         return render(request, 'tigahelp/license_en.html', context)
 
 
-def show_policies(request):
-    context = {}
-    return render(request, 'tigahelp/policies.html', context)
-
-
 def show_privacy(request, version=None):
     language = request.LANGUAGE_CODE
     context = {}
