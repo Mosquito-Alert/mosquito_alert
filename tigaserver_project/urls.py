@@ -8,7 +8,6 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_app_license
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
@@ -62,7 +61,6 @@ urlpatterns += i18n_patterns(
     ),
     path('about_us/', RedirectView.as_view(url='https://www.mosquitoalert.com', permanent=True)),
     path('project_about/', RedirectView.as_view(url='https://www.mosquitoalert.com', permanent=True)),
-    path('app_license/', show_app_license, name='help.show_app_license'),
     path('webmap/embedded/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
     path('webmap/adults/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
     path('webmap/adults/<selected_validation>/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
