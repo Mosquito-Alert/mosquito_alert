@@ -8,7 +8,7 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_about_us, show_project_about, show_app_license
+from tigahelp.views import show_project_about, show_app_license
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
@@ -35,25 +35,6 @@ urlpatterns = [
 urlpatterns += [
     path('admin/', admin.site.urls),
     path('i18n/', include('django.conf.urls.i18n')),
-    path('about_us/es/', RedirectView.as_view(url='/es/about_us/', permanent=False), name="about_us_es"),
-    path('about_us/ca/', RedirectView.as_view(url='/ca/about_us/', permanent=False), name="about_us_ca"),
-    path('about_us/en/', RedirectView.as_view(url='/en/about_us/', permanent=False), name="about_us_en"),
-    path('about_us/de/', RedirectView.as_view(url='/de/about_us/', permanent=False), name="about_us_de"),
-    path('about_us/sq/', RedirectView.as_view(url='/sq/about_us/', permanent=False), name="about_us_sq"),
-    path('about_us/el/', RedirectView.as_view(url='/el/about_us/', permanent=False), name="about_us_el"),
-    path('about_us/hu/', RedirectView.as_view(url='/hu/about_us/', permanent=False), name="about_us_hu"),
-    path('about_us/pt/', RedirectView.as_view(url='/pt/about_us/', permanent=False), name="about_us_pt"),
-    path('about_us/sl/', RedirectView.as_view(url='/sl/about_us/', permanent=False), name="about_us_sl"),
-    path('about_us/bg/', RedirectView.as_view(url='/bg/about_us/', permanent=False), name="about_us_bg"),
-    path('about_us/ro/', RedirectView.as_view(url='/ro/about_us/', permanent=False), name="about_us_ro"),
-    path('about_us/hr/', RedirectView.as_view(url='/hr/about_us/', permanent=False), name="about_us_hr"),
-    path('about_us/mk/', RedirectView.as_view(url='/mk/about_us/', permanent=False), name="about_us_mk"),
-    path('about_us/sr/', RedirectView.as_view(url='/sr/about_us/', permanent=False), name="about_us_sr"),
-    path('about_us/lb/', RedirectView.as_view(url='/lb/about_us/', permanent=False), name="about_us_lb"),
-    path('about_us/nl/', RedirectView.as_view(url='/nl/about_us/', permanent=False), name="about_us_nl"),
-    path('about_us/tr/', RedirectView.as_view(url='/tr/about_us/', permanent=False), name="about_us_tr"),
-    path('about_us/bn/', RedirectView.as_view(url='/bn/about_us/', permanent=False), name="about_us_bn"),
-    path('about_us/sv/', RedirectView.as_view(url='/sv/about_us/', permanent=False), name="about_us_sv"),
     path('project_about/es/', RedirectView.as_view(url='/es/project_about/', permanent=False), name="project_about_es"),
     path('project_about/ca/', RedirectView.as_view(url='/ca/project_about/', permanent=False), name="project_about_ca"),
     path('project_about/en/', RedirectView.as_view(url='/en/project_about/', permanent=False), name="project_about_en"),
@@ -98,7 +79,7 @@ urlpatterns += i18n_patterns(
             f"https://app.mosquitoalert.com/{get_language() or 'en'}/info/score"
         ),
     ),
-    path('about_us/', show_about_us, name='help.show_about_us'),
+    path('about_us/', RedirectView.as_view(url='https://www.mosquitoalert.com', permanent=True)),
     path('project_about/', show_project_about, name='help.show_project_about'),
     path('app_license/', show_app_license, name='help.show_app_license'),
     path('webmap/embedded/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
