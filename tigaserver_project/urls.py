@@ -6,7 +6,7 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_license, show_terms, show_privacy, show_credit_image, show_scoring, show_about_us, show_project_about, show_app_license
+from tigahelp.views import show_license, show_terms, show_privacy, show_scoring, show_about_us, show_project_about, show_app_license
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
@@ -32,7 +32,6 @@ urlpatterns = [
 
 urlpatterns += [
     path('admin/', admin.site.urls),
-    path('credits/', show_credit_image, name='show_credit_image'),
     path('license/<platform>/<language>/', show_license),
     path('i18n/', include('django.conf.urls.i18n')),
     path('policies/es/', RedirectView.as_view(url='/es/policies/', permanent=False)),
