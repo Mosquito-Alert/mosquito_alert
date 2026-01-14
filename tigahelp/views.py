@@ -2,15 +2,6 @@ from django.shortcuts import render
 from django.template.loader import TemplateDoesNotExist
 
 # Create your views here.
-def show_project_about(request):
-    language = request.LANGUAGE_CODE
-    context = {}
-    try:
-        return render(request, 'tigahelp/project_about_' + language + '.html', context)
-    except TemplateDoesNotExist:
-        return render(request, 'tigahelp/project_about_en.html', context)
-
-
 def show_app_license(request):
     language = request.LANGUAGE_CODE
     context = {}
