@@ -8,7 +8,7 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_privacy, show_scoring, show_about_us, show_project_about, show_app_license
+from tigahelp.views import show_scoring, show_about_us, show_project_about, show_app_license
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
@@ -35,26 +35,6 @@ urlpatterns = [
 urlpatterns += [
     path('admin/', admin.site.urls),
     path('i18n/', include('django.conf.urls.i18n')),
-    path('privacy/es/', RedirectView.as_view(url='/es/privacy/', permanent=False)),
-    path('privacy/ca/', RedirectView.as_view(url='/ca/privacy/', permanent=False)),
-    path('privacy/en/', RedirectView.as_view(url='/en/privacy/', permanent=False)),
-    path('privacy/zh-cn/', RedirectView.as_view(url='/zh-cn/privacy/', permanent=False)),
-    path('privacy/de/', RedirectView.as_view(url='/de/privacy/', permanent=False)),
-    path('privacy/sq/', RedirectView.as_view(url='/sq/privacy/', permanent=False)),
-    path('privacy/el/', RedirectView.as_view(url='/el/privacy/', permanent=False)),
-    path('privacy/hu/', RedirectView.as_view(url='/hu/privacy/', permanent=False)),
-    path('privacy/pt/', RedirectView.as_view(url='/pt/privacy/', permanent=False)),
-    path('privacy/sl/', RedirectView.as_view(url='/sl/privacy/', permanent=False)),
-    path('privacy/bg/', RedirectView.as_view(url='/bg/privacy/', permanent=False)),
-    path('privacy/ro/', RedirectView.as_view(url='/ro/privacy/', permanent=False)),
-    path('privacy/hr/', RedirectView.as_view(url='/hr/privacy/', permanent=False)),
-    path('privacy/mk/', RedirectView.as_view(url='/mk/privacy/', permanent=False)),
-    path('privacy/sr/', RedirectView.as_view(url='/sr/privacy/', permanent=False)),
-    path('privacy/lb/', RedirectView.as_view(url='/lb/privacy/', permanent=False)),
-    path('privacy/nl/', RedirectView.as_view(url='/nl/privacy/', permanent=False)),
-    path('privacy/tr/', RedirectView.as_view(url='/tr/privacy/', permanent=False)),
-    path('privacy/bn/', RedirectView.as_view(url='/bn/privacy/', permanent=False)),
-    path('privacy/sv/', RedirectView.as_view(url='/sv/privacy/', permanent=False)),
     path('scoring/es/', RedirectView.as_view(url='/es/scoring/', permanent=False), name="scoring_es"),
     path('scoring/ca/', RedirectView.as_view(url='/ca/scoring/', permanent=False), name="scoring_ca"),
     path('scoring/en/', RedirectView.as_view(url='/en/scoring/', permanent=False), name="scoring_en"),
@@ -125,8 +105,12 @@ urlpatterns += i18n_patterns(
             f"https://app.mosquitoalert.com/{get_language() or 'en'}/legal/terms"
         ),
     ),
-    path('privacy/', show_privacy, name='help.show_privacy'),
-    path('privacy/<str:version>/', show_privacy, name='help.show_privacy'),
+    path(
+        'privacy/',
+        lambda request: HttpResponsePermanentRedirect(
+            f"https://app.mosquitoalert.com/{get_language() or 'en'}/legal/privacy"
+        ),
+    ),
     path('scoring/', show_scoring, name='help.show_scoring'),
     path('about_us/', show_about_us, name='help.show_about_us'),
     path('project_about/', show_project_about, name='help.show_project_about'),

@@ -2,21 +2,6 @@ from django.shortcuts import render
 from django.template.loader import TemplateDoesNotExist
 
 # Create your views here.
-def show_privacy(request, version=None):
-    language = request.LANGUAGE_CODE
-    context = {}
-    if version is None:
-        try:
-            return render(request, 'tigahelp/privacy_' + language +'.html', context)
-        except TemplateDoesNotExist:
-            return render(request, 'tigahelp/privacy_en.html', context)
-    else:
-        try:
-            return render(request, 'tigahelp/privacy_versions/' + version + '/privacy_' + language +'.html', context)
-        except TemplateDoesNotExist:
-            return render(request, 'tigahelp/privacy_en.html', context)
-
-
 def show_scoring(request):
     language = request.LANGUAGE_CODE
     context = {}
