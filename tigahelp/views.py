@@ -17,15 +17,6 @@ def show_privacy(request, version=None):
             return render(request, 'tigahelp/privacy_en.html', context)
 
 
-def show_terms(request):
-    language = request.LANGUAGE_CODE
-    context = {}
-    try:
-        return render(request, 'tigahelp/terms_' + language + '.html', context)
-    except TemplateDoesNotExist:
-        return render(request, 'tigahelp/terms_en.html', context)
-
-
 def show_scoring(request):
     language = request.LANGUAGE_CODE
     context = {}

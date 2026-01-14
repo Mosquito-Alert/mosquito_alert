@@ -1,12 +1,14 @@
 from django.conf.urls import *
 from django.conf.urls.i18n import i18n_patterns
 from django.views.generic.base import RedirectView
+from django.http import HttpResponsePermanentRedirect
+from django.utils.translation import get_language
 
 from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from tigahelp.views import show_terms, show_privacy, show_scoring, show_about_us, show_project_about, show_app_license
+from tigahelp.views import show_privacy, show_scoring, show_about_us, show_project_about, show_app_license
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
@@ -33,26 +35,6 @@ urlpatterns = [
 urlpatterns += [
     path('admin/', admin.site.urls),
     path('i18n/', include('django.conf.urls.i18n')),
-    path('terms/es/', RedirectView.as_view(url='/es/terms/', permanent=False)),
-    path('terms/ca/', RedirectView.as_view(url='/ca/terms/', permanent=False)),
-    path('terms/en/', RedirectView.as_view(url='/en/terms/', permanent=False), name='terms'),
-    path('terms/de/', RedirectView.as_view(url='/de/terms/', permanent=False)),
-    path('terms/sq/', RedirectView.as_view(url='/sq/terms/', permanent=False)),
-    path('terms/el/', RedirectView.as_view(url='/el/terms/', permanent=False)),
-    path('terms/hu/', RedirectView.as_view(url='/hu/terms/', permanent=False)),
-    path('terms/pt/', RedirectView.as_view(url='/pt/terms/', permanent=False)),
-    path('terms/sl/', RedirectView.as_view(url='/sl/terms/', permanent=False)),
-    path('terms/bg/', RedirectView.as_view(url='/bg/terms/', permanent=False)),
-    path('terms/ro/', RedirectView.as_view(url='/ro/terms/', permanent=False)),
-    path('terms/hr/', RedirectView.as_view(url='/hr/terms/', permanent=False)),
-    path('terms/mk/', RedirectView.as_view(url='/mk/terms/', permanent=False)),
-    path('terms/sr/', RedirectView.as_view(url='/sr/terms/', permanent=False)),
-    path('terms/lb/', RedirectView.as_view(url='/lb/terms/', permanent=False)),
-    path('terms/nl/', RedirectView.as_view(url='/nl/terms/', permanent=False)),
-    path('terms/tr/', RedirectView.as_view(url='/tr/terms/', permanent=False)),
-    path('terms/zh-cn/', RedirectView.as_view(url='/zh-cn/terms/', permanent=False)),
-    path('terms/bn/', RedirectView.as_view(url='/bn/terms/', permanent=False)),
-    path('terms/sv/', RedirectView.as_view(url='/sv/terms/', permanent=False)),
     path('privacy/es/', RedirectView.as_view(url='/es/privacy/', permanent=False)),
     path('privacy/ca/', RedirectView.as_view(url='/ca/privacy/', permanent=False)),
     path('privacy/en/', RedirectView.as_view(url='/en/privacy/', permanent=False)),
@@ -137,7 +119,12 @@ admin.site.site_title = "Mosquito Alert"
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += i18n_patterns(
-    path('terms/', show_terms, name='help.show_terms'),
+    path(
+        'terms/',
+        lambda request: HttpResponsePermanentRedirect(
+            f"https://app.mosquitoalert.com/{get_language() or 'en'}/legal/terms"
+        ),
+    ),
     path('privacy/', show_privacy, name='help.show_privacy'),
     path('privacy/<str:version>/', show_privacy, name='help.show_privacy'),
     path('scoring/', show_scoring, name='help.show_scoring'),
