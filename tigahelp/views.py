@@ -2,11 +2,6 @@ from django.shortcuts import render
 from django.template.loader import TemplateDoesNotExist
 
 # Create your views here.
-def show_credit_image(request):
-    context = {}
-    return render(request, 'tigahelp/credit_image.html', context)
-
-
 def show_license(request, platform, language):
     #language = request.LANGUAGE_CODE
     context = {}
