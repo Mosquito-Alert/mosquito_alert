@@ -2,15 +2,6 @@ from django.shortcuts import render
 from django.template.loader import TemplateDoesNotExist
 
 # Create your views here.
-def show_scoring(request):
-    language = request.LANGUAGE_CODE
-    context = {}
-    try:
-        return render(request, 'tigahelp/scoring_' + language +'.html', context)
-    except TemplateDoesNotExist:
-        return render(request, 'tigahelp/scoring_en.html', context)
-
-
 def show_about_us(request):
     language = request.LANGUAGE_CODE
     context = {}
