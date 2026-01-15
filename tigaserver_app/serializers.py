@@ -141,8 +141,8 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
             # we can not waranty the user have moved and possibly
             # changed its timezone. So, remove version_time too
             # from the candidate list.
-            original_version_upload_time = timezone.make_aware(data['phone_upload_time'], is_dst=False) if not timezone.is_aware(data['phone_upload_time']) else data['phone_upload_time']
-            current_version_upload_time = timezone.make_aware(data['version_time'], is_dst=False) if not timezone.is_aware(data['version_time']) else data['version_time']
+            original_version_upload_time = timezone.make_aware(data['phone_upload_time']) if not timezone.is_aware(data['phone_upload_time']) else data['phone_upload_time']
+            current_version_upload_time = timezone.make_aware(data['version_time']) if not timezone.is_aware(data['version_time']) else data['version_time']
             if abs(original_version_upload_time - current_version_upload_time).total_seconds() > 24 * 3600:
                 field_names = list(set(field_names) - set(['version_time']))
 

@@ -12,7 +12,7 @@ application = get_wsgi_application()
 
 from tigaserver_app.models import NotificationTopic, EuropeCountry, SentNotification
 from tigaserver_project import settings as settings
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 def create_topics():

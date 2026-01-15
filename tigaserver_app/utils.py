@@ -9,7 +9,7 @@ def apply_tz_to_datetime(value: datetime, tz: pytz.timezone) -> datetime:
     if timezone.is_aware(value):
         value = timezone.make_naive(value)
 
-    return timezone.make_aware(value, timezone=tz, is_dst=False)
+    return timezone.make_aware(value, timezone=tz)
 
 
 def is_instant_upload_candidate(
