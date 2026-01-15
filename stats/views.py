@@ -25,6 +25,7 @@ from django.core.paginator import Paginator
 import math
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
+from django.db.models import Count
 from django.db.models.functions import Extract, Trunc
 
 
