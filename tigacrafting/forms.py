@@ -1,4 +1,4 @@
-import floppyforms.__future__ as forms
+from django import forms
 from tigaserver_app.models import Report
 
 
