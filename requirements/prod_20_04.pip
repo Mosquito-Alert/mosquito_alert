@@ -7,7 +7,6 @@ django-filter==2.4.0
 django-floppyforms==1.9.0
 django-hosts==6.0
 django-imagekit==4.1.0
-django-import-export==2.6.1
 django-leaflet==0.28.3
 drf-nested-routers==0.93.4
 django-timezone-field==5.1
