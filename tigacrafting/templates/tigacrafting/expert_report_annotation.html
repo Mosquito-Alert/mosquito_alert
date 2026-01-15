@@ -1,7 +1,6 @@
 {% load static %}
 {% load leaflet_tags %}
 {% load i18n %}
-{% load floppyforms %}
 
 
 <!DOCTYPE html>
@@ -581,7 +580,22 @@
                     </div>
                     {% endif %}
 
-                    {% form form using "floppyforms/layouts/bootstrap.html" %}
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% for field in form.visible_fields %}
+                            <div class="mb-3">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {{ field.errors }}
+                            </div>
+                        {% endfor %}
+
+                        {% for hidden in form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
 
                     {% if request.user.userstat.is_national_supervisor and form.instance.is_on_ns_executive_validation_period %}
                     <div class="form-group">

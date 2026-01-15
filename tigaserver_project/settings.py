@@ -71,7 +71,6 @@ INSTALLED_APPS = (
     'rest_framework',
     'leaflet',
     'stats',
-    'floppyforms',
     'taggit',
     'tigascoring',
     'drf_spectacular',

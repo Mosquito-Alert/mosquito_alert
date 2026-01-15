@@ -4,7 +4,6 @@ Django==4.0.10
 django-admin-numeric-filter==0.1.9
 django-cors-headers==3.7.0
 django-filter==2.4.0
-django-floppyforms==1.9.0
 django-hosts==6.0
 django-imagekit==4.1.0
 django-leaflet==0.28.3
