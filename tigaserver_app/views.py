@@ -86,13 +86,13 @@ through the API.)
     """
     queryset = TigaUser.objects.all()
     serializer_class = UserSerializer
-    filter_class = UserFilter
+    filterset_class = UserFilter
 
 
 class ReportViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Report.objects.all().prefetch_related("responses", "photos")
     serializer_class = ReportSerializer
-    filter_fields = ('user', 'version_number', 'report_id', 'type')
+    filterset_fields = ('user', 'version_number', 'report_id', 'type')
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -207,7 +207,7 @@ class FixViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     """
     queryset = Fix.objects.all()
     serializer_class = FixSerializer
-    filter_fields = ('user_coverage_uuid', )
+    filterset_fields = ('user_coverage_uuid', )
 
 
 class SessionPartialUpdateView(GenericAPIView, mixins.UpdateModelMixin):
@@ -228,7 +228,7 @@ A session is the full set of information uploaded by a user, usually in form of 
     """
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
-    filter_fields = ('id', 'user' )
+    filterset_fields = ('id', 'user' )
 
     def filter_queryset(self, queryset):
         queryset = super(SessionViewSet, self).filter_queryset(queryset)
@@ -473,7 +473,7 @@ class TagFilter(filters.FilterSet):
 class TagViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    filter_class = TagFilter
+    filterset_class = TagFilter
 
 
 @api_view(['POST'])
@@ -732,7 +732,7 @@ class UserAddressFilter(filters.FilterSet):
 class UserAddressViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.exclude(first_name='').filter(groups__name__in=['expert','superexpert'])
     serializer_class = UserAddressSerializer
-    filter_class = UserAddressFilter
+    filterset_class = UserAddressFilter
 
 
 def send_unblock_email(name, email):

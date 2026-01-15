@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone as dt_timezone
 import uuid
 
 # Create your tests here.
@@ -96,7 +96,7 @@ class ReportEndpointTestCase(APITestCase):
                 minute=11,
                 second=51,
                 microsecond=503921,
-                tzinfo=timezone.utc,
+                tzinfo=dt_timezone.utc,
             ),
         )
 
@@ -127,7 +127,7 @@ class ReportEndpointTestCase(APITestCase):
                 minute=11,
                 second=51,
                 microsecond=503921,
-                tzinfo=timezone.utc,
+                tzinfo=dt_timezone.utc,
             ),
         )
 
@@ -161,7 +161,7 @@ class ReportEndpointTestCase(APITestCase):
                 minute=11,
                 second=51,
                 microsecond=503921,
-                tzinfo=timezone.utc,
+                tzinfo=dt_timezone.utc,
             ),
         )
 
@@ -193,7 +193,7 @@ class ReportEndpointTestCase(APITestCase):
                 minute=11,
                 second=51,
                 microsecond=503921,
-                tzinfo=timezone.utc,
+                tzinfo=dt_timezone.utc,
             ),
         )
 
@@ -224,7 +224,7 @@ class ReportEndpointTestCase(APITestCase):
                 minute=11,
                 second=51,
                 microsecond=503921,
-                tzinfo=timezone.utc,
+                tzinfo=dt_timezone.utc,
             ),
         )
 
@@ -258,7 +258,7 @@ class ReportEndpointTestCase(APITestCase):
                 minute=11,
                 second=51,
                 microsecond=503921,
-                tzinfo=timezone.utc,
+                tzinfo=dt_timezone.utc,
             ),
         )
 
@@ -294,7 +294,7 @@ class ReportEndpointTestCase(APITestCase):
                 minute=11,
                 second=51,
                 microsecond=503921,
-                tzinfo=timezone.utc,
+                tzinfo=dt_timezone.utc,
             ),
         )
 
@@ -329,7 +329,7 @@ class ReportEndpointTestCase(APITestCase):
                 minute=11,
                 second=51,
                 microsecond=503921,
-                tzinfo=timezone.utc,
+                tzinfo=dt_timezone.utc,
             ),
         )
 
@@ -441,7 +441,7 @@ class ReportEndpointTestCase(APITestCase):
                 hour=1,
                 minute=0,
                 second=0,
-                tzinfo=timezone.utc
+                tzinfo=dt_timezone.utc
             )
         )
 
@@ -855,7 +855,7 @@ class FixEndpointTestCase(APITestCase):
                 minute=11,
                 second=51,
                 microsecond=503921,
-                tzinfo=timezone.utc,
+                tzinfo=dt_timezone.utc,
             ),
         )
 
@@ -888,7 +888,7 @@ class FixEndpointTestCase(APITestCase):
                 minute=11,
                 second=51,
                 microsecond=503921,
-                tzinfo=timezone.utc,
+                tzinfo=dt_timezone.utc,
             ),
         )
 

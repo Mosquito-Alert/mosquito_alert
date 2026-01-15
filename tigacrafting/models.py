@@ -97,7 +97,7 @@ class IdentificationTask(LifecycleModel):
             # TODO: distribute first to children instead of directly to leaves?
             taxon_leaves_qs = taxon.get_leaves()
             num_leaves = taxon_leaves_qs.count()
-            for taxon_leaf in taxon_leaves_qs.iterator():
+            for taxon_leaf in taxon_leaves_qs.iterator(chunk_size=1000):
                 taxon_leaves_confidence[taxon_leaf] += confidence/num_leaves
 
         def propagate_confidence_up(taxon_confidence: defaultdict[Decimal]) -> defaultdict[Decimal]:

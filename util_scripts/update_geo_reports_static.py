@@ -35,7 +35,7 @@ def qs_to_local_csv(qs, filename, path=settings.STATIC_ROOT, fields=None):
         writer = csv.DictWriter(my_file, fieldnames=fields.keys())
         writer.writeheader()
 
-        for data_item in qs.iterator():
+        for data_item in qs.iterator(chunk_size=2000):
             writer.writerow({key: func(data_item) for key, func in fields.items()})
             rows_done += 1
     print("{} rows completed".format(rows_done))
