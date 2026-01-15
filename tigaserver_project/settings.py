@@ -1,10 +1,11 @@
 from django.utils.translation import gettext_lazy as _
 import tigaserver_project as project_module
 import django.conf.global_settings as DEFAULT_SETTINGS
-import pytz
 from datetime import datetime
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.gdal import DataSource
+
+from zoneinfo import ZoneInfo
 
 import firebase_admin
 from firebase_admin.credentials import Certificate
@@ -334,9 +335,9 @@ TEMPLATES = [
     },
 ]
 
-START_TIME = pytz.utc.localize(datetime(2014, 6, 13))
+START_TIME = datetime(2014, 6, 13, tzinfo=ZoneInfo("UTC"))
 
-IOS_START_TIME = pytz.utc.localize(datetime(2014, 6, 24))
+IOS_START_TIME = datetime(2014, 6, 24, tzinfo=ZoneInfo("UTC"))
 
 SOUTH_MIGRATION_MODULES = {
     'taggit': 'taggit.south_migrations',

@@ -1,9 +1,9 @@
 from django.core.management.base import BaseCommand
 from tigaserver_app.models import CoverageAreaMonth, Fix, Report
-import pytz
 from datetime import datetime
 from django.conf import settings
 from django.db.models import Q
+from zoneinfo import ZoneInfo
 
 
 def lon_function(this_lon, these_lons, this_lat, fix_list, latest_fix_id, report_list, latest_report_server_upload_time):
@@ -90,7 +90,7 @@ class Command(BaseCommand):
             latest_report_server_upload_time = last_coverage.latest_report_server_upload_time
             latest_fix_id = CoverageAreaMonth.objects.order_by('latest_fix_id').last().latest_fix_id
         else:
-            latest_report_server_upload_time = pytz.utc.localize(datetime(1970, 1, 1))
+            latest_report_server_upload_time = datetime(1970, 1, 1, tzinfo=ZoneInfo("UTC"))
             latest_fix_id = 0
 
         last_report = Report.objects.order_by('server_upload_time').last()

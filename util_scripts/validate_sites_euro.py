@@ -13,13 +13,12 @@ application = get_wsgi_application()
 
 from datetime import datetime
 # import datetime
-import pytz
 import logging
 from django.db.models import Count
 from tigaserver_app.models import Report
 from django.contrib.auth.models import User
 from tigacrafting.models import ExpertReportAnnotation
-
+from zoneinfo import ZoneInfo
 
 def load_fast_track_ids():
     try:
@@ -46,7 +45,7 @@ if len(args) > 1 and args[1] == 'dryrun':
     dryRun = True
 
 # we use datetimes with time zone info
-now = datetime.utcnow().replace(tzinfo=pytz.utc)
+now = datetime.utcnow().replace(tzinfo=ZoneInfo("UTC"))
 logname = "/home/webuser/webapps/data_preprocessing/auto-validation-" + now.strftime("%d-%m-%Y") + ".log"
 logging.basicConfig(filename=logname, level=logging.INFO)
 
