@@ -40,6 +40,7 @@ pymemcache==4.0.0 # Needed for caching.
 rawpy==0.17.1
 semantic-version==2.10.0
 scipy==1.13.1
-timezonefinder[pytz]==6.2.0
+timezonefinder==6.2.0
 tqdm==4.66.1
+tzdata==2025.3 # Needed for zoneinfo to work.
 Unidecode==1.3.8

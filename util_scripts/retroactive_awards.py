@@ -20,7 +20,8 @@ from tigaserver_app.models import Report, TigaUser
 from django.contrib.auth.models import User
 import tigaserver_project.settings as conf
 from datetime import datetime, timedelta, date
-import pytz
+
+from zoneinfo import ZoneInfo
 
 
 def daterange(start_date, end_date):
@@ -71,11 +72,8 @@ def same_day(r1_date_less_recent, r2_date_most_recent):
 
 
 def can_be_first_of_season( report, year ):
-    utc = pytz.UTC
-    #naive datetime
-    d = datetime(year, conf.SEASON_START_MONTH, conf.SEASON_START_DAY)
     #localized datetime
-    ld = utc.localize(d)
+    ld = datetime(year, conf.SEASON_START_MONTH, conf.SEASON_START_DAY, tzinfo=ZoneInfo("UTC"))
     return report.creation_time >= ld
 
 

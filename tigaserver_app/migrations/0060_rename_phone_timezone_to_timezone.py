@@ -4,7 +4,7 @@ from django.db import migrations, models
 import timezone_field.fields
 
 from datetime import tzinfo
-import pytz
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from typing import Union
 
 from timezonefinder import TimezoneFinder
@@ -23,13 +23,13 @@ def get_timezone_from_coordinates(report) -> Union[tzinfo, None]:
     if latitude is not None and longitude is not None:
         # Get the timezone based on latitude and longitude
         try:
-            timezone_from_coordinates = pytz.timezone(
+            timezone_from_coordinates = ZoneInfo(
                 timezone_finder.timezone_at(lat=latitude, lng=longitude)
             )
         except ValueError:
             # Timezonefinder: the coordinates were out of bounds
             pass
-        except pytz.exceptions.UnknownTimeZoneError:
+        except ZoneInfoNotFoundError:
             pass
 
     return timezone_from_coordinates

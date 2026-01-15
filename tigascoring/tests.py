@@ -7,7 +7,8 @@ from tigacrafting.models import Categories
 from tigaserver_project import settings as conf
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from datetime import datetime
-import pytz
+from zoneinfo import ZoneInfo
+
 import random
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User, Group
@@ -18,15 +19,13 @@ class ScoringTestCase(TestCase):
     fixtures = ['auth_group.json', 'awardcategory.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json', 'taxon.json']
 
     def create_single_report(self, day, month, year, user, id, hour=None, minute=None, second=None, report_app_language='es'):
-        utc = pytz.UTC
         if hour is None:
             hour = 0
         if minute is None:
             minute = 0
         if second is None:
             second = 0
-        d = datetime(year, month, day, hour, minute, second)
-        ld = utc.localize(d)
+        ld = datetime(year, month, day, hour, minute, second, tzinfo=ZoneInfo("UTC"))
         value_x = random.random()
         value_y = random.random()
         long = -180 + (value_x * (360))
