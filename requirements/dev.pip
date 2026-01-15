@@ -5,3 +5,4 @@ pytest-django==4.8.0
 pytest-lazy-fixture==0.6.3
 tavern[pytest]==2.7.1
 time-machine==2.14.0
+piexif==1.1.3

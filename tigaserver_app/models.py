@@ -11,7 +11,7 @@ from PIL import Image
 import pydenticon
 import os
 import random
-from slugify import slugify
+from django.utils.text import slugify
 import string
 from typing import List, Optional, Union
 import uuid

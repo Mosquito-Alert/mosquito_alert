@@ -12,8 +12,7 @@ application = get_wsgi_application()
 
 from tigaserver_app.models import *
 from datetime import date, timedelta, datetime
-import time
-from tzlocal import get_localzone
+from django.utils import timezone
 import datetime
 import csv
 
@@ -28,9 +27,8 @@ def write_csv_file(filename,dict_data,csv_columns):
 def get_data():
     real_tigausers = TigaUser.objects.filter(registration_time__gte=date(2014, 6, 13))
     real_reports = Report.objects.filter(Q(package_name='Tigatrapp', creation_time__gte=date(2014, 6, 24)) | Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3))
-    tz = get_localzone()
-    ref_date = datetime.datetime(2014, 6, 13, 0, 0, 0,  tzinfo=tz)
-    end_date = tz.localize(datetime.datetime.now())
+    ref_date = datetime.datetime(2014, 6, 13, 0, 0, 0,  tzinfo=timezone.get_default_timezone())
+    end_date = timezone.now()
     users = []
     site_reports = []
     adult_reports = []

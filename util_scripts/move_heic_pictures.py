@@ -6,7 +6,6 @@ import io
 from PIL import Image
 from pathlib import Path
 import ntpath
-import imageio
 import magic
 import rawpy
 from django.core.mail import send_mail

@@ -29,9 +29,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     # GIS dependencies. See: https://docs.djangoproject.com/en/dev/ref/contrib/gis/install/geolibs/
     binutils libproj-dev gdal-bin \
     # psycopg2 dependencies
-    libpq-dev \
-    # For matplotlib
-    pkg-config libfreetype6-dev
+    libpq-dev
 
 WORKDIR /app
 COPY . /app
