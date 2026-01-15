@@ -873,7 +873,6 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text="Version number of tigatrapp package from which this report was submitted.",
     )
 
-    # NOTE: if every use django-simplehistory >= 3.1.0, consider using HistoricForeignKey
     device = models.ForeignKey(Device, null=True, on_delete=models.PROTECT, related_name="created_reports", help_text='The device from where the report was sent.')
     device_manufacturer = models.CharField(
         max_length=200,
