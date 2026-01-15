@@ -3,7 +3,6 @@
 from django.db import migrations, models
 import timezone_field.fields
 
-from datetime import tzinfo
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from typing import Union
 
@@ -11,7 +10,7 @@ from timezonefinder import TimezoneFinder
 
 timezone_finder = TimezoneFinder()
 
-def get_timezone_from_coordinates(report) -> Union[tzinfo, None]:
+def get_timezone_from_coordinates(report) -> Union[ZoneInfo, None]:
     # NOTE: taken from mixins.py TimeZoneModelMixin
     if not report.point:
         return

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections import OrderedDict
-from datetime import datetime, timedelta, tzinfo, timezone as dt_timezone
+from datetime import datetime, timedelta, timezone as dt_timezone
 from typing import Union
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -22,7 +22,7 @@ class TimeZoneModelMixin(models.Model):
     def _get_longitude_for_timezone(self) -> Union[float, None]:
         raise NotImplementedError
 
-    def get_timezone_from_coordinates(self) -> Union[tzinfo, None]:
+    def get_timezone_from_coordinates(self) -> Union[ZoneInfo, None]:
         latitude = self._get_latitude_for_timezone()
         longitude = self._get_longitude_for_timezone()
 
