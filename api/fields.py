@@ -1,5 +1,4 @@
 import inspect
-import pytz
 try:
     import zoneinfo
 except ImportError:
@@ -11,7 +10,6 @@ from rest_framework import serializers
 
 from drf_spectacular.utils import extend_schema_field
 from taggit.serializers import TagListSerializerField as OriginalTagListSerializerField
-from timezone_field.utils import use_pytz_default
 from timezone_field.rest_framework import TimeZoneSerializerField
 
 
@@ -38,13 +36,13 @@ class IntegerDefaultField(serializers.IntegerField):
 
 class TimeZoneSerializerChoiceField(TimeZoneSerializerField, serializers.ChoiceField):
     def __init__(self, **kwargs):
-        self.use_pytz = kwargs.pop("use_pytz", use_pytz_default())
-        # NOTE: We need to use pytz.all_timezones instead of pytz.common_timezones since
-        #       this is not manually set, but set automatically depending on the lat/lon.
-        _tzstrs = (
-            pytz.all_timezones if self.use_pytz else zoneinfo.available_timezones()
-        )
-        super().__init__(choices=sorted(_tzstrs), html_cutoff=5, **kwargs)
+        EXCLUDED_PREFIXES = ("SystemV/", "Factory", "localtime")
+        _tzstrs = {
+            tz
+            for tz in zoneinfo.available_timezones()
+            if not tz.startswith(EXCLUDED_PREFIXES)
+        }
+        super().__init__(choices=sorted(_tzstrs), use_pytz=False, html_cutoff=5, **kwargs)
 
 
 class WritableSerializerMethodField(serializers.Field):

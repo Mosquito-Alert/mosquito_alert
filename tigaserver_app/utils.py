@@ -1,15 +1,15 @@
 from datetime import datetime, date, timedelta
-import pytz
+from zoneinfo import ZoneInfo
 
 from django.utils import timezone
 
 
-def apply_tz_to_datetime(value: datetime, tz: pytz.timezone) -> datetime:
+def apply_tz_to_datetime(value: datetime, tz: ZoneInfo) -> datetime:
     # If tz = None, will use the one configured in settings
     if timezone.is_aware(value):
         value = timezone.make_naive(value)
 
-    return timezone.make_aware(value, timezone=tz, is_dst=False)
+    return timezone.make_aware(value, timezone=tz)
 
 
 def is_instant_upload_candidate(

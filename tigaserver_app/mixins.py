@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from collections import OrderedDict
-from datetime import datetime, timedelta, tzinfo, timezone as dt_timezone
-import pytz
+from datetime import datetime, timedelta, timezone as dt_timezone
 from typing import Union
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.apps import apps
 from django.db import models
@@ -22,7 +22,7 @@ class TimeZoneModelMixin(models.Model):
     def _get_longitude_for_timezone(self) -> Union[float, None]:
         raise NotImplementedError
 
-    def get_timezone_from_coordinates(self) -> Union[tzinfo, None]:
+    def get_timezone_from_coordinates(self) -> Union[ZoneInfo, None]:
         latitude = self._get_latitude_for_timezone()
         longitude = self._get_longitude_for_timezone()
 
@@ -32,13 +32,13 @@ class TimeZoneModelMixin(models.Model):
 
             # Get the timezone based on latitude and longitude
             try:
-                timezone_from_coordinates = pytz.timezone(
+                timezone_from_coordinates = ZoneInfo(
                     tf.timezone_at(lat=latitude, lng=longitude)
                 )
             except ValueError:
                 # Timezonefinder: the coordinates were out of bounds
                 pass
-            except pytz.exceptions.UnknownTimeZoneError:
+            except ZoneInfoNotFoundError:
                 pass
 
         return timezone_from_coordinates
@@ -48,7 +48,7 @@ class TimeZoneModelMixin(models.Model):
 
 
 class AutoTimeZoneSerializerMixin(object):
-    def _get_dict_applied_tz(self, data: OrderedDict, tz: pytz.timezone) -> OrderedDict:
+    def _get_dict_applied_tz(self, data: OrderedDict, tz: ZoneInfo) -> OrderedDict:
         # Apply the Timezone to all fields that still not have a timezone set and
         # cast to the default timezone.
         # Return only the fields where the process has been applied.
@@ -114,7 +114,7 @@ class AutoTimeZoneOrInstantUploadSerializerMixin(AutoTimeZoneSerializerMixin):
     def _get_fields_to_apply_tz_from_instant_upload(self, data: OrderedDict) -> list:
         return self._get_fields_to_apply_tz(data=data)
 
-    def _get_dict_applied_tz(self, data: OrderedDict, tz: pytz.timezone) -> OrderedDict:
+    def _get_dict_applied_tz(self, data: OrderedDict, tz: ZoneInfo) -> OrderedDict:
         # First, get the result from the location timezone approach.
         data_result = super()._get_dict_applied_tz(data, tz)
 
