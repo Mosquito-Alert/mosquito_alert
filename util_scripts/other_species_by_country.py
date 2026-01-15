@@ -13,14 +13,12 @@ application = get_wsgi_application()
 
 from tigacrafting.models import ExpertReportAnnotation, Categories
 from tigaserver_app.models import Report, EuropeCountry
-#from progress.bar import Bar
 import csv
 
 def main():
     # buckets = {}
 
     reports = Report.objects.exclude( creation_time__year__in=[2014,2015,2016,2017,2018,2019])
-    #bar = Bar('processing reports...', max=reports.count())
 
     # for c in EuropeCountry.objects.all():
     #     if c.gid == 17:

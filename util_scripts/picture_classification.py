@@ -12,7 +12,6 @@ application = get_wsgi_application()
 from tigaserver_app.models import Report, Photo
 from django.db import connection
 import csv
-from progress.bar import Bar
 
 
 def main():
@@ -29,7 +28,6 @@ def main():
     data = cursor.fetchall()
     data_array = [d[0] for d in data]
     photos = Photo.objects.filter(id__in=data_array)
-    bar = Bar('listing photos...', max=photos.count())
     with open('/tmp/photo_data_summer_2022.csv', mode='w') as photo_data:
         photo_data_writer = csv.writer(photo_data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         photo_data_writer.writerow( ['photo_uuid', 'photo_url', 'report_classification', 'report_uuid', 'report_creation_time'] )
@@ -41,8 +39,6 @@ def main():
                         #report.get_final_combined_expert_category_euro_struct()
                         # print("{} {} {} {} {}".format( str(p.uuid), str(p.photo), report.get_final_combined_expert_category_euro(), report.version_UUID, report.creation_time ))
                         photo_data_writer.writerow([str(p.uuid), p.photo.url, report.get_final_combined_expert_category_euro(), report.version_UUID, report.creation_time])
-                        bar.next()
-    bar.finish()
 
 if __name__ == '__main__':
     main()

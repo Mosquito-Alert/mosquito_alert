@@ -13,7 +13,6 @@ application = get_wsgi_application()
 
 from tigacrafting.models import ExpertReportAnnotation, Categories
 from tigaserver_app.models import Report, EuropeCountry
-#from progress.bar import Bar
 import csv
 
 

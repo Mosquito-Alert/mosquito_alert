@@ -6,7 +6,6 @@ Created on 2011-05-12
 '''
 
 import sys
-import six
 
 try:
     # for Python3
@@ -181,9 +180,9 @@ def _normalize(d):
     if isinstance(d, dict) == False:
         return d
     # if dictionary. iterate over each element and append to newd
-    for k, v in six.iteritems(d):
+    for k, v in d.items():
         if isinstance(v, dict):
-            first_key = next(iter(six.viewkeys(v)))
+            first_key = next(iter(v.keys()))
             if isinstance(first_key, int):
                 temp_new = []
                 for k1, v1 in v.items():

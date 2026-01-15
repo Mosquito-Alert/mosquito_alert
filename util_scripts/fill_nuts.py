@@ -11,11 +11,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from tigaserver_app.models import Report
-from progress.bar import Bar
 
 reports = Report.objects.all()
-bar = Bar('updating all reports', max=reports.count())
 for r in reports:
     r.save()
-    bar.next()
-bar.finish()
