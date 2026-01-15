@@ -12,6 +12,7 @@ from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Polygon, MultiPolygon
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 from django.utils.module_loading import import_string
 
 from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
@@ -141,7 +142,7 @@ def user(user_password):
 def another_user():
     return User.objects.create_user(
         username=f"user_{random.randint(1,1000)}",
-        password=User.objects.make_random_password(),
+        password=get_random_string(length=10),
         first_name="Test Another FirstName",
         last_name="Test Another LastName"
     )
