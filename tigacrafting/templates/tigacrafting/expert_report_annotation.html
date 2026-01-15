@@ -2,7 +2,6 @@
 {% load leaflet_tags %}
 {% load i18n %}
 {% load floppyforms %}
-{% load inbox %}
 
 
 <!DOCTYPE html>
@@ -278,11 +277,6 @@
                                     </ul>
                                 </li>
                             {% endif %}
-                            {% inbox_count as my_var %}
-                            <li>
-                                <a href="{% url 'messages_inbox' %}">Messages <span class="badge {%if my_var > 0%}pending{% else %}clear{% endif %}">{{ my_var }}</span></a>
-                            </li>
-
 
                             <li><p class="navbar-text">{{ request.user.username }}</p></li>
                             <li><a href="{% url "auth_logout" %}">logout</a></li>
@@ -445,23 +439,6 @@
             <div class="col-md-1">
                 <h4>
                     <a href="{% url 'single_report_view' form.instance.report.version_UUID %}" target="_blank"><span class="glyphicon glyphicon-link" aria-hidden="true" title="View validation status"></span></a>
-                </h4>
-            </div>
-            <div class="col-md-1">
-                <h4>
-                    {% if form.instance.report.get_superexpert_completed_recipients %}
-                        {% if request.user.userstat.is_superexpert %}
-                            <a href="{% url 'compose_w_data' %}?recipient={{form.instance.report.get_expert_recipients}}&body=http://{{ request.META.HTTP_HOST }}{{form.instance.report.get_single_report_view_link}}&subject=Report {{form.instance.report.version_UUID}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email to experts about this report..."></span></a>
-                        {% else %}
-                            <a href="{% url 'compose_w_data' %}?recipient={{form.instance.report.get_superexpert_completed_recipients}}&body=http://{{ request.META.HTTP_HOST }}{{form.instance.report.get_single_report_view_link}}&subject=Report {{form.instance.report.version_UUID}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email to superexperts about this report..."></span></a>
-                        {% endif %}
-                    {% else %}
-                        {% if request.user.userstat.is_superexpert %}
-                            <a href="{% url 'compose_w_data' %}?recipient={{form.instance.report.get_expert_recipients}}&body=http://{{ request.META.HTTP_HOST }}{{form.instance.report.get_single_report_view_link}}&subject=Report {{form.instance.report.version_UUID}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email to experts about this report..."></span></a>
-                        {% else %}
-                            <a href="{% url 'compose_w_data' %}?recipient=super_reritja&body=http://{{ request.META.HTTP_HOST }}{{form.instance.report.get_single_report_view_link}}&subject=Report {{form.instance.report.version_UUID}}" target="_blank"><span class="glyphicon glyphicon-envelope" aria-hidden="true" title="Send email to superexperts about this report..."></span></a>
-                        {% endif %}
-                    {% endif %}
                 </h4>
             </div>
             <div class="col-md-1">

@@ -12,8 +12,6 @@ from stats.views import show_usage, workload_stats, report_stats, registration_s
     report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, single_report_view, entolab_license_agreement, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement, predefined_messages, expert_geo_report_assign, report_expiration, aimalog_datatable, aimalog, coarse_filter
-from tigaserver_messages.views import compose_w_data, reply_w_data, compose
-from django_messages.views import view,delete,undelete,trash,inbox,outbox
 from django.views.i18n import JavaScriptCatalog
 from django.urls import include,path
 from django.contrib.auth import views as auth_views
@@ -118,21 +116,7 @@ urlpatterns += i18n_patterns(
 
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), {'next_page': '/experts/'}, name='auth_logout'),
-    # We do not include the message urls because two of the views (compose_w_data and reply_w_data) are slightly customized
-    #url(r'^messages/', include('django_messages.urls')),
-    #url(r'^$', RedirectView.as_view(permanent=True, url='inbox/'), name='messages_redirect'),
-    path('messages/inbox/', inbox, name='messages_inbox'),
-    path('messages/outbox/', outbox, name='messages_outbox'),
-    path('messages/compose/', compose, name='messages_compose'),
-    path('messages/compose/<recipient>/', compose, name='messages_compose_to'),
-    path('messages/view/<int:message_id>/', view, name='messages_detail'),
-    path('messages/delete/<int:message_id>/', delete, name='messages_delete'),
-    path('messages/undelete/<int:message_id>/', undelete, name='messages_undelete'),
-    path('messages/trash/', trash, name='messages_trash'),
-    path('messages/compose_w_data/', compose_w_data, name='compose_w_data'),
-    path('messages/reply/<int:message_id>/', reply_w_data, name='messages_reply'),
+
     path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
     path('metadataPhotoInfo', metadataPhoto, name='metadataPhotoInfo'),
-
-
 )

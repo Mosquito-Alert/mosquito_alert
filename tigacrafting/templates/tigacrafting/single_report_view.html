@@ -2,7 +2,6 @@
 {% load leaflet_tags %}
 {% load i18n %}
 {% load floppyforms %}
-{% load inbox %}
 
 <!DOCTYPE html>
 <html lang={% block language %}"en"{% endblock %}>
@@ -135,11 +134,6 @@
                                 <li><a href={% url 'expert_status' %}>People</a></li>
 
                             </ul>
-                        </li>
-
-                        {% inbox_count as my_var %}
-                        <li>
-                            <a href="{% url 'messages_inbox' %}">Messages <span class="badge {%if my_var > 0%}pending{% else %}clear{% endif %}">{{ my_var }}</span></a>
                         </li>
 
                         <li><p class="navbar-text">{{ request.user.username }}</p></li>
