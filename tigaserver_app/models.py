@@ -829,7 +829,6 @@ class Report(TimeZoneModelMixin, models.Model):
     point = models.PointField(null=True, blank=True, srid=4326)
     timezone = TimeZoneField(
         null=True,
-        use_pytz=False,
         help_text="The timezone corresponding to the GPS of the report."
     )
     location_is_masked = models.BooleanField(default=False)
