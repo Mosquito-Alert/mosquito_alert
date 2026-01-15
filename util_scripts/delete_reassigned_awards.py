@@ -14,7 +14,8 @@ application = get_wsgi_application()
 
 from django.db import connection
 from tigaserver_app.models import TigaUser
-import datetime, pytz
+import datetime
+from zoneinfo import ZoneInfo
 
 
 def get_reassigned_special_awards(award_text):
@@ -37,7 +38,7 @@ def extract_first_award(keep_list, rows):
 def mark_user_for_score_update(user_id):
     print("Marking user {0} for score update".format(user_id))
     u = TigaUser.objects.get(pk=user_id)
-    u.last_score_update = datetime.datetime(2011, 8, 15, 8, 15, 12, 0, pytz.UTC)
+    u.last_score_update = datetime.datetime(2011, 8, 15, 8, 15, 12, 0, tzinfo=ZoneInfo("UTC"))
     u.save()
 
 
