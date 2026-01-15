@@ -1,8 +1,8 @@
 from django.contrib import admin
-from django.contrib.gis.admin import OSMGeoAdmin
+from django.contrib.gis.admin import GISModelAdmin
 from tigaserver_app.models import Notification, TigaUser, Report, ReportResponse,  Photo, \
     Fix, OWCampaigns, OrganizationPin, NotificationTopic, MobileApp, Device
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from simple_history.admin import SimpleHistoryAdmin
 from simple_history.utils import get_history_model_for_model
@@ -257,7 +257,7 @@ class NotificationTopicAdmin(admin.ModelAdmin):
     ordering = ['id', 'topic_code', 'topic_description']
 
 
-class OrganizationPinAdmin(OSMGeoAdmin):
+class OrganizationPinAdmin(GISModelAdmin):
     list_display = ('id', 'point', 'textual_description', 'page_url')
     list_filter = ['textual_description', 'page_url']
     search_fields = ['textual_description', 'page_url']
