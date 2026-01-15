@@ -36,7 +36,12 @@ class IntegerDefaultField(serializers.IntegerField):
 
 class TimeZoneSerializerChoiceField(TimeZoneSerializerField, serializers.ChoiceField):
     def __init__(self, **kwargs):
-        _tzstrs = zoneinfo.available_timezones()
+        EXCLUDED_PREFIXES = ("SystemV/", "Factory", "localtime")
+        _tzstrs = {
+            tz
+            for tz in zoneinfo.available_timezones()
+            if not tz.startswith(EXCLUDED_PREFIXES)
+        }
         super().__init__(choices=sorted(_tzstrs), use_pytz=False, html_cutoff=5, **kwargs)
 
 
