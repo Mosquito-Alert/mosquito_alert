@@ -30,7 +30,7 @@ class AutoTzDateTimeProcess(ABC):
         return obj.get_timezone_from_coordinates()
 
     def _objs_to_update_generator(self, queryset):
-        for obj in queryset.iterator():
+        for obj in queryset.iterator(chunk_size=1000):
             tz = self._get_timezone(obj=obj)
 
             # Save timezone in tmp variable, needed for writing output CSV
@@ -326,7 +326,7 @@ class FixAutoTzDateTimeProcess(AutoTzOrInstantUploadTimeProcess):
     CLIENT_CREATION_FIELD = "phone_upload_time"
     SERVER_CREATION_FIELD = "server_upload_time"
 
-    _AFFECTED_RELEASE_DATE = datetime(year=2021, month=3, day=10, tzinfo=timezone.utc)
+    _AFFECTED_RELEASE_DATE = datetime(year=2021, month=3, day=10, tzinfo=dt_timezone.utc)
 
     def _get_timezone_from_location(self, obj):
         # Only apply to objects after 2021-0310

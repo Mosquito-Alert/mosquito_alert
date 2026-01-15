@@ -9,7 +9,6 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from drf_spectacular.utils import extend_schema_field
-from taggit.serializers import TagListSerializerField as OriginalTagListSerializerField
 from timezone_field.rest_framework import TimeZoneSerializerField
 
 
@@ -83,11 +82,6 @@ class WritableSerializerMethodField(serializers.Field):
     def to_representation(self, value):
         return self.serializer_field.to_representation(value=value)
 
-
-class TagListSerializerField(OriginalTagListSerializerField, serializers.ListField):
-    # NOTE: the current django-taggit version uses CharField, which introduces an error 
-    # on POST, getting char instead of a list of element.
-    pass
 
 @extend_schema_field({
     "type": "string",

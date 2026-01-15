@@ -863,7 +863,8 @@ def global_assignments_list(request, country_code=None, status=None):
         return HttpResponseBadRequest('status not found.')
 
     result = []
-    for obj in qs.order_by('-created_at').prefetch_related('expert_report_annotations').iterator():
+    # NOTE: chunk_size is needed in iterator when using prefetch_related since django 4.1
+    for obj in qs.order_by('-created_at').prefetch_related('expert_report_annotations').iterator(chunk_size=1000):
         names = []
         for annotation in obj.expert_report_annotations.all():
             names.append(

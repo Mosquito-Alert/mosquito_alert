@@ -382,7 +382,7 @@ def compute_user_score_in_xp_v2(user_uuid):
     result['score_detail']['adult'] = results_adult
 
     adult_score = 0
-    for report in adult_last_versions.iterator():
+    for report in adult_last_versions.iterator(chunk_size=1000):
         result = get_adult_report_score(report, result)
         index = len(result['score_detail']['adult']['score_items']) - 1
         result['score_detail']['adult']['score'] += result['score_detail']['adult']['score_items'][index]['report_score']
@@ -410,7 +410,7 @@ def compute_user_score_in_xp_v2(user_uuid):
     result['score_detail']['site'] = results_site
 
     site_score = 0
-    for report in site_last_versions.iterator():
+    for report in site_last_versions.iterator(chunk_size=1000):
         result = get_site_report_score(report, result)
         index = len(result['score_detail']['site']['score_items']) - 1
         result['score_detail']['site']['score'] += result['score_detail']['site']['score_items'][index]['report_score']

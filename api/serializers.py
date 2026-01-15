@@ -15,7 +15,7 @@ from rest_framework import serializers
 from drf_extra_fields.geo_fields import PointField
 import minify_html
 from rest_framework_dataclasses.serializers import DataclassSerializer
-from taggit.serializers import TaggitSerializer
+from taggit.serializers import TaggitSerializer, TagListSerializerField
 
 from tigacrafting.models import (
     IdentificationTask,
@@ -48,7 +48,6 @@ from .fields import (
     TimezoneAwareDateTimeField,
     WritableSerializerMethodField,
     IntegerDefaultField,
-    TagListSerializerField,
     TimeZoneSerializerChoiceField,
     HTMLCharField
 )
