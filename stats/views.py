@@ -495,12 +495,6 @@ def workload_stats(request, country_id=None):
         return HttpResponse("You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
 
 
-@login_required
-def hashtag_map(request):
-    context = {}
-    return render(request, 'stats/hashtag_map.html', context)
-
-
 @api_view(['GET'])
 @permission_classes([])
 def get_user_xp_data(request):
