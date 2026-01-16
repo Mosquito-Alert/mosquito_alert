@@ -238,12 +238,6 @@ def speedmeter(request):
 
 
 @login_required
-def mosquito_ccaa_rich_iframetest_sites(request):
-    context = {}
-    return render(request, 'stats/mosquito_ccaa_rich_iframetest_sites.html', context)
-
-
-@login_required
 def mosquito_ccaa_rich_iframetest(request):
     context = {}
     return render(request, 'stats/mosquito_ccaa_rich_iframetest.html', context)
