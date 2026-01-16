@@ -601,12 +601,6 @@ def create_pie_data(request, categories, view_name):
     return render(request, view_name, context)
 
 
-@login_required
-def report_stats_ccaa_pie(request):
-    categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'other_species', 'unidentified',)
-    return create_pie_data(request, categories, 'stats/report_stats_ccaa_pie.html')
-
-
 def stats_user_score(request, user_uuid=None):
     if user_uuid is not None:
         try:
