@@ -706,40 +706,6 @@ def stats_user_ranking(request, page=1, user_uuid=None):
         context['info_url'] = info_url
         return render(request, 'stats/user_ranking.html', context)
 
-@login_required
-def report_stats_ccaa(request):
-    cursor = connection.cursor()
-
-    cursor.execute("""
-        select
-        cod_ccaa, nom_ccaa
-        from comunitats_4326
-    """)
-    data_ccaa = cursor.fetchall()
-
-    cursor.execute("""
-    select cod_ccaa, ct, type, count("version_UUID")
-    FROM
-    (select c.cod_ccaa, r.type, ct, r."version_UUID"
-    from
-    (select *,extract(year from creation_time) as ct from tigaserver_app_report where "version_UUID" in (select version_uuid from map_aux_reports where private_webmap_layer in ('mosquito_tiger_confirmed','mosquito_tiger_probable', 'yellow_fever_confirmed','yellow_fever_probable','storm_drain_dry','storm_drain_water'))) r JOIN
-    comunitats_4326 c
-    on st_contains(c.geom,r.point)) as t 
-    group by cod_ccaa, ct, type order by 3,2
-    """)
-    data = cursor.fetchall()
-
-    years = set()
-    for elem in data:
-        years.add(int(elem[1]))
-    years = list(years)
-    years.sort()
-
-
-    # context = {'data': json.dumps(data), 'data_ccaa': json.dumps(data_ccaa),  'm_data': json.dumps(m_data), 'years': years}
-    context = {'data': json.dumps(data), 'data_ccaa': json.dumps(data_ccaa), 'years': years}
-    return render(request, 'stats/report_stats_ccaa.html', context)
-
 
 @login_required
 def global_assignments(request):
