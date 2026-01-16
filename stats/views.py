@@ -1,11 +1,8 @@
 from django.shortcuts import render
-from django.db import connection
 
 from tigaserver_app.models import *
 from tigacrafting.models import UserStat
-from datetime import timedelta, datetime
 from django.views.decorators.clickjacking import xframe_options_exempt
-from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
@@ -13,10 +10,8 @@ from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from tigaserver_project import settings
 import json
-import datetime
-from django.utils import timezone
 from rest_framework.exceptions import ParseError
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator
 import math
 from django.utils import translation
 
@@ -24,7 +19,6 @@ from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator
 import math
 from django.urls import reverse
-from django.urls.exceptions import NoReverseMatch
 from django.db.models import Count
 from django.db.models.functions import Extract, Trunc
 
