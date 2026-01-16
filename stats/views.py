@@ -467,30 +467,6 @@ def mosquito_ccaa_rich(request, category='confirmed'):
     }
     return render(request, 'stats/mosquito_ccaa_rich.html', context)
 
-@login_required
-def registration_stats(request):
-    cursor = connection.cursor()
-    cursor.execute("""
-        select 
-        count("user_UUID"), 
-        extract(year from registration_time), 
-        extract(month from registration_time) 
-        from tigaserver_app_tigauser 
-        group by extract(year from registration_time), extract(month from registration_time)
-        order by 2,3
-    """)
-    registration = cursor.fetchall()
-
-    now = datetime.datetime.now()
-    current_year = now.year
-    years = []
-
-    for i in range(2014, current_year + 1):
-        years.append(i)
-
-    context = {'registration': json.dumps(registration), 'years': json.dumps(years), 'years_list': years}
-    return render(request, 'stats/user_registration.html', context)
-
 
 def create_pie_data(request, categories, view_name):
     cursor = connection.cursor()
