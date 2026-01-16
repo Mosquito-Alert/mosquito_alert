@@ -641,18 +641,6 @@ paths:
                 type: array
                 items: {}
           description: ''
-  /api/stats/hashtag_map_data/:
-    get:
-      operationId: listget_hashtag_map_datas
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
-          description: ''
   /api/stats/user_xp_data/:
     get:
       operationId: listget_user_xp_datas

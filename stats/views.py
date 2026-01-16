@@ -519,37 +519,6 @@ def get_user_xp_data(request):
     return Response(retval)
 
 
-@api_view(['GET'])
-def get_hashtag_map_data(request):
-    hashtag = request.query_params.get('ht', '')
-    data = []
-    if hashtag.strip() == '':
-        return Response({ 'stats': '', 'data': data})
-    else:
-        # - data summary
-        # earliest data
-        # latest data
-        # number of points
-        dates = []
-        r = Report.objects.filter(note__icontains=hashtag).order_by('-server_upload_time')[:200]
-        n = 0
-        for report in r:
-            n = n + 1
-            dates.append(report.server_upload_time)
-            data.append({ 'note': report.note, 'picture': report.photo_html, 'lat': report.lat, 'lon': report.lon, 'date_uploaded': report.server_upload_time.strftime('%d-%m-%Y / %H:%M:%S') })
-    min_date_str = ''
-    max_date_str = ''
-    if len(dates) == 0:
-        min_date_str = 'N/A'
-        max_date_str = 'N/A'
-    else:
-        min_date = min(dates)
-        min_date_str = min_date.strftime('%d-%m-%Y / %H:%M:%S')
-        max_date = max(dates)
-        max_date_str = max_date.strftime('%d-%m-%Y / %H:%M:%S')
-    return Response({ 'stats':{ 'earliest_date': min_date_str, 'latest_date': max_date_str, 'n': n }, 'data': data})
-
-
 @login_required
 def expert_report_assigned_data(request):
 
