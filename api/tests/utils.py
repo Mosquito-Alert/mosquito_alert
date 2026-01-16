@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.utils.crypto import get_random_string
 
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -136,7 +137,7 @@ class UserAuthenticableGenericViewMixin(
     def create_user(cls):
         return User.objects.create_user(
             username=f"user_{random.randint(1,1000)}",
-            password=User.objects.make_random_password(),
+            password=get_random_string(length=10),
         )
 
     @property

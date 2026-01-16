@@ -1,27 +1,30 @@
 beautifulsoup4==4.12.3
 celery[redis]==5.4.0
-Django==4.1.13
+Django==4.2.27
 django-admin-numeric-filter==0.1.9
-django-cors-headers==3.13.0
+django-cors-headers==3.14.0
 django-filter==23.1
 django-floppyforms==1.9.0
-django-hosts==6.0
+django-hosts==7.0.0
 django-imagekit==5.0.0
 django-leaflet==0.29.0
-drf-nested-routers==0.93.5
+drf-nested-routers==0.95.0
 django-timezone-field==5.1
 djangorestframework-dataclasses==1.4.0
-djangorestframework-simplejwt==5.2.2
-drf-extra-fields==3.6.1
-drf-spectacular==0.27.1
+djangorestframework-simplejwt==5.3.1
+drf-extra-fields==3.7.0
+drf-spectacular==0.29.0
 drf-standardized-errors==0.14.1
 django-lifecycle==1.2.4
-django-simple-history==3.2.0
-django-taggit==3.1.0
-django-treebeard==4.6.1
+django-simple-history==3.4.0
+django-taggit==4.0.0
+django-treebeard==4.7.1
 django-modeltranslation==0.18.12
-djangorestframework==3.14.0
-fcm-django==2.2.1
+# NOTE: See https://github.com/encode/django-rest-framework/pull/9764/changes
+# Which is merged after 3.16.1
+# djangorestframework==3.16.1
+git+https://github.com/encode/django-rest-framework.git@513ddb4
+fcm-django==2.3.1
 gunicorn==18.0
 langcodes==3.4.1
 minify_html==0.18.1

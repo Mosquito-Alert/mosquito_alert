@@ -48,8 +48,8 @@ class CustomRedocView(SpectacularRedocView):
 
 
 router = SimpleRouter()
-router.register(r"bites", BiteViewSet)
-router.register(r"breeding-sites", BreedingSiteViewSet)
+router.register(r"bites", BiteViewSet, basename='bites')
+router.register(r"breeding-sites", BreedingSiteViewSet, basename='breeding-sites')
 router.register(r"devices", DeviceViewSet)
 router.register(r"campaigns", CampaignsViewSet)
 router.register(r"countries", CountriesViewSet)
@@ -61,7 +61,7 @@ identification_task_router.register(r"annotations", IdentificationTaskViewSet.An
 identification_task_router.register(r"predictions", IdentificationTaskViewSet.PhotoPredictionViewSet)
 
 router.register(r"notifications", NotificationViewSet)
-router.register(r"observations", ObservationViewSest)
+router.register(r"observations", ObservationViewSest, basename='observations')
 router.register(r"partners", PartnersViewSet)
 router.register(r"photos", PhotoViewSet)
 router.register(r"taxa", TaxaViewSet)

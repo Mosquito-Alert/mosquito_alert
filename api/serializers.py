@@ -1228,7 +1228,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
                 "created_at"
             )
             extra_kwargs = {
-                'created_at': {'source': 'reviewed_at', 'read_only': True},
+                'created_at': {'source': 'reviewed_at', 'read_only': True, 'allow_null': False},
             }
 
     class IdentificationTaskResultSerializer(serializers.ModelSerializer):
@@ -1474,6 +1474,12 @@ class ObservationSerializer(BaseReportWithPhotosSerializer):
 
 class BiteSerializer(BaseReportSerializer):
     class BiteCountsSerializer(serializers.ModelSerializer):
+        total = IntegerDefaultField(
+            default=0,
+            source="bite_count",
+            read_only=True,
+            help_text=Report._meta.get_field("bite_count").help_text,
+        )
         head = IntegerDefaultField(
             default=0,
             source="head_bite_count",
@@ -1516,10 +1522,6 @@ class BiteSerializer(BaseReportSerializer):
                 "left_leg",
                 "right_leg",
             )
-            read_only_fields = ("total", )
-            extra_kwargs = {
-                "total": {"source": "bite_count"}
-            }
 
     counts = BiteCountsSerializer(source='*')
 
@@ -1674,9 +1676,9 @@ class DeviceSerializer(serializers.ModelSerializer):
             "last_login",
         )
         extra_kwargs = {
-            "device_id": {"required": True, "allow_null": False },
+            "device_id": {"required": True, "allow_null": False, "allow_blank": False, "default": serializers.empty },
             "fcm_token": {"source": "registration_id", "write_only": True, "required": True, "allow_null": False },
-            "created_at": {"source": "date_created" },
+            "created_at": {"source": "date_created", "allow_null": False },
             "type": {"required": True, "allow_null": False },
             "model": {"required": True, "allow_null": False },
             "last_login": { "allow_null": True },
@@ -1690,6 +1692,10 @@ class DeviceUpdateSerializer(DeviceSerializer):
             "manufacturer",
             "model"
         )
+        extra_kwargs = {
+            **DeviceSerializer.Meta.extra_kwargs,
+            "manufacturer": {"allow_null": True},
+        }
 class PhotoPredictionSerializer(serializers.ModelSerializer):
     class BoundingBoxSerializer(serializers.ModelSerializer):
         class Meta:
