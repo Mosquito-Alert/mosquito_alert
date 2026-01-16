@@ -629,18 +629,6 @@ paths:
                 type: array
                 items: {}
           description: ''
-  /api/stats/speedmeter/:
-    get:
-      operationId: listspeedmeter_apis
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
-          description: ''
   /api/stats/user_xp_data/:
     get:
       operationId: listget_user_xp_datas
