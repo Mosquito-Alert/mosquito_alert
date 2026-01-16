@@ -230,12 +230,6 @@ def adult_sunburst(request):
     return render(request, 'stats/sunburst.html', context)
 
 
-@login_required
-def stats_directory(request):
-    context = {}
-    return render(request, 'stats/directory.html', context)
-
-
 @xframe_options_exempt
 def speedmeter(request):
     data = compute_speedmeter_params()
