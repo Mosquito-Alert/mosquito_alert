@@ -215,21 +215,6 @@ def site_sunburst(request):
     return render(request, 'stats/sunburst.html', context)
 
 
-@login_required
-def adult_sunburst(request):
-    data = get_sunburst_data(30, ('mosquito_tiger_probable','mosquito_tiger_confirmed',) )
-
-    context = {
-        'data': data,
-        'header': 'Sunburst graph of tiger mosquito observations in Spain last 30 days, by region',
-        'call_to_action': 'Click the slices for drilldown!',
-        'graph_title': 'Sampling by Regions, Spain',
-        'categories' : ['*Confirmed or possible tiger mosquito*: it includes reports from citizen tagged by them as "adult mosquito", that contain at least one picture and that it has been evaluated by entomological experts. According to these experts, the picture/s of this observation could be tiger mosquito (Aedes albopictus). If their taxonomic features can be clearly seen, especially the white stripe on head and thorax, it is classified as "confirmed". If some features cannot be observed, it is classified as "possible".']
-    }
-
-    return render(request, 'stats/sunburst.html', context)
-
-
 def oldActYear():
     cursor2 = connection.cursor()
 
