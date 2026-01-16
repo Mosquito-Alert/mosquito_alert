@@ -9,7 +9,7 @@ from django.contrib.gis import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from stats.views import show_usage, workload_stats, report_stats, registration_stats, report_stats_ccaa, report_stats_ccaa_pie, \
-    report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, stats_directory, \
+    report_stats_ccaa_pie_sites, mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, single_report_view, entolab_license_agreement, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement, predefined_messages, expert_geo_report_assign, report_expiration, aimalog_datatable, aimalog, coarse_filter
 from django.views.i18n import JavaScriptCatalog
@@ -88,7 +88,6 @@ urlpatterns += i18n_patterns(
     path('stats/adult_sunburst/', adult_sunburst, name='adult_sunburst'),
     path('stats/site_sunburst/', site_sunburst, name='site_sunburst'),
     path('stats/hashtag_map/', hashtag_map, name='hashtag_map'),
-    path('stats/directory/', stats_directory, name='stats_directory'),
     path('stats/expert_report_assigned/', expert_report_assigned_data, name='expert_report_assigned_data'),
     path('stats/user_score/<user_uuid>', stats_user_score, name='stats_user_score'),
     path('stats/user_ranking/<page>', stats_user_ranking, name='stats_user_ranking'),
