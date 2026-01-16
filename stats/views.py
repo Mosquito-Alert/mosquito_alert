@@ -602,12 +602,6 @@ def create_pie_data(request, categories, view_name):
 
 
 @login_required
-def report_stats_ccaa_pie_sites(request):
-    categories = ('storm_drain_water', 'storm_drain_dry', 'breeding_site_other', )
-    return create_pie_data(request, categories, 'stats/report_stats_ccaa_pie_sites.html')
-
-
-@login_required
 def report_stats_ccaa_pie(request):
     categories = ('mosquito_tiger_confirmed', 'mosquito_tiger_probable', 'other_species', 'unidentified',)
     return create_pie_data(request, categories, 'stats/report_stats_ccaa_pie.html')
