@@ -230,13 +230,6 @@ def adult_sunburst(request):
     return render(request, 'stats/sunburst.html', context)
 
 
-@xframe_options_exempt
-def speedmeter(request):
-    data = compute_speedmeter_params()
-    context = {'data': data}
-    return render(request, 'stats/speedmeter.html', context)
-
-
 def oldActYear():
     cursor2 = connection.cursor()
 
