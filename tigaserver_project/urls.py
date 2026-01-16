@@ -8,7 +8,7 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from stats.views import show_usage, workload_stats, registration_stats, \
+from stats.views import show_usage, workload_stats, \
     mosquito_ccaa_rich, mosquito_ccaa_rich_iframetest, mosquito_ccaa_rich_iframetest_sites, speedmeter, \
     adult_sunburst, site_sunburst, hashtag_map, stats_user_score, stats_user_ranking, expert_report_assigned_data, global_assignments, global_assignments_list
 from tigacrafting.views import expert_report_annotation, expert_report_status, expert_status, picture_validation, notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, single_report_view, entolab_license_agreement, metadataPhoto, expert_report_pending, expert_report_complete, entolab_license_agreement, predefined_messages, expert_geo_report_assign, report_expiration, aimalog_datatable, aimalog, coarse_filter
@@ -76,7 +76,6 @@ urlpatterns += i18n_patterns(
     path('stats/global_assignments/', global_assignments, name='global_assignments'),
     path('stats/global_assignments_list/<country_code>/<status>/', global_assignments_list, name='global_assignments_list'),
 
-    path('stats/registration_stats/', registration_stats, name='registration_stats'),
     path('stats/mosquito_ccaa_rich/<category>', mosquito_ccaa_rich, name='mosquito_ccaa_rich'),
     path('stats/mosquito_ccaa_rich_iframetest/', mosquito_ccaa_rich_iframetest, name='mosquito_ccaa_rich_iframetest'),
     path('stats/mosquito_ccaa_rich_iframetest_sites/', mosquito_ccaa_rich_iframetest_sites,name='mosquito_ccaa_rich_iframetest_sites'),
