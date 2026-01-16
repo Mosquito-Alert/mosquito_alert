@@ -154,20 +154,6 @@ def workload_available_reports(request):
         data = { 'current_pending_n' : current_pending.count(), 'current_progress_n' : current_progress.count(), 'overall_pending': overall_pending.count()}
         return Response(data)
 
-def compute_speedmeter_params():
-    count = Report.objects.filter(
-        server_upload_time__date__gte=timezone.now() - timedelta(days=7)
-    ).count()
-
-    return {'reports_last_seven': count, 'avg_last_seven': count/7}
-
-
-@api_view(['GET'])
-def speedmeter_api(request):
-    if request.method == 'GET':
-        data = compute_speedmeter_params()
-        return Response(data)
-
 
 def oldActYear():
     cursor2 = connection.cursor()

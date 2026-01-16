@@ -2,7 +2,7 @@ from django.conf.urls import include
 from django.urls import path, re_path
 from rest_framework import routers
 from tigaserver_app import views
-from stats.views import workload_stats_per_user,workload_daily_report_input,workload_pending_per_user,workload_available_reports, speedmeter_api, get_user_xp_data
+from stats.views import workload_stats_per_user,workload_daily_report_input,workload_pending_per_user,workload_available_reports, get_user_xp_data
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
@@ -39,7 +39,6 @@ urlpatterns = [
     path('stats/workload_data/report_input/', workload_daily_report_input),
     path('stats/workload_data/pending/', workload_pending_per_user),
     path('stats/workload_data/available/', workload_available_reports),
-    path('stats/speedmeter/', speedmeter_api),
     path('stats/user_xp_data/', get_user_xp_data),
     path('favorite/', views.favorite),
     path('user_favorites/', views.user_favorites),
