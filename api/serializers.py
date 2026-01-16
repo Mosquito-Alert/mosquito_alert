@@ -1674,7 +1674,7 @@ class DeviceSerializer(serializers.ModelSerializer):
             "last_login",
         )
         extra_kwargs = {
-            "device_id": {"required": True, "allow_null": False },
+            "device_id": {"required": True, "allow_null": False, "allow_blank": False, "default": serializers.empty },
             "fcm_token": {"source": "registration_id", "write_only": True, "required": True, "allow_null": False },
             "created_at": {"source": "date_created" },
             "type": {"required": True, "allow_null": False },

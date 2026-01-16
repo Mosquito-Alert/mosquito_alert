@@ -182,9 +182,8 @@ class IdentificationTaskFilter(filters.FilterSet):
         choices=IdentificationTask.ResultSource.choices
     )
 
-    # NOTE: See for fix for using null_label https://github.com/tfranzel/drf-spectacular/pull/1450
     review_action = filters.ChoiceFilter(
-        choices=IdentificationTask.Review.choices + [("null", None)],
+        choices=IdentificationTask.Review.choices,
         field_name="review_type",
         null_label="null",
         empty_label=None
