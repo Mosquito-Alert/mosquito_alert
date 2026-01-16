@@ -237,12 +237,6 @@ def speedmeter(request):
     return render(request, 'stats/speedmeter.html', context)
 
 
-@login_required
-def mosquito_ccaa_rich_iframetest(request):
-    context = {}
-    return render(request, 'stats/mosquito_ccaa_rich_iframetest.html', context)
-
-
 def oldActYear():
     cursor2 = connection.cursor()
 
