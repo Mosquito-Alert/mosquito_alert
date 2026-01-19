@@ -11,8 +11,8 @@ from django_filters import rest_framework as filters
 from datetime import timedelta
 import json
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, MapDataSerializer, CoverageMonthMapSerializer, TagSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse, Device
-from tigacrafting.models import FavoritedReports, UserStat
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, Categories, ReportResponse, Device
+from tigacrafting.models import FavoritedReports
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
@@ -362,19 +362,6 @@ def mark_notif_as_ack(request):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except AcknowledgedNotification.DoesNotExist:
             raise ParseError(detail='Acknowledged not found')
-
-
-@api_view(['POST'])
-def crisis_report_assign(request, user_id=None, country_id=None):
-    if user_id is None:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-    if country_id is None:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-    userstat = get_object_or_404(UserStat.objects.all(), pk=user_id)
-    country = get_object_or_404(EuropeCountry.objects.all(), pk=country_id)
-
-    userstat.assign_crisis_report(country=country)
-    return Response(status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

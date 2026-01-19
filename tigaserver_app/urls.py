@@ -15,7 +15,6 @@ router.register(r'organizationpins', views.OrganizationsPinViewSet)
 router.register(r'tags', views.TagViewSet)
 
 urlpatterns = [
-    re_path('crisis_report_assign/(?P<user_id>\d+)/(?P<country_id>\d+)/', views.crisis_report_assign),
     path('mark_notif_as_ack/', views.mark_notif_as_ack),
     path('subscribe_to_topic/', views.subscribe_to_topic),
     path('unsub_from_topic/', views.unsub_from_topic),
