@@ -46,7 +46,7 @@ class FullReportResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReportResponse
-        fields = '__all__'
+        fields = ('id', 'translated_question', 'translated_answer', 'question_id', 'question', 'answer_id', 'answer', 'answer_value', 'report')
 
     def get_translated_question(self, obj):
         report_lang = obj.report.app_language
@@ -490,7 +490,7 @@ class OWCampaignsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OWCampaigns
-        fields = '__all__'
+        fields = ('id', 'country', 'posting_address', 'campaign_start_date', 'campaign_end_date')
 
 
 class OrganizationPinsSerializer(serializers.ModelSerializer):
@@ -498,7 +498,7 @@ class OrganizationPinsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrganizationPin
-        fields = '__all__'
+        fields = ('id', 'point', 'textual_description', 'page_url')
 
     def get_point(self,obj):
         if obj.point is not None:
