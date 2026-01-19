@@ -203,6 +203,7 @@ filenames.append(static_path + "all_reports2022.json")
 filenames.append(static_path + "all_reports2023.json")
 filenames.append(static_path + "all_reports2024.json")
 filenames.append(static_path + "all_reports2025.json")
+filenames.append(static_path + "all_reports2026.json")
 filenames.append("/tmp/hidden_reports2014.json")
 filenames.append("/tmp/hidden_reports2015.json")
 filenames.append("/tmp/hidden_reports2016.json")
@@ -215,7 +216,7 @@ filenames.append("/tmp/hidden_reports2022.json")
 filenames.append("/tmp/hidden_reports2023.json")
 filenames.append("/tmp/hidden_reports2024.json")
 filenames.append("/tmp/hidden_reports2025.json")
-
+filenames.append("/tmp/hidden_reports2026.json")
 
 # FILE WRITING
 coarse_filter_adult_qs = Report.objects.in_coarse_filter().filter(type=Report.TYPE_ADULT).order_by('-server_upload_time')

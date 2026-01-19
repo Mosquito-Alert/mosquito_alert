@@ -353,6 +353,7 @@ filenames.append(static_path + "all_reports2022.json")
 filenames.append(static_path + "all_reports2023.json")
 filenames.append(static_path + "all_reports2024.json")
 filenames.append(static_path + "all_reports2025.json")
+filenames.append(static_path + "all_reports2026.json")
 filenames.append("/tmp/hidden_reports2014.json")
 filenames.append("/tmp/hidden_reports2015.json")
 filenames.append("/tmp/hidden_reports2016.json")
@@ -365,7 +366,7 @@ filenames.append("/tmp/hidden_reports2022.json")
 filenames.append("/tmp/hidden_reports2023.json")
 filenames.append("/tmp/hidden_reports2024.json")
 filenames.append("/tmp/hidden_reports2025.json")
-
+filenames.append("/tmp/hidden_reports2026.json")
 
 
 #conn_string = "host='" + config.params['db_host'] + "' dbname='" + config.params['db_name'] + "' user='" + \
