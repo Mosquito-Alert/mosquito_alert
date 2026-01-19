@@ -15,7 +15,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.forms.models import modelformset_factory
-from tigacrafting.forms import ExpertReportAnnotationForm, SuperExpertReportAnnotationForm, PhotoGrid
+from tigacrafting.forms import SuperExpertReportAnnotationForm, PhotoGrid
 from tigaserver_app.models import Notification, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, Categories,AcknowledgedNotification, UserSubscription
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
@@ -115,15 +115,13 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
 
     if not this_user_is_superexpert:
         return HttpResponsePermanentRedirect('https://app.mosquitoalert.com')
+    # NOTE: from now on, only superexpert is allowed to visit this view
 
     args = {}
     args.update(csrf(request))
     args['scroll_position'] = scroll_position
 
-    if this_user_is_superexpert:
-        AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=SuperExpertReportAnnotationForm, extra=0, can_order=False)
-    else:
-        AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=ExpertReportAnnotationForm, extra=0, can_order=False)
+    AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=SuperExpertReportAnnotationForm, extra=0, can_order=False)
 
     if request.method == 'POST':
         scroll_position = request.POST.get("scroll_position", '0')
@@ -180,29 +178,24 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         if load_new_reports == 'T' or this_user_is_superexpert:
             this_user.userstat.assign_reports()
 
-        if this_user_is_expert:
-            if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not pending or pending == 'na'):
-                pending = 'pending'
+        if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not final_status or final_status == 'na'):
+            final_status = 'public'
+        if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not checked or checked == 'na'):
+            checked = 'unchecked'
 
-        if this_user_is_superexpert:
-            if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not final_status or final_status == 'na'):
-                final_status = 'public'
-            if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not checked or checked == 'na'):
-                checked = 'unchecked'
+        user_tasks = task_qs.filter(assignees=this_user)
 
-            user_tasks = task_qs.filter(assignees=this_user)
+        args['n_flagged'] = user_tasks.done().filter(is_flagged=True).count()
+        args['n_hidden'] = user_tasks.done().filter(is_safe=False).count()
+        args['n_public'] = user_tasks.done().filter(is_flagged=False, is_safe=True).count()
 
-            args['n_flagged'] = user_tasks.done().filter(is_flagged=True).count()
-            args['n_hidden'] = user_tasks.done().filter(is_safe=False).count()
-            args['n_public'] = user_tasks.done().filter(is_flagged=False, is_safe=True).count()
-
-            user_report_annotations = ExpertReportAnnotation.objects.filter(
-                user=this_user,
-                identification_task__in=user_tasks,
-            )
-            args['n_unchecked'] = user_report_annotations.filter(validation_complete=False).count()
-            args['n_confirmed'] = user_report_annotations.filter(validation_complete=True, revise=False).count()
-            args['n_revised'] = user_report_annotations.filter(validation_complete=True, revise=True).count()
+        user_report_annotations = ExpertReportAnnotation.objects.filter(
+            user=this_user,
+            identification_task__in=user_tasks,
+        )
+        args['n_unchecked'] = user_report_annotations.filter(validation_complete=False).count()
+        args['n_confirmed'] = user_report_annotations.filter(validation_complete=True, revise=False).count()
+        args['n_revised'] = user_report_annotations.filter(validation_complete=True, revise=True).count()
 
         all_annotations = this_user.expert_report_annotations.all()
         if version_uuid and version_uuid != 'na':
@@ -260,29 +253,28 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
             elif status == "public":
                 all_annotations = all_annotations.filter(status=ExpertReportAnnotation.STATUS_PUBLIC)
 
-            if this_user_is_superexpert:
-                if checked == "unchecked":
-                    all_annotations = all_annotations.filter(validation_complete=False)
-                elif checked == "confirmed":
-                    all_annotations = all_annotations.filter(validation_complete=True, revise=False)
-                elif checked == "revised":
-                    all_annotations = all_annotations.filter(validation_complete=True, revise=True)
-                elif checked == "favorite":
-                    all_annotations = all_annotations.filter(report__favorites__user=this_user)
+            if checked == "unchecked":
+                all_annotations = all_annotations.filter(validation_complete=False)
+            elif checked == "confirmed":
+                all_annotations = all_annotations.filter(validation_complete=True, revise=False)
+            elif checked == "revised":
+                all_annotations = all_annotations.filter(validation_complete=True, revise=True)
+            elif checked == "favorite":
+                all_annotations = all_annotations.filter(report__favorites__user=this_user)
 
-                if final_status == "flagged":
-                    all_annotations = all_annotations.filter(
-                        identification_task__is_flagged=True
-                    )
-                elif final_status == "hidden":
-                    all_annotations = all_annotations.filter(
-                        identification_task__is_safe=False
-                    )
-                elif final_status == "public":
-                    all_annotations = all_annotations.filter(
-                        identification_task__is_safe=True,
-                        identification_task__is_flagged=False
-                    )
+            if final_status == "flagged":
+                all_annotations = all_annotations.filter(
+                    identification_task__is_flagged=True
+                )
+            elif final_status == "hidden":
+                all_annotations = all_annotations.filter(
+                    identification_task__is_safe=False
+                )
+            elif final_status == "public":
+                all_annotations = all_annotations.filter(
+                    identification_task__is_safe=True,
+                    identification_task__is_flagged=False
+                )
 
         all_annotations = all_annotations.order_by('-report__server_upload_time')
         if orderby == "tiger_score":
@@ -360,7 +352,7 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
 
         args['ns_list'] = User.objects.filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl')
 
-        return render(request, 'tigacrafting/expert_report_annotation.html' if this_user_is_expert else 'tigacrafting/superexpert_report_annotation.html', args)
+        return render(request, 'tigacrafting/superexpert_report_annotation.html', args)
 
 @login_required
 def single_report_view(request,version_uuid):
