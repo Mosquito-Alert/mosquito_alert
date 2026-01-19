@@ -910,10 +910,6 @@ class ExpertReportAnnotation(LifecycleModel):
         result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if self.status == 1 else ('glyphicon glyphicon-flag' if self.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
         return result
 
-    def get_score_bootstrap(self):
-        result = '<span class="label label-default" style="background-color:' + ('red' if self.get_score() == 2 else ('orange' if self.get_score() == 1 else ('white' if self.get_score() == 0 else ('grey' if self.get_score() == -1 else 'black')))) + ';">' + self.get_category() + '</span>'
-        return result
-
     def _get_confidence(self) -> float:
         if self.validation_value == self.VALIDATION_CATEGORY_DEFINITELY:
             return 1.0
