@@ -55,11 +55,6 @@ version_UUID linking this photo to a specific report version.
         instance.save()
         return Response('uploaded')
 
-def filter_partial_uuid(queryset, user_UUID):
-    if not user_UUID:
-        return queryset
-    return queryset.filter(user_UUID__startswith=user_UUID)
-
 class UserFilter(filters.FilterSet):
     user_UUID = filters.Filter(method='filter_partial_uuid')
 
@@ -233,69 +228,6 @@ A session is the full set of information uploaded by a user, usually in form of 
     def filter_queryset(self, queryset):
         queryset = super(SessionViewSet, self).filter_queryset(queryset)
         return queryset.order_by('-session_ID')
-
-class MapDataFilter(filters.FilterSet):
-
-    day = filters.Filter(method='filter_day')
-    week = filters.Filter(method='filter_week')
-    month = filters.Filter(method='filter_month')
-    year = filters.Filter(method='filter_year')
-
-    def filter_day(self, qs, name, value):
-        days_since_launch = value
-        if not days_since_launch:
-            return qs
-        try:
-            target_day_start = settings.START_TIME + timedelta(days=int(days_since_launch))
-            target_day_end = settings.START_TIME + timedelta(days=int(days_since_launch) + 1)
-            result = qs.filter(creation_time__range=(target_day_start, target_day_end))
-            return result
-        except ValueError:
-            return qs
-
-    def filter_week(self, qs, name, value):
-        weeks_since_launch = value
-        if not weeks_since_launch:
-            return qs
-        try:
-            target_week_start = settings.START_TIME + timedelta(weeks=int(weeks_since_launch))
-            target_week_end = settings.START_TIME + timedelta(weeks=int(weeks_since_launch) + 1)
-            result = qs.filter(creation_time__range=(target_week_start, target_week_end))
-            return result
-        except ValueError:
-            return qs
-
-    def filter_month(self, qs, name, value):
-        months_since_launch = value
-        if not months_since_launch:
-            return qs
-        try:
-            target_month_start = settings.START_TIME + timedelta(weeks=int(months_since_launch) * 4)
-            target_month_end = settings.START_TIME + timedelta(weeks=(int(months_since_launch) * 4) + 4)
-            result = qs.filter(creation_time__range=(target_month_start, target_month_end))
-            return result
-        except ValueError:
-            return qs
-
-    def filter_year(self, qs, name, value):
-        year = value
-        if not year:
-            return qs
-        try:
-            result = qs.filter(creation_time__year=year)
-            return result
-        except ValueError:
-            return qs
-
-    class Meta:
-        model = Report
-        fields = ['day', 'week', 'month', 'year']
-
-
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 100
-    page_size_query_param = 'page_size'
-    max_page_size = 1000
 
 
 @api_view(['POST'])
