@@ -427,14 +427,6 @@
                     <a data-report="{{ form.instance.report.version_UUID }}" class="fav_link"><span data-report-icon="{{ form.instance.report.version_UUID }}" class="glyphicon glyphicon-heart unfav" aria-hidden="true" title="Add to favorites..."></span></a>
                 </h4>
             </div>
-            {% if request.user.userstat.is_superexpert %}
-            <!-- Keeping this for future uses, disabled right now -->
-            <!--<div class="col-md-1">
-                <h4>
-                    <a href="http://{{ request.META.HTTP_HOST }}{% url 'notifications' %}?user_uuid={{ form.instance.report.user_id }}" target="_blank"><span class="glyphicon glyphicon-envelope" style="color:red;" aria-hidden="true" title="Send notification to owner of the report..."></span></a>
-                </h4>
-            </div>-->
-            {% endif %}
         </div>
         {% block report_title_status_row %}
             <div class="row">
@@ -663,19 +655,9 @@
                     </button><br>
 
                     <div class="photo_wrapper" style="overflow: auto;">
-                        {% if request.user.userstat.is_superexpert %}
-                            {{ form.instance.get_photo_html_for_report_validation_superexpert | safe }}
-                        {% else %}
-                            {% if not form.instance.simplified_annotation %}
-                                {{ form.instance.get_photo_html_for_report_validation_wblood | safe }}
-                            {% else %}
-                                {{ form.instance.get_photo_html_for_report_validation | safe }}
-                            {% endif %}
-                        {% endif %}
-                            <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>>-->
+                        {{ form.instance.get_photo_html_for_report_validation_superexpert | safe }}
 
                     </div>
-                    <!--<a class="btn btn-default infoPhoto" value="{{ form.instance.report.version_UUID }}">Info. Photo</a>-->
 
                 {% else %}
 
@@ -1116,13 +1098,6 @@
                                 </div>
                             </div>
                             {% endif %}
-                            <!--<div class="form-group">
-                                <label for="status_select" class="col-sm-4 control-label">Tags:</label>
-                                <div class="col-sm-8">
-                                    <ul id="tags_filter">
-                                    </ul>
-                                </div>
-                            </div>-->
                         </form>
                     </div>
                     <div class="modal-footer">
