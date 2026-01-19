@@ -35,9 +35,7 @@ pillow_heif==0.18.0
 pillow==11.1.0
 psycopg2==2.8.5
 pydenticon==0.3.1
-pyheif==0.8.0
 pyproj==3.3.1 # Needed for django geo?
-python-magic==0.4.27
 pymemcache==4.0.0 # Needed for caching.
 rawpy==0.17.1
 semantic-version==2.10.0
