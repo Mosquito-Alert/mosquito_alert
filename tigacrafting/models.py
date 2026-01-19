@@ -1185,18 +1185,6 @@ class UserStat(UserRolePermissionMixin, models.Model):
     def is_superexpert(self):
         return self.user.groups.filter(name="superexpert").exists()
 
-    def is_movelab(self):
-        return self.user.groups.filter(name="movelab").exists()
-
-    def is_team_bcn(self):
-        return self.user.groups.filter(name="team_bcn").exists()
-
-    def is_team_not_bcn(self):
-        return self.user.groups.filter(name="team_not_bcn").exists()
-
-    def is_team_everywhere(self):
-        return self.user.groups.exclude(name="team_not_bcn").exclude(name="team_bcn").exists()
-
     def is_bb_user(self):
         if self.native_of is not None:
             return self.native_of.is_bounding_box
@@ -1214,7 +1202,6 @@ class UserStat(UserRolePermissionMixin, models.Model):
         this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
         this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
         this_user_is_europe = this_user.groups.filter(name='eu_group_europe').exists()
-        this_user_is_team_everywhere = self.is_team_everywhere()
         this_user_is_spain = not this_user_is_europe
         if this_user_is_spain:
             if this_user_is_team_bcn:
