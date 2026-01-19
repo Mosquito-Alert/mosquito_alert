@@ -1258,15 +1258,6 @@ class Report(TimeZoneModelMixin, models.Model):
         return int(round(2.499999 * self.tigaprob, 0))
 
     @property
-    def tigaprob_text(self) -> str:
-        if self.tigaprob == 1.0:
-            return _("High")
-        elif 0.0 < self.tigaprob < 1.0:
-            return _("Medium")
-        else:
-            return _("Low")
-
-    @property
     def visible_photos(self):
         return self.photos.visible().all()
 
@@ -1357,25 +1348,6 @@ class Report(TimeZoneModelMixin, models.Model):
         elif self.type == self.TYPE_SITE:
             result["site_certainty_category"] = self.get_final_expert_score()
         return result
-
-    @property
-    def simplified_annotation(self) -> Optional[dict]:
-        if self.is_expert_validated:
-            result = {}
-            if self.type == self.TYPE_ADULT:
-                classification = self.get_mean_combined_expert_adult_score()
-                result["score"] = int(round(classification["score"]))
-                if classification["is_aegypti"] == True:
-                    result["classification"] = "aegypti"
-                elif classification["is_albopictus"] == True:
-                    result["classification"] = "albopictus"
-                elif classification["is_none"] == True:
-                    result["classification"] = "none"
-                else:
-                    # This should NEVER happen. however...
-                    result["classification"] = "conflict"
-            return result
-        return None
 
     # Custom properties related to breeding sites
     @property
@@ -2758,10 +2730,12 @@ class Photo(models.Model):
     def __unicode__(self):
         return self.photo.name
 
-    def get_user(self):
+    @property
+    def user(self):
         return self.report.user
 
-    def get_date(self):
+    @property
+    def date(self):
         return self.report.version_time.strftime("%d-%m-%Y %H:%M")
 
     def get_small_path(self):
@@ -2862,23 +2836,7 @@ class Photo(models.Model):
             self.get_medium_url()
         )
 
-    # Metadata scrubbing
-    # def save(self, *args, **kwargs):
-    #     image = Image.open(self.photo)
-    #     photo_name = self.photo.name
-    #     data = list(image.getdata())
-    #     scrubbed_image = Image.new(image.mode, image.size)
-    #     scrubbed_image.putdata(data)
-    #     scrubbed_image_io = BytesIO()
-    #     scrubbed_image.save(scrubbed_image_io,"JPEG")
-    #     self.photo = File(scrubbed_image_io, name=photo_name)
-    #     super(Photo, self).save(*args, **kwargs)
-
-
     medium_image_.allow_tags = True
-
-    user = property(get_user)
-    date = property(get_date)
 
     def save(self, *args, **kwargs):
 
