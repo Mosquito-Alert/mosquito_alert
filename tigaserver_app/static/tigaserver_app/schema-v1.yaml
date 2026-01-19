@@ -718,54 +718,6 @@ paths:
                     maxLength: 36
                 required:
                 - user_UUID
-  /api/addresses/:
-    get:
-      operationId: listUsers
-      parameters:
-      - name: first_name
-        required: false
-        in: query
-        description: first_name
-        schema:
-          type: string
-      - name: last_name
-        required: false
-        in: query
-        description: last_name
-        schema:
-          type: string
-      - name: name
-        required: false
-        in: query
-        description: name
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  properties:
-                    id:
-                      type: integer
-                      readOnly: true
-                    first_name:
-                      type: string
-                      maxLength: 30
-                    last_name:
-                      type: string
-                      maxLength: 150
-                    username:
-                      type: string
-                      description: Required. 150 characters or fewer. Letters, digits
-                        and @/./+/-/_ only.
-                      pattern: ^[\w.@+-]+$
-                      maxLength: 150
-                  required:
-                  - username
-          description: ''
   /api/reports/:
     get:
       operationId: listReports

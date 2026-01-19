@@ -6,7 +6,6 @@ from stats.views import workload_stats_per_user,workload_daily_report_input,work
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
-router.register(r'addresses', views.UserAddressViewSet)
 router.register(r'reports', views.ReportViewSet)
 router.register(r'sessions', views.SessionViewSet)
 router.register(r'photos', views.PhotoViewSet)
