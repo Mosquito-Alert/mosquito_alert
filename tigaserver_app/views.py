@@ -10,7 +10,7 @@ from django.conf import settings
 from django_filters import rest_framework as filters
 from datetime import timedelta
 import json
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, MapDataSerializer, CoverageMonthMapSerializer, TagSerializer, UserAddressSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, MapDataSerializer, CoverageMonthMapSerializer, TagSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, EuropeCountry, Categories, ReportResponse, Device
 from tigacrafting.models import FavoritedReports, UserStat
 from taggit.models import Tag
@@ -714,25 +714,6 @@ def send_notifications(request):
 
         results = {'non_push_estimate_num': notification_estimate, 'push_success': push_success}
         return Response(results)
-
-
-class UserAddressFilter(filters.FilterSet):
-    name = filters.Filter(method='filter_partial_name_address')
-
-    def filter_partial_name_address(self, qs, name, value):
-        name = value
-        if not name:
-            return qs
-        return qs.filter(Q(first_name__icontains=name) | Q(last_name__icontains=name))
-
-    class Meta:
-        model = User
-        fields = ['first_name', 'last_name']
-
-class UserAddressViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    queryset = User.objects.exclude(first_name='').filter(groups__name__in=['expert','superexpert'])
-    serializer_class = UserAddressSerializer
-    filterset_class = UserAddressFilter
 
 
 def send_unblock_email(name, email):

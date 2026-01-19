@@ -395,11 +395,6 @@ class CoverageMonthMapSerializer(serializers.ModelSerializer):
         model = CoverageAreaMonth
         fields = ('lat', 'lon', 'year', 'month', 'n_fixes')
 
-class UserAddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id','first_name','last_name','username')
-
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
