@@ -142,7 +142,7 @@
 
 </head>
 
-<body class="{% if user.userstat.crisis_mode %} bg-danger {% else %} bg-white {% endif %}">
+<body class="bg-white">
 
     <div style="display:none;" id="dialog-confirm" title="Grab reports?">
         <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span><span id="dialog_message">About to assign reports from selected country. Are you sure?</span></p>
@@ -227,14 +227,6 @@
                                             class="btn btn-danger btn-sm navbar-btn" data-toggle="tooltip"
                                             data-placement="bottom" title="Grab new reports"><span
                                             class="glyphicon glyphicon-download"></span></button>
-                                    {% if user.userstat.crisis_mode and user.userstat.last_emergency_mode_grab %}
-                                        <button id="grab_last" type="button" class="btn btn-danger navbar-btn btn-sm dropdown-toggle" data-toggle="dropdown">
-                                        <span class="caret"></span>
-                                        </button>
-                                        <ul class="dropdown-menu" role="menu">
-                                            <li><a id="grab_last_link" data-user-id="{{user.id}}" data-country-n="{{user.userstat.last_emergency_mode_grab.pending_crisis_reports}}" data-country-last-name="{{user.userstat.last_emergency_mode_grab.name_engl}}" data-country-last-id="{{user.userstat.last_emergency_mode_grab.gid}}" href="#">Grab reports from <b>{{ user.userstat.last_emergency_mode_grab.name_engl }}</b> without going to the map</a></li>
-                                        </ul>
-                                    {% endif %}
                                 </li>
                             {% endblock %}
 
@@ -373,17 +365,6 @@
 
             {% endblock %}
         </div>
-        {% comment %} {% if user.userstat.can_activate_crisis_mode %}
-        <div id="crisis_status" class="row {% if user.userstat.crisis_mode %}crisis-on{% else %}crisis-off{% endif %}">
-            <h3>Emergency mode is
-                {% if user.userstat.crisis_mode %}
-                    <span>ON</span>
-                {% else %}
-                    <span class="text-success">OFF</span>
-                {% endif %}
-            </h3>
-        </div>
-        {% endif %} {% endcomment %}
     </div>
 
     {% if objects.has_next or objects.has_previous %}
@@ -2353,7 +2334,6 @@
 
     <script>
         var user_id = {{ request.user.id }};
-        var crisis_mode = {% if user.userstat.crisis_mode %}true{% else %}false{% endif %};
 
         $("#filters_submit_button").on('click', submit_queries);
 
@@ -2442,16 +2422,12 @@
         $("#search_uuid_autocomplete").on('click', submit_search_version_uuid);
 
         grab_reports_button.on('click', function () {
-            if(crisis_mode==true){
-                window.location.href = '{% url 'expert_geo_report_assign' %}';
-            }else{
-                $("#grab_reports_button").attr("disabled", true);
-                gear.show();
-                $("#load_new_reports_input").val("T");
-                var qp = query_selectors();
-                qp += '&load_new_reports=' + "T";
-                background_save(qp);
-            }
+            $("#grab_reports_button").attr("disabled", true);
+            gear.show();
+            $("#load_new_reports_input").val("T");
+            var qp = query_selectors();
+            qp += '&load_new_reports=' + "T";
+            background_save(qp);
         });
 
         function go_to_page(top_or_bottom){
@@ -2536,7 +2512,6 @@
     <script src={% static "tigacrafting/categories_combo.js" %}></script>
     <script src={% static "tigacrafting/macro_messages.js" %}></script> 
     <script src={% static "tigacrafting/exec_val.js" %}></script>
-    <script src={% static "tigacrafting/straight_emergency_grab.js" %}></script>
     <script src={% static "tigacrafting/csrf_utils.js" %}></script>
     <script src={% static "tigacrafting/blood_switch.js" %}></script>
     <script src={% static "tigacrafting/javascript/favorites.js" %}></script>

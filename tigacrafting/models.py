@@ -1176,10 +1176,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
     national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', on_delete=models.PROTECT, )
     native_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="natives", help_text='Country in which the user operates. Used mainly for filtering purposes', on_delete=models.SET_NULL, )
     license_accepted = models.BooleanField('Value is true if user has accepted the license terms of EntoLab', default=False)
-    # When in crisis mode, several regional restrictions are disabled and the user preferently receives reports
-    # from places where there has been a spike
-    crisis_mode = models.BooleanField('Tells if the validator is working in crisis mode or not', default=False)
-    last_emergency_mode_grab = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True,related_name="emergency_pullers", help_text='Last country user pulled map data from', on_delete=models.SET_NULL, )
+
     nuts2_assignation = models.ForeignKey('tigaserver_app.NutsEurope', blank=True, null=True, related_name="nuts2_assigned", help_text='Nuts2 division in which the user operates. Influences the priority of report assignation', on_delete=models.SET_NULL, )
 
     def __str__(self):
@@ -1230,11 +1227,6 @@ class UserStat(UserRolePermissionMixin, models.Model):
             result.append(task)
 
         return result
-
-    def assign_crisis_report(self, country: 'EuropeCountry') -> List[Optional[IdentificationTask]]:
-        # NOTE: self.save() is called in assign_reports
-        self.last_emergency_mode_grab = country
-        return self.assign_reports(country=country)
 
     # NOTE: override UserRolePermissionMixin
     def get_countries_with_roles(self) -> List['tigaserver_app.EuropeCountry']:
@@ -1302,16 +1294,6 @@ class UserStat(UserRolePermissionMixin, models.Model):
         if self.native_of is not None:
             return self.native_of.is_bounding_box
         return False
-
-    # only regular users can activate crisis mode
-    def can_activate_crisis_mode(self):
-        if self.is_superexpert():
-            return False
-        if self.is_bb_user():
-            return False
-        if self.is_national_supervisor():
-            return False
-        return True
 
     def is_national_supervisor(self):
         return self.national_supervisor_of is not None

@@ -556,9 +556,6 @@ class EuropeCountry(models.Model):
     is_bounding_box = models.BooleanField(default=False, db_index=True, help_text='If true, this geometry acts as a bounding box. The bounding boxes act as little separate entolabs, in the sense that no reports located inside a bounding box should reach an expert outside this bounding box')
     national_supervisor_report_expires_in = models.IntegerField(default=settings.DEFAULT_EXPIRATION_DAYS, db_index=True, help_text='Number of days that a report in the queue is exclusively available to the nagional supervisor. For example, if the field value is 6, after report_creation_time + 6 days a report will be available to all users')
 
-    pending_crisis_reports = models.IntegerField(blank=True, null=True, help_text='Number of reports in country assignable to non-supervisors')
-    last_crisis_report_n_update = models.DateTimeField(help_text="Last time count was updated", null=True, blank=True)
-
     reports_can_be_published = models.BooleanField(default=True)
 
     class Meta:
