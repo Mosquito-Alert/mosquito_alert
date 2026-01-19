@@ -860,27 +860,6 @@ class ExpertReportAnnotation(LifecycleModel):
                         # '<br>'
         return result
 
-    def get_others_annotation_html(self):
-        result = ''
-        this_user = self.user
-        this_report = self.report
-        other_annotations = ExpertReportAnnotation.objects.filter(report=this_report).exclude(user=this_user)
-        for ano in other_annotations.all():
-            result += '<p>User: ' + ano.user.username + '</p>'
-            result += '<p>Last Edited: ' + ano.last_modified.strftime("%d %b %Y %H:%m") + ' UTC</p>'
-            if this_report.type == 'adult':
-                result += '<p>Tiger Certainty: ' + (ano.get_tiger_certainty_category_display() if ano.get_tiger_certainty_category_display() else "") + '</p>'
-                result += '<p>Tiger Notes: ' + ano.tiger_certainty_notes + '</p>'
-            elif this_report.type == 'site':
-                result += '<p>Site Certainty: ' + (ano.get_site_certainty_category_display() if ano.get_site_certainty_category_display() else "") + '</p>'
-                result += '<p>Site Notes: ' + ano.site_certainty_notes + '</p>'
-            result += '<p>Selected photo: ' + (ano.best_photo.popup_image() if ano.best_photo else "") + '</p>'
-            result += '<p>Edited User Notes: ' + ano.edited_user_notes + '</p>'
-            result += '<p>Message To User: ' + ano.message_for_user + '</p>'
-            result += '<p>Status: ' + ano.get_status_display() if ano.get_status_display() else "" + '</p>'
-            result += '<p>Validation Complete? ' + str(ano.validation_complete) + '</p><hr>'
-        return result
-
     def get_score(self):
         score = -3
         if self.report.type == 'site':
