@@ -70,6 +70,7 @@ INSTALLED_APPS = (
     'tigaserver_app',
     'tigacrafting',
     'rest_framework',
+    'rest_framework_gis',
     'leaflet',
     'stats',
     'floppyforms',

@@ -4,6 +4,9 @@ from django.utils import timezone
 
 from django_filters import rest_framework as filters
 
+from rest_framework_gis.filterset import GeoFilterSet
+from rest_framework_gis.filters import GeometryFilter
+
 from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, FavoritedReports
 from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry, Photo
 
@@ -36,7 +39,7 @@ class CampaignFilter(filters.FilterSet):
         model = OWCampaigns
         fields = ("country_id", "is_active")
 
-class BaseReportFilter(filters.FilterSet):
+class BaseReportFilter(GeoFilterSet):
     user_uuid = filters.UUIDFilter(field_name="user")
     short_id = filters.CharFilter(field_name="report_id", label="Short ID")
     created_at = filters.IsoDateTimeFromToRangeFilter(
@@ -52,6 +55,7 @@ class BaseReportFilter(filters.FilterSet):
     order_by = filters.OrderingFilter(
         fields=(("server_upload_time", "received_at"), ("creation_time", "created_at"))
     )
+    within_geom = GeometryFilter(field_name='point', lookup_expr='within')
 
     class Meta:
         model = Report

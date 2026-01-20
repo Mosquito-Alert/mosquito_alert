@@ -2,7 +2,9 @@ from typing import Optional
 import uuid
 
 from django.contrib.auth import get_user_model
+from django.core.paginator import Paginator
 from django.db import models
+from django.http import StreamingHttpResponse
 
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
@@ -30,6 +32,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.viewsets import ReadOnlyModelViewSet
+
+from rest_framework_csv.renderers import CSVStreamingRenderer
+from rest_framework_gis.filters import DistanceToPointFilter
 from rest_framework_simplejwt.tokens import Token
 
 from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, FavoritedReports, UserStat
@@ -59,6 +64,9 @@ from .filters import (
 from .mixins import IdentificationTaskNestedAttribute
 from .parsers import MultiPartJsonNestedParser
 from .serializers import (
+    BiteGeoFeatureModelSerializer,
+    BreedingSiteGeoFeatureModelSerializer,
+    ObservationGeoFeatureModelSerializer,
     PartnerSerializer,
     CampaignSerializer,
     UserSerializer,
@@ -249,6 +257,7 @@ class BaseReportViewSet(
     DestroyModelMixin,
     GenericViewSet,
 ):
+    # TODO: select_related for identification_task only for observations.
     queryset = Report.objects.select_related(
         "nuts_2_fk",
         "nuts_3_fk",
@@ -269,8 +278,10 @@ class BaseReportViewSet(
 
     lookup_url_kwarg = REPORT_VIEW_LOOKUP_FIELD
 
-    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filter_backends = (DjangoFilterBackend, SearchFilter, DistanceToPointFilter)
     search_fields = ("report_id", "pk_str")
+    distance_filter_field = "point"
+    distance_filter_convert_meters = True
 
     permission_classes = (ReportPermissions,)
 
@@ -287,6 +298,45 @@ class BaseReportViewSet(
             return [AllowAny(),]
 
         return super().get_permissions()
+
+    def _geo(self, request, queryset=None, *args, **kwargs):
+        if not queryset:
+            queryset = self.get_queryset().select_related(None).prefetch_related(None).order_by()
+        qs = self.filter_queryset(queryset)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
+    def get_renderers(self):
+        renderers = super().get_renderers()
+        if self.action == 'list':
+            return renderers + [CSVStreamingRenderer(), ]
+        return renderers
+
+    def list(self, request, *args, **kwargs):
+        # Override list to handle CSV rendering without pagination
+        if self.request.accepted_renderer.format == 'csv':
+            queryset = self.filter_queryset(self.get_queryset())
+
+            response = StreamingHttpResponse(
+                request.accepted_renderer.render(
+                    self._stream_serialized_data(queryset)
+                ),
+                content_type="text/csv"
+            )
+            # TODO: set filename dynamically?
+            response["Content-Disposition"] = 'attachment; filename="reports.csv"'
+            return response
+
+        return super().list(request, *args, **kwargs)
+
+    def _stream_serialized_data(self, queryset):
+        serializer_class = self.get_serializer_class()
+        paginator = Paginator(queryset, 20000)
+
+        for page_number in paginator.page_range:
+            page = paginator.page(page_number)
+            serializer = serializer_class(page.object_list, many=True)
+            yield from serializer.data
 
     def _get_device_from_jwt(self) -> Optional[Device]:
         if not self.request:
@@ -366,6 +416,16 @@ class BiteViewSet(BaseReportViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_BITE)
 
+    @extend_schema(responses=BiteGeoFeatureModelSerializer(many=True))
+    @action(
+        detail=False,
+        methods=['GET',],
+        serializer_class=BiteGeoFeatureModelSerializer,
+        pagination_class=None
+    )
+    def geo(self, request):
+        return self._geo(request)
+
 @extend_schema_view(
     list=extend_schema(
         tags=['bites'],
@@ -382,6 +442,16 @@ class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_SITE)
 
+    @extend_schema(responses=BreedingSiteGeoFeatureModelSerializer(many=True))
+    @action(
+        detail=False,
+        methods=['GET',],
+        serializer_class=BreedingSiteGeoFeatureModelSerializer,
+        pagination_class=None
+    )
+    def geo(self, request):
+        return self._geo(request)
+
 @extend_schema_view(
     list=extend_schema(
         tags=['breeding-sites'],
@@ -397,6 +467,19 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
     filterset_class = ObservationFilter
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_ADULT)
+
+    @extend_schema(responses=ObservationGeoFeatureModelSerializer(many=True))
+    @action(
+        detail=False,
+        methods=['GET',],
+        serializer_class=ObservationGeoFeatureModelSerializer,
+        pagination_class=None
+    )
+    def geo(self, request):
+        return self._geo(
+            request,
+            queryset=self.get_queryset().select_related(None).select_related("identification_task",).prefetch_related(None).order_by()
+        )
 
 
 @extend_schema_view(
