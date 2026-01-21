@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
 from django.db import transaction, models
 
-from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from drf_spectacular.helpers import lazy_serializer
 
 from rest_framework import serializers
@@ -1399,6 +1399,9 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer):
             'public_note': {'allow_null': True, 'allow_blank': False, 'read_only': False}
         }
 
+@extend_schema_serializer(
+    deprecate_fields=['mosquito_appearance',]
+)
 class ObservationSerializer(BaseReportWithPhotosSerializer):
     class IdentificationSerializer(serializers.ModelSerializer):
         photo = SimplePhotoSerializer(required=True)
