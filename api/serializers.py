@@ -1423,6 +1423,7 @@ class ObservationGeoModelSerializer(BaseReportGeoModelSerializer):
         )
 
 class ObservationGeoJsonModelSerializer(ObservationGeoModelSerializer, GeoFeatureModelSerializer):
+    point = None # NOTE: important to get the point from the Report model, not from the serializer
     class Meta(ObservationGeoModelSerializer.Meta):
         geo_field = "point"
         id_field = "uuid"
@@ -1505,6 +1506,7 @@ class BiteGeoModelSerializer(BaseReportGeoModelSerializer):
         pass
 
 class BiteGeoJsonModelSerializer(BiteGeoModelSerializer, GeoFeatureModelSerializer):
+    point = None # NOTE: important to get the point from the Report model, not from the serializer
     class Meta(BiteGeoModelSerializer.Meta):
         geo_field = "point"
         id_field = "uuid"
@@ -1594,6 +1596,7 @@ class BreedingSiteGeoModelSerializer(BaseReportGeoModelSerializer):
         }
 
 class BreedingSiteGeoJsonModelSerializer(BreedingSiteGeoModelSerializer, GeoFeatureModelSerializer):
+    point = None # NOTE: important to get the point from the Report model, not from the serializer
     class Meta(BreedingSiteGeoModelSerializer.Meta):
         geo_field = "point"
         id_field = "uuid"
