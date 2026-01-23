@@ -573,7 +573,10 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             )
 
             def _round_value(self, value: float) -> float:
-                geo_precision = self.context.get('request').query_params.get('geo_precision')
+                try:
+                    geo_precision = self.context.get('request').query_params.get('geo_precision')
+                except Exception:
+                    geo_precision = None
                 return value if geo_precision is None else round(value, int(geo_precision))
 
             def get_latitude(self, obj: Point) -> float:
