@@ -322,7 +322,7 @@ class BaseReportViewSet(
 
     def list(self, request, *args, **kwargs):
         # Override list to handle CSV rendering without pagination
-        if self.request.accepted_renderer.format == 'csv':
+        if self.request.accepted_renderer.format == CSVStreamingRenderer.format:
             queryset = self.filter_queryset(self.get_queryset())
 
             response = StreamingHttpResponse(
