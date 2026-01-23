@@ -726,13 +726,14 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             "uuid": {"required": True}  # Marks it as required in the response
         }
 
-class BaseReportGeoFeatureModelSerializer(GeoFeatureModelSerializer):
+class BaseReportGeoModelSerializer(serializers.ModelSerializer):
+    point = PointField()
+
     class Meta:
         model = Report
-        geo_field = "point"
-        id_field = "uuid"
         fields = (
             "uuid",
+            "point",
             "received_at",
         )
         extra_kwargs = {
@@ -1414,12 +1415,17 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer):
             'public_note': {'allow_null': True, 'allow_blank': False, 'read_only': False}
         }
 
-class ObservationGeoFeatureModelSerializer(BaseReportGeoFeatureModelSerializer):
+class ObservationGeoModelSerializer(BaseReportGeoModelSerializer):
     identification_taxon_id = serializers.ReadOnlyField(source='identification_task.taxon_id')
-    class Meta(BaseReportGeoFeatureModelSerializer.Meta):
-        fields = BaseReportGeoFeatureModelSerializer.Meta.fields + (
+    class Meta(BaseReportGeoModelSerializer.Meta):
+        fields = BaseReportGeoModelSerializer.Meta.fields + (
             'identification_taxon_id',
         )
+
+class ObservationGeoJsonModelSerializer(ObservationGeoModelSerializer, GeoFeatureModelSerializer):
+    class Meta(ObservationGeoModelSerializer.Meta):
+        geo_field = "point"
+        id_field = "uuid"
 
 class ObservationSerializer(BaseReportWithPhotosSerializer):
     class IdentificationSerializer(serializers.ModelSerializer):
@@ -1494,9 +1500,14 @@ class ObservationSerializer(BaseReportWithPhotosSerializer):
             "mosquito_appearance"
         )
 
-class BiteGeoFeatureModelSerializer(BaseReportGeoFeatureModelSerializer):
-    class Meta(BaseReportGeoFeatureModelSerializer.Meta):
+class BiteGeoModelSerializer(BaseReportGeoModelSerializer):
+    class Meta(BaseReportGeoModelSerializer.Meta):
         pass
+
+class BiteGeoJsonModelSerializer(BiteGeoModelSerializer, GeoFeatureModelSerializer):
+    class Meta(BiteGeoModelSerializer.Meta):
+        geo_field = "point"
+        id_field = "uuid"
 
 class BiteSerializer(BaseReportSerializer):
     class BiteCountsSerializer(serializers.ModelSerializer):
@@ -1562,7 +1573,7 @@ class BiteSerializer(BaseReportSerializer):
             "counts"
         )
 
-class BreedingSiteGeoFeatureModelSerializer(BaseReportGeoFeatureModelSerializer):
+class BreedingSiteGeoModelSerializer(BaseReportGeoModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
 
@@ -1571,16 +1582,21 @@ class BreedingSiteGeoFeatureModelSerializer(BaseReportGeoFeatureModelSerializer)
 
         return ret
 
-    class Meta(BaseReportGeoFeatureModelSerializer.Meta):
-        fields = BaseReportGeoFeatureModelSerializer.Meta.fields + (
+    class Meta(BaseReportGeoModelSerializer.Meta):
+        fields = BaseReportGeoModelSerializer.Meta.fields + (
             "site_type",
             "has_water"
         )
         extra_kwargs = {
-            **BaseReportGeoFeatureModelSerializer.Meta.extra_kwargs,
+            **BaseReportGeoModelSerializer.Meta.extra_kwargs,
             "site_type": {"allow_null": False, "allow_blank": False, "required": True, "source": "breeding_site_type"},
             "has_water": {"allow_null": True, "default": None, "source": "breeding_site_has_water"},
         }
+
+class BreedingSiteGeoJsonModelSerializer(BreedingSiteGeoModelSerializer, GeoFeatureModelSerializer):
+    class Meta(BreedingSiteGeoModelSerializer.Meta):
+        geo_field = "point"
+        id_field = "uuid"
 
 class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
     def create(self, validated_data):

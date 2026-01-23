@@ -62,11 +62,15 @@ from .filters import (
     TaxonFilter
 )
 from .mixins import IdentificationTaskNestedAttribute
+from .renderers import GeoJsonRenderer
 from .parsers import MultiPartJsonNestedParser
 from .serializers import (
-    BiteGeoFeatureModelSerializer,
-    BreedingSiteGeoFeatureModelSerializer,
-    ObservationGeoFeatureModelSerializer,
+    BiteGeoModelSerializer,
+    BiteGeoJsonModelSerializer,
+    BreedingSiteGeoModelSerializer,
+    BreedingSiteGeoJsonModelSerializer,
+    ObservationGeoModelSerializer,
+    ObservationGeoJsonModelSerializer,
     PartnerSerializer,
     CampaignSerializer,
     UserSerializer,
@@ -299,11 +303,15 @@ class BaseReportViewSet(
 
         return super().get_permissions()
 
-    def _geo(self, request, queryset=None, *args, **kwargs):
+    def _geo(self, request, geojson_serializer_class, queryset=None, *args, **kwargs):
         if not queryset:
             queryset = self.get_queryset().select_related(None).prefetch_related(None).order_by()
         qs = self.filter_queryset(queryset)
-        serializer = self.get_serializer(qs, many=True)
+
+        if self.request.accepted_renderer.format == GeoJsonRenderer.format:
+            serializer = geojson_serializer_class(qs, many=True, context=self.get_serializer_context())
+        else:
+            serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
     def get_renderers(self):
@@ -416,15 +424,19 @@ class BiteViewSet(BaseReportViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_BITE)
 
-    @extend_schema(responses=BiteGeoFeatureModelSerializer(many=True))
+    @extend_schema(responses={
+        (200, 'application/json'): BiteGeoModelSerializer(many=True),
+        (200, 'application/geo+json'): BiteGeoJsonModelSerializer(many=True),
+    })
     @action(
         detail=False,
         methods=['GET',],
-        serializer_class=BiteGeoFeatureModelSerializer,
-        pagination_class=None
+        serializer_class=BiteGeoModelSerializer,
+        pagination_class=None,
+        renderer_classes=BaseReportViewSet.renderer_classes + (GeoJsonRenderer,)
     )
     def geo(self, request):
-        return self._geo(request)
+        return self._geo(request, geojson_serializer_class=BiteGeoJsonModelSerializer)
 
 @extend_schema_view(
     list=extend_schema(
@@ -442,15 +454,19 @@ class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_SITE)
 
-    @extend_schema(responses=BreedingSiteGeoFeatureModelSerializer(many=True))
+    @extend_schema(responses={
+        (200, 'application/json'): BreedingSiteGeoModelSerializer(many=True),
+        (200, 'application/geo+json'): BreedingSiteGeoJsonModelSerializer(many=True),
+    })
     @action(
         detail=False,
         methods=['GET',],
-        serializer_class=BreedingSiteGeoFeatureModelSerializer,
-        pagination_class=None
+        serializer_class=BreedingSiteGeoModelSerializer,
+        pagination_class=None,
+        renderer_classes=BaseReportViewSet.renderer_classes + (GeoJsonRenderer,)
     )
     def geo(self, request):
-        return self._geo(request)
+        return self._geo(request, geojson_serializer_class=BreedingSiteGeoJsonModelSerializer)
 
 @extend_schema_view(
     list=extend_schema(
@@ -468,17 +484,22 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_ADULT)
 
-    @extend_schema(responses=ObservationGeoFeatureModelSerializer(many=True))
+    @extend_schema(responses={
+        (200, 'application/json'): ObservationGeoModelSerializer(many=True),
+        (200, 'application/geo+json'): ObservationGeoJsonModelSerializer(many=True),
+    })
     @action(
         detail=False,
         methods=['GET',],
-        serializer_class=ObservationGeoFeatureModelSerializer,
-        pagination_class=None
+        serializer_class=ObservationGeoModelSerializer,
+        pagination_class=None,
+        renderer_classes=BaseReportViewSet.renderer_classes + (GeoJsonRenderer,)
     )
     def geo(self, request):
         return self._geo(
             request,
-            queryset=self.get_queryset().select_related(None).select_related("identification_task",).prefetch_related(None).order_by()
+            geojson_serializer_class=ObservationGeoJsonModelSerializer,
+            queryset=self.get_queryset().select_related(None).select_related("identification_task",).prefetch_related(None).order_by(),
         )
 
 
