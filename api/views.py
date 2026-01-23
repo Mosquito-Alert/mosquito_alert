@@ -5,6 +5,9 @@ from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.db import models
 from django.http import StreamingHttpResponse
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
@@ -428,6 +431,8 @@ class BiteViewSet(BaseReportViewSet):
         (200, 'application/json'): BiteGeoModelSerializer(many=True),
         (200, 'application/geo+json'): BiteGeoJsonModelSerializer(many=True),
     })
+    @method_decorator(cache_page(60*60*3))  # Cache for 3 hours
+    @method_decorator(vary_on_headers("Authorization"))
     @action(
         detail=False,
         methods=['GET',],
@@ -458,6 +463,8 @@ class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
         (200, 'application/json'): BreedingSiteGeoModelSerializer(many=True),
         (200, 'application/geo+json'): BreedingSiteGeoJsonModelSerializer(many=True),
     })
+    @method_decorator(cache_page(60*60*3))  # Cache for 3 hours
+    @method_decorator(vary_on_headers("Authorization"))
     @action(
         detail=False,
         methods=['GET',],
@@ -488,6 +495,8 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
         (200, 'application/json'): ObservationGeoModelSerializer(many=True),
         (200, 'application/geo+json'): ObservationGeoJsonModelSerializer(many=True),
     })
+    @method_decorator(cache_page(60*60*3))  # Cache for 3 hours
+    @method_decorator(vary_on_headers("Authorization"))
     @action(
         detail=False,
         methods=['GET',],
