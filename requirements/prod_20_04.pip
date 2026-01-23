@@ -38,7 +38,6 @@ pillow==11.1.0
 psycopg2==2.8.5
 pydenticon==0.3.1
 pyproj==3.3.1 # Needed for django geo?
-pymemcache==4.0.0 # Needed for caching.
 rawpy==0.17.1
 semantic-version==2.10.0
 scipy==1.13.1
