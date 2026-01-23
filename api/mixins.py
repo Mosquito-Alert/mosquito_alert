@@ -1,6 +1,10 @@
 from typing import Optional
 
+from django.contrib.gis.geos import Point
+
 from rest_framework.exceptions import APIException
+from rest_framework import serializers
+from rest_framework_gis.fields import GeometrySerializerMethodField
 
 from tigacrafting.models import IdentificationTask
 
@@ -40,3 +44,16 @@ class IdentificationTaskNestedAttribute():
         if self.check_parent_permissions(request):
             return
         super().check_object_permissions(request, obj)
+
+class ReportGeoJsonModelSerializerMixin(serializers.Serializer):
+    point = GeometrySerializerMethodField()
+
+    def get_point(self, obj):
+        geo_precision = self.context.get('request').query_params.get('geo_precision')
+        if not geo_precision:
+            return obj.point
+        return Point(
+            x=round(obj.point.x, int(geo_precision)),
+            y=round(obj.point.y, int(geo_precision)),
+            srid=obj.point.srid
+        )

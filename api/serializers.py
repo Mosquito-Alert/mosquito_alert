@@ -52,6 +52,7 @@ from .fields import (
     TimeZoneSerializerChoiceField,
     HTMLCharField
 )
+from .mixins import ReportGeoJsonModelSerializerMixin
 
 User = get_user_model()
 
@@ -571,11 +572,15 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
                 required=True,
             )
 
+            def _round_value(self, value: float) -> float:
+                geo_precision = self.context.get('request').query_params.get('geo_precision')
+                return value if geo_precision is None else round(value, int(geo_precision))
+
             def get_latitude(self, obj: Point) -> float:
-                return obj.y
+                return self._round_value(obj.y)
 
             def get_longitude(self, obj: Point) -> float:
-                return obj.x
+                return self._round_value(obj.x)
 
         point = PointSerializer(required=True)
         timezone = TimeZoneSerializerChoiceField(read_only=True, allow_null=True)
@@ -727,7 +732,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
         }
 
 class BaseReportGeoModelSerializer(serializers.ModelSerializer):
-    point = PointField()
+    point = BaseReportSerializer.LocationSerializer.PointSerializer()
 
     class Meta:
         model = Report
@@ -1422,8 +1427,7 @@ class ObservationGeoModelSerializer(BaseReportGeoModelSerializer):
             'identification_taxon_id',
         )
 
-class ObservationGeoJsonModelSerializer(ObservationGeoModelSerializer, GeoFeatureModelSerializer):
-    point = None # NOTE: important to get the point from the Report model, not from the serializer
+class ObservationGeoJsonModelSerializer(ReportGeoJsonModelSerializerMixin, ObservationGeoModelSerializer, GeoFeatureModelSerializer):
     class Meta(ObservationGeoModelSerializer.Meta):
         geo_field = "point"
         id_field = "uuid"
@@ -1505,8 +1509,7 @@ class BiteGeoModelSerializer(BaseReportGeoModelSerializer):
     class Meta(BaseReportGeoModelSerializer.Meta):
         pass
 
-class BiteGeoJsonModelSerializer(BiteGeoModelSerializer, GeoFeatureModelSerializer):
-    point = None # NOTE: important to get the point from the Report model, not from the serializer
+class BiteGeoJsonModelSerializer(ReportGeoJsonModelSerializerMixin, BiteGeoModelSerializer, GeoFeatureModelSerializer):
     class Meta(BiteGeoModelSerializer.Meta):
         geo_field = "point"
         id_field = "uuid"
@@ -1595,8 +1598,7 @@ class BreedingSiteGeoModelSerializer(BaseReportGeoModelSerializer):
             "has_water": {"allow_null": True, "default": None, "source": "breeding_site_has_water"},
         }
 
-class BreedingSiteGeoJsonModelSerializer(BreedingSiteGeoModelSerializer, GeoFeatureModelSerializer):
-    point = None # NOTE: important to get the point from the Report model, not from the serializer
+class BreedingSiteGeoJsonModelSerializer(ReportGeoJsonModelSerializerMixin, BreedingSiteGeoModelSerializer, GeoFeatureModelSerializer):
     class Meta(BreedingSiteGeoModelSerializer.Meta):
         geo_field = "point"
         id_field = "uuid"

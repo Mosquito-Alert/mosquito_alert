@@ -56,6 +56,11 @@ class BaseReportFilter(GeoFilterSet):
         fields=(("server_upload_time", "received_at"), ("creation_time", "created_at"))
     )
     within_geom = GeometryFilter(field_name='point', lookup_expr='within')
+    geo_precision = filters.NumberFilter(method='filter_precision', min_value=0, label='Latitude/Longitude precision')
+
+    def filter_precision(self, queryset, name, value):
+        # Do nothing, will be used in the context
+        return queryset
 
     class Meta:
         model = Report
