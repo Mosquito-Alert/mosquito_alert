@@ -344,7 +344,7 @@ class BaseReportViewSet(
 
     def _stream_serialized_data(self, queryset):
         serializer_class = self.get_serializer_class()
-        paginator = Paginator(queryset, 20000)
+        paginator = Paginator(queryset, 2000)
 
         for page_number in paginator.page_range:
             page = paginator.page(page_number)
