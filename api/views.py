@@ -274,7 +274,9 @@ class BaseReportViewSet(
         "identification_task__photo",
         "identification_task__taxon",
     ).prefetch_related(
-        'tags',
+        # NOTE: might be solved when start using native django-taggitg class in the model.
+        # See bug https://github.com/jazzband/django-taggit/issues/255
+        #'tags',
         models.Prefetch(
             "photos",
             queryset=Photo.objects.visible()
