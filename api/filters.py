@@ -12,6 +12,20 @@ from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCount
 
 User = get_user_model()
 
+class NegableModelMultipleChoiceFilter(filters.ModelMultipleChoiceFilter):
+    def get_method(self, qs):
+        param_name = None
+        for name, filter_instance in self.parent.filters.items():
+            if filter_instance is self:
+                param_name = f"negate_{name}"
+                break
+
+        if not param_name:
+            # fallback: no negate param
+            return qs.filter
+        negate = self.parent.data.get(param_name) in ["true", "1", True]
+        return qs.exclude if negate else qs.filter
+
 class CampaignFilter(filters.FilterSet):
     country_id = filters.ModelChoiceFilter(field_name="country_id", queryset=EuropeCountry.objects.all())
     is_active = filters.BooleanFilter(method="filter_is_active")
@@ -82,12 +96,15 @@ class BaseReportWithPhotosFilter(BaseReportFilter):
     class Meta(BaseReportFilter.Meta):
         fields = BaseReportFilter.Meta.fields + ("has_photos",)
 
-
 class ObservationFilter(BaseReportWithPhotosFilter):
-    identification_taxon_ids = filters.ModelMultipleChoiceFilter(
+    identification_taxon_ids = NegableModelMultipleChoiceFilter(
         field_name="identification_task__taxon",
         queryset=Taxon.objects.all(),
+        null_label="null",
     )
+    negate_identification_taxon_ids = filters.BooleanFilter(method='filter_negate_identification_taxon_ids', label="Negate identification_taxon_ids filter")
+    def filter_negate_identification_taxon_ids(self, queryset, name, value):
+        return queryset
 
 class BiteFilter(BaseReportFilter):
     pass
