@@ -107,6 +107,7 @@ class ObservationFilter(BaseReportWithPhotosFilter):
         field_name="identification_task__taxon",
         queryset=Taxon.objects.all(),
         null_label="null",
+        distinct=False
     )
     negate_identification_taxon_ids = filters.BooleanFilter(method='filter_negate_identification_taxon_ids', label="Negate identification_taxon_ids filter")
     def filter_negate_identification_taxon_ids(self, queryset, name, value):
