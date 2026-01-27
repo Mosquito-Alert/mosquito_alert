@@ -53,15 +53,11 @@ class CampaignFilter(filters.FilterSet):
         model = OWCampaigns
         fields = ("country_id", "is_active")
 
+
+class TagFilter(filters.BaseInFilter, filters.CharFilter):
+    pass
+
 class BaseReportFilter(GeoFilterSet):
-
-    class TagFilter(filters.ModelMultipleChoiceFilter):
-        def to_python(self, value):
-            # Only return tags that exist, ignore invalid ones
-            if not value:
-                return []
-            return self.queryset.filter(name__in=value)
-
     user_uuid = filters.UUIDFilter(field_name="user")
     short_id = filters.CharFilter(field_name="report_id", label="Short ID")
     created_at = filters.IsoDateTimeFromToRangeFilter(
@@ -77,16 +73,7 @@ class BaseReportFilter(GeoFilterSet):
     order_by = filters.OrderingFilter(
         fields=(("server_upload_time", "received_at"), ("creation_time", "created_at"))
     )
-    tags = filters.CharFilter(method='filter_tags')
-    def filter_tags(self, queryset, name, value):
-        if not value:
-            return queryset
-        tag_names = [tag.strip() for tag in value.split(',')]
-        if not tag_names:
-            return queryset
-        return queryset.filter(
-            tags__name__in=tag_names
-        )
+    tags = TagFilter(field_name='tags__name')
 
     within_geom = GeometryFilter(field_name='point', lookup_expr='within')
     geo_precision = filters.NumberFilter(method='filter_precision', min_value=0, label='Latitude/Longitude precision')
