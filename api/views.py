@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Callable, Optional
 import uuid
 
 from django.contrib.auth import get_user_model
@@ -308,8 +308,10 @@ class BaseReportViewSet(
 
         return super().get_permissions()
 
-    def _geo(self, request, geojson_serializer_class, queryset=None, *args, **kwargs):
-        if not queryset:
+    def _geo(self, request, geojson_serializer_class, get_queryset: Optional[Callable[[], models.QuerySet]] = None, *args, **kwargs):
+        if get_queryset is not None:
+            queryset = get_queryset()
+        else:
             queryset = self.get_queryset().select_related(None).prefetch_related(None).order_by()
         qs = self.filter_queryset(queryset)
 
@@ -510,9 +512,8 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
         return self._geo(
             request,
             geojson_serializer_class=ObservationGeoJsonModelSerializer,
-            queryset=self.get_queryset().select_related(None).select_related("identification_task",).prefetch_related(None).order_by(),
+            get_queryset=lambda: self.get_queryset().select_related(None).select_related("identification_task").prefetch_related(None).order_by(),
         )
-
 
 @extend_schema_view(
     list=extend_schema(
