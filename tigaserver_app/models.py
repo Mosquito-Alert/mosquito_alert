@@ -721,11 +721,10 @@ class Report(TimeZoneModelMixin, models.Model):
     )
 
     # Attributes - Mandatory
-    version_UUID = models.CharField(
+    version_UUID = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
-        max_length=36,
-        help_text="UUID randomly generated on phone to identify each unique report version. Must be exactly 36 characters (32 hex digits plus 4 hyphens).",
+        editable=False,
     )
     version_number = models.SmallIntegerField(
         default=0,
