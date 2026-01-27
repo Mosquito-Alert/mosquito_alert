@@ -1922,7 +1922,20 @@ class Report(TimeZoneModelMixin, models.Model):
         ]
         indexes = [
             # NOTE: Improve performance of .views.ReportViewSet
-            models.Index(fields=["user", "type", "report_id"])
+            models.Index(fields=["user", "type", "report_id"]),
+            # NOTE: Improve performance of /api/observations when 
+            # filtering by non_deleted() and published() endpoint.
+            models.Index(
+                fields=["published_at"],
+                name="report_visible_published_idx",
+                condition=Q(
+                    deleted_at__isnull=True,
+                    hide=False,
+                    location_is_masked=False,
+                    point__isnull=False,
+                    published_at__isnull=False,
+                ),
+            ),
         ]
 
     def __unicode__(self):
