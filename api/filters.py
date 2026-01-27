@@ -12,20 +12,6 @@ from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCount
 
 User = get_user_model()
 
-class NegableModelMultipleChoiceFilter(filters.ModelMultipleChoiceFilter):
-    def get_method(self, qs):
-        param_name = None
-        for name, filter_instance in self.parent.filters.items():
-            if filter_instance is self:
-                param_name = f"negate_{name}"
-                break
-
-        if not param_name:
-            # fallback: no negate param
-            return qs.filter
-        negate = self.parent.data.get(param_name) in ["true", "1", True]
-        return qs.exclude if negate else qs.filter
-
 class CampaignFilter(filters.FilterSet):
     country_id = filters.ModelChoiceFilter(field_name="country_id", queryset=EuropeCountry.objects.all())
     is_active = filters.BooleanFilter(method="filter_is_active")
@@ -103,14 +89,44 @@ class BaseReportWithPhotosFilter(BaseReportFilter):
         fields = BaseReportFilter.Meta.fields + ("has_photos",)
 
 class ObservationFilter(BaseReportWithPhotosFilter):
-    identification_taxon_ids = NegableModelMultipleChoiceFilter(
-        field_name="identification_task__taxon",
+    identification_taxon_ids = filters.ModelMultipleChoiceFilter(
+        method='filter_identification_taxon_ids',
         queryset=Taxon.objects.all(),
         null_label="null",
         distinct=False
     )
-    negate_identification_taxon_ids = filters.BooleanFilter(method='filter_negate_identification_taxon_ids', label="Negate identification_taxon_ids filter")
-    def filter_negate_identification_taxon_ids(self, queryset, name, value):
+    def filter_identification_taxon_ids(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        taxon_values = []
+        lookup = self.data.get('identification_taxon_ids_lookup', None)
+        for taxon in value:
+            if lookup == 'is_descendant_of':
+                taxon_values.extend(taxon.get_descendants())
+            elif lookup == 'is_child_of':
+                taxon_values.extend(taxon.get_children())
+            elif lookup == 'is_tree_of':
+                taxon_values.extend(Taxon.get_tree(taxon))
+            else:
+                taxon_values.append(taxon)
+
+        lookup_negated = self.data.get('negate_identification_taxon_ids', None) in ["true", "1", True]
+        if lookup_negated:
+            return queryset.exclude(identification_task__taxon__in=taxon_values)
+
+        return queryset.filter(identification_task__taxon__in=taxon_values)
+
+    identification_taxon_ids_lookup = filters.ChoiceFilter(
+        method='filter_do_nothing', 
+        choices=[
+            ('is_descendant_of', 'Is descendant of'),
+            ('is_child_of', 'Is child of'),
+            ('is_tree_of', 'Is tree of')
+        ]
+    )
+    negate_identification_taxon_ids = filters.BooleanFilter(method='filter_do_nothing', label="Negate identification_taxon_ids filter")
+    def filter_do_nothing(self, queryset, name, value):
         return queryset
 
 class BiteFilter(BaseReportFilter):
