@@ -102,6 +102,9 @@ class ObservationFilter(BaseReportWithPhotosFilter):
         taxon_values = []
         lookup = self.data.get('identification_taxon_ids_lookup', None)
         for taxon in value:
+            if taxon == 'null':
+                taxon_values.append(None)
+                continue
             if lookup == 'is_descendant_of':
                 taxon_values.extend(taxon.get_descendants())
             elif lookup == 'is_child_of':
