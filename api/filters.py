@@ -99,26 +99,30 @@ class ObservationFilter(BaseReportWithPhotosFilter):
         if not value:
             return queryset
 
-        taxon_values = []
-        lookup = self.data.get('identification_taxon_ids_lookup', None)
+        lookup = self.data.get("identification_taxon_ids_lookup")
+        negate = self.data.get("negate_identification_taxon_ids") in ("true", "1", True)
+
+        taxon_values = set()
         for taxon in value:
-            if taxon == 'null':
-                taxon_values.append(None)
+            if taxon == "null": # Must be the same a null_label
+                taxon_values.add(None)
                 continue
+
             if lookup == 'is_descendant_of':
-                taxon_values.extend(taxon.get_descendants())
+                taxon_values.update(taxon.get_descendants())
             elif lookup == 'is_child_of':
-                taxon_values.extend(taxon.get_children())
+                taxon_values.update(taxon.get_children())
             elif lookup == 'is_tree_of':
-                taxon_values.extend(Taxon.get_tree(taxon))
+                taxon_values.update(Taxon.get_tree(taxon))
             else:
-                taxon_values.append(taxon)
+                taxon_values.add(taxon)
 
-        lookup_negated = self.data.get('negate_identification_taxon_ids', None) in ["true", "1", True]
-        if lookup_negated:
-            return queryset.exclude(identification_task__taxon__in=taxon_values)
+        if None in taxon_values:
+            q = models.Q(identification_task__taxon__isnull=True) | models.Q(identification_task__taxon__in=taxon_values - {None})
+        else:
+            q = models.Q(identification_task__taxon__in=taxon_values)
 
-        return queryset.filter(identification_task__taxon__in=taxon_values)
+        return queryset.exclude(q) if negate else queryset.filter(q)
 
     identification_taxon_ids_lookup = filters.ChoiceFilter(
         method='filter_do_nothing', 
