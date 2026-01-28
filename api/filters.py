@@ -140,7 +140,14 @@ class BiteFilter(BaseReportFilter):
     pass
 
 class BreedingSiteFilter(BaseReportWithPhotosFilter):
-    pass
+    site_type = filters.MultipleChoiceFilter(
+        choices=Report.BREEDING_SITE_TYPE_CHOICES,
+        field_name='breeding_site_type'
+    )
+
+    has_water = filters.BooleanFilter(field_name='breeding_site_has_water')
+    has_larvae = filters.BooleanFilter(field_name='breeding_site_has_larvae')
+    has_near_mosquitoes = filters.BooleanFilter(field_name='breeding_site_has_near_mosquitoes')
 
 
 class NotificationFilter(filters.FilterSet):
