@@ -4,6 +4,9 @@ from django.utils import timezone
 
 from django_filters import rest_framework as filters
 
+from rest_framework_gis.filterset import GeoFilterSet
+from rest_framework_gis.filters import GeometryFilter
+
 from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, FavoritedReports
 from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry, Photo
 
@@ -36,7 +39,11 @@ class CampaignFilter(filters.FilterSet):
         model = OWCampaigns
         fields = ("country_id", "is_active")
 
-class BaseReportFilter(filters.FilterSet):
+
+class TagFilter(filters.BaseInFilter, filters.CharFilter):
+    pass
+
+class BaseReportFilter(GeoFilterSet):
     user_uuid = filters.UUIDFilter(field_name="user")
     short_id = filters.CharFilter(field_name="report_id", label="Short ID")
     created_at = filters.IsoDateTimeFromToRangeFilter(
@@ -52,6 +59,14 @@ class BaseReportFilter(filters.FilterSet):
     order_by = filters.OrderingFilter(
         fields=(("server_upload_time", "received_at"), ("creation_time", "created_at"))
     )
+    tags = TagFilter(field_name='tags__name')
+
+    within_geom = GeometryFilter(field_name='point', lookup_expr='within')
+    geo_precision = filters.NumberFilter(method='filter_precision', min_value=0, label='Latitude/Longitude precision')
+
+    def filter_precision(self, queryset, name, value):
+        # Do nothing, will be used in the context
+        return queryset
 
     class Meta:
         model = Report
@@ -73,18 +88,66 @@ class BaseReportWithPhotosFilter(BaseReportFilter):
     class Meta(BaseReportFilter.Meta):
         fields = BaseReportFilter.Meta.fields + ("has_photos",)
 
-
 class ObservationFilter(BaseReportWithPhotosFilter):
     identification_taxon_ids = filters.ModelMultipleChoiceFilter(
-        field_name="identification_task__taxon",
+        method='filter_identification_taxon_ids',
         queryset=Taxon.objects.all(),
+        null_label="null",
+        distinct=False
     )
+    def filter_identification_taxon_ids(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        lookup = self.data.get("identification_taxon_ids_lookup")
+        negate = self.data.get("negate_identification_taxon_ids") in ("true", "1", True)
+
+        taxon_values = set()
+        for taxon in value:
+            if taxon == "null": # Must be the same a null_label
+                taxon_values.add(None)
+                continue
+
+            if lookup == 'is_descendant_of':
+                taxon_values.update(taxon.get_descendants())
+            elif lookup == 'is_child_of':
+                taxon_values.update(taxon.get_children())
+            elif lookup == 'is_tree_of':
+                taxon_values.update(Taxon.get_tree(taxon))
+            else:
+                taxon_values.add(taxon)
+
+        if None in taxon_values:
+            q = models.Q(identification_task__taxon__isnull=True) | models.Q(identification_task__taxon__in=taxon_values - {None})
+        else:
+            q = models.Q(identification_task__taxon__in=taxon_values)
+
+        return queryset.exclude(q) if negate else queryset.filter(q)
+
+    identification_taxon_ids_lookup = filters.ChoiceFilter(
+        method='filter_do_nothing', 
+        choices=[
+            ('is_descendant_of', 'Is descendant of'),
+            ('is_child_of', 'Is child of'),
+            ('is_tree_of', 'Is tree of')
+        ]
+    )
+    negate_identification_taxon_ids = filters.BooleanFilter(method='filter_do_nothing', label="Negate identification_taxon_ids filter")
+    def filter_do_nothing(self, queryset, name, value):
+        return queryset
 
 class BiteFilter(BaseReportFilter):
     pass
 
 class BreedingSiteFilter(BaseReportWithPhotosFilter):
-    pass
+    site_type = filters.MultipleChoiceFilter(
+        choices=Report.BREEDING_SITE_TYPE_CHOICES,
+        field_name='breeding_site_type'
+    )
+
+    has_water = filters.BooleanFilter(field_name='breeding_site_has_water')
+    has_larvae = filters.BooleanFilter(field_name='breeding_site_has_larvae')
+    has_near_mosquitoes = filters.BooleanFilter(field_name='breeding_site_has_near_mosquitoes')
 
 
 class NotificationFilter(filters.FilterSet):

@@ -617,6 +617,9 @@ class IdentificationTask(LifecycleModel):
         permissions = [
             ("view_archived_identificationtasks", "Can view archived records"),
         ]
+        indexes = [
+            models.Index(fields=['taxon', 'report']),
+        ]
         constraints = [
             models.CheckConstraint(
                 check=models.Q(total_finished_annotations__lte=models.F('total_annotations')),
