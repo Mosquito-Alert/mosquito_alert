@@ -30,7 +30,8 @@ from .views import (
     MyAnnotationViewSet,
     IdentificationTaskViewSet,
     MyIdentificationTaskViewSet,
-    TaxaViewSet
+    TaxaViewSet,
+    BoundaryViewSet,
 )
 
 
@@ -50,6 +51,7 @@ class CustomRedocView(SpectacularRedocView):
 router = SimpleRouter()
 router.register(r"bites", BiteViewSet, basename='bites')
 router.register(r"breeding-sites", BreedingSiteViewSet, basename='breeding-sites')
+router.register(r"boundaries", BoundaryViewSet, basename='boundaries')
 router.register(r"devices", DeviceViewSet)
 router.register(r"campaigns", CampaignsViewSet)
 router.register(r"countries", CountriesViewSet)

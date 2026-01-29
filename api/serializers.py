@@ -2,10 +2,13 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import Literal, Optional, Union
 from uuid import UUID
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
+from django.core.cache import cache
 from django.db import transaction, models
+from django.utils import timezone
 
 from drf_spectacular.utils import extend_schema_field
 from drf_spectacular.helpers import lazy_serializer
@@ -15,6 +18,7 @@ from rest_framework import serializers
 from drf_extra_fields.geo_fields import PointField
 import minify_html
 from rest_framework_dataclasses.serializers import DataclassSerializer
+from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from taggit.serializers import TaggitSerializer, TagListSerializerField
 
@@ -1832,3 +1836,23 @@ class CreatePhotoPredictionSerializer(PhotoPredictionSerializer):
 
     class Meta(PhotoPredictionSerializer.Meta):
         fields = ('photo_uuid',) + PhotoPredictionSerializer.Meta.fields
+
+class TemporalBoundarySerializer(serializers.Serializer):
+    uuid = serializers.UUIDField(read_only=True)
+    expires_in = serializers.IntegerField(read_only=True, help_text="Time in seconds until this cached boundary expires.")
+    expires_at = serializers.DateTimeField(read_only=True, help_text="Exact UTC datetime when this cached boundary expires.")
+    geojson = GeometryField(write_only=True)
+
+    def create(self, validated_data):
+        boundary_uuid = uuid.uuid4()
+        timeout = 60  # Cache timeout in seconds
+        cache.set(
+            key=str(boundary_uuid),
+            value=validated_data['geojson'].wkt,
+            timeout=timeout
+        )
+        return {
+            "uuid": boundary_uuid,
+            "expires_in": timeout,
+            "expires_at": timezone.now() + timezone.timedelta(seconds=timeout)
+        }

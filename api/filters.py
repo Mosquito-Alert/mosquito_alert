@@ -1,15 +1,13 @@
 from django.contrib.auth import get_user_model
-from django.contrib.gis.geos import Polygon, MultiPolygon
+from django.contrib.gis.geos import GEOSGeometry
+from django.core.cache import cache
 from django.db import models
 from django.utils import timezone
-from django.utils.translation import gettext as _
 
 from django_filters import rest_framework as filters
 
 from rest_framework.exceptions import ValidationError
 from rest_framework_gis.filterset import GeoFilterSet
-
-import polyline
 
 from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, FavoritedReports
 from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry, Photo
@@ -47,49 +45,6 @@ class CampaignFilter(filters.FilterSet):
 class TagFilter(filters.BaseInFilter, filters.CharFilter):
     pass
 
-class PolylineGeometryFilter(filters.BaseCSVFilter, filters.CharFilter):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault(
-            "help_text",
-            _(
-                "Filter by one or more Google-style encoded polygon polylines, separated by commas. "
-                "Precision defaults to 5. You may optionally prefix each value with "
-                "poly5: or poly6: to explicitly set the precision."
-            )
-        )
-        kwargs.setdefault("lookup_expr", "within")
-        super().__init__(*args, **kwargs)
-
-    def filter(self, qs, value):
-        if not value:
-            return qs
-
-        polygons = []
-        for ring_str in value:
-            precision = 5
-            # Optional prefix handling: poly6: or poly5:
-            if ring_str.startswith("poly6:"):
-                precision = 6
-                ring_str = ring_str.removeprefix("poly6:")
-            elif ring_str.startswith("poly5:"):
-                precision = 5
-                ring_str = ring_str.removeprefix("poly5:")
-
-            # NOTE: setting geojson=True to return (lng, lat) instead of (lat, lng)
-            coords = polyline.decode(ring_str, precision=precision, geojson=True)
-            if len(coords) < 3:
-                raise ValidationError("A polygon ring must have at least 3 points.")
-
-            # Ensure ring is closed
-            if coords[0] != coords[-1]:
-                coords.append(coords[0])
-
-            polygons.append(Polygon(coords))
-
-        geom = MultiPolygon(polygons) if len(polygons) > 1 else polygons[0]
-
-        return qs.filter(**{self.field_name + '__' + self.lookup_expr: geom})
-
 class BaseReportFilter(GeoFilterSet):
     user_uuid = filters.UUIDFilter(field_name="user")
     short_id = filters.CharFilter(field_name="report_id", label="Short ID")
@@ -108,13 +63,22 @@ class BaseReportFilter(GeoFilterSet):
     )
     tags = TagFilter(field_name='tags__name')
 
-    within_polyline = PolylineGeometryFilter(field_name='point')
     geo_precision = filters.NumberFilter(method='filter_precision', min_value=0, label='Latitude/Longitude precision')
-
     def filter_precision(self, queryset, name, value):
         # Do nothing, will be used in the context
         return queryset
 
+    boundary_uuid = filters.UUIDFilter(method='filter_by_boundary_uuid')
+    def filter_by_boundary_uuid(self, queryset, name, value):
+        cached_wkt = cache.get(str(value))
+        if not cached_wkt:
+            raise ValidationError("Boundary with the given UUID does not exist in cache.")
+        try:
+            geometry = GEOSGeometry(cached_wkt)
+        except Exception as e:
+            raise ValidationError(str(e))
+
+        return queryset.filter(point__within=geometry)
     class Meta:
         model = Report
         fields = (

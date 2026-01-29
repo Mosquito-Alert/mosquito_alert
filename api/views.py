@@ -30,7 +30,7 @@ from rest_framework.mixins import (
     UpdateModelMixin,
     DestroyModelMixin,
 )
-from rest_framework.parsers import FormParser
+from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
@@ -95,7 +95,8 @@ from .serializers import (
     CreatePhotoPredictionSerializer,
     UserPermissionSerializer,
     CreateAgreeReviewSerializer,
-    CreateOverwriteReviewSerializer
+    CreateOverwriteReviewSerializer,
+    TemporalBoundarySerializer
 )
 from .serializers import (
     CreateNotificationSerializer,
@@ -951,3 +952,16 @@ class TaxaViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
         taxon = self.get_object()
         serializer = self.get_serializer(taxon)
         return Response(serializer.data)
+
+@extend_schema_view(
+    create=extend_schema(
+        tags=['boundaries'],
+        operation_id='boundaries_create_temporal',
+        description="Create a temporal boundary"
+    )
+)
+class BoundaryViewSet(CreateModelMixin, GenericViewSet):
+    serializer_class = TemporalBoundarySerializer
+
+    parser_classes = (JSONParser, )
+    permission_classes = (AllowAny,)
