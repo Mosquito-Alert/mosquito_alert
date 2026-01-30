@@ -31,7 +31,7 @@ from rest_framework.mixins import (
     DestroyModelMixin,
 )
 from rest_framework.parsers import JSONParser, FormParser
-from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -118,7 +118,6 @@ from .permissions import (
     AnnotationPermissions,
     MyAnnotationPermissions,
     PhotoPredictionPermissions,
-    TaxaPermissions,
     CountriesPermissions
 )
 from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet, NestedViewSetMixin
@@ -938,7 +937,7 @@ class TaxaViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     queryset = Taxon.objects.all()
     serializer_class = TaxonSerializer
     filterset_class = TaxonFilter
-    permission_classes = (TaxaPermissions, )
+    permission_classes = (IsAuthenticatedOrReadOnly, )
 
     @extend_schema(operation_id='taxa_root_tree_retrieve')
     @action(detail=False, methods=["GET"], url_path="tree", serializer_class=TaxonTreeNodeSerializer)
