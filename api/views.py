@@ -939,13 +939,19 @@ class TaxaViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     filterset_class = TaxonFilter
     permission_classes = (IsAuthenticatedOrReadOnly, )
 
+    @method_decorator(cache_page(6 * 60 * 60))  # cache for 6 hour
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
     @extend_schema(operation_id='taxa_root_tree_retrieve')
+    @method_decorator(cache_page(6 * 60 * 60))  # cache for 6 hour
     @action(detail=False, methods=["GET"], url_path="tree", serializer_class=TaxonTreeNodeSerializer)
     def root_tree(self, request):
         taxon = Taxon.get_root()
         serializer = self.get_serializer(taxon)
         return Response(serializer.data)
 
+    @method_decorator(cache_page(6 * 60 * 60))  # cache for 6 hour
     @action(detail=True, methods=["GET"], url_path="tree", serializer_class=TaxonTreeNodeSerializer)
     def tree(self, request, pk=None):
         taxon = self.get_object()
