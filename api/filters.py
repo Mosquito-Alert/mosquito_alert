@@ -75,8 +75,8 @@ class BaseReportFilter(GeoFilterSet):
             raise ValidationError("Boundary with the given UUID does not exist in cache.")
         try:
             geometry = GEOSGeometry(cached_wkt)
-        except Exception as e:
-            raise ValidationError(str(e))
+        except Exception:
+            raise ValidationError("Failed to parse geometry from cached boundary WKT.")
 
         return queryset.filter(point__within=geometry)
     class Meta:
