@@ -557,6 +557,13 @@ class SimplePhotoSerializer(serializers.ModelSerializer):
 
 
 class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        exclude_fields = kwargs.pop('exclude_fields', None)
+        super().__init__(*args, **kwargs)
+
+        if exclude_fields:
+            for field in exclude_fields:
+                self.fields.pop(field, None)
 
     class LocationSerializer(serializers.ModelSerializer):
         class AdmBoundarySerializer(serializers.Serializer):
@@ -835,7 +842,8 @@ class BaseReportWithPhotosSerializer(BaseReportSerializer):
         even if this serializer was initialized in write mode.
         """
         # Rebind `photos` temporarily for output
-        self.fields["photos"] = SimplePhotoSerializer(many=True, read_only=True)
+        if ('photos' in self.fields): # NOTE: csv render remove lists (and so 'photos')
+            self.fields["photos"] = SimplePhotoSerializer(many=True, read_only=True)
         return super().to_representation(instance)
 
     class Meta(BaseReportSerializer.Meta):

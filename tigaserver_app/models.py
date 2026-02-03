@@ -1183,7 +1183,6 @@ class Report(TimeZoneModelMixin, models.Model):
         return not (
             self.hide or
             self.deleted or
-            self.tags.filter(name='345').exists() or
             self.location_is_masked
         )
 

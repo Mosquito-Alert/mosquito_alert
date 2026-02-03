@@ -19,7 +19,7 @@ from drf_spectacular.utils import (
     OpenApiTypes
 )
 
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
@@ -120,6 +120,7 @@ from .permissions import (
     PhotoPredictionPermissions,
     CountriesPermissions
 )
+from .utils import get_serializer_field_paths_for_csv
 from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet, NestedViewSetMixin
 
 User = get_user_model()
@@ -330,13 +331,17 @@ class BaseReportViewSet(
     def list(self, request, *args, **kwargs):
         # Override list to handle CSV rendering without pagination
         if self.request.accepted_renderer.format == CSVStreamingRenderer.format:
-            queryset = self.filter_queryset(self.get_queryset())
+            queryset = self.filter_queryset(self.get_queryset().prefetch_related(None))
+            request.accepted_renderer.header = get_serializer_field_paths_for_csv(
+                serializer=self.get_serializer(),
+                separator=request.accepted_renderer.level_sep
+            )
 
             response = StreamingHttpResponse(
                 request.accepted_renderer.render(
                     self._stream_serialized_data(queryset)
                 ),
-                content_type="text/csv"
+                content_type=CSVStreamingRenderer.media_type,
             )
             # TODO: set filename dynamically?
             response["Content-Disposition"] = 'attachment; filename="reports.csv"'
@@ -348,9 +353,17 @@ class BaseReportViewSet(
         serializer_class = self.get_serializer_class()
         paginator = Paginator(queryset, 2000)
 
+        exclude_fields = [
+            name for name, field in serializer_class().fields.items() 
+            if isinstance(field, (serializers.ListSerializer, serializers.ListField))
+        ]
         for page_number in paginator.page_range:
             page = paginator.page(page_number)
-            serializer = serializer_class(page.object_list, many=True)
+            serializer = serializer_class(
+                page.object_list,
+                many=True,
+                exclude_fields=exclude_fields
+            )
             yield from serializer.data
 
     def _get_device_from_jwt(self) -> Optional[Device]:
