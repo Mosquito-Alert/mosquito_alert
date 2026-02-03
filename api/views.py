@@ -2,7 +2,6 @@ from typing import Callable, Optional
 import uuid
 
 from django.contrib.auth import get_user_model
-from django.core.paginator import Paginator
 from django.db import models
 from django.http import StreamingHttpResponse
 from django.utils.decorators import method_decorator
@@ -349,21 +348,26 @@ class BaseReportViewSet(
 
         return super().list(request, *args, **kwargs)
 
-    def _stream_serialized_data(self, queryset):
+    def _stream_serialized_data(self, queryset, batch_size=2000):
         serializer_class = self.get_serializer_class()
-        paginator = Paginator(queryset, 2000)
-
+    
+        # Fields to exclude
         exclude_fields = [
-            name for name, field in serializer_class().fields.items() 
+            name for name, field in serializer_class().fields.items()
             if isinstance(field, (serializers.ListSerializer, serializers.ListField))
         ]
-        for page_number in paginator.page_range:
-            page = paginator.page(page_number)
-            serializer = serializer_class(
-                page.object_list,
-                many=True,
-                exclude_fields=exclude_fields
-            )
+
+        batch = []
+        for obj in queryset.iterator(chunk_size=batch_size):
+            batch.append(obj)
+            if len(batch) >= batch_size:
+                serializer = serializer_class(batch, many=True, exclude_fields=exclude_fields)
+                yield from serializer.data
+                batch = []
+
+        # Serialize any leftover objects
+        if batch:
+            serializer = serializer_class(batch, many=True, exclude_fields=exclude_fields)
             yield from serializer.data
 
     def _get_device_from_jwt(self) -> Optional[Device]:
