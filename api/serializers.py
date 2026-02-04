@@ -5,7 +5,7 @@ from uuid import UUID
 import uuid
 
 from django.contrib.auth import get_user_model
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import GEOSGeometry, Point, Polygon, MultiPolygon
 from django.core.cache import cache
 from django.db import transaction, models
 
@@ -1887,6 +1887,11 @@ class TemporalBoundarySerializer(serializers.Serializer):
     uuid = serializers.UUIDField(read_only=True)
     expires_in = serializers.IntegerField(read_only=True, help_text="Time in seconds until this cached boundary expires.")
     geojson = GeometryField(write_only=True)
+
+    def validate_geojson(self, value: GEOSGeometry) -> GEOSGeometry:
+        if not isinstance(value, (Polygon, MultiPolygon)):
+            raise serializers.ValidationError("The geojson must be a Polygon or MultiPolygon")
+        return value
 
     def create(self, validated_data):
         boundary_uuid = uuid.uuid4()
