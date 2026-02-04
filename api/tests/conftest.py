@@ -76,6 +76,7 @@ def adult_report(app_user, es_country, dummy_image):
         location_choice=Report.LOCATION_CURRENT,
         current_location_lon=point_on_surface.x,
         current_location_lat=point_on_surface.y,
+        note="This is a test report note.",
     )
 
     _ = Photo.objects.create(

@@ -37,4 +37,5 @@ def create_report_object(user: TigaUser) -> Report:
         location_choice=Report.LOCATION_CURRENT,
         current_location_lon=2.79036,
         current_location_lat=41.67419,
+        note="Test report note",
     )

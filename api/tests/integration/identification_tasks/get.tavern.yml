@@ -63,6 +63,7 @@ stages:
       json:
         observation:
           uuid: "{identification_task.report.pk}"
+          note: !anystr
 
 ---
 

@@ -23,7 +23,7 @@ variables:
           name_en: !anystr
           iso3_code: !anystr
         display_name: !anything
-      note: !anything
+      note: !anystr
       photos: !anylist
     public_photo:
       uuid: !anystr
