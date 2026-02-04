@@ -1213,8 +1213,10 @@ class UserStat(UserRolePermissionMixin, models.Model):
         else:
             if self.is_national_supervisor():
                 return "Europe - National supervisor - " + self.national_supervisor_of.name_engl
+            elif country := self.native_of:
+                return "Europe - " + country.name_engl
             else:
-                return "Europe - " + self.native_of.name_engl
+                return ""
 
 
     # this method returns the username, changing any '.' character to a '_'. This is used to avoid usernames used
