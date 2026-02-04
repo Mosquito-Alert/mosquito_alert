@@ -16,6 +16,7 @@ stages:
         count: 1
         results:
           - uuid: "{published_object.pk}"
+            note: null
   - id: auth_without_perm_can_list_all
     name: User without perm view can list
     request:
@@ -30,7 +31,9 @@ stages:
         count: 2
         results:
           - uuid: "{unpublished_object.pk}"
+            note: null
           - uuid: "{published_object.pk}"
+            note: null
   - id: appuser_can_retrieve_published_and_owned
     name: App user can list
     request:
@@ -46,8 +49,10 @@ stages:
         count: 2
         results:
           - uuid: "{unpublished_object.pk}"
+            note: !anystr
           - uuid: "{published_object.pk}"
-  - id: new_appuser_can_retrieve_published_and_owned
+            note: !anystr
+  - id: new_appuser_can_retrieve_published_and_unowned
     name: App user can list
     request:
       url: "{api_live_url}/{endpoint}/"
@@ -62,6 +67,7 @@ stages:
         count: 1
         results:
           - uuid: "{published_object.pk}"
+            note: null
   - id: filter_by_user_uuid
     name: Filter by user_uuid
     request:
@@ -77,3 +83,4 @@ stages:
         count: 1
         results:
           - uuid: "{published_object.pk}"
+            user_uuid: "{published_object.user.pk}"

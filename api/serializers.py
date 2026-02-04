@@ -700,12 +700,33 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     location = LocationSerializer(source="*")
     tags = TagListSerializerField(required=False, allow_empty=True)
+    note = WritableSerializerMethodField(
+        field_class=serializers.CharField,
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+    )
 
     def get_created_at_local(self, obj) -> datetime:
         return obj.creation_time_local.replace(tzinfo=None)
 
     def get_published(self, obj) -> bool:
         return obj.published
+
+    def get_note(self, obj) -> Optional[str]:
+        """Return the note if the user is allowed to see it."""
+        if not self.context.get("hide_note_if_not_owner", True):
+            return obj.note
+
+        request = self.context.get("request")
+        if not request or not request.user or not request.user.is_authenticated:
+            return None
+
+        # Owner always sees it
+        if request.user == obj.user:
+            return obj.note
+
+        return None
 
     # Override from TaggitSerializer
     def _pop_tags(self, validated_data):
@@ -789,6 +810,7 @@ class BaseSimplifiedReportSerializer(serializers.ModelSerializer):
     note = BaseReportSerializer().fields['note']
 
     get_created_at_local = BaseReportSerializer.get_created_at_local
+    get_note = BaseReportSerializer.get_note
 
     class Meta:
         model = BaseReportSerializer.Meta.model
@@ -1243,7 +1265,16 @@ class AssignmentSerializer(BaseAssignmentSerializer):
                 fname for fname in SimplifiedObservationWithPhotosSerializer.Meta.fields if fname != 'user_uuid'
             ) + ("user",)
 
-    observation = AssignedObservationSerializer(source='report', read_only=True)
+    observation = serializers.SerializerMethodField()
+
+    @extend_schema_field(AssignedObservationSerializer)
+    def get_observation(self, obj) -> dict:
+        serializer = type(self).AssignedObservationSerializer(
+            obj.report,
+            context={**self.context, "hide_note_if_not_owner": False}  # always show note
+        )
+        return serializer.data
+
     class Meta(BaseAssignmentSerializer.Meta):
         fields = ('observation', ) + BaseAssignmentSerializer.Meta.fields
 
@@ -1311,12 +1342,20 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         class Meta(BaseAssignmentSerializer.Meta):
             fields = ("user", "annotation_id",) + BaseAssignmentSerializer.Meta.fields
 
-    observation = SimplifiedObservationWithPhotosSerializer(source='report', read_only=True)
+    observation = serializers.SerializerMethodField()
     public_photo_uuid = serializers.UUIDField(source='photo__uuid', write_only=True)
     public_photo = SimplePhotoSerializer(source='photo', read_only=True)
     review = IdentificationTaskReviewSerializer(source='*', allow_null=True, read_only=True)
     result = IdentificationTaskResultSerializer(source='*', read_only=True, allow_null=True)
     assignments = UserAssignmentSerializer(many=True, read_only=True)
+
+    @extend_schema_field(SimplifiedObservationWithPhotosSerializer)
+    def get_observation(self, obj) -> dict:
+        serializer = SimplifiedObservationWithPhotosSerializer(
+            obj.report,
+            context={**self.context, "hide_note_if_not_owner": False}  # always show note
+        )
+        return serializer.data
 
     class Meta:
         model = IdentificationTask

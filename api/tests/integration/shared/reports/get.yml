@@ -15,6 +15,7 @@ stages:
         - json:off
       json:
         published: true
+        note: null
   - id: auth_without_perm_can_retrieve_published
     name: User without perm view per retrieve
     request:
@@ -74,12 +75,13 @@ stages:
       method: "GET"
       headers:
         Authorization: "Bearer {jwt_token_user:s}"
-    response: &response_unpublished_object
+    response:
       status_code: 200
       strict:
         - json:off
       json:
         published: false
+        note: null
   - id: auth_with_viewperm_can_retrieve_unpublished
     name: User without perm view per retrieve
     request:
@@ -87,8 +89,14 @@ stages:
       method: "GET"
       headers:
         Authorization: "Bearer {jwt_token_user_can_view:s}"
-    response: 
-      <<: *response_unpublished_object
+    response: &response_unpublished_object_with_notes
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        published: false
+        # Can see note because has view perm
+        note: !anystr
   - id: appuser_can_retrieve_owned_unpublished
     name: App user can retrieve
     request:
@@ -97,7 +105,7 @@ stages:
       headers:
         Authorization: "Bearer {app_user_token:s}"
     response:
-      <<: *response_unpublished_object
+      <<: *response_unpublished_object_with_notes
   - id: appuser_cannot_retrieve_unowned_unpublished
     name: App user can retrieve
     request:
