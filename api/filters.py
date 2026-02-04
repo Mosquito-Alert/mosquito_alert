@@ -6,6 +6,8 @@ from django.utils import timezone
 
 from django_filters import rest_framework as filters
 
+from drf_spectacular.utils import extend_schema_field
+
 from rest_framework.exceptions import ValidationError
 from rest_framework_gis.filterset import GeoFilterSet
 
@@ -100,12 +102,20 @@ class BaseReportWithPhotosFilter(BaseReportFilter):
         fields = BaseReportFilter.Meta.fields + ("has_photos",)
 
 class ObservationFilter(BaseReportWithPhotosFilter):
-    identification_taxon_ids = filters.ModelMultipleChoiceFilter(
+    identification_taxon_ids = extend_schema_field({
+        "type": "array",
+        "items": {
+            "oneOf": [
+                {"type": "integer"},
+                {"type": "string", "enum": ["null"]}
+            ]
+        }
+    })(filters.ModelMultipleChoiceFilter(
         method='filter_identification_taxon_ids',
         queryset=Taxon.objects.all(),
         null_label="null",
         distinct=False
-    )
+    ))
     def filter_identification_taxon_ids(self, queryset, name, value):
         if not value:
             return queryset
