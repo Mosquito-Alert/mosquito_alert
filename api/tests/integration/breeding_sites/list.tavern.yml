@@ -25,7 +25,7 @@ stages:
   - id: login
     type: ref
   - type: ref
-    id: new_appuser_can_retrieve_published_and_owned
+    id: new_appuser_can_retrieve_published_and_unowned
 
 ---
 

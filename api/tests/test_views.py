@@ -145,6 +145,39 @@ class BaseReportTest:
         report = self.queryset.get(pk=report_object.pk)
         assert report.deleted
 
+    @pytest.mark.parametrize("is_owner", [True, False])
+    def test_user_can_see_note_if_owner(self, app_user, app_api_client, report_object, is_owner):
+        report_object.note = "This is a private note."
+        if is_owner:
+            report_object.user = app_user
+        else:
+            another_app_user = TigaUser.objects.create()
+            report_object.user = another_app_user
+            report_object.published_at = report_object.server_upload_time
+        report_object.save()
+
+        response = app_api_client.get(
+            self.endpoint + f"{report_object.pk}/"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        if is_owner:
+            assert response.data['note'] == "This is a private note."
+        else:
+            assert response.data['note'] is None
+
+    def test_anonymous_user_can_not_see_note(self, app_api_client, report_object):
+        report_object.note = "This is a private note."
+        report_object.published_at = report_object.server_upload_time
+        report_object.save()
+
+        app_api_client.logout()
+
+        response = app_api_client.get(
+            self.endpoint + f"{report_object.pk}/"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['note'] is None
+
 class TestBiteAPI(BaseReportTest):
 
     endpoint = '/api/v1/bites/'
