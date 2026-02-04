@@ -288,8 +288,8 @@ class BaseReportViewSet(
 
         return super().get_permissions()
 
-    def get_serializer_context(self, *args, **kwargs):
-        result = super().get_serializer_context(*args, **kwargs)
+    def get_serializer_context(self):
+        result = super().get_serializer_context()
         if self.request.user.is_authenticated and isinstance(self.request.user, User):
             # If user has view permissions, never hide.
             result['hide_note_if_not_owner'] = not self.request.user.has_perm(
