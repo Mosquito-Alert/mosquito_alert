@@ -1,6 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.contrib.gis.geos import GEOSGeometry
-from django.core.cache import cache
 from django.db import models
 from django.utils import timezone
 
@@ -12,7 +10,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_gis.filterset import GeoFilterSet
 
 from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, FavoritedReports
-from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry, Photo
+from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry, Photo, TemporaryBoundary
 
 User = get_user_model()
 
@@ -72,15 +70,11 @@ class BaseReportFilter(GeoFilterSet):
 
     boundary_uuid = filters.UUIDFilter(method='filter_by_boundary_uuid')
     def filter_by_boundary_uuid(self, queryset, name, value):
-        cached_wkt = cache.get(str(value))
-        if not cached_wkt:
-            raise ValidationError("Boundary with the given UUID does not exist in cache.")
         try:
-            geometry = GEOSGeometry(cached_wkt)
-        except Exception:
-            raise ValidationError("Failed to parse geometry from cached boundary WKT.")
-
-        return queryset.filter(point__within=geometry)
+            boundary = TemporaryBoundary.get(value)
+            return queryset.filter(point__within=boundary.geometry)
+        except ValueError as e:
+            raise ValidationError(str(e))
     class Meta:
         model = Report
         fields = (

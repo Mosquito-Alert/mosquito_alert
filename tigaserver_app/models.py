@@ -22,8 +22,9 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
 from django.contrib.gis.measure import Distance as DistanceMeasure
+from django.core.cache import cache
 from django.core.validators import RegexValidator
 from django.db import transaction
 from django.db.models import Q
@@ -3207,3 +3208,41 @@ class OrganizationPin(models.Model):
     textual_description = models.TextField(help_text='Text desription on the pin. This text is meant to be visualized as the text body of the dialog on the map')
     page_url = models.URLField(help_text='URL link to the organization page')
 
+
+class TemporaryBoundary:
+    DEFAULT_TTL = 60 # in seconds
+
+    def __init__(self, geometry: GEOSGeometry):
+        if not isinstance(geometry, (Polygon, MultiPolygon)):
+            raise ValueError("Geometry must be a Polygon or MultiPolygon")
+        self.geometry = geometry
+
+        self.uuid: Optional[uuid.UUID] = None
+        self.expires_at: Optional[timezone.datetime] = None
+
+    def save(self) -> None:
+        boundary_uuid = uuid.uuid4()
+        cache.set(
+            str(boundary_uuid),
+            self.geometry.wkt,
+            timeout=self.DEFAULT_TTL
+        )
+        self.uuid = boundary_uuid
+        self.expires_at = timezone.now() + timedelta(seconds=self.DEFAULT_TTL)
+
+    @property
+    def expires_in(self) -> Optional[int]:
+        if self.expires_at is None:
+            return None
+        delta = self.expires_at - timezone.now()
+        return max(int(delta.total_seconds()), 0)
+
+    @classmethod
+    def get(cls, uuid: 'uuid.UUID') -> 'TemporaryBoundary':
+        cached_wkt = cache.get(str(uuid))
+        if cached_wkt is None:
+            raise ValueError("No geometry found for the given UUID or it has expired.")    
+
+        instance = cls(geometry=GEOSGeometry(cached_wkt))
+        instance.uuid = uuid
+        return instance

@@ -95,7 +95,7 @@ from .serializers import (
     UserPermissionSerializer,
     CreateAgreeReviewSerializer,
     CreateOverwriteReviewSerializer,
-    TemporalBoundarySerializer
+    TemporaryBoundarySerializer
 )
 from .serializers import (
     CreateNotificationSerializer,
@@ -988,12 +988,12 @@ class TaxaViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
 @extend_schema_view(
     create=extend_schema(
         tags=['boundaries'],
-        operation_id='boundaries_create_temporal',
-        description="Create a temporal boundary"
+        operation_id='boundaries_create_temporary',
+        description="Create a temporary boundary"
     )
 )
 class BoundaryViewSet(CreateModelMixin, GenericViewSet):
-    serializer_class = TemporalBoundarySerializer
+    serializer_class = TemporaryBoundarySerializer
 
     parser_classes = (JSONParser, )
     permission_classes = (AllowAny,)

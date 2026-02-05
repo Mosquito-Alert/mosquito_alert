@@ -5,8 +5,7 @@ from uuid import UUID
 import uuid
 
 from django.contrib.auth import get_user_model
-from django.contrib.gis.geos import GEOSGeometry, Point, Polygon, MultiPolygon
-from django.core.cache import cache
+from django.contrib.gis.geos import Point
 from django.db import transaction, models
 
 from drf_spectacular.utils import extend_schema_field
@@ -44,7 +43,8 @@ from tigaserver_app.models import (
     Fix,
     NotificationTopic,
     Device,
-    MobileApp
+    MobileApp,
+    TemporaryBoundary
 )
 
 from .base_serializers import LocalizedSerializerMixin
@@ -1883,25 +1883,19 @@ class CreatePhotoPredictionSerializer(PhotoPredictionSerializer):
     class Meta(PhotoPredictionSerializer.Meta):
         fields = ('photo_uuid',) + PhotoPredictionSerializer.Meta.fields
 
-class TemporalBoundarySerializer(serializers.Serializer):
+class TemporaryBoundarySerializer(serializers.Serializer):
     uuid = serializers.UUIDField(read_only=True)
     expires_in = serializers.IntegerField(read_only=True, help_text="Time in seconds until this cached boundary expires.")
     geojson = GeometryField(write_only=True)
 
-    def validate_geojson(self, value: GEOSGeometry) -> GEOSGeometry:
-        if not isinstance(value, (Polygon, MultiPolygon)):
-            raise serializers.ValidationError("The geojson must be a Polygon or MultiPolygon")
-        return value
-
     def create(self, validated_data):
-        boundary_uuid = uuid.uuid4()
-        timeout = 60  # Cache timeout in seconds
-        cache.set(
-            key=str(boundary_uuid),
-            value=validated_data['geojson'].wkt,
-            timeout=timeout
-        )
+        try:
+            boundary = TemporaryBoundary(geometry=validated_data['geojson'])
+        except ValueError as e:
+            raise serializers.ValidationError(str(e))
+
+        boundary.save()
         return {
-            "uuid": boundary_uuid,
-            "expires_in": timeout,
+            "uuid": boundary.uuid,
+            "expires_in": boundary.expires_in
         }

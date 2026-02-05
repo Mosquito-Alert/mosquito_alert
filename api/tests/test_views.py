@@ -26,7 +26,7 @@ from api.tests.integration.observations.factories import create_observation_obje
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
 from api.tests.integration.identification_tasks.factories import create_annotation
-from api.tests.factories import create_report_object
+from api.tests.factories import create_report_object, create_boundary_contains_point
 from api.tests.utils import grant_permission_to_user
 from api.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
 
@@ -178,6 +178,21 @@ class BaseReportTest:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['note'] is None
 
+    def test_filter_boundary_uuid(self, app_api_client, report_object, use_test_cache_backend):
+        boundary = create_boundary_contains_point(point=report_object.point)
+        response = app_api_client.get(
+            self.endpoint + f"?boundary_uuid={boundary.uuid}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 1
+        assert response.data['results'][0]['uuid'] == str(report_object.pk)
+
+    def test_filter_boundary_uuid_raise_400_if_boundary_not_exist(self, app_api_client):
+        response = app_api_client.get(
+            self.endpoint + f"?boundary_uuid=00000000-0000-0000-0000-000000000000"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
 class TestBiteAPI(BaseReportTest):
 
     endpoint = '/api/v1/bites/'
@@ -221,6 +236,98 @@ class TestObservationAPI(BaseReportTest):
         assert response.status_code == status.HTTP_200_OK
         assert (response.data['identification'] is None) != is_published
 
+@pytest.mark.usefixtures("use_test_cache_backend")
+class TestBoundaryAPI:
+    endpoint = '/api/v1/boundaries/'
+
+    @pytest.fixture
+    def polygon_geojson(self):
+        return {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [0.0, 0.0],
+                    [0.0, 1.0],
+                    [1.0, 1.0],
+                    [1.0, 0.0],
+                    [0.0, 0.0],
+                ]
+            ]
+        }
+
+    @pytest.fixture
+    def multipolygon_geojson(self):
+        return {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [
+                        [0.0, 0.0],
+                        [0.0, 1.0],
+                        [1.0, 1.0],
+                        [1.0, 0.0],
+                        [0.0, 0.0],
+                    ]
+                ],
+                [
+                    [
+                        [2.0, 2.0],
+                        [2.0, 3.0],
+                        [3.0, 3.0],
+                        [3.0, 2.0],
+                        [2.0, 2.0],
+                    ]
+                ]
+            ]
+        }
+
+    @pytest.fixture
+    def point_geojson(self):
+        return {
+            "type": "Point",
+            "coordinates": [0.0, 0.0]
+        }
+
+    @pytest.fixture
+    def line_geojson(self):
+        return {
+            "type": "LineString",
+            "coordinates": [
+                [0.0, 0.0],
+                [1.0, 1.0]
+            ]
+        }
+
+    @pytest.mark.parametrize(
+        "geometry, expected_response_status", [
+            (pytest.lazy_fixture('polygon_geojson'), status.HTTP_201_CREATED),
+            (pytest.lazy_fixture('multipolygon_geojson'), status.HTTP_201_CREATED),
+            (pytest.lazy_fixture('point_geojson'), status.HTTP_400_BAD_REQUEST),
+            (pytest.lazy_fixture('line_geojson'), status.HTTP_400_BAD_REQUEST),
+        ]
+    )
+    def test_create_temporary_boundary(self, api_client, geometry, expected_response_status):
+        response = api_client.post(
+            self.endpoint,
+            {
+                "geojson": geometry,
+            },
+            format='json'
+        )
+        assert response.status_code == expected_response_status
+
+    def test_create_temporary_boundary_expires(self, api_client, polygon_geojson):
+        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
+            response = api_client.post(
+                self.endpoint,
+                {
+                    "geojson": polygon_geojson,
+                },
+                format='json'
+            )
+            assert response.status_code == status.HTTP_201_CREATED
+            assert response.data['uuid']
+            assert response.data['expires_in'] is not None
 
 @pytest.mark.django_db
 class TestIdentificationTaskAPI:
