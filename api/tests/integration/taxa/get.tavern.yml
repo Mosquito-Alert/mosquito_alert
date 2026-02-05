@@ -22,12 +22,12 @@ stages:
     response:
       status_code: 200
       json: !force_format_include "{response_data_validation}"
-  - name: Non auth user can not retrieve
+  - name: Non auth user can retrieve
     request:
       url: "{api_live_url}/{endpoint}/{taxon_root.pk}/"
       method: "GET"
     response:
-      status_code: 401
+      status_code: 200
   - name: User without perm view can retrieve
     request:
       url: "{api_live_url}/{endpoint}/{taxon_root.pk}/"
