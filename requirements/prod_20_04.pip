@@ -12,7 +12,7 @@ drf-nested-routers==0.95.0
 django-timezone-field==5.1
 djangorestframework-csv==3.0.2
 djangorestframework-dataclasses==1.4.0
-djangorestframework-gis
+djangorestframework-gis==1.2.0
 djangorestframework-simplejwt==5.3.1
 drf-extra-fields==3.7.0
 drf-spectacular==0.29.0
