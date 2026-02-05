@@ -39,6 +39,7 @@ pyproj==3.3.1 # Needed for django geo?
 pymemcache==4.0.0 # Needed for caching.
 rawpy==0.17.1
 semantic-version==2.10.0
+sentry-sdk==2.52.0
 scipy==1.13.1
 timezonefinder==6.2.0
 tqdm==4.66.1
