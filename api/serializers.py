@@ -1891,8 +1891,8 @@ class TemporaryBoundarySerializer(serializers.Serializer):
     def create(self, validated_data):
         try:
             boundary = TemporaryBoundary(geometry=validated_data['geojson'])
-        except ValueError as e:
-            raise serializers.ValidationError(str(e))
+        except ValueError:
+            raise serializers.ValidationError("Invalid geometry")
 
         boundary.save()
         return {

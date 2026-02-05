@@ -72,9 +72,11 @@ class BaseReportFilter(GeoFilterSet):
     def filter_by_boundary_uuid(self, queryset, name, value):
         try:
             boundary = TemporaryBoundary.get(value)
+        except ValueError:
+            raise ValidationError("Invalid boundary UUID")
+        else:
             return queryset.filter(point__within=boundary.geometry)
-        except ValueError as e:
-            raise ValidationError(str(e))
+
     class Meta:
         model = Report
         fields = (
