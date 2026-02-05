@@ -329,7 +329,7 @@ class BaseReportViewSet(
             serializer = geojson_serializer_class(qs, many=True, context=self.get_serializer_context())
         else:
             serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, content_type=self.request.accepted_renderer.media_type)
 
     def get_renderers(self):
         renderers = super().get_renderers()
