@@ -193,6 +193,17 @@ class BaseReportTest:
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
+    def test_set_geo_precision_query_param(self, app_api_client, report_object):
+        geo_precision = 1
+        assert report_object.point.x != round(report_object.point.x, geo_precision)
+        assert report_object.point.y != round(report_object.point.y, geo_precision)
+        response = app_api_client.get(
+            self.endpoint + f"{report_object.pk}/?geo_precision={geo_precision}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['location']['point']['latitude'] == round(report_object.point.y, geo_precision)
+        assert response.data['location']['point']['longitude'] == round(report_object.point.x, geo_precision)
+
 class TestBiteAPI(BaseReportTest):
 
     endpoint = '/api/v1/bites/'
