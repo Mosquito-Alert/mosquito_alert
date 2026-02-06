@@ -9,7 +9,7 @@ def get_fk_fieldnames(model, related_model) -> List:
             user_fk_fieldnames.append(field.name)
     return user_fk_fieldnames
 
-def get_serializer_field_paths_for_csv(serializer, separator, prefix="", ):
+def get_serializer_field_paths_for_csv(serializer: serializers.BaseSerializer, separator: str, prefix: str ="") -> List[str]:
     fields = []
 
     # Unwrap ListSerializer (many=True)
@@ -21,14 +21,14 @@ def get_serializer_field_paths_for_csv(serializer, separator, prefix="", ):
         if field.write_only:
             continue
 
-        path = f"{prefix}{name}"
+        path = f"{prefix}{separator}{name}" if prefix else name
 
         # Skip list fields entirely
         if isinstance(field, (serializers.ListSerializer, serializers.ListField)):
             continue
         # Nested serializer
         if isinstance(field, serializers.BaseSerializer):
-            fields.extend(get_serializer_field_paths_for_csv(field, separator, prefix=path + "."))
+            fields.extend(get_serializer_field_paths_for_csv(field, separator, prefix=path))
         else:
             fields.append(path)
 
