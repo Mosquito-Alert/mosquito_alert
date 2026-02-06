@@ -1631,43 +1631,23 @@ class BiteSerializer(BaseReportSerializer):
             "counts"
         )
 
-class BreedingSiteGeoModelSerializer(BaseReportGeoModelSerializer):
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-
-        if not instance.breeding_site_type:
-            ret['breeding_site_type'] = Report.BREEDING_SITE_TYPE_OTHER
-
-        return ret
-
-    class Meta(BaseReportGeoModelSerializer.Meta):
-        fields = BaseReportGeoModelSerializer.Meta.fields + (
-            "site_type",
-            "has_water"
-        )
-        extra_kwargs = {
-            **BaseReportGeoModelSerializer.Meta.extra_kwargs,
-            "site_type": {"allow_null": False, "allow_blank": False, "required": True, "source": "breeding_site_type"},
-            "has_water": {"allow_null": True, "default": None, "source": "breeding_site_has_water"},
-        }
-
-class BreedingSiteGeoJsonModelSerializer(ReportGeoJsonModelSerializerMixin, BreedingSiteGeoModelSerializer, GeoFeatureModelSerializer):
-    class Meta(BreedingSiteGeoModelSerializer.Meta):
-        geo_field = "point"
-        id_field = "uuid"
-
 class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
+
+    site_type = WritableSerializerMethodField(
+        field_class=serializers.ChoiceField,
+        choices=Report.BreedingSiteType,
+        source="breeding_site_type",
+        required=True,
+        allow_null=False,
+        allow_blank=False,
+    )
+
+    def get_site_type(self, obj) -> Report.BreedingSiteType:
+        return obj.breeding_site_type or Report.BreedingSiteType.OTHER
+
     def create(self, validated_data):
         validated_data['type'] = Report.TYPE_SITE
         return super().create(validated_data)
-
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-
-        if not instance.breeding_site_type:
-            ret['breeding_site_type'] = Report.BREEDING_SITE_TYPE_OTHER
-
-        return ret
 
     class Meta(BaseReportWithPhotosSerializer.Meta):
         fields = BaseReportWithPhotosSerializer.Meta.fields + (
@@ -1678,7 +1658,6 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
             "has_larvae",
         )
         extra_kwargs = {
-            "site_type": {"allow_null": False, "allow_blank": False, "required": True, "source": "breeding_site_type"},
             # Need to set default to None, otherwise BooleanField uses False
             "has_water": {"allow_null": True, "default": None, "source": "breeding_site_has_water"},
             "in_public_area": {"allow_null": True, "default": None, "source": "breeding_site_in_public_area"},
@@ -1689,6 +1668,24 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
             },
             "has_larvae": {"allow_null": True, "default": None, "source": "breeding_site_has_larvae"},
         }
+
+class BreedingSiteGeoModelSerializer(BaseReportGeoModelSerializer):
+
+    site_type = BreedingSiteSerializer().fields['site_type']
+    has_water = BreedingSiteSerializer().fields['has_water']
+
+    get_site_type = BreedingSiteSerializer().get_site_type
+
+    class Meta(BaseReportGeoModelSerializer.Meta):
+        fields = BaseReportGeoModelSerializer.Meta.fields + (
+            "site_type",
+            "has_water"
+        )
+
+class BreedingSiteGeoJsonModelSerializer(ReportGeoJsonModelSerializerMixin, BreedingSiteGeoModelSerializer, GeoFeatureModelSerializer):
+    class Meta(BreedingSiteGeoModelSerializer.Meta):
+        geo_field = "point"
+        id_field = "uuid"
 
 #### END REPORT SERIALIZERS ####
 

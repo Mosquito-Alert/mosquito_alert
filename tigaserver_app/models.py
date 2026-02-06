@@ -1028,26 +1028,17 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text=_("The species of mosquito that the leg resembles, according to the user.")
     )
 
-    BREEDING_SITE_TYPE_BASIN = 'basin'
-    BREEDING_SITE_TYPE_BUCKET = 'bucket'
-    BREEDING_SITE_TYPE_FOUNTAIN = 'fountain'
-    BREEDING_SITE_TYPE_SMALL_CONTAINER = 'small_container'
-    BREEDING_SITE_TYPE_STORM_DRAIN = 'storm_drain'
-    BREEDING_SITE_TYPE_WELL = 'well'
-    BREEDING_SITE_TYPE_OTHER = 'other'
-
-    BREEDING_SITE_TYPE_CHOICES = (
-        (BREEDING_SITE_TYPE_BASIN, _('Basin')),
-        (BREEDING_SITE_TYPE_BUCKET, _('Bucket')),
-        (BREEDING_SITE_TYPE_FOUNTAIN, _('Fountain')),
-        (BREEDING_SITE_TYPE_SMALL_CONTAINER, _('Small container')),
-        (BREEDING_SITE_TYPE_STORM_DRAIN, _('Storm Drain')),
-        (BREEDING_SITE_TYPE_WELL, _('Well')),
-        (BREEDING_SITE_TYPE_OTHER, _('Other'))
-    )
+    class BreedingSiteType(models.TextChoices):
+        BASIN = "basin", _("Basin")
+        BUCKET = "bucket", _("Bucket")
+        FOUNTAIN = "fountain", _("Fountain")
+        SMALL_CONTAINER = "small_container", _("Small container")
+        STORM_DRAIN = "storm_drain", _("Storm Drain")
+        WELL = "well", _("Well")
+        OTHER = "other", _("Other")
 
     breeding_site_type = models.CharField(
-        max_length=32, choices=BREEDING_SITE_TYPE_CHOICES, null=True, blank=True,
+        max_length=32, choices=BreedingSiteType.choices, null=True, blank=True,
         help_text=_("Breeding site type.")
     )
     breeding_site_has_water = models.BooleanField(
@@ -1352,27 +1343,27 @@ class Report(TimeZoneModelMixin, models.Model):
     # Custom properties related to breeding sites
     @property
     def basins(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_BASIN
+        return self.breeding_site_type == Report.BreedingSiteType.BASIN
 
     @property
     def buckets(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_BUCKET
+        return self.breeding_site_type == Report.BreedingSiteType.BUCKET
 
     @property
     def embornals(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_STORM_DRAIN
+        return self.breeding_site_type == Report.BreedingSiteType.STORM_DRAIN
 
     @property
     def fonts(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_FOUNTAIN
+        return self.breeding_site_type == Report.BreedingSiteType.FOUNTAIN
 
     @property
     def other(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_OTHER
+        return self.breeding_site_type == Report.BreedingSiteType.OTHER
 
     @property
     def wells(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_WELL
+        return self.breeding_site_type == Report.BreedingSiteType.WELL
 
     @property
     def site_cat(self) -> int:
@@ -2660,9 +2651,9 @@ class ReportResponse(models.Model):
                 report_obj.breeding_site_has_water = True
         elif self.question_id == 12:
             if self.answer_id == 121:
-                report_obj.breeding_site_type = Report.BREEDING_SITE_TYPE_STORM_DRAIN
+                report_obj.breeding_site_type = Report.BreedingSiteType.STORM_DRAIN
             elif self.answer_id == 122:
-                report_obj.breeding_site_type = Report.BREEDING_SITE_TYPE_OTHER
+                report_obj.breeding_site_type = Report.BreedingSiteType.OTHER
         elif self.question_id == 13:
             if self.answer_id == 131:
                 report_obj.event_environment = Report.EVENT_ENVIRONMENT_VEHICLE
