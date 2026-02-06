@@ -19,7 +19,7 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.settings import api_settings
 
 from tigacrafting.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction, FavoritedReports
-from tigaserver_app.models import TigaUser, Report, Device, MobileApp, Photo
+from tigaserver_app.models import TigaUser, Report, Device, MobileApp, Photo, TemporaryBoundary
 
 from api.tests.clients import AppAPIClient
 from api.tests.integration.observations.factories import create_observation_object
@@ -327,18 +327,18 @@ class TestBoundaryAPI:
         )
         assert response.status_code == expected_response_status
 
+    @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_create_temporary_boundary_expires(self, api_client, polygon_geojson):
-        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
-            response = api_client.post(
-                self.endpoint,
-                {
-                    "geojson": polygon_geojson,
-                },
-                format='json'
-            )
-            assert response.status_code == status.HTTP_201_CREATED
-            assert response.data['uuid']
-            assert response.data['expires_in'] is not None
+        response = api_client.post(
+            self.endpoint,
+            {
+                "geojson": polygon_geojson,
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['uuid']
+        assert response.data['expires_in'] is TemporaryBoundary.DEFAULT_TTL
 
 @pytest.mark.django_db
 class TestIdentificationTaskAPI:
