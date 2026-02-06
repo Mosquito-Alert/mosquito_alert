@@ -19,14 +19,14 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.settings import api_settings
 
 from tigacrafting.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction, FavoritedReports
-from tigaserver_app.models import TigaUser, Report, Device, MobileApp, Photo
+from tigaserver_app.models import TigaUser, Report, Device, MobileApp, Photo, TemporaryBoundary
 
 from api.tests.clients import AppAPIClient
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
 from api.tests.integration.identification_tasks.factories import create_annotation
-from api.tests.factories import create_report_object
+from api.tests.factories import create_report_object, create_boundary_contains_point
 from api.tests.utils import grant_permission_to_user
 from api.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
 
@@ -178,6 +178,32 @@ class BaseReportTest:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['note'] is None
 
+    def test_filter_boundary_uuid(self, app_api_client, report_object, use_test_cache_backend):
+        boundary = create_boundary_contains_point(point=report_object.point)
+        response = app_api_client.get(
+            self.endpoint + f"?boundary_uuid={boundary.uuid}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 1
+        assert response.data['results'][0]['uuid'] == str(report_object.pk)
+
+    def test_filter_boundary_uuid_raise_400_if_boundary_not_exist(self, app_api_client):
+        response = app_api_client.get(
+            self.endpoint + f"?boundary_uuid=00000000-0000-0000-0000-000000000000"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_set_geo_precision_query_param(self, app_api_client, report_object):
+        geo_precision = 1
+        assert report_object.point.x != round(report_object.point.x, geo_precision)
+        assert report_object.point.y != round(report_object.point.y, geo_precision)
+        response = app_api_client.get(
+            self.endpoint + f"{report_object.pk}/?geo_precision={geo_precision}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['location']['point']['latitude'] == round(report_object.point.y, geo_precision)
+        assert response.data['location']['point']['longitude'] == round(report_object.point.x, geo_precision)
+
 class TestBiteAPI(BaseReportTest):
 
     endpoint = '/api/v1/bites/'
@@ -220,7 +246,6 @@ class TestObservationAPI(BaseReportTest):
         )
         assert response.status_code == status.HTTP_200_OK
         assert (response.data['identification'] is None) != is_published
-
 
 @pytest.mark.django_db
 class TestIdentificationTaskAPI:

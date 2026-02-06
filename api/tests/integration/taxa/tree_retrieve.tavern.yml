@@ -37,12 +37,14 @@ stages:
             is_relevant: !bool "{taxon_children.is_relevant}"
             italicize: false
             children: []
-  - name: Non auth user can not retrieve
+  - name: Non auth user can retrieve
     request:
       url: "{api_live_url}/{endpoint}/{taxon_root.pk}/tree/"
       method: "GET"
     response:
-      status_code: 401
+      status_code: 200
+      json:
+        <<: *root_tree_response
   - name: User without perm view can retrieve
     request:
       url: "{api_live_url}/{endpoint}/{taxon_root.pk}/tree/"

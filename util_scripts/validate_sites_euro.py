@@ -50,7 +50,7 @@ logname = "/home/webuser/webapps/data_preprocessing/auto-validation-" + now.strf
 logging.basicConfig(filename=logname, level=logging.INFO)
 
 
-reports_imbornal = Report.objects.filter(breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN, type=Report.TYPE_SITE)
+reports_imbornal = Report.objects.filter(breeding_site_type=Report.BreedingSiteType.STORM_DRAIN, type=Report.TYPE_SITE)
 
 new_reports_unfiltered_sites_embornal = reports_imbornal.exclude(note__icontains='#345').exclude(photos=None).exclude(hide=True).annotate(
     n_annotations=Count('expert_report_annotations')).filter(n_annotations=0).order_by('-server_upload_time')

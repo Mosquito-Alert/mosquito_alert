@@ -1,0 +1,60 @@
+---
+
+test_name: 'Test geometry validation for temporary boundary creation'
+
+includes:
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+  - parametrize:
+      key:
+        - geojson
+        - response_status_code
+      vals:
+        - [ { type: "Polygon", coordinates: [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]] }, 201 ]
+        - [ { type: "MultiPolygon", coordinates: [[[[0.0, 0.0],[0.0, 1.0],[1.0, 1.0],[1.0, 0.0],[0.0, 0.0],]],[[[2.0, 2.0],[2.0, 3.0],[3.0, 3.0],[3.0, 2.0],[2.0, 2.0],]]] }, 201 ]
+        - [ { type: "Point", coordinates: [0.0, 0.0]}, 400 ]
+        - [ { type: "LineString", coordinates: [[0.0, 0.0],[1.0, 1.0]]}, 400 ]
+
+stages:
+  - name: Create temporary boundary
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      json:
+        geojson: "{geojson}"
+    response:
+      status_code: !int "{response_status_code}"
+
+---
+
+test_name: 'Test temporary boundary response on creation'
+
+includes:
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+  - parametrize:
+      key:
+        - geojson
+        - response_status_code
+      vals:
+        - [ { type: "Polygon", coordinates: [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]] }, 201 ]
+        - [ { type: "MultiPolygon", coordinates: [[[[0.0, 0.0],[0.0, 1.0],[1.0, 1.0],[1.0, 0.0],[0.0, 0.0],]],[[[2.0, 2.0],[2.0, 3.0],[3.0, 3.0],[3.0, 2.0],[2.0, 2.0],]]] }, 201 ]
+        - [ { type: "Point", coordinates: [0.0, 0.0]}, 400 ]
+        - [ { type: "LineString", coordinates: [[0.0, 0.0],[1.0, 1.0]]}, 400 ]
+
+stages:
+  - name: Create temporary boundary
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      json:
+        geojson: { type: "Polygon", coordinates: [[[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]] }
+    response:
+      status_code: 201
+      json: !force_format_include "{response_data_validation}"

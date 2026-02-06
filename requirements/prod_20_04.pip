@@ -3,14 +3,16 @@ celery[redis]==5.4.0
 Django==4.2.27
 django-admin-numeric-filter==0.1.9
 django-cors-headers==3.14.0
-django-filter==23.1
+django-filter==25.1
 django-floppyforms==1.9.0
 django-hosts==7.0.0
 django-imagekit==5.0.0
 django-leaflet==0.29.0
 drf-nested-routers==0.95.0
 django-timezone-field==5.1
+djangorestframework-csv==3.0.2
 djangorestframework-dataclasses==1.4.0
+djangorestframework-gis==1.2.0
 djangorestframework-simplejwt==5.3.1
 drf-extra-fields==3.7.0
 drf-spectacular==0.29.0
@@ -36,7 +38,6 @@ pillow==11.1.0
 psycopg2==2.8.5
 pydenticon==0.3.1
 pyproj==3.3.1 # Needed for django geo?
-pymemcache==4.0.0 # Needed for caching.
 rawpy==0.17.1
 semantic-version==2.10.0
 sentry-sdk==2.52.0

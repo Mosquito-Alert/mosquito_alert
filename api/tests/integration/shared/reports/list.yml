@@ -84,3 +84,16 @@ stages:
         results:
           - uuid: "{published_object.pk}"
             user_uuid: "{published_object.user.pk}"
+  - id: filter_by_tags
+    name: Filter by tags
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      params:
+        tags: "newTag"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0

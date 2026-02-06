@@ -234,6 +234,10 @@ def non_app_api_client(user):
     return api_client
 
 @pytest.fixture
+def api_client():
+    return AppAPIClient()
+
+@pytest.fixture
 def test_png_image_path():
     return Path(TEST_DATA_PATH, Path("white_image.png"))
 
@@ -297,3 +301,20 @@ def user_with_role_admin(user):
     user.is_superuser = True
     user.save()
     return user
+
+@pytest.fixture(autouse=True)
+def use_dummy_cache_backend(settings):
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+        }
+    }
+
+@pytest.fixture()
+def use_test_cache_backend(settings):
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-test-cache",
+        }
+    }

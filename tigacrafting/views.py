@@ -607,14 +607,14 @@ def picture_validation(request,tasks_per_page='300',visibility='visible', usr_no
         type_readable = "Breeding sites - Storm drains"
         reports_qs = reports_qs.filter(type=Report.TYPE_SITE).filter(
             type=Report.TYPE_SITE,
-            breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN
+            breeding_site_type=Report.BreedingSiteType.STORM_DRAIN
         )
     elif type == 'site-o':
         type_readable = "Breeding sites - Other"
         reports_qs = reports_qs.filter(
             type=Report.TYPE_SITE
         ).exclude(
-            breeding_site_type=Report.BREEDING_SITE_TYPE_STORM_DRAIN
+            breeding_site_type=Report.BreedingSiteType.STORM_DRAIN
         )
     elif type == 'all':
         type_readable = "All"

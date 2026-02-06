@@ -1,8 +1,12 @@
-from typing import Optional
+from typing import Callable, Optional
 import uuid
 
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.http import StreamingHttpResponse
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
@@ -14,7 +18,7 @@ from drf_spectacular.utils import (
     OpenApiTypes
 )
 
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
@@ -25,11 +29,14 @@ from rest_framework.mixins import (
     UpdateModelMixin,
     DestroyModelMixin,
 )
-from rest_framework.parsers import FormParser
-from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
+from rest_framework.parsers import JSONParser, FormParser
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.viewsets import ReadOnlyModelViewSet
+
+from rest_framework_csv.renderers import CSVStreamingRenderer
+from rest_framework_gis.filters import DistanceToPointFilter
 from rest_framework_simplejwt.tokens import Token
 
 from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, FavoritedReports, UserStat
@@ -57,8 +64,15 @@ from .filters import (
     TaxonFilter
 )
 from .mixins import IdentificationTaskNestedAttribute
+from .renderers import GeoJsonRenderer
 from .parsers import MultiPartJsonNestedParser
 from .serializers import (
+    BiteGeoModelSerializer,
+    BiteGeoJsonModelSerializer,
+    BreedingSiteGeoModelSerializer,
+    BreedingSiteGeoJsonModelSerializer,
+    ObservationGeoModelSerializer,
+    ObservationGeoJsonModelSerializer,
     PartnerSerializer,
     CampaignSerializer,
     UserSerializer,
@@ -80,7 +94,8 @@ from .serializers import (
     CreatePhotoPredictionSerializer,
     UserPermissionSerializer,
     CreateAgreeReviewSerializer,
-    CreateOverwriteReviewSerializer
+    CreateOverwriteReviewSerializer,
+    TemporaryBoundarySerializer
 )
 from .serializers import (
     CreateNotificationSerializer,
@@ -102,9 +117,9 @@ from .permissions import (
     AnnotationPermissions,
     MyAnnotationPermissions,
     PhotoPredictionPermissions,
-    TaxaPermissions,
     CountriesPermissions
 )
+from .utils import get_serializer_field_paths_for_csv
 from .viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet, NestedViewSetMixin
 
 User = get_user_model()
@@ -249,6 +264,7 @@ class BaseReportViewSet(
     DestroyModelMixin,
     GenericViewSet,
 ):
+    # TODO: select_related for identification_task only for observations.
     queryset = Report.objects.select_related(
         "nuts_2_fk",
         "nuts_3_fk",
@@ -258,7 +274,9 @@ class BaseReportViewSet(
         "identification_task__photo",
         "identification_task__taxon",
     ).prefetch_related(
-        'tags',
+        # NOTE: might be solved when start using native django-taggitg class in the model.
+        # See bug https://github.com/jazzband/django-taggit/issues/255
+        #'tags',
         models.Prefetch(
             "photos",
             queryset=Photo.objects.visible()
@@ -269,8 +287,10 @@ class BaseReportViewSet(
 
     lookup_url_kwarg = REPORT_VIEW_LOOKUP_FIELD
 
-    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filter_backends = (DjangoFilterBackend, SearchFilter, DistanceToPointFilter)
     search_fields = ("report_id", "pk_str")
+    distance_filter_field = "point"
+    distance_filter_convert_meters = True
 
     permission_classes = (ReportPermissions,)
 
@@ -297,6 +317,68 @@ class BaseReportViewSet(
             )
 
         return result
+
+    def _geo(self, request, geojson_serializer_class, get_queryset: Optional[Callable[[], models.QuerySet]] = None, *args, **kwargs):
+        if get_queryset is not None:
+            queryset = get_queryset()
+        else:
+            queryset = self.get_queryset().select_related(None).prefetch_related(None).order_by()
+        qs = self.filter_queryset(queryset)
+
+        if self.request.accepted_renderer.format == GeoJsonRenderer.format:
+            serializer = geojson_serializer_class(qs, many=True, context=self.get_serializer_context())
+        else:
+            serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data, content_type=self.request.accepted_renderer.media_type)
+
+    def get_renderers(self):
+        renderers = super().get_renderers()
+        if self.action == 'list':
+            return renderers + [CSVStreamingRenderer(), ]
+        return renderers
+
+    def list(self, request, *args, **kwargs):
+        # Override list to handle CSV rendering without pagination
+        if self.request.accepted_renderer.format == CSVStreamingRenderer.format:
+            queryset = self.filter_queryset(self.get_queryset().prefetch_related(None))
+            request.accepted_renderer.header = get_serializer_field_paths_for_csv(
+                serializer=self.get_serializer(),
+                separator=request.accepted_renderer.level_sep
+            )
+
+            response = StreamingHttpResponse(
+                request.accepted_renderer.render(
+                    self._stream_serialized_data(queryset)
+                ),
+                content_type=CSVStreamingRenderer.media_type,
+            )
+            # TODO: set filename dynamically?
+            response["Content-Disposition"] = 'attachment; filename="reports.csv"'
+            return response
+
+        return super().list(request, *args, **kwargs)
+
+    def _stream_serialized_data(self, queryset, batch_size=2000):
+        serializer_class = self.get_serializer_class()
+    
+        # Fields to exclude
+        exclude_fields = [
+            name for name, field in serializer_class().fields.items()
+            if isinstance(field, (serializers.ListSerializer, serializers.ListField))
+        ]
+
+        batch = []
+        for obj in queryset.iterator(chunk_size=batch_size):
+            batch.append(obj)
+            if len(batch) >= batch_size:
+                serializer = serializer_class(batch, many=True, exclude_fields=exclude_fields)
+                yield from serializer.data
+                batch = []
+
+        # Serialize any leftover objects
+        if batch:
+            serializer = serializer_class(batch, many=True, exclude_fields=exclude_fields)
+            yield from serializer.data
 
     def _get_device_from_jwt(self) -> Optional[Device]:
         if not self.request:
@@ -376,6 +458,22 @@ class BiteViewSet(BaseReportViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_BITE)
 
+    @extend_schema(responses={
+        (200, 'application/json'): BiteGeoModelSerializer(many=True),
+        (200, 'application/geo+json'): BiteGeoJsonModelSerializer(many=True),
+    })
+    @method_decorator(cache_page(60*60*3))  # Cache for 3 hours
+    @method_decorator(vary_on_headers("Authorization"))
+    @action(
+        detail=False,
+        methods=['GET',],
+        serializer_class=BiteGeoModelSerializer,
+        pagination_class=None,
+        renderer_classes=BaseReportViewSet.renderer_classes + (GeoJsonRenderer,)
+    )
+    def geo(self, request):
+        return self._geo(request, geojson_serializer_class=BiteGeoJsonModelSerializer)
+
 @extend_schema_view(
     list=extend_schema(
         tags=['bites'],
@@ -391,6 +489,22 @@ class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
     filterset_class = BreedingSiteFilter
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_SITE)
+
+    @extend_schema(responses={
+        (200, 'application/json'): BreedingSiteGeoModelSerializer(many=True),
+        (200, 'application/geo+json'): BreedingSiteGeoJsonModelSerializer(many=True),
+    })
+    @method_decorator(cache_page(60*60*3))  # Cache for 3 hours
+    @method_decorator(vary_on_headers("Authorization"))
+    @action(
+        detail=False,
+        methods=['GET',],
+        serializer_class=BreedingSiteGeoModelSerializer,
+        pagination_class=None,
+        renderer_classes=BaseReportViewSet.renderer_classes + (GeoJsonRenderer,)
+    )
+    def geo(self, request):
+        return self._geo(request, geojson_serializer_class=BreedingSiteGeoJsonModelSerializer)
 
 @extend_schema_view(
     list=extend_schema(
@@ -408,6 +522,25 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_ADULT)
 
+    @extend_schema(responses={
+        (200, 'application/json'): ObservationGeoModelSerializer(many=True),
+        (200, 'application/geo+json'): ObservationGeoJsonModelSerializer(many=True),
+    })
+    @method_decorator(cache_page(60*60*3))  # Cache for 3 hours
+    @method_decorator(vary_on_headers("Authorization"))
+    @action(
+        detail=False,
+        methods=['GET',],
+        serializer_class=ObservationGeoModelSerializer,
+        pagination_class=None,
+        renderer_classes=BaseReportViewSet.renderer_classes + (GeoJsonRenderer,)
+    )
+    def geo(self, request):
+        return self._geo(
+            request,
+            geojson_serializer_class=ObservationGeoJsonModelSerializer,
+            get_queryset=lambda: self.get_queryset().select_related(None).select_related("identification_task").prefetch_related(None).order_by(),
+        )
 
 @extend_schema_view(
     list=extend_schema(
@@ -831,17 +964,36 @@ class TaxaViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     queryset = Taxon.objects.all()
     serializer_class = TaxonSerializer
     filterset_class = TaxonFilter
-    permission_classes = (TaxaPermissions, )
+    permission_classes = (IsAuthenticatedOrReadOnly, )
+
+    @method_decorator(cache_page(6 * 60 * 60))  # cache for 6 hour
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @extend_schema(operation_id='taxa_root_tree_retrieve')
+    @method_decorator(cache_page(6 * 60 * 60))  # cache for 6 hour
     @action(detail=False, methods=["GET"], url_path="tree", serializer_class=TaxonTreeNodeSerializer)
     def root_tree(self, request):
         taxon = Taxon.get_root()
         serializer = self.get_serializer(taxon)
         return Response(serializer.data)
 
+    @method_decorator(cache_page(6 * 60 * 60))  # cache for 6 hour
     @action(detail=True, methods=["GET"], url_path="tree", serializer_class=TaxonTreeNodeSerializer)
     def tree(self, request, pk=None):
         taxon = self.get_object()
         serializer = self.get_serializer(taxon)
         return Response(serializer.data)
+
+@extend_schema_view(
+    create=extend_schema(
+        tags=['boundaries'],
+        operation_id='boundaries_create_temporary',
+        description="Create a temporary boundary"
+    )
+)
+class BoundaryViewSet(CreateModelMixin, GenericViewSet):
+    serializer_class = TemporaryBoundarySerializer
+
+    parser_classes = (JSONParser, )
+    permission_classes = (AllowAny,)

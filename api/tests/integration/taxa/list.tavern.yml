@@ -22,12 +22,12 @@ stages:
     response:
       status_code: 200
       json: !force_format_include "{response_list_data_validation}"
-  - name: Non auth user can not list
+  - name: Non auth user can list
     request:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
     response:
-      status_code: 401
+      status_code: 200
   - name: User without perm view can list
     request:
       url: "{api_live_url}/{endpoint}/"
