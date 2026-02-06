@@ -767,6 +767,8 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
 class BaseReportGeoModelSerializer(serializers.ModelSerializer):
     point = BaseReportSerializer.LocationSerializer.PointSerializer()
+    uuid = BaseReportSerializer().fields['uuid']
+    received_at = BaseReportSerializer().fields['received_at']
 
     class Meta:
         model = Report
@@ -775,10 +777,6 @@ class BaseReportGeoModelSerializer(serializers.ModelSerializer):
             "point",
             "received_at",
         )
-        extra_kwargs = {
-            'uuid': {'source': 'version_UUID', 'read_only': True, 'allow_null': False},
-            'received_at': {'source': 'server_upload_time', 'read_only': True, 'allow_null': False},
-        }
 
 class BaseSimplifiedReportSerializer(serializers.ModelSerializer):
     class SimplifiedLocationSerializer(serializers.ModelSerializer):
