@@ -7,8 +7,10 @@ import pytest
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.db import connection
 from django.utils import timezone
 from django.utils.module_loading import import_string
+from django.test.utils import CaptureQueriesContext
 
 from fcm_django.models import DeviceType
 
@@ -226,6 +228,34 @@ class BaseReportTest:
         assert response.status_code == status.HTTP_200_OK
         assert response.content_type == 'application/geo+json'
 
+    def test_csv_response_is_streaming(self, app_api_client, report_object):
+        response = app_api_client.get(
+            self.endpoint + "?format=csv"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response['Content-Type'] == 'text/csv'
+        assert 'attachment; filename="reports.csv"' in response['Content-Disposition']
+        first_chunk = next(response.streaming_content)
+        assert first_chunk.startswith(b"") or b"," in first_chunk
+
+    @pytest.mark.django_db(transaction=True)
+    def test_csv_only_uses_one_query(self, app_api_client, report_object):
+        with CaptureQueriesContext(connection) as queries:
+            response = app_api_client.get(self.endpoint + "?format=csv")
+            # Consume streaming content to trigger query
+            list(response.streaming_content)
+
+        assert len(queries) == 3 # user logged in, django_content_type, report query.
+
+    def test_csv_response_does_not_include_tags(self, app_api_client, report_object):
+        response = app_api_client.get(
+            self.endpoint + "?format=csv"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        first_chunk = next(response.streaming_content)
+        # Ensure 'tags' is not in the header
+        assert b"tags" not in first_chunk.lower()
+
 class TestBiteAPI(BaseReportTest):
 
     endpoint = '/api/v1/bites/'
@@ -268,6 +298,15 @@ class TestObservationAPI(BaseReportTest):
         )
         assert response.status_code == status.HTTP_200_OK
         assert (response.data['identification'] is None) != is_published
+
+    def test_csv_response_does_not_include_photos(self, app_api_client, report_object):
+        response = app_api_client.get(
+            self.endpoint + "?format=csv"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        first_chunk = next(response.streaming_content)
+        # Ensure 'photos' is not in the header
+        assert b"photos" not in first_chunk.lower()
 
 @pytest.mark.django_db
 class TestIdentificationTaskAPI:
