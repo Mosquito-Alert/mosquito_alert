@@ -193,16 +193,38 @@ class BaseReportTest:
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_set_geo_precision_query_param(self, app_api_client, report_object):
+    @pytest.mark.parametrize(
+            "endpoint_suffix, latitude_getter, longitude_getter",
+            [
+                (
+                    "",
+                    lambda response: response.data['results'][0]['location']['point']['latitude'],
+                    lambda response: response.data['results'][0]['location']['point']['longitude']
+                ),
+                (
+                    "geo/",
+                    lambda response: response.data[0]['point']['latitude'],
+                    lambda response: response.data[0]['point']['longitude']
+                )
+            ]
+        )
+    def test_set_geo_precision_query_param(self, app_api_client, report_object, endpoint_suffix, latitude_getter, longitude_getter):
         geo_precision = 1
         assert report_object.point.x != round(report_object.point.x, geo_precision)
         assert report_object.point.y != round(report_object.point.y, geo_precision)
         response = app_api_client.get(
-            self.endpoint + f"{report_object.pk}/?geo_precision={geo_precision}"
+            self.endpoint + f"{endpoint_suffix}" + f"?geo_precision={geo_precision}"
         )
         assert response.status_code == status.HTTP_200_OK
-        assert response.data['location']['point']['latitude'] == round(report_object.point.y, geo_precision)
-        assert response.data['location']['point']['longitude'] == round(report_object.point.x, geo_precision)
+        assert latitude_getter(response) == round(report_object.point.y, geo_precision)
+        assert longitude_getter(response) == round(report_object.point.x, geo_precision)
+
+    def test_geo_json_response_schema_type(self, app_api_client):
+        response = app_api_client.get(
+            self.endpoint + "geo/?format=geojson"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.content_type == 'application/geo+json'
 
 class TestBiteAPI(BaseReportTest):
 

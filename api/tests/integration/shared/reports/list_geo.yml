@@ -1,0 +1,102 @@
+---
+
+name: Common GET (list_geo) methods for reports-based objects.
+
+# NOTE: ensure soft_deleted object and unpublished_diff_user are created
+stages:
+  - id: anonymous_can_list_geo_published_only
+    name: Non auth user can list
+    request:
+      url: "{api_live_url}/{endpoint}/geo/"
+      method: "GET"
+    response:
+      status_code: 200
+      strict: False
+      json:
+        - uuid: "{published_object.pk}"
+          received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+          point:
+            latitude: !anyfloat
+            longitude: !anyfloat
+  - id: auth_without_perm_can_list_geo_all
+    name: User without perm view can list
+    request:
+      url: "{api_live_url}/{endpoint}/geo/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      strict: False
+      json:
+        - uuid: "{published_object.pk}"
+          received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+          point:
+            latitude: !anyfloat
+            longitude: !anyfloat
+        - uuid: "{unpublished_object.pk}"
+          received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+          point:
+            latitude: !anyfloat
+            longitude: !anyfloat
+  - id: appuser_can_list_geo_published_and_owned
+    name: App user can list
+    request:
+      url: "{api_live_url}/{endpoint}/geo/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {app_user_token:s}"
+    response:
+      status_code: 200
+      strict: 
+        - json:off
+      json:
+        - uuid: "{published_object.pk}"
+          received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+          point:
+            latitude: !anyfloat
+            longitude: !anyfloat
+        - uuid: "{unpublished_object.pk}"
+          received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+          point:
+            latitude: !anyfloat
+            longitude: !anyfloat
+  - id: new_appuser_can_list_geo_published_and_unowned
+    name: App user can list
+    request:
+      url: "{api_live_url}/{endpoint}/geo/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {token:s}"
+    response:
+      status_code: 200
+      strict: 
+        - json:off
+      json:
+        - uuid: "{published_object.pk}"
+          received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+          point:
+            latitude: !anyfloat
+            longitude: !anyfloat
+  - id: list_geo_geojson_format
+    name: Non auth user can list
+    request:
+      url: "{api_live_url}/{endpoint}/geo/"
+      method: "GET"
+      params:
+        format: "geojson"
+    response:
+      status_code: 200
+      strict: False
+      json:
+        type: "FeatureCollection"
+        features:
+          - type: "Feature"
+            id: "{published_object.pk}"
+            properties:
+              received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+            geometry:
+              type: "Point"
+              coordinates:
+                - !anyfloat
+                - !anyfloat

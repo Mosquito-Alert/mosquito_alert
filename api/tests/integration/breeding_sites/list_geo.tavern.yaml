@@ -1,0 +1,68 @@
+---
+
+test_name: 'Common permission tests for breeding sites list (inherits from report)'
+
+includes:
+  - !include '../shared/reports/list_geo.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_object
+    - unpublished_object
+    - jwt_token_user
+    - app_user_token
+
+stages:
+  - type: ref
+    id: anonymous_can_list_geo_published_only
+  - type: ref
+    id: auth_without_perm_can_list_geo_all
+  - type: ref
+    id: appuser_can_list_geo_published_and_owned
+  # Creating a new appuser that does not own the object
+  - id: signup
+    type: ref
+  - id: login
+    type: ref
+  - type: ref
+    id: new_appuser_can_list_geo_published_and_unowned
+
+---
+
+test_name: 'Common permission tests for breeding sites list geo (format=geojson) (inherits from report)'
+
+includes:
+  - !include '../shared/reports/list_geo.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_object
+
+stages:
+  - type: ref
+    id: list_geo_geojson_format
+
+---
+
+test_name: 'Test for data validation in breeding sites list geo'
+
+includes:
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_object
+
+stages:
+  - name: breeding sites list geo data validation
+    request:
+      url: "{api_live_url}/{endpoint}/geo/"
+      method: "GET"
+    response:
+      status_code: 200
+      json: !force_original_structure "{response_list_geo_data_validation}"
