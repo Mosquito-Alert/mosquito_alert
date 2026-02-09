@@ -1633,7 +1633,7 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
 
     site_type = WritableSerializerMethodField(
         field_class=serializers.ChoiceField,
-        choices=Report.BreedingSiteType,
+        choices=Report.BreedingSiteType.choices,
         source="breeding_site_type",
         required=True,
         allow_null=False,
