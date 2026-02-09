@@ -47,6 +47,7 @@ class TimeZoneSerializerChoiceField(TimeZoneSerializerField, serializers.ChoiceF
 class WritableSerializerMethodField(serializers.Field):
     # Reference: https://stackoverflow.com/a/64274128/8450576
     def __init__(self, field_class, method_name=None, **kwargs):
+        self._deserializer_source = kwargs.pop('source', None)
         self.deserializer_field = field_class(**kwargs)
 
         self.serializer_field = serializers.SerializerMethodField(
@@ -66,17 +67,17 @@ class WritableSerializerMethodField(serializers.Field):
     def bind(self, field_name, parent):
         ret = super().bind(field_name, parent)
         self.serializer_field.bind(field_name, parent)
-        self.deserializer_field.bind(field_name, parent)
+        self.deserializer_field.bind(self._deserializer_source or field_name, parent)
         return ret
 
     def run_validation(self, *args, **kwargs):
         return {
-            self.field_name: self.deserializer_field.run_validation(*args, **kwargs)
+            self.deserializer_field.field_name: self.deserializer_field.run_validation(*args, **kwargs)
         }
 
     def to_internal_value(self, data):
         return {
-            self.field_name: self.deserializer_field.to_internal_value(data=data)
+            self.deserializer_field.field_name: self.deserializer_field.to_internal_value(data=data)
         }
 
     def to_representation(self, value):
