@@ -714,7 +714,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
         return obj.published
 
     def get_note(self, obj) -> Optional[str]:
-        """Return the note if the user is allowed to see it."""
+        # Return the note if the user is allowed to see it.
         if not self.context.get("hide_note_if_not_owner", True):
             return obj.note
 
