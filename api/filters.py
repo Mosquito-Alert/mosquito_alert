@@ -98,15 +98,7 @@ class BaseReportWithPhotosFilter(BaseReportFilter):
         fields = BaseReportFilter.Meta.fields + ("has_photos",)
 
 class ObservationFilter(BaseReportWithPhotosFilter):
-    identification_taxon_ids = extend_schema_field({
-        "type": "array",
-        "items": {
-            "oneOf": [
-                {"type": "integer"},
-                {"type": "string", "enum": ["null"]}
-            ]
-        }
-    })(filters.ModelMultipleChoiceFilter(
+    identification_taxon_ids = extend_schema_field(str)(filters.ModelMultipleChoiceFilter(
         method='filter_identification_taxon_ids',
         queryset=Taxon.objects.all(),
         null_label="null",
