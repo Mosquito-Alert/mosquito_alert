@@ -150,7 +150,7 @@ class BiteFilter(BaseReportFilter):
 
 class BreedingSiteFilter(BaseReportWithPhotosFilter):
     site_type = filters.MultipleChoiceFilter(
-        choices=Report.BreedingSiteType,
+        choices=Report.BreedingSiteType.choices,
         field_name='breeding_site_type'
     )
 
