@@ -38,8 +38,6 @@ class ReportQuerySet(models.QuerySet):
         return self.non_deleted().filter(
             hide=False,
             location_is_masked=False
-        ).exclude(
-            tags__name="345"
         )
 
     def with_finished_validation(self, state: bool = True) -> QuerySet:

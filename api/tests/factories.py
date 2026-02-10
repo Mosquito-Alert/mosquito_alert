@@ -1,10 +1,11 @@
 import random
 
 from django.contrib.auth import get_user_model
+from django.contrib.gis.geos import Point
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
-from tigaserver_app.models import Report, TigaUser
+from tigaserver_app.models import Report, TigaUser, TemporaryBoundary
 
 User = get_user_model()
 
@@ -39,3 +40,9 @@ def create_report_object(user: TigaUser) -> Report:
         current_location_lat=41.67419,
         note="Test report note",
     )
+
+def create_boundary_contains_point(point: Point) -> TemporaryBoundary:
+    polygon = point.buffer(0.01)  # Create a small buffer around the point to form a polygon
+    boundary = TemporaryBoundary(geometry=polygon)
+    boundary.save()
+    return boundary

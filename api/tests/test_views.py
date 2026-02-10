@@ -7,8 +7,10 @@ import pytest
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.db import connection
 from django.utils import timezone
 from django.utils.module_loading import import_string
+from django.test.utils import CaptureQueriesContext
 
 from fcm_django.models import DeviceType
 
@@ -19,14 +21,14 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.settings import api_settings
 
 from tigacrafting.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction, FavoritedReports
-from tigaserver_app.models import TigaUser, Report, Device, MobileApp, Photo
+from tigaserver_app.models import TigaUser, Report, Device, MobileApp, Photo, TemporaryBoundary
 
 from api.tests.clients import AppAPIClient
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
 from api.tests.integration.identification_tasks.factories import create_annotation
-from api.tests.factories import create_report_object
+from api.tests.factories import create_report_object, create_boundary_contains_point
 from api.tests.utils import grant_permission_to_user
 from api.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
 
@@ -178,6 +180,82 @@ class BaseReportTest:
         assert response.status_code == status.HTTP_200_OK
         assert response.data['note'] is None
 
+    def test_filter_boundary_uuid(self, app_api_client, report_object, use_test_cache_backend):
+        boundary = create_boundary_contains_point(point=report_object.point)
+        response = app_api_client.get(
+            self.endpoint + f"?boundary_uuid={boundary.uuid}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 1
+        assert response.data['results'][0]['uuid'] == str(report_object.pk)
+
+    def test_filter_boundary_uuid_raise_400_if_boundary_not_exist(self, app_api_client):
+        response = app_api_client.get(
+            self.endpoint + f"?boundary_uuid=00000000-0000-0000-0000-000000000000"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @pytest.mark.parametrize(
+            "endpoint_suffix, latitude_getter, longitude_getter",
+            [
+                (
+                    "",
+                    lambda response: response.data['results'][0]['location']['point']['latitude'],
+                    lambda response: response.data['results'][0]['location']['point']['longitude']
+                ),
+                (
+                    "geo/",
+                    lambda response: response.data[0]['point']['latitude'],
+                    lambda response: response.data[0]['point']['longitude']
+                )
+            ]
+        )
+    def test_set_geo_precision_query_param(self, app_api_client, report_object, endpoint_suffix, latitude_getter, longitude_getter):
+        geo_precision = 1
+        assert report_object.point.x != round(report_object.point.x, geo_precision)
+        assert report_object.point.y != round(report_object.point.y, geo_precision)
+        response = app_api_client.get(
+            self.endpoint + f"{endpoint_suffix}" + f"?geo_precision={geo_precision}"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert latitude_getter(response) == round(report_object.point.y, geo_precision)
+        assert longitude_getter(response) == round(report_object.point.x, geo_precision)
+
+    def test_geo_json_response_schema_type(self, app_api_client):
+        response = app_api_client.get(
+            self.endpoint + "geo/?format=geojson"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.content_type == 'application/geo+json'
+
+    def test_csv_response_is_streaming(self, app_api_client, report_object):
+        response = app_api_client.get(
+            self.endpoint + "?format=csv"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response['Content-Type'] == 'text/csv'
+        assert 'attachment; filename="reports.csv"' in response['Content-Disposition']
+        first_chunk = next(response.streaming_content)
+        assert first_chunk.startswith(b"") or b"," in first_chunk
+
+    @pytest.mark.django_db(transaction=True)
+    def test_csv_only_uses_one_query(self, app_api_client, report_object):
+        with CaptureQueriesContext(connection) as queries:
+            response = app_api_client.get(self.endpoint + "?format=csv")
+            # Consume streaming content to trigger query
+            list(response.streaming_content)
+
+        assert len(queries) == 2 # user logged in, report query.
+
+    def test_csv_response_does_not_include_tags(self, app_api_client, report_object):
+        response = app_api_client.get(
+            self.endpoint + "?format=csv"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        first_chunk = next(response.streaming_content)
+        # Ensure 'tags' is not in the header
+        assert b"tags" not in first_chunk.lower()
+
 class TestBiteAPI(BaseReportTest):
 
     endpoint = '/api/v1/bites/'
@@ -221,6 +299,14 @@ class TestObservationAPI(BaseReportTest):
         assert response.status_code == status.HTTP_200_OK
         assert (response.data['identification'] is None) != is_published
 
+    def test_csv_response_does_not_include_photos(self, app_api_client, report_object):
+        response = app_api_client.get(
+            self.endpoint + "?format=csv"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        first_chunk = next(response.streaming_content)
+        # Ensure 'photos' is not in the header
+        assert b"photos" not in first_chunk.lower()
 
 @pytest.mark.django_db
 class TestIdentificationTaskAPI:

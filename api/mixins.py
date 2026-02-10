@@ -1,6 +1,8 @@
 from typing import Optional
 
 from rest_framework.exceptions import APIException
+from rest_framework import serializers
+from rest_framework_gis.fields import GeometryField
 
 from tigacrafting.models import IdentificationTask
 
@@ -40,3 +42,13 @@ class IdentificationTaskNestedAttribute():
         if self.check_parent_permissions(request):
             return
         super().check_object_permissions(request, obj)
+
+class ReportGeoJsonModelSerializerMixin(serializers.Serializer):
+    point = GeometryField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        geo_precision = request.query_params.get('geo_precision') if request else None
+        if geo_precision is not None:
+            self.fields['point'] = GeometryField(precision=int(geo_precision))

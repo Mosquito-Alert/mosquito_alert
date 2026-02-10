@@ -2,6 +2,7 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import Literal, Optional, Union
 from uuid import UUID
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
@@ -15,6 +16,8 @@ from rest_framework import serializers
 from drf_extra_fields.geo_fields import PointField
 import minify_html
 from rest_framework_dataclasses.serializers import DataclassSerializer
+from rest_framework_gis.fields import GeometryField
+from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from taggit.serializers import TaggitSerializer, TagListSerializerField
 
 from tigacrafting.models import (
@@ -40,7 +43,8 @@ from tigaserver_app.models import (
     Fix,
     NotificationTopic,
     Device,
-    MobileApp
+    MobileApp,
+    TemporaryBoundary
 )
 
 from .base_serializers import LocalizedSerializerMixin
@@ -51,6 +55,7 @@ from .fields import (
     TimeZoneSerializerChoiceField,
     HTMLCharField
 )
+from .mixins import ReportGeoJsonModelSerializerMixin
 
 User = get_user_model()
 
@@ -552,6 +557,13 @@ class SimplePhotoSerializer(serializers.ModelSerializer):
 
 
 class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        exclude_fields = kwargs.pop('exclude_fields', None)
+        super().__init__(*args, **kwargs)
+
+        if exclude_fields:
+            for field in exclude_fields:
+                self.fields.pop(field, None)
 
     class LocationSerializer(serializers.ModelSerializer):
         class AdmBoundarySerializer(serializers.Serializer):
@@ -570,11 +582,18 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
                 required=True,
             )
 
+            def _round_value(self, value: float) -> float:
+                try:
+                    geo_precision = self.context.get('request').query_params.get('geo_precision')
+                except Exception:
+                    geo_precision = None
+                return value if geo_precision is None else round(value, int(geo_precision))
+
             def get_latitude(self, obj: Point) -> float:
-                return obj.y
+                return self._round_value(obj.y)
 
             def get_longitude(self, obj: Point) -> float:
-                return obj.x
+                return self._round_value(obj.x)
 
         point = PointSerializer(required=True)
         timezone = TimeZoneSerializerChoiceField(read_only=True, allow_null=True)
@@ -695,7 +714,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
         return obj.published
 
     def get_note(self, obj) -> Optional[str]:
-        """Return the note if the user is allowed to see it."""
+        # Return the note if the user is allowed to see it.
         if not self.context.get("hide_note_if_not_owner", True):
             return obj.note
 
@@ -745,6 +764,19 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
         extra_kwargs = {
             "uuid": {"required": True}  # Marks it as required in the response
         }
+
+class BaseReportGeoModelSerializer(serializers.ModelSerializer):
+    point = BaseReportSerializer.LocationSerializer.PointSerializer()
+    uuid = BaseReportSerializer().fields['uuid']
+    received_at = BaseReportSerializer().fields['received_at']
+
+    class Meta:
+        model = Report
+        fields = (
+            "uuid",
+            "point",
+            "received_at",
+        )
 
 class BaseSimplifiedReportSerializer(serializers.ModelSerializer):
     class SimplifiedLocationSerializer(serializers.ModelSerializer):
@@ -830,7 +862,8 @@ class BaseReportWithPhotosSerializer(BaseReportSerializer):
         even if this serializer was initialized in write mode.
         """
         # Rebind `photos` temporarily for output
-        self.fields["photos"] = SimplePhotoSerializer(many=True, read_only=True)
+        if ('photos' in self.fields): # NOTE: csv render remove lists (and so 'photos')
+            self.fields["photos"] = SimplePhotoSerializer(many=True, read_only=True)
         return super().to_representation(instance)
 
     class Meta(BaseReportSerializer.Meta):
@@ -1438,6 +1471,18 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer):
             'public_note': {'allow_null': True, 'allow_blank': False, 'read_only': False}
         }
 
+class ObservationGeoModelSerializer(BaseReportGeoModelSerializer):
+    identification_taxon_id = serializers.ReadOnlyField(source='identification_task.taxon_id')
+    class Meta(BaseReportGeoModelSerializer.Meta):
+        fields = BaseReportGeoModelSerializer.Meta.fields + (
+            'identification_taxon_id',
+        )
+
+class ObservationGeoJsonModelSerializer(ReportGeoJsonModelSerializerMixin, ObservationGeoModelSerializer, GeoFeatureModelSerializer):
+    class Meta(ObservationGeoModelSerializer.Meta):
+        geo_field = "point"
+        id_field = "uuid"
+
 class ObservationSerializer(BaseReportWithPhotosSerializer):
     class IdentificationSerializer(serializers.ModelSerializer):
         photo = SimplePhotoSerializer(required=True)
@@ -1511,6 +1556,15 @@ class ObservationSerializer(BaseReportWithPhotosSerializer):
             "mosquito_appearance"
         )
 
+class BiteGeoModelSerializer(BaseReportGeoModelSerializer):
+    class Meta(BaseReportGeoModelSerializer.Meta):
+        pass
+
+class BiteGeoJsonModelSerializer(ReportGeoJsonModelSerializerMixin, BiteGeoModelSerializer, GeoFeatureModelSerializer):
+    class Meta(BiteGeoModelSerializer.Meta):
+        geo_field = "point"
+        id_field = "uuid"
+
 class BiteSerializer(BaseReportSerializer):
     class BiteCountsSerializer(serializers.ModelSerializer):
         total = IntegerDefaultField(
@@ -1576,17 +1630,22 @@ class BiteSerializer(BaseReportSerializer):
         )
 
 class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
+
+    site_type = WritableSerializerMethodField(
+        field_class=serializers.ChoiceField,
+        choices=Report.BreedingSiteType.choices,
+        source="breeding_site_type",
+        required=True,
+        allow_null=False,
+        allow_blank=False,
+    )
+
+    def get_site_type(self, obj) -> Report.BreedingSiteType:
+        return obj.breeding_site_type or Report.BreedingSiteType.OTHER
+
     def create(self, validated_data):
         validated_data['type'] = Report.TYPE_SITE
         return super().create(validated_data)
-
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-
-        if not instance.breeding_site_type:
-            ret['breeding_site_type'] = Report.BREEDING_SITE_TYPE_OTHER
-
-        return ret
 
     class Meta(BaseReportWithPhotosSerializer.Meta):
         fields = BaseReportWithPhotosSerializer.Meta.fields + (
@@ -1597,7 +1656,6 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
             "has_larvae",
         )
         extra_kwargs = {
-            "site_type": {"allow_null": False, "allow_blank": False, "required": True, "source": "breeding_site_type"},
             # Need to set default to None, otherwise BooleanField uses False
             "has_water": {"allow_null": True, "default": None, "source": "breeding_site_has_water"},
             "in_public_area": {"allow_null": True, "default": None, "source": "breeding_site_in_public_area"},
@@ -1608,6 +1666,24 @@ class BreedingSiteSerializer(BaseReportWithPhotosSerializer):
             },
             "has_larvae": {"allow_null": True, "default": None, "source": "breeding_site_has_larvae"},
         }
+
+class BreedingSiteGeoModelSerializer(BaseReportGeoModelSerializer):
+
+    site_type = BreedingSiteSerializer().fields['site_type']
+    has_water = BreedingSiteSerializer().fields['has_water']
+
+    get_site_type = BreedingSiteSerializer().get_site_type
+
+    class Meta(BaseReportGeoModelSerializer.Meta):
+        fields = BaseReportGeoModelSerializer.Meta.fields + (
+            "site_type",
+            "has_water"
+        )
+
+class BreedingSiteGeoJsonModelSerializer(ReportGeoJsonModelSerializerMixin, BreedingSiteGeoModelSerializer, GeoFeatureModelSerializer):
+    class Meta(BreedingSiteGeoModelSerializer.Meta):
+        geo_field = "point"
+        id_field = "uuid"
 
 #### END REPORT SERIALIZERS ####
 
@@ -1801,3 +1877,20 @@ class CreatePhotoPredictionSerializer(PhotoPredictionSerializer):
 
     class Meta(PhotoPredictionSerializer.Meta):
         fields = ('photo_uuid',) + PhotoPredictionSerializer.Meta.fields
+
+class TemporaryBoundarySerializer(serializers.Serializer):
+    uuid = serializers.UUIDField(read_only=True)
+    expires_in = serializers.IntegerField(read_only=True, help_text="Time in seconds until this cached boundary expires.")
+    geojson = GeometryField(write_only=True)
+
+    def create(self, validated_data):
+        try:
+            boundary = TemporaryBoundary(geometry=validated_data['geojson'])
+        except ValueError:
+            raise serializers.ValidationError("Invalid geometry")
+
+        boundary.save()
+        return {
+            "uuid": boundary.uuid,
+            "expires_in": boundary.expires_in
+        }

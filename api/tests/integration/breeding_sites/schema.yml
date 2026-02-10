@@ -34,3 +34,11 @@ variables:
     in_public_area: !anything
     has_near_mosquitoes: !anything
     has_larvae: !anything
+  response_list_geo_data_validation:
+    - uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+      received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+      point:
+        latitude: !anyfloat
+        longitude: !anyfloat
+      site_type: !anystr
+      has_water: !anything

@@ -67,6 +67,8 @@ marks:
 stages:
   - type: ref
     id: filter_by_user_uuid
+  - type: ref
+    id: filter_by_tags
 
 ---
 

@@ -101,7 +101,7 @@ def is_mosquito_report_followed(report):
 
 
 def is_storm_drain(report):
-    return report.breeding_site_type == Report.BREEDING_SITE_TYPE_STORM_DRAIN
+    return report.breeding_site_type == Report.BreedingSiteType.STORM_DRAIN
 
 def is_culex(validation_result):
     if validation_result['category'] is not None:

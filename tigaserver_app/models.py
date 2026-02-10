@@ -22,8 +22,9 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
 from django.contrib.gis.measure import Distance as DistanceMeasure
+from django.core.cache import cache
 from django.core.validators import RegexValidator
 from django.db import transaction
 from django.db.models import Q
@@ -1027,26 +1028,17 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text=_("The species of mosquito that the leg resembles, according to the user.")
     )
 
-    BREEDING_SITE_TYPE_BASIN = 'basin'
-    BREEDING_SITE_TYPE_BUCKET = 'bucket'
-    BREEDING_SITE_TYPE_FOUNTAIN = 'fountain'
-    BREEDING_SITE_TYPE_SMALL_CONTAINER = 'small_container'
-    BREEDING_SITE_TYPE_STORM_DRAIN = 'storm_drain'
-    BREEDING_SITE_TYPE_WELL = 'well'
-    BREEDING_SITE_TYPE_OTHER = 'other'
-
-    BREEDING_SITE_TYPE_CHOICES = (
-        (BREEDING_SITE_TYPE_BASIN, _('Basin')),
-        (BREEDING_SITE_TYPE_BUCKET, _('Bucket')),
-        (BREEDING_SITE_TYPE_FOUNTAIN, _('Fountain')),
-        (BREEDING_SITE_TYPE_SMALL_CONTAINER, _('Small container')),
-        (BREEDING_SITE_TYPE_STORM_DRAIN, _('Storm Drain')),
-        (BREEDING_SITE_TYPE_WELL, _('Well')),
-        (BREEDING_SITE_TYPE_OTHER, _('Other'))
-    )
+    class BreedingSiteType(models.TextChoices):
+        BASIN = "basin", _("Basin")
+        BUCKET = "bucket", _("Bucket")
+        FOUNTAIN = "fountain", _("Fountain")
+        SMALL_CONTAINER = "small_container", _("Small container")
+        STORM_DRAIN = "storm_drain", _("Storm Drain")
+        WELL = "well", _("Well")
+        OTHER = "other", _("Other")
 
     breeding_site_type = models.CharField(
-        max_length=32, choices=BREEDING_SITE_TYPE_CHOICES, null=True, blank=True,
+        max_length=32, choices=BreedingSiteType.choices, null=True, blank=True,
         help_text=_("Breeding site type.")
     )
     breeding_site_has_water = models.BooleanField(
@@ -1183,7 +1175,6 @@ class Report(TimeZoneModelMixin, models.Model):
         return not (
             self.hide or
             self.deleted or
-            self.tags.filter(name='345').exists() or
             self.location_is_masked
         )
 
@@ -1352,27 +1343,27 @@ class Report(TimeZoneModelMixin, models.Model):
     # Custom properties related to breeding sites
     @property
     def basins(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_BASIN
+        return self.breeding_site_type == Report.BreedingSiteType.BASIN
 
     @property
     def buckets(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_BUCKET
+        return self.breeding_site_type == Report.BreedingSiteType.BUCKET
 
     @property
     def embornals(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_STORM_DRAIN
+        return self.breeding_site_type == Report.BreedingSiteType.STORM_DRAIN
 
     @property
     def fonts(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_FOUNTAIN
+        return self.breeding_site_type == Report.BreedingSiteType.FOUNTAIN
 
     @property
     def other(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_OTHER
+        return self.breeding_site_type == Report.BreedingSiteType.OTHER
 
     @property
     def wells(self) -> bool:
-        return self.breeding_site_type == self.BREEDING_SITE_TYPE_WELL
+        return self.breeding_site_type == Report.BreedingSiteType.WELL
 
     @property
     def site_cat(self) -> int:
@@ -1816,6 +1807,9 @@ class Report(TimeZoneModelMixin, models.Model):
 
             self.device = device
 
+        if self.tags.filter(name='345').exists():
+            self.hide = True
+
         # Fill the country field
         if not self.country or _old_point != self.point:
             self.country = self._get_country_is_in()
@@ -1922,7 +1916,20 @@ class Report(TimeZoneModelMixin, models.Model):
         ]
         indexes = [
             # NOTE: Improve performance of .views.ReportViewSet
-            models.Index(fields=["user", "type", "report_id"])
+            models.Index(fields=["user", "type", "report_id"]),
+            # NOTE: Improve performance of /api/observations when 
+            # filtering by non_deleted() and published() endpoint.
+            models.Index(
+                fields=["published_at"],
+                name="report_visible_published_idx",
+                condition=Q(
+                    deleted_at__isnull=True,
+                    hide=False,
+                    location_is_masked=False,
+                    point__isnull=False,
+                    published_at__isnull=False,
+                ),
+            ),
         ]
 
     def __unicode__(self):
@@ -2647,9 +2654,9 @@ class ReportResponse(models.Model):
                 report_obj.breeding_site_has_water = True
         elif self.question_id == 12:
             if self.answer_id == 121:
-                report_obj.breeding_site_type = Report.BREEDING_SITE_TYPE_STORM_DRAIN
+                report_obj.breeding_site_type = Report.BreedingSiteType.STORM_DRAIN
             elif self.answer_id == 122:
-                report_obj.breeding_site_type = Report.BREEDING_SITE_TYPE_OTHER
+                report_obj.breeding_site_type = Report.BreedingSiteType.OTHER
         elif self.question_id == 13:
             if self.answer_id == 131:
                 report_obj.event_environment = Report.EVENT_ENVIRONMENT_VEHICLE
@@ -3195,3 +3202,41 @@ class OrganizationPin(models.Model):
     textual_description = models.TextField(help_text='Text desription on the pin. This text is meant to be visualized as the text body of the dialog on the map')
     page_url = models.URLField(help_text='URL link to the organization page')
 
+
+class TemporaryBoundary:
+    DEFAULT_TTL = 60 # in seconds
+
+    def __init__(self, geometry: GEOSGeometry):
+        if not isinstance(geometry, (Polygon, MultiPolygon)):
+            raise ValueError("Geometry must be a Polygon or MultiPolygon")
+        self.geometry = geometry
+
+        self.uuid: Optional[uuid.UUID] = None
+        self.expires_at: Optional[timezone.datetime] = None
+
+    def save(self) -> None:
+        boundary_uuid = uuid.uuid4()
+        cache.set(
+            str(boundary_uuid),
+            self.geometry.wkt,
+            timeout=self.DEFAULT_TTL
+        )
+        self.uuid = boundary_uuid
+        self.expires_at = timezone.now() + timedelta(seconds=self.DEFAULT_TTL)
+
+    @property
+    def expires_in(self) -> Optional[int]:
+        if self.expires_at is None:
+            return None
+        delta = self.expires_at - timezone.now()
+        return max(int(delta.total_seconds()), 0)
+
+    @classmethod
+    def get(cls, uuid: 'uuid.UUID') -> 'TemporaryBoundary':
+        cached_wkt = cache.get(str(uuid))
+        if cached_wkt is None:
+            raise ValueError("No geometry found for the given UUID or it has expired.")    
+
+        instance = cls(geometry=GEOSGeometry(cached_wkt))
+        instance.uuid = uuid
+        return instance
