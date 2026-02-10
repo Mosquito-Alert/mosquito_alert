@@ -92,8 +92,8 @@ stages:
         type: "FeatureCollection"
         features:
           - type: "Feature"
-            id: "{published_object.pk}"
             properties:
+              uuid: "{published_object.pk}"
               received_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
             geometry:
               type: "Point"

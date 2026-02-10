@@ -460,7 +460,7 @@ class BiteViewSet(BaseReportViewSet):
 
     @extend_schema(responses={
         (200, 'application/json'): BiteGeoModelSerializer(many=True),
-        (200, 'application/geo+json'): BiteGeoJsonModelSerializer(many=True),
+        (200, GeoJsonRenderer.media_type): BiteGeoJsonModelSerializer(many=True),
     })
     @method_decorator(cache_page(60*60*3))  # Cache for 3 hours
     @method_decorator(vary_on_headers("Authorization"))
@@ -492,7 +492,7 @@ class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
 
     @extend_schema(responses={
         (200, 'application/json'): BreedingSiteGeoModelSerializer(many=True),
-        (200, 'application/geo+json'): BreedingSiteGeoJsonModelSerializer(many=True),
+        (200, GeoJsonRenderer.media_type): BreedingSiteGeoJsonModelSerializer(many=True),
     })
     @method_decorator(cache_page(60*60*3))  # Cache for 3 hours
     @method_decorator(vary_on_headers("Authorization"))
@@ -524,7 +524,7 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
 
     @extend_schema(responses={
         (200, 'application/json'): ObservationGeoModelSerializer(many=True),
-        (200, 'application/geo+json'): ObservationGeoJsonModelSerializer(many=True),
+        (200, GeoJsonRenderer.media_type): ObservationGeoJsonModelSerializer(many=True),
     })
     @method_decorator(cache_page(60*60*3))  # Cache for 3 hours
     @method_decorator(vary_on_headers("Authorization"))

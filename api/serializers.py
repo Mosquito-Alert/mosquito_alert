@@ -1481,7 +1481,6 @@ class ObservationGeoModelSerializer(BaseReportGeoModelSerializer):
 class ObservationGeoJsonModelSerializer(ReportGeoJsonModelSerializerMixin, ObservationGeoModelSerializer, GeoFeatureModelSerializer):
     class Meta(ObservationGeoModelSerializer.Meta):
         geo_field = "point"
-        id_field = "uuid"
 
 class ObservationSerializer(BaseReportWithPhotosSerializer):
     class IdentificationSerializer(serializers.ModelSerializer):
@@ -1563,7 +1562,6 @@ class BiteGeoModelSerializer(BaseReportGeoModelSerializer):
 class BiteGeoJsonModelSerializer(ReportGeoJsonModelSerializerMixin, BiteGeoModelSerializer, GeoFeatureModelSerializer):
     class Meta(BiteGeoModelSerializer.Meta):
         geo_field = "point"
-        id_field = "uuid"
 
 class BiteSerializer(BaseReportSerializer):
     class BiteCountsSerializer(serializers.ModelSerializer):
@@ -1683,7 +1681,6 @@ class BreedingSiteGeoModelSerializer(BaseReportGeoModelSerializer):
 class BreedingSiteGeoJsonModelSerializer(ReportGeoJsonModelSerializerMixin, BreedingSiteGeoModelSerializer, GeoFeatureModelSerializer):
     class Meta(BreedingSiteGeoModelSerializer.Meta):
         geo_field = "point"
-        id_field = "uuid"
 
 #### END REPORT SERIALIZERS ####
 
