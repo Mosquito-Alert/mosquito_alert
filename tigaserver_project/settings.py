@@ -117,6 +117,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://webserver.mosquitoalert.com",
     "http://www.mosquitoalert.com",
     "https://app.mosquitoalert.com",
+    "https://map.mosquitoalert.com"
 ]
 
 ROOT_URLCONF = 'tigaserver_project.urls'
