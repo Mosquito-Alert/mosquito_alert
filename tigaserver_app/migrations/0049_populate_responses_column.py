@@ -187,7 +187,7 @@ def populate_breeding_site_type(apps, schema_editor):
         ("Type of breeding site", "Basin"),
         ("Type of breeding site", "Small basin or similar receptacle"),
     ]
-    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=basin_responses, value=Report.BREEDING_SITE_TYPE_BASIN)
+    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=basin_responses, value=Report.BreedingSiteType.BASIN)
 
     # Bucket
     bucket_responses = [
@@ -195,7 +195,7 @@ def populate_breeding_site_type(apps, schema_editor):
         ("Selecciona lloc de cria", "Bidons"),
         ("Type of breeding site", "Bucket"),
     ]
-    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=bucket_responses, value=Report.BREEDING_SITE_TYPE_BUCKET)
+    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=bucket_responses, value=Report.BreedingSiteType.BUCKET)
 
     # Fountain
     fountain_responses = [
@@ -205,7 +205,7 @@ def populate_breeding_site_type(apps, schema_editor):
         ("Selecciona lloc de cria", "Fonts"),
         ("Type of breeding site", "Fountain"),
     ]
-    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=fountain_responses, value=Report.BREEDING_SITE_TYPE_FOUNTAIN)
+    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=fountain_responses, value=Report.BreedingSiteType.FOUNTAIN)
 
     # other
     other_responses = [
@@ -222,7 +222,7 @@ def populate_breeding_site_type(apps, schema_editor):
         ("這繁殖地是否排水渠或下水道？","其他"),
         ("這繁殖地是否排水渠或下水道？","否"),
     ]
-    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=other_responses, value=Report.BREEDING_SITE_TYPE_OTHER)
+    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=other_responses, value=Report.BreedingSiteType.OTHER)
 
     # small_container
     small_container_responses = [
@@ -230,7 +230,7 @@ def populate_breeding_site_type(apps, schema_editor):
         ("Selecciona lloc de cria","Recipient petit"),
         ("Type of breeding site","Small container"),
     ]
-    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=small_container_responses, value=Report.BREEDING_SITE_TYPE_SMALL_CONTAINER)
+    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=small_container_responses, value=Report.BreedingSiteType.SMALL_CONTAINER)
 
     # storm drain
     storm_drain_responses = [
@@ -246,14 +246,14 @@ def populate_breeding_site_type(apps, schema_editor):
         ("Type of breeding site","Storm drain or similar receptacle"),
         ("這繁殖地是否排水渠或下水道？","是"),
     ]
-    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=storm_drain_responses, value=Report.BREEDING_SITE_TYPE_STORM_DRAIN)
+    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=storm_drain_responses, value=Report.BreedingSiteType.STORM_DRAIN)
 
     # well
     well_responses = [
         ("Tipo de lugar de cría","Pozos"),
         ("Selecciona lloc de cria","Pous"),
     ]
-    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=well_responses, value=Report.BREEDING_SITE_TYPE_WELL)
+    update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=well_responses, value=Report.BreedingSiteType.WELL)
 
 def populate_event_environment(apps, schema_editor):
     from tigaserver_app.models import Report
