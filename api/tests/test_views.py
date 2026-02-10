@@ -245,7 +245,7 @@ class BaseReportTest:
             # Consume streaming content to trigger query
             list(response.streaming_content)
 
-        assert len(queries) == 3 # user logged in, django_content_type, report query.
+        assert len(queries) == 2 # user logged in, report query.
 
     def test_csv_response_does_not_include_tags(self, app_api_client, report_object):
         response = app_api_client.get(

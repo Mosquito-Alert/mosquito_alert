@@ -1807,6 +1807,9 @@ class Report(TimeZoneModelMixin, models.Model):
 
             self.device = device
 
+        if self.tags.filter(name='345').exists():
+            self.hide = True
+
         # Fill the country field
         if not self.country or _old_point != self.point:
             self.country = self._get_country_is_in()

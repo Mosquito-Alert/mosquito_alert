@@ -2156,6 +2156,7 @@ class ReportModelTest(TestCase):
 
         self.assertEqual(report.tags.filter(name='345').exists(), True)
 
+        self.assertEqual(report.hide, True)
         self.assertEqual(report.published, False)
 
     def test_published_report_is_unpublished_if_soft_deleted(self):
