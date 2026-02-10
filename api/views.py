@@ -325,7 +325,7 @@ class BaseReportViewSet(
             queryset = self.get_queryset().select_related(None).prefetch_related(None).order_by()
         qs = self.filter_queryset(queryset)
 
-        if self.request.accepted_renderer.format == GeoJsonRenderer.format:
+        if isinstance(self.request.accepted_renderer, GeoJsonRenderer):
             serializer = geojson_serializer_class(qs, many=True, context=self.get_serializer_context())
         else:
             serializer = self.get_serializer(qs, many=True)

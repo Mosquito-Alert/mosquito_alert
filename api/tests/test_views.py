@@ -223,7 +223,8 @@ class BaseReportTest:
 
     def test_geo_json_response_schema_type(self, app_api_client):
         response = app_api_client.get(
-            self.endpoint + "geo/?format=geojson"
+            self.endpoint + "geo/",
+            headers={'Accept': 'application/geo+json'}
         )
         assert response.status_code == status.HTTP_200_OK
         assert response.content_type == 'application/geo+json'

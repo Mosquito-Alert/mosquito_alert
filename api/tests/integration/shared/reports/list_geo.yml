@@ -83,8 +83,8 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/geo/"
       method: "GET"
-      params:
-        format: "geojson"
+      headers:
+        Accept: "application/geo+json"
     response:
       status_code: 200
       strict: False
