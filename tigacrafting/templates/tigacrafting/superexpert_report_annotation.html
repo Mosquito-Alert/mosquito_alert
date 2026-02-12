@@ -182,7 +182,6 @@
                                     class="fa fa-plus-square-o"></i></a> {{ ano.user.username }}
                             </td>
                             <!-- %EURO_SWITCH% -->
-                            <!--<td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label.html" with score=ano.get_score text=ano.get_category %}</td>-->
                             <td>{{ ano.get_status_bootstrap | safe }} {% include "tigacrafting/score_label_euro.html" with text=ano.get_category_euro color=ano.get_html_color_for_label %}</td>
                         </tr>
                         <tr>
