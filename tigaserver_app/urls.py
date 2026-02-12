@@ -19,8 +19,6 @@ urlpatterns = [
     path('subscribe_to_topic/', views.subscribe_to_topic),
     path('unsub_from_topic/', views.unsub_from_topic),
     path('topics_subscribed/', views.topics_subscribed),
-    path('photo_blood/', views.photo_blood),
-    path('photo_blood_reset/', views.photo_blood_reset),
     path('photos/', views.post_photo),
     path('user_notifications/', views.user_notifications),
     path('notification_content/', views.notification_content),
