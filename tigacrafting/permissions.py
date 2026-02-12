@@ -80,7 +80,7 @@ class UserRolePermissionMixin:
     def get_role_review_permission(self, role: Role) -> ReviewPermission:
         return ReviewPermission(
             add=role in [Role.REVIEWER, Role.ADMIN],
-            change=role in [Role.ADMIN],
+            change=role in [Role.REVIEWER, Role.ADMIN],
             view=role in [Role.REVIEWER, Role.ADMIN],
             delete=role in [Role.ADMIN],
         )
