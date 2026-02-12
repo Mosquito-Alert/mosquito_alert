@@ -1236,30 +1236,6 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(response.data['body_html_en'], notif_content['body_html_en'])
         self.client.logout()
 
-    def test_favorite_endpoint(self):
-        self.client.force_authenticate(user=self.reritja_user)
-        r = Report.objects.get(pk=1)
-        data = {
-            'user_id': self.reritja_user.id,
-            'report_id': r.version_UUID,
-            'note': 'some note'
-        }
-
-        d = {
-            'user_id': self.reritja_user.id
-        }
-
-        response = self.client.get('/api/user_favorites/', data=d)
-        resp_data = response.data
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
-        self.assertTrue(len(resp_data) == 0, "Response should be an array of length 0, is not")
-
-        response = self.client.get('/api/user_favorites/', data=d)
-        resp_data = response.data
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
-        self.assertTrue(len(resp_data) == 1, "Response should be an array of length 1, is not")
-
-        self.client.logout()
 
 class AnnotateCoarseTestCase(APITestCase):
     fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json', 'taxon.json']

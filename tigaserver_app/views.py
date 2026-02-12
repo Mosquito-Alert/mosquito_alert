@@ -10,7 +10,6 @@ from django_filters import rest_framework as filters
 import json
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, MapDataSerializer, CoverageMonthMapSerializer, TagSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, Categories, ReportResponse, Device
-from tigacrafting.models import FavoritedReports
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
@@ -991,14 +990,3 @@ def coarse_filter_reports(request):
         }
 
         return Response(data, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def user_favorites(request):
-    if request.method == 'GET':
-        user_id = request.GET.get('user_id', -1)
-        if user_id == -1:
-            raise ParseError(detail='user_id param is mandatory')
-        user = get_object_or_404(User, pk=user_id)
-        favorites = FavoritedReports.objects.filter(user=user).values('report__version_UUID')
-        retval = [ f['report__version_UUID'] for f in favorites]
-        return Response(retval, status=status.HTTP_200_OK)
