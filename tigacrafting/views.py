@@ -356,42 +356,6 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
 
 
 @login_required
-def expert_report_status(request, reports_per_page=10, version_uuid=None, linked_id=None):
-    this_user = request.user
-    if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
-        version_uuid = request.GET.get('version_uuid', version_uuid)
-        reports_per_page = request.GET.get('reports_per_page', reports_per_page)
-
-        if version_uuid and version_uuid != 'na':
-            reports = Report.objects.filter(pk=version_uuid)
-            n_reports = 1
-        elif linked_id and linked_id != 'na':
-            reports = Report.objects.filter(linked_id=linked_id)
-            n_reports = 1
-        else:
-            reports = Report.objects.non_deleted().filter(hide=False, identification_task__isnull=False).order_by('-server_upload_time')
-            n_reports = len(reports)
-
-        paginator = Paginator(reports, int(reports_per_page))
-        page_num = request.GET.get('page', 1)
-        page_obj = paginator.get_page(page_num)
-
-        reports_per_page_choices = range(0, min(1000, n_reports)+1, 25)
-
-        context = {
-            'reports': page_obj,
-            'version_uuid': version_uuid,
-            'reports_per_page_choices': reports_per_page_choices,
-            'objects': page_obj,
-            'pages': range(1, paginator.num_pages+1)
-        }
-
-        return render(request, 'tigacrafting/expert_report_status.html', context)
-    else:
-        return HttpResponseRedirect(reverse('login'))
-
-
-@login_required
 def expert_status(request):
     this_user = request.user
     if this_user.groups.filter(Q(name='superexpert') | Q(name='movelab')).exists():
