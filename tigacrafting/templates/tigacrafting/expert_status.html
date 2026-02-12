@@ -1,29 +1,30 @@
-{% extends "tigacrafting/expert_report_status.html" %}
 {% load static %}
 {% load i18n %}
-<!--{% block leaflet_stuff %}
-{% endblock %}
 
+<head>
 
-{% block map_head_js %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.7.2/dist/css/bootstrap-select.min.css">
 
-{% endblock %}
+    <link rel="stylesheet" href={% static "tigacrafting/tokenize2/tokenize2.min.css" %}>
 
-{% block search_btn %}
-{% endblock %}-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.css">
+    <script src={% static "tigacrafting/tokenize2/tokenize2.min.js" %}></script>
 
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery-qrcode@1.0.0/jquery.qrcode.min.js"></script>
+    
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
 
-{% block js %}
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
-{% endblock %}
+    <link rel="stylesheet" href=https://cdn.jsdelivr.net/npm/font-awesome@4.2.0/css/font-awesome.min.css>
 
-
-
-{% block css %}
+    <link rel="stylesheet" href={% static "tigacrafting/tigacrafting_style.css" %}>
     <link rel="stylesheet" href="{% static 'tigacrafting/css/expert_status.css' %}">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
-{% endblock %}
 
+</head>
+<body>
 {% block main_body %}
     <div class="container">
         <div class="starter-template">

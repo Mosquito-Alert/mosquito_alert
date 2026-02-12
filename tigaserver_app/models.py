@@ -2389,9 +2389,6 @@ class Report(TimeZoneModelMixin, models.Model):
         result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_final_expert_status_text() + '" class="' + ('glyphicon glyphicon-eye-open' if self.get_final_expert_status() == 1 else ('glyphicon glyphicon-flag' if self.get_final_expert_status() == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
         return result
 
-    def get_is_expert_validated(self):
-        return self.is_expert_validated
-
     def get_tags_bootstrap_superexpert(self):
         result = ''
         s = set()
@@ -2427,14 +2424,6 @@ class Report(TimeZoneModelMixin, models.Model):
             )
 
         return ", ".join(result)
-
-    def get_who_has_bootstrap(self):
-        result = []
-        for ano in self.expert_report_annotations.all().select_related("user"):
-            result.append(
-                '<span class="label ' + ('label-success' if ano.validation_complete else 'label-warning') + '" data-toggle="tooltip" data-placement="bottom" title="' + (('validated by ' + ano.user.username) if ano.validation_complete else ('pending with ' + ano.user.username)) + '">' + ano.user.username + ' <span class="glyphicon ' + ('glyphicon-check' if ano.validation_complete else 'glyphicon-time') + '"></span></span>'
-            )
-        return ' '.join(result)
 
     def get_final_photo_url_for_notification(self):
         identification_task = getattr(self, "identification_task", None)
