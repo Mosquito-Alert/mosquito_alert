@@ -48,7 +48,6 @@ from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
 from tigacrafting.models import ExpertReportAnnotation, Categories, IdentificationTask, Complex
 from tigacrafting.permissions import UserRolePermissionMixin, Role
-import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
 from .fields import ProcessedImageField
@@ -1102,35 +1101,12 @@ class Report(TimeZoneModelMixin, models.Model):
 
     # Custom Properties
     @property
-    def country_label(self) -> str:
-        if self.is_spain:
-            return "Spain/Other"
-        elif self.country:
-            return "Europe/" + self.country.name_engl
-        else:
-            return "Unassigned"
-
-    @property
     def deleted(self) -> bool:
         return self.deleted_at is not None
 
     @property
     def is_spain(self) -> bool:
         return self.country_id == EuropeCountry.SPAIN_PK
-
-    @property
-    def language(self) -> str:
-        if self.language_code:
-            return translation.get_language_info(self.language_code)["name"]
-        else:
-            return "English"
-
-    @property
-    def language_code(self) -> str:
-        app_language = self.app_language
-        if app_language is not None and app_language != "":
-            return app_language
-        return "en"
 
     @property
     def located(self) -> bool:
@@ -1935,15 +1911,6 @@ class Report(TimeZoneModelMixin, models.Model):
     def __unicode__(self):
         return self.pk
 
-
-    def get_photo_html_for_report_validation_completed(self):
-        result = ''
-        for photo in self.visible_photos:
-            best_photo = ExpertReportAnnotation.objects.filter(best_photo=photo).exists()
-            border_style = "3px solid green" if best_photo else "1px solid #333333"
-            result += '<div id="' + str(photo.id) + '" style="border: ' + border_style + ';margin:1px;">' + photo.medium_image_for_validation_(show_prediction=True) + '</div><div>' + get_icon_for_blood_genre(photo.blood_genre) + '</div><br>'
-        return result
-
     def get_mean_expert_adult_score_aegypti(self):
         sum_scores = 0
         mean_score = -3
@@ -2096,69 +2063,6 @@ class Report(TimeZoneModelMixin, models.Model):
             status['aegypti_final_score'] = mean_score
 
         return status
-
-    def get_html_color_for_label(self) -> str:
-        identification_task = getattr(self, "identification_task", None)
-
-        if not identification_task:
-            return "black"
-        if identification_task.status == IdentificationTask.Status.CONFLICT:
-            return "#00FFFF; border:1px solid #000; color:black"
-        return html_utils.get_html_color_for_label(
-            taxon=identification_task.taxon,
-            confidence=identification_task.confidence
-        )
-
-    def get_final_combined_expert_category_euro(self) -> str:
-        identification_task = getattr(self, "identification_task", None)
-        if not identification_task:
-            return "Unclassified"
-        if not identification_task.taxon:
-            # TODO: At some point this should be rename to Off-topic.
-            return "Not sure"
-        if identification_task.status == IdentificationTask.Status.CONFLICT:
-            return "Conflict"
-
-        suffix = ""
-        if identification_task.result_source == IdentificationTask.ResultSource.AI:
-            suffix = "({})".format(identification_task.result_source).upper()
-
-        res = "Other species"
-        if identification_task.taxon.is_relevant:
-            with translation.override('en'):
-                res = "{} {}".format(
-                    identification_task.confidence_label if identification_task.result_source != IdentificationTask.ResultSource.AI else "",
-                    identification_task.taxon.name
-                )
-
-        return f"{res} {suffix}".strip()
-
-    # This is just a formatter of get_final_combined_expert_category_euro_struct. Takes the exact same output and makes it
-    # template friendly, also adds explicit ids for category and complex
-    def get_final_combined_expert_category_euro_struct_json(self):
-        original_struct = self.get_final_combined_expert_category_euro_struct()
-        retval = {
-            'category' : None,
-            'category_id': None,
-            'complex': None,
-            'complex_id': None,
-            'value': None,
-            'conflict': False,
-            'in_progress': False
-        }
-        if original_struct.get('category',None) is not None:
-            retval['category_id'] = str(original_struct['category'].id)
-            retval['category'] = original_struct['category'].name
-        if original_struct.get('complex', None) is not None:
-            retval['complex_id'] = str(original_struct['complex'].id)
-            retval['complex'] = original_struct['complex'].description
-
-        if original_struct['value'] is not None:
-            retval['value'] = str(original_struct['value'])
-        retval['conflict'] = original_struct['conflict']
-        retval['in_progress'] = original_struct['in_progress']
-
-        return json.dumps(retval)
 
     def get_final_combined_expert_category_euro_struct(self):
         retval = {
@@ -2334,18 +2238,6 @@ class Report(TimeZoneModelMixin, models.Model):
             mean_score = sum_scores/float(expert_scores.count())
         return mean_score
 
-    def get_final_combined_expert_score(self):
-        score = -3
-        if self.type == self.TYPE_SITE:
-            score = self.get_mean_expert_site_score()
-        elif self.type == self.TYPE_ADULT:
-            classification = self.get_mean_combined_expert_adult_score()
-            score = classification['score']
-        if score is not None:
-            return int(round(score))
-        else:
-            return -3
-
     def get_final_expert_score(self):
         score = -3
         if self.type == self.TYPE_SITE:
@@ -2382,40 +2274,6 @@ class Report(TimeZoneModelMixin, models.Model):
 
         return ExpertReportAnnotation.STATUS_PUBLIC
 
-    def get_final_expert_status_text(self):
-        return dict(ExpertReportAnnotation.STATUS_CATEGORIES)[self.get_final_expert_status()]
-
-    def get_final_expert_status_bootstrap(self):
-        result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_final_expert_status_text() + '" class="' + ('glyphicon glyphicon-eye-open' if self.get_final_expert_status() == 1 else ('glyphicon glyphicon-flag' if self.get_final_expert_status() == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
-        return result
-
-    def get_tags_bootstrap_superexpert(self):
-        result = ''
-        s = set()
-        for ano in self.expert_report_annotations.all():
-            tags = ano.tags.all()
-            for tag in tags:
-                if not tag in s:
-                    s.add(tag)
-                    result += '<span class="label label-success" data-toggle="tooltip" title="tagged by ' + ano.user.username + '" data-placement="bottom">' + (
-                        tag.name) + '</span>'
-        if (len(s) == 0):
-            return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
-        return result
-
-    def get_tags_bootstrap(self):
-        result = ''
-        s = set()
-        for ano in self.expert_report_annotations.all():
-            tags = ano.tags.all()
-            for tag in tags:
-                if not tag in s:
-                    s.add(tag)
-                    result += '<span class="label label-success" data-toggle="tooltip" title="tagged by someone" data-placement="bottom">' + (tag.name) + '</span>'
-        if (len(s) == 0):
-            return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
-        return result
-
     def get_who_has(self):
         result = []
         for ano in self.expert_report_annotations.all().select_related('user'):
@@ -2445,31 +2303,6 @@ class Report(TimeZoneModelMixin, models.Model):
     def get_final_public_note(self):
         identification_task = getattr(self, "identification_task", None)
         return identification_task.public_note if identification_task else None
-
-    def get_final_note_to_user_html(self):
-        notes = None
-        super_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(message_for_user='').values_list('message_for_user', flat=True)
-        if super_notes:
-            notes = super_notes
-        else:
-            expert_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(message_for_user='').values_list('message_for_user', flat=True)
-            if expert_notes:
-                notes = expert_notes
-        if notes:
-            n = len(notes)
-            if n == 1:
-                return '<strong>Message from Expert:</strong> ' + notes[0]
-            elif n > 1:
-                result = ''
-                i = 1
-                for note in notes:
-                    result += '<strong>Message from Expert ' + str(i) + ':</strong> ' + note
-                    if i < n:
-                        result += '<br>'
-                return result
-        else:
-            return ''
-
 
 def one_day_between_and_same_week(r1_date_less_recent, r2_date_most_recent):
     day_before = r2_date_most_recent - timedelta(days=1)
