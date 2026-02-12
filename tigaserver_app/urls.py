@@ -38,7 +38,6 @@ urlpatterns = [
     path('stats/workload_data/pending/', workload_pending_per_user),
     path('stats/workload_data/available/', workload_available_reports),
     path('stats/user_xp_data/', get_user_xp_data),
-    path('favorite/', views.favorite),
     path('user_favorites/', views.user_favorites),
     path('coarse_filter_reports/', views.coarse_filter_reports),
     path('annotate_coarse/', views.annotate_coarse),

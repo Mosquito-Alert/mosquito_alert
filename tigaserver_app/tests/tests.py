@@ -1254,22 +1254,10 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
         self.assertTrue(len(resp_data) == 0, "Response should be an array of length 0, is not")
 
-        response = self.client.post('/api/favorite/', data=data)
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
-        my_fav = FavoritedReports.objects.filter(user=self.reritja_user,report=r).first()
-        self.assertTrue( my_fav is not None, "Favorite object should be created but id does not exist" )
-        consistent_write = my_fav.user == self.reritja_user and my_fav.report == r and my_fav.note == 'some note'
-        self.assertTrue(consistent_write, "Favorite object should be correctly written, but has the values {0} {1} {2}".format( self.reritja_user.id, my_fav.report.version_UUID, my_fav.note ) )
-
         response = self.client.get('/api/user_favorites/', data=d)
         resp_data = response.data
         self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
         self.assertTrue(len(resp_data) == 1, "Response should be an array of length 1, is not")
-
-        response = self.client.post('/api/favorite/', data=data)
-        self.assertEqual(response.status_code, 204, "Response should be 204, is {0}".format(response.status_code))
-        my_fav = FavoritedReports.objects.filter(user=self.reritja_user, report=r).first()
-        self.assertTrue(my_fav is None, "Favorite object should not exist")
 
         self.client.logout()
 

@@ -769,28 +769,6 @@ class OrganizationsPinViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = OrganizationPin.objects.all()
 
 
-
-@api_view(['POST'])
-def favorite(request):
-    if request.method == 'POST':
-        user_id = request.POST.get('user_id', -1)
-        report_id = request.POST.get('report_id', '')
-        note = request.POST.get('note', '')
-        if user_id == -1:
-            raise ParseError(detail='user_id param is mandatory')
-        if report_id == '':
-            raise ParseError(detail='report_id param is mandatory')
-        user = get_object_or_404(User, pk=user_id)
-        report = get_object_or_404(Report, pk=report_id)
-        fav = FavoritedReports.objects.filter(user=user).filter(report=report).first()
-        if fav:
-            fav.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            new_fav = FavoritedReports(user=user, report=report, note=note)
-            new_fav.save()
-            return Response(status=status.HTTP_200_OK)
-
 def get_filter_params_from_q(q):
     if q == '':
         return {
