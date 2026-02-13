@@ -10,7 +10,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from stats.views import show_usage, workload_stats, \
     stats_user_score, stats_user_ranking, global_assignments, global_assignments_list
-from tigacrafting.views import expert_report_annotation, expert_status, picture_validation, notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, entolab_license_agreement, expert_report_pending, expert_report_complete, entolab_license_agreement, report_expiration, aimalog_datatable, aimalog, coarse_filter
+from tigacrafting.views import expert_report_annotation, expert_status, picture_validation, notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, expert_report_pending, expert_report_complete, report_expiration, aimalog_datatable, aimalog, coarse_filter
 from django.views.i18n import JavaScriptCatalog
 from django.urls import include,path
 from django.contrib.auth import views as auth_views
@@ -82,7 +82,6 @@ urlpatterns += i18n_patterns(
     path('experts/', expert_report_annotation, name='expert_report_annotation'),
     path('experts/report_expiration/', report_expiration, name='report_expiration'),
     path('experts/report_expiration/<int:country_id>/', report_expiration, name='report_expiration'),
-    path('entolab_license_agreement/', entolab_license_agreement, name='entolab_license_agreement'),
     path('experts/status/reports/', RedirectView.as_view(url='https://app.mosquitoalert.com/identification_tasks/', permanent=True), name='expert_report_status'),
     path('experts/status/reports/pending', expert_report_pending, name='expert_report_pending'),
     path('experts/status/reports/complete', expert_report_complete, name='expert_report_complete'),

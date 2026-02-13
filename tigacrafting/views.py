@@ -22,7 +22,6 @@ from django.contrib.auth.models import User, Group
 import urllib
 from tigaserver_app.serializers import DataTableNotificationSerializer, DataTableAimalertSerializer
 from django.db import transaction
-from tigacrafting.forms import LicenseAgreementForm
 import logging
 from django.utils.translation import gettext as _
 from tigacrafting.querystring_parser import parser
@@ -38,17 +37,6 @@ from django.utils import timezone
 
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
-@login_required
-def entolab_license_agreement(request):
-    if request.method == 'POST':
-        form = LicenseAgreementForm(request.POST)
-        if form.is_valid():
-            request.user.userstat.license_accepted = True
-            request.user.userstat.save()
-            return HttpResponseRedirect('/experts')
-    else:
-        form = LicenseAgreementForm()
-    return render(request, 'tigacrafting/entolab_license_agreement.html', {'form': form})
 
 @login_required
 def report_expiration(request, country_id=None):
