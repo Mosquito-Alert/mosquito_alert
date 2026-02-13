@@ -266,6 +266,10 @@ class IdentificationTask(LifecycleModel):
     uncertainty = models.FloatField(default=1.0, editable=False, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
     agreement = models.FloatField(default=0, editable=False, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
 
+    sex = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female')], null=True, blank=True, editable=False)
+    is_blood_fed = models.BooleanField(null=True, blank=True, editable=False)
+    is_gravid = models.BooleanField(null=True, blank=True, editable=False)
+
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False)
 
@@ -348,6 +352,9 @@ class IdentificationTask(LifecycleModel):
         self.is_safe = annotation.status != ExpertReportAnnotation.STATUS_HIDDEN
         self.status = default_status
         self.is_flagged = annotation.status == ExpertReportAnnotation.STATUS_FLAGGED
+        self.sex = annotation.sex
+        self.is_gravid = annotation.is_gravid
+        self.is_blood_fed = annotation.is_blood_fed
 
     def _update_from_photo_prediction(self, photo_prediction: 'PhotoPrediction') -> None:
         self.result_source = self.ResultSource.AI
@@ -393,6 +400,9 @@ class IdentificationTask(LifecycleModel):
         self.agreement = self._meta.get_field('agreement').default
         self.is_safe = self._meta.get_field('is_safe').default
         self.is_flagged = self._meta.get_field('is_flagged').default
+        self.sex = self._meta.get_field('sex').default
+        self.is_gravid = self._meta.get_field('is_gravid').default
+        self.is_blood_fed = self._meta.get_field('is_blood_fed').default
 
     def refresh(self, force: bool = False, commit: bool = True) -> None:
         def get_most_voted_field(
@@ -528,6 +538,20 @@ class IdentificationTask(LifecycleModel):
                         tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
                     )
                     self.public_note = get_most_voted_field(field_name='edited_user_notes', lookup_filter=taxon_filter)
+                    self.sex = get_most_voted_field(
+                        field_name='sex',
+                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                    )
+                    self.is_blood_fed = get_most_voted_field(
+                        field_name='is_blood_fed',
+                        lookup_filter={'sex': self.sex},
+                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                    )
+                    self.is_gravid = get_most_voted_field(
+                        field_name='is_gravid',
+                        lookup_filter={'sex': self.sex},
+                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                    )
 
                     self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_HIDDEN).exists()
                     self.is_flagged = finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists()
@@ -634,7 +658,15 @@ class IdentificationTask(LifecycleModel):
             models.CheckConstraint(
                 check=models.Q(agreement__range=(0, 1)),
                 name="%(app_label)s_%(class)s_agreement_between_0_and_1",
-            )
+            ),
+            models.CheckConstraint(
+                check=~(models.Q(sex='male') & models.Q(is_blood_fed=True)),
+                name='%(app_label)s_%(class)s_blood_fed_only_if_female',
+            ),
+            models.CheckConstraint(
+                check=~(models.Q(sex='male') & models.Q(is_gravid=True)),
+                name='%(app_label)s_%(class)s_gravid_only_if_female',
+            ),
         ]
 
 
@@ -689,6 +721,9 @@ class ExpertReportAnnotation(LifecycleModel):
 
     taxon = models.ForeignKey('tigacrafting.Taxon', null=True, blank=True, on_delete=models.PROTECT)
     confidence = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    sex = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female')], null=True, blank=True)
+    is_blood_fed = models.BooleanField(null=True, blank=True)
+    is_gravid = models.BooleanField(null=True, blank=True)
 
     objects = ExpertReportAnnotationManager()
 
@@ -698,7 +733,15 @@ class ExpertReportAnnotation(LifecycleModel):
             models.CheckConstraint(
                 check=models.Q(confidence__gte=0) & models.Q(confidence__lte=1),
                 name='expertreportannotation_confidence_between_0_and_1'
-            )
+            ),
+            models.CheckConstraint(
+                check=~(models.Q(sex='male') & models.Q(is_blood_fed=True)),
+                name='expertreportannotation_blood_fed_only_if_female',
+            ),
+            models.CheckConstraint(
+                check=~(models.Q(sex='male') & models.Q(is_gravid=True)),
+                name='expertreportannotation_gravid_only_if_female',
+            ),
         ]
 
     @cached_property

@@ -1109,25 +1109,28 @@ class TestIdentificationTaskAnnotationsApi:
         ).exists()
 
     @pytest.mark.parametrize(
-        "sex, is_blood_fed, is_gravid, expected_genre_blood",
+        "taxon, sex, is_blood_fed, is_gravid, expected_status_code",
         [
-            ('male', False, False, Photo.BLOOD_GENRE_MALE),
-            ('male', False, True, Photo.BLOOD_GENRE_MALE),
-            ('male', True, False, Photo.BLOOD_GENRE_MALE),
-            ('male', True, True, Photo.BLOOD_GENRE_MALE),
-            ('female', False, False, Photo.BLOOD_GENRE_FEMALE),
-            ('female', False, True, Photo.BLOOD_GENRE_FEMALE_GRAVID),
-            ('female', True, False, Photo.BLOOD_GENRE_FEMALE_BLOOD_FED),
-            ('female', True, True, Photo.BLOOD_GENRE_FEMALE_GRAVID_BLOOD_FED),
-            (None, False, False, Photo.BLOOD_GENRE_UNKNOWN),
-            (None, False, True, Photo.BLOOD_GENRE_UNKNOWN),
-            (None, True, False, Photo.BLOOD_GENRE_UNKNOWN),
-            (None, True, True, Photo.BLOOD_GENRE_UNKNOWN),
+            (None, 'male', False, False, status.HTTP_400_BAD_REQUEST),
+            (None, 'female', False, False, status.HTTP_400_BAD_REQUEST),
+            (pytest.lazy_fixture('taxon_root'), 'male', False, False, status.HTTP_201_CREATED),
+            (pytest.lazy_fixture('taxon_root'), 'male', False, True, status.HTTP_400_BAD_REQUEST),
+            (pytest.lazy_fixture('taxon_root'), 'male', True, False, status.HTTP_400_BAD_REQUEST),
+            (pytest.lazy_fixture('taxon_root'), 'male', True, True, status.HTTP_400_BAD_REQUEST),
+            (pytest.lazy_fixture('taxon_root'), 'female', False, False, status.HTTP_201_CREATED),
+            (pytest.lazy_fixture('taxon_root'), 'female', False, True, status.HTTP_201_CREATED),
+            (pytest.lazy_fixture('taxon_root'), 'female', True, False, status.HTTP_201_CREATED),
+            (pytest.lazy_fixture('taxon_root'), 'female', True, True, status.HTTP_201_CREATED),
         ]
     )
-    def test_characteristics_sets_Photo_blood_genre_field(self, api_client, endpoint, identification_task, common_post_data, with_add_permission, sex, is_blood_fed, is_gravid, expected_genre_blood):
+    def test_characteristics(self, api_client, endpoint, identification_task, common_post_data, with_add_permission, taxon, sex, is_blood_fed, is_gravid, expected_status_code):
         post_data = common_post_data
         post_data['best_photo_uuid'] = identification_task.photo.uuid
+        if taxon:
+            post_data['classification'] = {
+                'taxon_id': taxon.pk,
+                'confidence_label': 'definitely'
+            }
         post_data['characteristics'] = {
             'sex': sex,
             'is_blood_fed': is_blood_fed,
@@ -1139,11 +1142,7 @@ class TestIdentificationTaskAnnotationsApi:
             data=post_data,
             format='json'
         )
-        assert response.status_code == status.HTTP_201_CREATED
-
-        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
-        photo = annotation.best_photo
-        assert photo.blood_genre == expected_genre_blood
+        assert response.status_code == expected_status_code
 
     @pytest.mark.parametrize(
         "pre_assign",
