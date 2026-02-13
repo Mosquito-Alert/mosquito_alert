@@ -165,6 +165,61 @@ stages:
         created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
         updated_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
 
+
+---
+
+test_name: Create annotation setting characteristics
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - endpoint
+    - identification_task
+    - user
+    - taxon_root
+    - jwt_token_user_can_add
+
+stages:
+  - name: Create annotation setting characteristics raise if not classification
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_add}"
+      method: "POST"
+      json:
+        classification: null
+        characteristics:
+          sex: male
+    response:
+      status_code: 400
+  - name: Create annotation setting characteristics raise if not classification
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_add}"
+      method: "POST"
+      json:
+        classification:
+          taxon_id: !int "{taxon_root.pk}"
+          confidence_label: 'definitely'
+        characteristics:
+          sex: female
+          is_gravid: true
+          is_blood_fed: true
+    response:
+      status_code: 201
+      strict:
+        - json:off
+      json:
+        observation_uuid: "{identification_task.report.pk}"
+        classification:
+          sex: female
+          is_gravid: true
+          is_blood_fed: true
+
 ---
 
 test_name: Create off-topic classification

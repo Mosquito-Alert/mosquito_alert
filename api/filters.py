@@ -254,6 +254,14 @@ class IdentificationTaskFilter(filters.FilterSet):
         choices=IdentificationTask.ResultSource.choices
     )
 
+    result_characteristics_sex = filters.ChoiceFilter(
+        choices=[('male', 'male'), ('female', 'female')],
+        field_name="sex",
+        null_label="null",
+    )
+    result_characteristics_is_blood_fed = filters.BooleanFilter(field_name="is_blood_fed")
+    result_characteristics_is_gravid = filters.BooleanFilter(field_name="is_gravid")
+
     review_action = filters.ChoiceFilter(
         choices=IdentificationTask.Review.choices,
         field_name="review_type",
@@ -284,6 +292,14 @@ class AnnotationFilter(filters.FilterSet):
         choices=[('definitely', 'definitely'), ('probably', 'probably')],
         method="filter_by_confidence_label"
     )
+
+    characteristics_sex = filters.ChoiceFilter(
+        choices=[('male', 'male'), ('female', 'female')],
+        field_name="sex",
+        null_label="null",
+    )
+    characteristics_is_blood_fed = filters.BooleanFilter(field_name="is_blood_fed")
+    characteristics_is_gravid = filters.BooleanFilter(field_name="is_gravid")
 
     created_at = filters.IsoDateTimeFromToRangeFilter(
         field_name="created", label="Created at"

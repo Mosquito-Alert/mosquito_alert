@@ -19,6 +19,7 @@ class ExpertReportAnnotationInlineAdmin(admin.StackedInline):
         ('validation_complete_executive', 'simplified_annotation'),
         ('category', 'complex', 'other_species', 'validation_value'),
         ("taxon", "confidence"),
+        ("sex", "is_blood_fed", "is_gravid"),
         'status',
         'best_photo',
         ('edited_user_notes', 'message_for_user'),
