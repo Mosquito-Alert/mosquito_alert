@@ -15,6 +15,7 @@ variables:
       full_name: !anystr
     best_photo: !anything
     classification: !anything
+    characteristics: !anything
     feedback:
       public_note: !anything
       internal_note: !anything

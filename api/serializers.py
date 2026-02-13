@@ -2,7 +2,6 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import Literal, Optional, Union
 from uuid import UUID
-import uuid
 
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
@@ -949,6 +948,25 @@ class SimpleAnnotatorUserSerializer(SimpleUserSerializer):
 
         return super().to_representation(new_instance)
 
+class SpeciesCharacteristicsSerializer(serializers.Serializer):
+        sex = serializers.ChoiceField(choices=['male', 'female'], required=True)
+        is_blood_fed = serializers.BooleanField(required=False, allow_null=True)
+        is_gravid = serializers.BooleanField(required=False, allow_null=True)
+
+        def validate(self, data):
+            if data.get('sex') == 'male' and (data.get('is_blood_fed') or data.get('is_gravid')):
+                raise serializers.ValidationError("Male mosquitoes cannot be blood-fed or gravid.")
+            return data
+
+        def to_representation(self, instance):
+            if self.allow_null and instance.sex is None:
+                return None
+
+            return super().to_representation(instance)
+        class Meta:
+            fields = ("sex", "is_blood_fed", "is_gravid")
+
+
 class AnnotationSerializer(serializers.ModelSerializer):
     class AnnotationFeedbackSerializer(serializers.ModelSerializer):
         def validate_public_note(self, value):
@@ -1028,37 +1046,6 @@ class AnnotationSerializer(serializers.ModelSerializer):
                 "confidence": {"read_only": True},
             }
 
-    class AnnotationCharacteristicsSerializer(serializers.Serializer):
-        sex = serializers.ChoiceField(choices=['male', 'female'], required=False, allow_null=True)
-        is_blood_fed = serializers.BooleanField(required=False, default=False)
-        is_gravid = serializers.BooleanField(required=False, default=False)
-
-        def to_internal_value(self, data):
-            sex = data.pop('sex', None)
-            is_blood_fed = data.pop('is_blood_fed', False)
-            is_gravid = data.pop('is_gravid', False)
-
-            ret = {}
-            if sex == 'male':
-                blood_genre = 'male'
-            elif sex == 'female':
-                if is_gravid and is_blood_fed:
-                    blood_genre = 'fgblood'
-                elif is_gravid:
-                    blood_genre = 'fgravid'
-                elif is_blood_fed:
-                    blood_genre = 'fblood'
-                else:
-                    blood_genre = 'female'
-            else:
-                blood_genre = 'dk'
-
-            ret['blood_genre'] = blood_genre
-            return ret
-
-        class Meta:
-            fields = ("sex", "is_blood_fed", "is_gravid")
-
     class ObservationFlagsSerializer(serializers.ModelSerializer):
         is_favourite = WritableSerializerMethodField(
             field_class=serializers.BooleanField,
@@ -1089,7 +1076,7 @@ class AnnotationSerializer(serializers.ModelSerializer):
     feedback = AnnotationFeedbackSerializer(source='*', required=False)
 
     classification = AnnotationClassificationSerializer(source='*', required=True, allow_null=True)
-    characteristics = AnnotationCharacteristicsSerializer(required=False, write_only=True)
+    characteristics = SpeciesCharacteristicsSerializer(source='*', required=False, allow_null=True)
     best_photo_uuid = serializers.UUIDField(write_only=True, required=False)
     best_photo = SimplePhotoSerializer(read_only=True, allow_null=True)
     tags = TagListSerializerField(required=False, allow_empty=True)
@@ -1118,6 +1105,10 @@ class AnnotationSerializer(serializers.ModelSerializer):
     def validate(self, data):
         data['user'] = data.pop('user_hidden_obj')
         data['validation_complete'] = True
+
+        characteristic_keys = self.fields['characteristics'].data.keys()
+        if data.get('taxon') is None and any(data.get(key) is not None for key in characteristic_keys):
+            raise serializers.ValidationError("Characteristics can not be set if taxon is not set.")
 
         try:
             data['report'] = Report.objects.get(type='adult', pk=self.context.get('observation_uuid'))
@@ -1161,8 +1152,6 @@ class AnnotationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         is_favourite = validated_data.pop("is_favourite", False)
-        characteristics = validated_data.pop("characteristics", {})
-        blood_genre = characteristics.get("blood_genre", None)
         with transaction.atomic():
             instance = super().create(validated_data)
             if is_favourite:
@@ -1170,17 +1159,11 @@ class AnnotationSerializer(serializers.ModelSerializer):
                     user=instance.user,
                     report=instance.report,
                 )
-            if blood_genre and instance.best_photo:
-                # Update the best photo with the blood_genre
-                instance.best_photo.blood_genre = blood_genre
-                instance.best_photo.save()
 
         return instance
 
     def update(self, instance, validated_data):
         is_favourite = validated_data.pop("is_favourite", False)
-        characteristics = validated_data.pop("characteristics", {})
-        blood_genre = characteristics.get("blood_genre", None)
         with transaction.atomic():
             instance = super().update(instance, validated_data)
             if is_favourite:
@@ -1193,10 +1176,6 @@ class AnnotationSerializer(serializers.ModelSerializer):
                     user=instance.user,
                     report=instance.report,
                 ).delete()
-            if blood_genre and instance.best_photo:
-                # Update the best photo with the blood_genre
-                instance.best_photo.blood_genre = blood_genre
-                instance.best_photo.save()
         return instance
 
     class Meta:
@@ -1301,6 +1280,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         confidence_label = serializers.SerializerMethodField()
         is_high_confidence = serializers.SerializerMethodField()
         source = serializers.ChoiceField(source='result_source',read_only=True, choices=IdentificationTask.ResultSource.choices)
+        characteristics = SpeciesCharacteristicsSerializer(source='*', read_only=True, required=False, allow_null=True)
 
         def get_confidence_label(self, obj) -> str:
             return obj.confidence_label
@@ -1323,6 +1303,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
                 'confidence_label',
                 'uncertainty',
                 'agreement',
+                'characteristics'
             )
             extra_kwargs = {
                 'confidence': {'min_value': 0, 'max_value': 1},
@@ -1436,12 +1417,18 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer):
 
     public_photo_uuid = serializers.UUIDField(source='photo__uuid', write_only=True)
     result = AnnotationSerializer.AnnotationClassificationSerializer(source='*', required=True, allow_null=True)
+    characteristics = SpeciesCharacteristicsSerializer(source='*', required=False, allow_null=True)
 
     def validate(self, data):
         data = super().validate(data)
 
         # Case Not an insect will be empty taxon. In case of update we need to for it to None
         data['taxon'] = data.pop('taxon', None)
+
+        characteristic_keys = self.fields['characteristics'].data.keys()
+        if data.get('taxon') is None and any(data.get(key) is not None for key in characteristic_keys):
+            raise serializers.ValidationError("Characteristics can not be set if taxon is not set.")
+
         data['validation_value'] = data.pop('validation_value', None)
         data['confidence'] = data.pop('confidence', 0)
 
@@ -1465,6 +1452,7 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer):
             'is_safe',
             'public_note',
             'result',
+            'characteristics'
         )
         extra_kwargs = {
             'is_safe': {'read_only': False},
