@@ -31,8 +31,7 @@ from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
-from django.urls import reverse
-from django.utils import translation, timezone
+from django.utils import timezone
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext_lazy as _
 
@@ -48,7 +47,6 @@ from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
 from tigacrafting.models import ExpertReportAnnotation, Categories, IdentificationTask, Complex
 from tigacrafting.permissions import UserRolePermissionMixin, Role
-import tigacrafting.html_utils as html_utils
 import tigaserver_project.settings as conf
 
 from .fields import ProcessedImageField
@@ -143,25 +141,6 @@ def grant_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_exp
     if award_category is not None:
         a.category = award_category
     a.save()
-
-def get_icon_for_blood_genre(blood_genre) -> str:
-    blood_genre_table = {
-        Photo.BLOOD_GENRE_MALE: '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i> Male</label>',
-        Photo.BLOOD_GENRE_FEMALE: '<label title="Female"><i class="fa fa-venus fa-lg" aria-hidden="true"></i> Female</label>',
-        Photo.BLOOD_GENRE_FEMALE_BLOOD_FED: '<label title="Female blood"><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed</label>',
-        Photo.BLOOD_GENRE_FEMALE_GRAVID: '<label title="Female gravid"><i class="moon" aria-hidden="true"></i> Gravid</label>',
-        Photo.BLOOD_GENRE_FEMALE_GRAVID_BLOOD_FED: '<label title="Female gravid + blood"><i class="moon" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed and gravid</label>',
-        Photo.BLOOD_GENRE_UNKNOWN: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i> Dont know</label>'
-    }
-    if blood_genre is None:
-        return ''
-    else:
-        try:
-            return str(blood_genre_table[blood_genre])
-        except KeyError:
-            #return blood_genre_table['dk']
-            return ''
-
 
 class RankingData(models.Model):
     user_uuid = models.CharField(max_length=36, primary_key=True, help_text='User identifier uuid')
@@ -1102,35 +1081,12 @@ class Report(TimeZoneModelMixin, models.Model):
 
     # Custom Properties
     @property
-    def country_label(self) -> str:
-        if self.is_spain:
-            return "Spain/Other"
-        elif self.country:
-            return "Europe/" + self.country.name_engl
-        else:
-            return "Unassigned"
-
-    @property
     def deleted(self) -> bool:
         return self.deleted_at is not None
 
     @property
     def is_spain(self) -> bool:
         return self.country_id == EuropeCountry.SPAIN_PK
-
-    @property
-    def language(self) -> str:
-        if self.language_code:
-            return translation.get_language_info(self.language_code)["name"]
-        else:
-            return "English"
-
-    @property
-    def language_code(self) -> str:
-        app_language = self.app_language
-        if app_language is not None and app_language != "":
-            return app_language
-        return "en"
 
     @property
     def located(self) -> bool:
@@ -1935,15 +1891,6 @@ class Report(TimeZoneModelMixin, models.Model):
     def __unicode__(self):
         return self.pk
 
-
-    def get_photo_html_for_report_validation_completed(self):
-        result = ''
-        for photo in self.visible_photos:
-            best_photo = ExpertReportAnnotation.objects.filter(best_photo=photo).exists()
-            border_style = "3px solid green" if best_photo else "1px solid #333333"
-            result += '<div id="' + str(photo.id) + '" style="border: ' + border_style + ';margin:1px;">' + photo.medium_image_for_validation_(show_prediction=True) + '</div><div>' + get_icon_for_blood_genre(photo.blood_genre) + '</div><br>'
-        return result
-
     def get_mean_expert_adult_score_aegypti(self):
         sum_scores = 0
         mean_score = -3
@@ -2096,69 +2043,6 @@ class Report(TimeZoneModelMixin, models.Model):
             status['aegypti_final_score'] = mean_score
 
         return status
-
-    def get_html_color_for_label(self) -> str:
-        identification_task = getattr(self, "identification_task", None)
-
-        if not identification_task:
-            return "black"
-        if identification_task.status == IdentificationTask.Status.CONFLICT:
-            return "#00FFFF; border:1px solid #000; color:black"
-        return html_utils.get_html_color_for_label(
-            taxon=identification_task.taxon,
-            confidence=identification_task.confidence
-        )
-
-    def get_final_combined_expert_category_euro(self) -> str:
-        identification_task = getattr(self, "identification_task", None)
-        if not identification_task:
-            return "Unclassified"
-        if not identification_task.taxon:
-            # TODO: At some point this should be rename to Off-topic.
-            return "Not sure"
-        if identification_task.status == IdentificationTask.Status.CONFLICT:
-            return "Conflict"
-
-        suffix = ""
-        if identification_task.result_source == IdentificationTask.ResultSource.AI:
-            suffix = "({})".format(identification_task.result_source).upper()
-
-        res = "Other species"
-        if identification_task.taxon.is_relevant:
-            with translation.override('en'):
-                res = "{} {}".format(
-                    identification_task.confidence_label if identification_task.result_source != IdentificationTask.ResultSource.AI else "",
-                    identification_task.taxon.name
-                )
-
-        return f"{res} {suffix}".strip()
-
-    # This is just a formatter of get_final_combined_expert_category_euro_struct. Takes the exact same output and makes it
-    # template friendly, also adds explicit ids for category and complex
-    def get_final_combined_expert_category_euro_struct_json(self):
-        original_struct = self.get_final_combined_expert_category_euro_struct()
-        retval = {
-            'category' : None,
-            'category_id': None,
-            'complex': None,
-            'complex_id': None,
-            'value': None,
-            'conflict': False,
-            'in_progress': False
-        }
-        if original_struct.get('category',None) is not None:
-            retval['category_id'] = str(original_struct['category'].id)
-            retval['category'] = original_struct['category'].name
-        if original_struct.get('complex', None) is not None:
-            retval['complex_id'] = str(original_struct['complex'].id)
-            retval['complex'] = original_struct['complex'].description
-
-        if original_struct['value'] is not None:
-            retval['value'] = str(original_struct['value'])
-        retval['conflict'] = original_struct['conflict']
-        retval['in_progress'] = original_struct['in_progress']
-
-        return json.dumps(retval)
 
     def get_final_combined_expert_category_euro_struct(self):
         retval = {
@@ -2334,18 +2218,6 @@ class Report(TimeZoneModelMixin, models.Model):
             mean_score = sum_scores/float(expert_scores.count())
         return mean_score
 
-    def get_final_combined_expert_score(self):
-        score = -3
-        if self.type == self.TYPE_SITE:
-            score = self.get_mean_expert_site_score()
-        elif self.type == self.TYPE_ADULT:
-            classification = self.get_mean_combined_expert_adult_score()
-            score = classification['score']
-        if score is not None:
-            return int(round(score))
-        else:
-            return -3
-
     def get_final_expert_score(self):
         score = -3
         if self.type == self.TYPE_SITE:
@@ -2382,40 +2254,6 @@ class Report(TimeZoneModelMixin, models.Model):
 
         return ExpertReportAnnotation.STATUS_PUBLIC
 
-    def get_final_expert_status_text(self):
-        return dict(ExpertReportAnnotation.STATUS_CATEGORIES)[self.get_final_expert_status()]
-
-    def get_final_expert_status_bootstrap(self):
-        result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_final_expert_status_text() + '" class="' + ('glyphicon glyphicon-eye-open' if self.get_final_expert_status() == 1 else ('glyphicon glyphicon-flag' if self.get_final_expert_status() == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
-        return result
-
-    def get_tags_bootstrap_superexpert(self):
-        result = ''
-        s = set()
-        for ano in self.expert_report_annotations.all():
-            tags = ano.tags.all()
-            for tag in tags:
-                if not tag in s:
-                    s.add(tag)
-                    result += '<span class="label label-success" data-toggle="tooltip" title="tagged by ' + ano.user.username + '" data-placement="bottom">' + (
-                        tag.name) + '</span>'
-        if (len(s) == 0):
-            return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
-        return result
-
-    def get_tags_bootstrap(self):
-        result = ''
-        s = set()
-        for ano in self.expert_report_annotations.all():
-            tags = ano.tags.all()
-            for tag in tags:
-                if not tag in s:
-                    s.add(tag)
-                    result += '<span class="label label-success" data-toggle="tooltip" title="tagged by someone" data-placement="bottom">' + (tag.name) + '</span>'
-        if (len(s) == 0):
-            return '<span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="tagged by no one">No tags</span>'
-        return result
-
     def get_who_has(self):
         result = []
         for ano in self.expert_report_annotations.all().select_related('user'):
@@ -2445,31 +2283,6 @@ class Report(TimeZoneModelMixin, models.Model):
     def get_final_public_note(self):
         identification_task = getattr(self, "identification_task", None)
         return identification_task.public_note if identification_task else None
-
-    def get_final_note_to_user_html(self):
-        notes = None
-        super_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='superexpert', validation_complete=True, revise=True).exclude(message_for_user='').values_list('message_for_user', flat=True)
-        if super_notes:
-            notes = super_notes
-        else:
-            expert_notes = ExpertReportAnnotation.objects.filter(report=self, user__groups__name='expert', validation_complete=True).exclude(message_for_user='').values_list('message_for_user', flat=True)
-            if expert_notes:
-                notes = expert_notes
-        if notes:
-            n = len(notes)
-            if n == 1:
-                return '<strong>Message from Expert:</strong> ' + notes[0]
-            elif n > 1:
-                result = ''
-                i = 1
-                for note in notes:
-                    result += '<strong>Message from Expert ' + str(i) + ':</strong> ' + note
-                    if i < n:
-                        result += '<br>'
-                return result
-        else:
-            return ''
-
 
 def one_day_between_and_same_week(r1_date_less_recent, r2_date_most_recent):
     day_before = r2_date_most_recent - timedelta(days=1)
@@ -2788,51 +2601,6 @@ class Photo(models.Model):
                     return ""
             return self.photo.url.replace('tigapics/', 'tigapics_medium/')
         return self.photo.url
-
-    def medium_image_(self):
-        return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
-
-    def medium_image_for_validation_(self, show_prediction: bool = False):
-        caption_html = ""
-        if show_prediction and hasattr(self, 'prediction') and self.prediction:
-            border_style = "border: 2px solid red;" if self.prediction.threshold_deviation >= 0 else ""
-            caption_html = '''
-                <figcaption title="AI label: {0}" style="
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    background: rgba(0, 0, 0, 0.7);
-                    color: white;
-                    padding: 4px 8px;
-                    font-size: 12px;
-                    border-bottom-right-radius: 4px;
-                    z-index: 1;
-                    cursor: default;
-                    {2}
-                ">
-                    <i class="fa fa-magic"></i>
-                    <span>{1}</span>
-                </figcaption>
-            '''.format(
-                self.prediction.predicted_class,
-                self.prediction.taxon.name if self.prediction.taxon else "Off-topic",
-                border_style
-            )
-
-        return '''
-            <figure style="position: relative; display: inline-block;">
-                {0}
-                <a target="_blank" href="{1}">
-                    <img src="{2}" style="display: block;">
-                </a>
-            </figure>
-        '''.format(
-            caption_html,
-            self.photo.url,
-            self.get_medium_url()
-        )
-
-    medium_image_.allow_tags = True
 
     def save(self, *args, **kwargs):
 

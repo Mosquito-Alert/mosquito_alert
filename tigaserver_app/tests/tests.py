@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone as dt_timezone
+from decimal import Decimal
 import uuid
 
 # Create your tests here.
@@ -1236,42 +1237,6 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(response.data['body_html_en'], notif_content['body_html_en'])
         self.client.logout()
 
-    def test_favorite_endpoint(self):
-        self.client.force_authenticate(user=self.reritja_user)
-        r = Report.objects.get(pk=1)
-        data = {
-            'user_id': self.reritja_user.id,
-            'report_id': r.version_UUID,
-            'note': 'some note'
-        }
-
-        d = {
-            'user_id': self.reritja_user.id
-        }
-
-        response = self.client.get('/api/user_favorites/', data=d)
-        resp_data = response.data
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
-        self.assertTrue(len(resp_data) == 0, "Response should be an array of length 0, is not")
-
-        response = self.client.post('/api/favorite/', data=data)
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
-        my_fav = FavoritedReports.objects.filter(user=self.reritja_user,report=r).first()
-        self.assertTrue( my_fav is not None, "Favorite object should be created but id does not exist" )
-        consistent_write = my_fav.user == self.reritja_user and my_fav.report == r and my_fav.note == 'some note'
-        self.assertTrue(consistent_write, "Favorite object should be correctly written, but has the values {0} {1} {2}".format( self.reritja_user.id, my_fav.report.version_UUID, my_fav.note ) )
-
-        response = self.client.get('/api/user_favorites/', data=d)
-        resp_data = response.data
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
-        self.assertTrue(len(resp_data) == 1, "Response should be an array of length 1, is not")
-
-        response = self.client.post('/api/favorite/', data=data)
-        self.assertEqual(response.status_code, 204, "Response should be 204, is {0}".format(response.status_code))
-        my_fav = FavoritedReports.objects.filter(user=self.reritja_user, report=r).first()
-        self.assertTrue(my_fav is None, "Favorite object should not exist")
-
-        self.client.logout()
 
 class AnnotateCoarseTestCase(APITestCase):
     fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json', 'taxon.json']
@@ -1333,23 +1298,18 @@ class AnnotateCoarseTestCase(APITestCase):
                 'category_id': str(c_id)
             }
             if category.specify_certainty_level:
-                data['validation_value'] = '1'
+                data['validation_value'] = '1' # Probably
             response = self.client.post('/api/annotate_coarse/', data=data)
             self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
             r.refresh_from_db()
-            classification = json.loads(r.get_final_combined_expert_category_euro_struct_json())
-            category_text = classification['category']
-            category_id = int(classification['category_id'])
-            value = classification['value']
             if category.pk == 9:
                 # Not sure is displayed as 'Other species'
                 category = Categories.objects.get(pk=2)
-            self.assertEqual(category_text, category.name, "Category should be {0}, is {1}".format(category.name, category_text))
-            self.assertEqual(category_id, category.id, "Category id should be {0}, is {1}".format(category.id, category_id))
+            self.assertEqual(r.identification_task.taxon.object_id, category.id)
             if category.specify_certainty_level:
-                self.assertEqual(value, data['validation_value'], "Validation value should be {0}, is {1}".format(data['validation_value'], value))
+                self.assertEqual(r.identification_task.validation_value, int(data['validation_value']))
             else:
-                self.assertEqual(value, None, "Validation value should be None, is {0}".format(value))
+                self.assertEqual(r.identification_task.confidence, Decimal('1.0'))
             notif = Notification.objects.get(report=r)
             notif_content = notif.notification_content
             if c_id == 2: #other species
@@ -1373,16 +1333,12 @@ class AnnotateCoarseTestCase(APITestCase):
             'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
             'category_id': "4"
         }
-        data['validation_value'] = '2'
+        data['validation_value'] = '2' # Definitely
         response = self.client.post('/api/annotate_coarse/', data=data)
         self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
         r.refresh_from_db()
-        classification = json.loads(r.get_final_combined_expert_category_euro_struct_json())
-        category_text = classification['category']
-        category_id = int(classification['category_id'])
-        value = classification['value']
-        self.assertEqual(category_text, category.name,"Category should be {0}, is {1}".format(category.name, category_text))
-        self.assertEqual(category_id, category.id, "Category id should be {0}, is {1}".format(category.id, category_id))
+        self.assertEqual(r.identification_task.taxon.object_id, category.id)
+        self.assertEqual(r.identification_task.validation_value, int(data['validation_value']))
         notif = Notification.objects.get(report=r)
         notif_content = notif.notification_content
         self.assertTrue(albopictus_msg_dict['es'] in notif_content.body_html_native,"Report classified as albopictus associated notification should contain definitely albopictus message, it does not")

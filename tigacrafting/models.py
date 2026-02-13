@@ -26,8 +26,6 @@ from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasCha
 from django_lifecycle.priority import HIGHEST_PRIORITY
 from treebeard.mp_tree import MP_Node
 
-import tigacrafting.html_utils as html_utils
-
 from .managers import ExpertReportAnnotationManager, IdentificationTaskManager
 from .messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict, notsure_msg_dict
 from .permissions import UserRolePermissionMixin, Role, AnnotationPermission, IdentificationTaskPermission, BasePermission
@@ -714,12 +712,6 @@ class ExpertReportAnnotation(LifecycleModel):
         return self.user.groups.filter(name='expert').exists()
 
     @property
-    def is_on_ns_executive_validation_period(self):
-        if not self.identification_task:
-            return False
-        return self.identification_task.in_exclusivity_period
-
-    @property
     def confidence_label(self):
         return get_confidence_label(value=self.confidence)
 
@@ -834,35 +826,6 @@ class ExpertReportAnnotation(LifecycleModel):
                 }
             )
 
-    def get_photo_html_for_report_validation_superexpert(self):
-        #these_photos = Photo.objects.filter(report__version_UUID=self.version_UUID).visible()
-        these_photos = self.report.photos.all()
-        result = ''
-
-        for photo in these_photos:
-            best_photo = ExpertReportAnnotation.objects.filter(best_photo=photo).exists()
-            border_style = "3px solid green" if best_photo else "1px solid #333333"
-            male_status = 'checked="checked"' if photo.blood_genre == 'male' else ''
-            female_status = 'checked="checked"' if photo.blood_genre == 'female' else ''
-            fblood_status = 'checked="checked"' if photo.blood_genre == 'fblood' else ''
-            #dk_status = 'checked="checked"' if photo.blood_genre == 'dk' else ''
-            fg_status = 'checked="checked"' if photo.blood_genre == 'fgravid' else ''
-            fgb_status = 'checked="checked"' if photo.blood_genre == 'fgblood' else ''
-            result += '<div data-ano-id="' + str(self.id) + '" id="div_for_photo_to_display_report_' + str(self.report.version_UUID) + '">' \
-                        '<input data-best="' + str(best_photo) + '" type="radio" name="photo_to_display_report_' + str(self.report.version_UUID) + '" id="' + str(photo.id) + '" value="' + str(photo.id) + '" ' + ('checked="checked"' if these_photos.count() == 1 else '') + ' "/>Display this photo on public map:'\
-                        '</div>' \
-                        '<br>' \
-                        '<div style="border:' + border_style + ';margin:1px;position: relative;">' + photo.medium_image_for_validation_(show_prediction=True) + '</div>'
-                        # '<div id="blood_status_' + str(self.report.version_UUID) + '_' + str(photo.id) + '">' \
-                        # '<label title="Male" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_male" name="fblood_' + str(photo.id) + '" ' + male_status + '><i class="fa fa-mars fa-lg" aria-hidden="true"></i></label>' \
-                        # '<label title="Female" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_female" name="fblood_' + str(photo.id) + '" ' + female_status + '><i class="fa fa-venus fa-lg" aria-hidden="true"></i></label>' \
-                        # '<label title="Female blood" class="radio-inline"><input value="' + str(photo.id) + '_fblood" type="radio" name="fblood_' + str(photo.id) + '" ' + fblood_status + '><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-                        # '<label title="Female gravid" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgravid" name="fblood_' + str(photo.id) + '" ' + fg_status + '><i class="moon" aria-hidden="true"></i></label>' \
-                        # '<label title="Female gravid + blood" class="radio-inline"><input type="radio" value="' + str(photo.id) + '_fgblood" name="fblood_' + str(photo.id) + '" ' + fgb_status + '><i class="moon" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i></label>' \
-                        # '</div>' \
-                        # '<br>'
-        return result
-
     def get_score(self):
         score = -3
         if self.report.type == 'site':
@@ -878,12 +841,6 @@ class ExpertReportAnnotation(LifecycleModel):
             return score
         else:
             return -3
-
-    def get_html_color_for_label(self) -> str:
-        return html_utils.get_html_color_for_label(
-            taxon=self.taxon,
-            confidence=self.confidence
-        )
 
     def get_category_euro(self) -> str:
         if self.report.type == 'site':
@@ -1113,6 +1070,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
     def num_pending_annotations(self) -> int:
         return self.pending_annotations.count()
 
+    # TODO: delete this, no longer used
     @transaction.atomic
     def assign_reports(self, country: Optional['EuropeCountry'] = None) -> List[Optional[IdentificationTask]]:
         task_queue = IdentificationTask.objects.exclude(assignees=self.user).select_related('report')
@@ -1178,9 +1136,6 @@ class UserStat(UserRolePermissionMixin, models.Model):
     def get_role_identification_task_permission(self, role: Role) -> IdentificationTaskPermission:
         perm = super().get_role_identification_task_permission(role=role)
         return self._update_permissions_from_django_perms(perm, IdentificationTask)
-
-    def has_accepted_license(self):
-        return self.license_accepted
 
     def is_expert(self):
         return self.user.groups.filter(name="expert").exists()
