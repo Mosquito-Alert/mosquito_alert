@@ -5,7 +5,7 @@ import json
 from rest_framework.decorators import api_view
 
 from tigacrafting.models import *
-from tigaserver_app.models import Photo, Report
+from tigaserver_app.models import Report
 from django.db.models import Count
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
