@@ -2622,51 +2622,6 @@ class Photo(models.Model):
             return self.photo.url.replace('tigapics/', 'tigapics_medium/')
         return self.photo.url
 
-    def medium_image_(self):
-        return '<a href="{0}"><img src="{1}"></a>'.format(self.photo.url, self.get_medium_url())
-
-    def medium_image_for_validation_(self, show_prediction: bool = False):
-        caption_html = ""
-        if show_prediction and hasattr(self, 'prediction') and self.prediction:
-            border_style = "border: 2px solid red;" if self.prediction.threshold_deviation >= 0 else ""
-            caption_html = '''
-                <figcaption title="AI label: {0}" style="
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    background: rgba(0, 0, 0, 0.7);
-                    color: white;
-                    padding: 4px 8px;
-                    font-size: 12px;
-                    border-bottom-right-radius: 4px;
-                    z-index: 1;
-                    cursor: default;
-                    {2}
-                ">
-                    <i class="fa fa-magic"></i>
-                    <span>{1}</span>
-                </figcaption>
-            '''.format(
-                self.prediction.predicted_class,
-                self.prediction.taxon.name if self.prediction.taxon else "Off-topic",
-                border_style
-            )
-
-        return '''
-            <figure style="position: relative; display: inline-block;">
-                {0}
-                <a target="_blank" href="{1}">
-                    <img src="{2}" style="display: block;">
-                </a>
-            </figure>
-        '''.format(
-            caption_html,
-            self.photo.url,
-            self.get_medium_url()
-        )
-
-    medium_image_.allow_tags = True
-
     def save(self, *args, **kwargs):
 
         _is_adding = self._state.adding
