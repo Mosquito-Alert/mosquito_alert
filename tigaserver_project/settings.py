@@ -73,7 +73,6 @@ INSTALLED_APPS = (
     'rest_framework_gis',
     'leaflet',
     'stats',
-    'floppyforms',
     'taggit',
     'tigascoring',
     'drf_spectacular',
