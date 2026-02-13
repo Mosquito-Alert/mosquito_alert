@@ -142,25 +142,6 @@ def grant_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_exp
         a.category = award_category
     a.save()
 
-def get_icon_for_blood_genre(blood_genre) -> str:
-    blood_genre_table = {
-        Photo.BLOOD_GENRE_MALE: '<label title="Male"><i class="fa fa-mars fa-lg" aria-hidden="true"></i> Male</label>',
-        Photo.BLOOD_GENRE_FEMALE: '<label title="Female"><i class="fa fa-venus fa-lg" aria-hidden="true"></i> Female</label>',
-        Photo.BLOOD_GENRE_FEMALE_BLOOD_FED: '<label title="Female blood"><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed</label>',
-        Photo.BLOOD_GENRE_FEMALE_GRAVID: '<label title="Female gravid"><i class="moon" aria-hidden="true"></i> Gravid</label>',
-        Photo.BLOOD_GENRE_FEMALE_GRAVID_BLOOD_FED: '<label title="Female gravid + blood"><i class="moon" aria-hidden="true"></i><i class="fa fa-plus fa-lg" aria-hidden="true"></i><i class="fa fa-tint fa-lg" aria-hidden="true"></i> Bloodfed and gravid</label>',
-        Photo.BLOOD_GENRE_UNKNOWN: '<label title="Dont know"><i class="fa fa-question fa-lg" aria-hidden="true"></i> Dont know</label>'
-    }
-    if blood_genre is None:
-        return ''
-    else:
-        try:
-            return str(blood_genre_table[blood_genre])
-        except KeyError:
-            #return blood_genre_table['dk']
-            return ''
-
-
 class RankingData(models.Model):
     user_uuid = models.CharField(max_length=36, primary_key=True, help_text='User identifier uuid')
     class_value = models.CharField(max_length=60)
