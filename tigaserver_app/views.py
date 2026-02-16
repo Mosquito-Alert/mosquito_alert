@@ -10,7 +10,6 @@ from django_filters import rest_framework as filters
 import json
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, MapDataSerializer, CoverageMonthMapSerializer, TagSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, ExpertReportAnnotation, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, Categories, ReportResponse, Device
-from tigacrafting.models import FavoritedReports
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
@@ -226,35 +225,6 @@ A session is the full set of information uploaded by a user, usually in form of 
     def filter_queryset(self, queryset):
         queryset = super(SessionViewSet, self).filter_queryset(queryset)
         return queryset.order_by('-session_ID')
-
-
-@api_view(['POST'])
-def photo_blood(request):
-    photo_id = request.POST.get('photo_id', -1)
-    _status = request.POST.get('status', '')
-    if photo_id == -1:
-        raise ParseError(detail='photo_id param is mandatory')
-    if _status == '':
-        raise ParseError(detail='status param is mandatory')
-    try:
-        photo = Photo.objects.get(pk=int(photo_id))
-        photo.blood_genre = _status
-        photo.save()
-        return Response(status=status.HTTP_200_OK)
-    except Photo.DoesNotExist:
-        raise ParseError(detail='This picture does not exist')
-
-
-@api_view(['POST'])
-def photo_blood_reset(request):
-    report_id = request.POST.get('report_id', '')
-    if report_id == '':
-        raise ParseError(detail='report_id param is mandatory')
-    photos = Photo.objects.filter(report=report_id)
-    for p in photos:
-        p.blood_genre = None
-        p.save()
-    return Response(status=status.HTTP_200_OK)
 
 
 '''
@@ -769,28 +739,6 @@ class OrganizationsPinViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = OrganizationPin.objects.all()
 
 
-
-@api_view(['POST'])
-def favorite(request):
-    if request.method == 'POST':
-        user_id = request.POST.get('user_id', -1)
-        report_id = request.POST.get('report_id', '')
-        note = request.POST.get('note', '')
-        if user_id == -1:
-            raise ParseError(detail='user_id param is mandatory')
-        if report_id == '':
-            raise ParseError(detail='report_id param is mandatory')
-        user = get_object_or_404(User, pk=user_id)
-        report = get_object_or_404(Report, pk=report_id)
-        fav = FavoritedReports.objects.filter(user=user).filter(report=report).first()
-        if fav:
-            fav.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            new_fav = FavoritedReports(user=user, report=report, note=note)
-            new_fav.save()
-            return Response(status=status.HTTP_200_OK)
-
 def get_filter_params_from_q(q):
     if q == '':
         return {
@@ -1013,14 +961,3 @@ def coarse_filter_reports(request):
         }
 
         return Response(data, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def user_favorites(request):
-    if request.method == 'GET':
-        user_id = request.GET.get('user_id', -1)
-        if user_id == -1:
-            raise ParseError(detail='user_id param is mandatory')
-        user = get_object_or_404(User, pk=user_id)
-        favorites = FavoritedReports.objects.filter(user=user).values('report__version_UUID')
-        retval = [ f['report__version_UUID'] for f in favorites]
-        return Response(retval, status=status.HTTP_200_OK)

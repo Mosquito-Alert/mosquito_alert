@@ -1531,18 +1531,6 @@ paths:
                 type: array
                 items: {}
           description: ''
-  /en/metadataPhotoInfo:
-    get:
-      operationId: listmetadataPhotos
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
-          description: ''  
   /api/session_update/{id}/:
     put:
       operationId: UpdateSession

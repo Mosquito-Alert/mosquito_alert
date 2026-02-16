@@ -5,7 +5,7 @@ import json
 from rest_framework.decorators import api_view
 
 from tigacrafting.models import *
-from tigaserver_app.models import Photo, Report
+from tigaserver_app.models import Report
 from django.db.models import Count
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
@@ -15,53 +15,27 @@ from django.urls import reverse
 from django.conf import settings
 from django.http import HttpResponse
 from django.forms.models import modelformset_factory
-from tigacrafting.forms import SuperExpertReportAnnotationForm, PhotoGrid
+from tigacrafting.forms import PhotoGrid
 from tigaserver_app.models import Notification, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, Categories,AcknowledgedNotification, UserSubscription
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
 import urllib
 from tigaserver_app.serializers import DataTableNotificationSerializer, DataTableAimalertSerializer
 from django.db import transaction
-from tigacrafting.forms import LicenseAgreementForm
 import logging
 from django.utils.translation import gettext as _
 from tigacrafting.querystring_parser import parser
 import functools
 import operator
 
-#----------Metadades fotos----------#
-
-import PIL.Image
-from PIL.ExifTags import TAGS, GPSTAGS
 from decimal import *
 from tigaserver_project.settings import *
 from rest_framework.response import Response
-import re
 from django.utils import timezone
 
 #-----------------------------------#
 
 logger_notification = logging.getLogger('mosquitoalert.notification')
-
-@login_required
-def entolab_license_agreement(request):
-    if request.method == 'POST':
-        form = LicenseAgreementForm(request.POST)
-        if form.is_valid():
-            request.user.userstat.license_accepted = True
-            request.user.userstat.save()
-            return HttpResponseRedirect('/experts')
-    else:
-        form = LicenseAgreementForm()
-    return render(request, 'tigacrafting/entolab_license_agreement.html', {'form': form})
-
-@login_required
-def predefined_messages(request):
-    langs = []
-    for elem in settings.LANGUAGES:
-        langs.append({"val":elem[0],"txt":elem[1]})
-    langs.sort(key=lambda x: x.get("txt"))
-    return render(request, 'tigacrafting/predefined_messages.html', {'langs': langs})
 
 
 @login_required
@@ -97,14 +71,11 @@ def report_expiration(request, country_id=None):
 
 @transaction.atomic
 @login_required
-def expert_report_annotation(request, scroll_position='', tasks_per_page='10', note_language='es', load_new_reports='F', year='all', orderby='date', tiger_certainty='all', site_certainty='all', result_source='all', pending='na', checked='na', status='all', final_status='na', max_pending=5, max_given=3, version_uuid='na', linked_id='na', ns_exec='all', edit_mode='off', tags_filter='na'):
+def expert_report_annotation(request):
     this_user = request.user
 
     if settings.SHOW_USER_AGREEMENT_ENTOLAB:
-        if this_user.userstat:
-            if not this_user.userstat.has_accepted_license():
-                return HttpResponseRedirect(reverse('entolab_license_agreement'))
-        else:
+        if not this_user.userstat:
             return HttpResponse("There is a problem with your current user. Please contact the EntoLab admin at " + settings.ENTOLAB_ADMIN)
 
     this_user_is_expert = this_user.userstat.is_expert()
@@ -117,242 +88,8 @@ def expert_report_annotation(request, scroll_position='', tasks_per_page='10', n
         return HttpResponsePermanentRedirect('https://app.mosquitoalert.com')
     # NOTE: from now on, only superexpert is allowed to visit this view
 
-    args = {}
-    args.update(csrf(request))
-    args['scroll_position'] = scroll_position
-
-    AnnotationFormset = modelformset_factory(ExpertReportAnnotation, form=SuperExpertReportAnnotationForm, extra=0, can_order=False)
-
-    if request.method == 'POST':
-        scroll_position = request.POST.get("scroll_position", '0')
-        orderby = request.POST.get('orderby', orderby)
-        tiger_certainty = request.POST.get('tiger_certainty', tiger_certainty)
-        site_certainty = request.POST.get('site_certainty', site_certainty)
-        result_source = request.POST.get('result_source', result_source)
-        pending = request.POST.get('pending', pending)
-        status = request.POST.get('status', status)
-        final_status = request.POST.get('final_status', final_status)
-        version_uuid = request.POST.get('version_uuid', version_uuid)
-        linked_id = request.POST.get('linked_id', linked_id)
-        ns_exec = request.POST.get('ns_exec', ns_exec)
-        tags_filter = request.POST.get('tags_filter', tags_filter)
-        checked = request.POST.get('checked', checked)
-        tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
-        note_language = request.GET.get('note_language', "es")
-        load_new_reports = request.POST.get('load_new_reports', load_new_reports)
-        save_formset = request.POST.get('save_formset', "F")
-        if save_formset == "T":
-            formset = AnnotationFormset(request.POST)
-            if formset.is_valid():
-                for f in formset:
-                    one_form = f.save(commit=False)
-                    one_form.save()
-                    f.save_m2m()
-            else:
-                return render(request, 'tigacrafting/formset_errors.html', {'formset': formset})
-        page = request.POST.get('page')
-        if not page:
-            page = '1'
-        return HttpResponseRedirect(reverse('expert_report_annotation') + '?page='+page+'&tasks_per_page='+tasks_per_page+'&note_language=' + note_language + '&scroll_position='+scroll_position+(('&pending='+pending) if pending else '') + (('&checked='+checked) if checked else '') + (('&final_status='+final_status) if final_status else '') + (('&version_uuid='+version_uuid) if version_uuid else '') + (('&linked_id='+linked_id) if linked_id else '') + (('&orderby='+orderby) if orderby else '') + (('&tiger_certainty='+tiger_certainty) if tiger_certainty else '') + (('&site_certainty='+site_certainty) if site_certainty else '') + (('&result_source='+result_source) if result_source else '') + (('&status='+status) if status else '') + (('&load_new_reports='+load_new_reports) if load_new_reports else '') + (('&tags_filter=' + urllib.parse.quote_plus(tags_filter)) if tags_filter else ''))
-    else:
-        tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
-        note_language = request.GET.get('note_language', note_language)
-        scroll_position = request.GET.get('scroll_position', scroll_position)
-        orderby = request.GET.get('orderby', orderby)
-        tiger_certainty = request.GET.get('tiger_certainty', tiger_certainty)
-        site_certainty = request.GET.get('site_certainty', site_certainty)
-        result_source = request.GET.get('result_source', result_source)
-        pending = request.GET.get('pending', pending)
-        status = request.GET.get('status', status)
-        final_status = request.GET.get('final_status', final_status)
-        version_uuid = request.GET.get('version_uuid', version_uuid)
-        linked_id = request.GET.get('linked_id', linked_id)
-        ns_exec = request.GET.get('ns_exec', ns_exec)
-        tags_filter = request.GET.get('tags_filter', tags_filter)
-        checked = request.GET.get('checked', checked)
-        load_new_reports = request.GET.get('load_new_reports', load_new_reports)
-        edit_mode = request.GET.get('edit_mode', edit_mode)
-
-        task_qs = IdentificationTask.objects
-
-        if load_new_reports == 'T' or this_user_is_superexpert:
-            this_user.userstat.assign_reports()
-
-        if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not final_status or final_status == 'na'):
-            final_status = 'public'
-        if (version_uuid == 'na' and linked_id == 'na' and tags_filter == 'na') and (not checked or checked == 'na'):
-            checked = 'unchecked'
-
-        user_tasks = task_qs.filter(assignees=this_user)
-
-        args['n_flagged'] = user_tasks.done().filter(is_flagged=True).count()
-        args['n_hidden'] = user_tasks.done().filter(is_safe=False).count()
-        args['n_public'] = user_tasks.done().filter(is_flagged=False, is_safe=True).count()
-
-        user_report_annotations = ExpertReportAnnotation.objects.filter(
-            user=this_user,
-            identification_task__in=user_tasks,
-        )
-        args['n_unchecked'] = user_report_annotations.filter(validation_complete=False).count()
-        args['n_confirmed'] = user_report_annotations.filter(validation_complete=True, revise=False).count()
-        args['n_revised'] = user_report_annotations.filter(validation_complete=True, revise=True).count()
-
-        all_annotations = this_user.expert_report_annotations.all()
-        if version_uuid and version_uuid != 'na':
-            all_annotations = all_annotations.filter(report__pk=version_uuid)
-        if linked_id and linked_id != 'na':
-            all_annotations = all_annotations.filter(linked_id=linked_id)
-        if tags_filter and tags_filter != 'na' and tags_filter!='':
-            tags_array = tags_filter.split(",")
-            # we must go up to Report to filter tags, because you don't want to filter only your own tags but the tag that
-            # any expert has put on the report
-            # these are all (not only yours, but also) the reports that contain the filtered tag
-            # we want the annotations of the reports which contain the tag(s)
-            all_annotations = all_annotations.filter(tags__name__in=tags_array)
-        if (not version_uuid or version_uuid == 'na') and (not linked_id or linked_id == 'na') and (not tags_filter or tags_filter == 'na' or tags_filter==''):
-            if year and year != 'all':
-                try:
-                    this_year = int(year)
-                    all_annotations = all_annotations.filter(report__server_upload_time__year=this_year)
-                except ValueError:
-                    pass
-            if tiger_certainty and tiger_certainty != 'all':
-                try:
-                    this_certainty = int(tiger_certainty)
-                    all_annotations = all_annotations.filter(category__id=this_certainty)
-                except ValueError:
-                    pass
-            if site_certainty and site_certainty != 'all':
-                try:
-                    this_certainty = int(site_certainty)
-                    all_annotations = all_annotations.filter(site_certainty_category=this_certainty)
-                except ValueError:
-                    pass
-            if result_source and result_source != 'all':
-                try:
-                    all_annotations = all_annotations.filter(identification_task__result_source=result_source)
-                except ValueError:
-                    pass
-            if ns_exec and ns_exec != 'all':
-                try:
-                    this_exec = int(ns_exec)
-                    all_annotations = all_annotations.filter(validation_complete_executive=True, user_id=this_exec)
-                except ValueError:
-                    pass
-
-            if pending == "complete":
-                all_annotations = all_annotations.filter(validation_complete=True)
-            elif pending == 'pending':
-                all_annotations = all_annotations.filter(validation_complete=False)
-            elif pending == 'favorite':
-                all_annotations = all_annotations.filter(report__favorites__user=this_user)
-            if status == "flagged":
-                all_annotations = all_annotations.filter(status=ExpertReportAnnotation.STATUS_FLAGGED)
-            elif status == "hidden":
-                all_annotations = all_annotations.filter(status=ExpertReportAnnotation.STATUS_HIDDEN)
-            elif status == "public":
-                all_annotations = all_annotations.filter(status=ExpertReportAnnotation.STATUS_PUBLIC)
-
-            if checked == "unchecked":
-                all_annotations = all_annotations.filter(validation_complete=False)
-            elif checked == "confirmed":
-                all_annotations = all_annotations.filter(validation_complete=True, revise=False)
-            elif checked == "revised":
-                all_annotations = all_annotations.filter(validation_complete=True, revise=True)
-            elif checked == "favorite":
-                all_annotations = all_annotations.filter(report__favorites__user=this_user)
-
-            if final_status == "flagged":
-                all_annotations = all_annotations.filter(
-                    identification_task__is_flagged=True
-                )
-            elif final_status == "hidden":
-                all_annotations = all_annotations.filter(
-                    identification_task__is_safe=False
-                )
-            elif final_status == "public":
-                all_annotations = all_annotations.filter(
-                    identification_task__is_safe=True,
-                    identification_task__is_flagged=False
-                )
-
-        all_annotations = all_annotations.order_by('-report__server_upload_time')
-        if orderby == "tiger_score":
-            all_annotations = all_annotations.order_by('category__name')
-
-        paginator = Paginator(all_annotations, int(tasks_per_page))
-        page_num = request.GET.get('page', 1)
-        page_obj = paginator.get_page(page_num)
-
-        this_formset = AnnotationFormset(queryset=page_obj.object_list)
-        args['formset'] = this_formset
-        args['objects'] = page_obj
-        args['pages'] = paginator.page_range
-        current_pending = this_user.userstat.num_pending_annotations
-        args['n_pending'] = current_pending
-        n_complete = this_user.userstat.num_completed_annotations
-        args['n_complete'] = n_complete
-        n_favorites = FavoritedReports.objects.filter(user=this_user).count()
-        args['n_favorites'] = n_favorites
-        args['n_total'] = n_complete + current_pending
-        args['year'] = year
-        args['orderby'] = orderby
-        args['tiger_certainty'] = tiger_certainty
-        if tiger_certainty:
-            if tiger_certainty != 'all':
-                try:
-                    this_certainty = int(tiger_certainty)
-                    c = Categories.objects.get(pk=this_certainty)
-                    args['tiger_certainty_label'] = c.name
-                except ValueError:
-                    pass
-            else:
-                args['tiger_certainty_label'] = 'all'
-        args['site_certainty'] = site_certainty
-        args['result_source'] = result_source
-        args['pending'] = pending
-        args['checked'] = checked
-        args['status'] = status
-        args['final_status'] = final_status
-        args['version_uuid'] = version_uuid
-        args['linked_id'] = linked_id
-        args['ns_exec'] = ns_exec
-        if ns_exec:
-            if ns_exec != 'all':
-                try:
-                    exec_validator_id = int(ns_exec)
-                    exec_validator = User.objects.get(pk=exec_validator_id)
-                    args['exec_validated_label'] = "{0} - {1}".format(exec_validator.username, exec_validator.userstat.national_supervisor_of.name_engl )
-                except:
-                    pass
-            else:
-                args['exec_validated_label'] = 'N/A'
-        args['tags_filter'] = tags_filter
-        args['my_linked_ids'] = this_user.expert_report_annotations.filter(report__type='adult').values('linked_id').distinct()
-        args['tasks_per_page'] = tasks_per_page
-        args['note_language'] = note_language
-        args['scroll_position'] = scroll_position
-        args['edit_mode'] = edit_mode
-        n_query_records = all_annotations.count()
-        args['n_query_records'] = n_query_records
-        args['tasks_per_page_choices'] = range(5, min(100, n_query_records)+1, 5)
-        args['category_list'] = Categories.objects.order_by('name')
-        args['complex_list'] = Complex.objects.order_by('description')
-        args['other_species_insects'] = OtherSpecies.objects.filter(category='Other insects').order_by('name')
-        args['other_species_culicidae'] = OtherSpecies.objects.filter(category='Culicidae').order_by('ordering','name')
-
-        args['country_name'] = EuropeCountry.objects.filter(
-            models.Exists(
-                UserStat.objects.filter(
-                    user__groups__name='expert',
-                    native_of_id=models.OuterRef('gid')
-                )
-            )
-        ).order_by('name_engl').values('name_engl','iso3_code')
-
-        args['ns_list'] = User.objects.filter(userstat__national_supervisor_of__isnull=False).order_by('userstat__national_supervisor_of__name_engl')
-
-        return render(request, 'tigacrafting/superexpert_report_annotation.html', args)
+    if request.method == 'GET':
+        return render(request, 'tigacrafting/superexpert_report_annotation.html')
 
 
 @login_required
@@ -788,92 +525,3 @@ def notification_detail(request,notification_id):
 
     context = {'notification':notification, 'potential_audience':potential_audience,'seen_by':seen_by}
     return render(request,'tigacrafting/notification_detail.html',context)
-
-@api_view(['GET'])
-def metadataPhoto(request):
-    idReport = request.QUERY_PARAMS.get('id', None)
-    idPhoto = request.QUERY_PARAMS.get('id_photo', None)
-    utf8string = idReport.encode("utf-8")
-    idPhotoUTF8 = idPhoto.encode("utf-8")
-    photoData = []
-    photoCoord = []
-    photoDateTime = []
-    exifgpsInfoDict = {}
-    exifDateTime = {}
-    gpsData = {}
-    photo = Photo.objects.filter(report=utf8string).filter(id=idPhotoUTF8)
-    for t in photo:
-        urlPhoto = t.photo.url
-
-    urlPhoto = BASE_DIR + urlPhoto
-
-    exif = get_exif(urlPhoto)
-
-
-    if exif is None:
-        context = {'noData': 'No data available.'}
-    else:
-        if 'GPSInfo' in exif:
-            _TAGS_r = dict(((v, k) for k, v in TAGS.items()))
-            _GPSTAGS_r = dict(((v, k) for k, v in GPSTAGS.items()))
-
-            exifgpsInfo = exif["GPSInfo"]
-            for k in exifgpsInfo.keys():
-                exifgpsInfoDict[str(GPSTAGS[k])] = exifgpsInfo[k]
-                gpsData[str(GPSTAGS[k])] = str(exifgpsInfo[k])
-            lat, lon = get_decimal_coordinates(exifgpsInfoDict)
-
-            # lat, lon = get_decimal_coordinates(exif['GPSInfo'])
-            photoCoord.append({'lat': lat, 'lon': lon})
-            #gpsData.append({'gpsData': exifgpsInfoDict})
-
-            del exif["GPSInfo"]
-
-        if 'DateTime' in exif.keys():
-            # for d in exif:
-                # exifDateTime[str(TAGS[d])] = exif[d]
-            photoDateTime.append({'DateTime': exif['DateTime']})
-
-        if not photoCoord and not photoDateTime:
-            context = {'photoData': exif}
-        elif not photoDateTime:
-            context = {'photoData': exif, 'photoCoord': photoCoord}
-        elif not photoCoord:
-            context = {'photoData': exif, 'photoDateTime': photoDateTime}
-        else:
-            context = {'photoData': exif, 'photoDateTime': photoDateTime, 'photoCoord': photoCoord}
-
-    return Response(context)
-
-
-def get_decimal_coordinates(info):
-    try:
-        for key in ['Latitude', 'Longitude']:
-            v1 = str('GPS' + key)
-            v2 = str('GPS' + key + 'Ref')
-
-            if v1 in info.keys() and v2 in info.keys():
-                e = info['GPS' + key]
-                ref = info['GPS' + key + 'Ref']
-                info[v1] = (Decimal(e[0][0] / e[0][1]) + Decimal(e[1][0] / e[1][1]) / 60 + Decimal(e[2][0] / e[2][1]) / 3600) * (-1 if ref in ['S', 'W'] else 1)
-        if 'GPSLatitude' in info and 'GPSLongitude' in info:
-            return [float(info['GPSLatitude']), float(info['GPSLongitude'])]
-        else:
-            return [0.0, 0.0]
-    except:
-        return None
-
-
-def get_exif(filename):
-    try:
-        img = PIL.Image.open(filename)
-
-        if img is not None:
-            exif = {
-                PIL.ExifTags.TAGS[key]: value
-                for key, value in img._getexif().items()
-                if key in PIL.ExifTags.TAGS or key in PIL.ExifTags.GPSTAGS
-            }
-        return exif
-    except:
-        return None
