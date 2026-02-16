@@ -13,7 +13,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.test import TransactionTestCase
 from django.utils.translation import activate, deactivate, gettext as _
-from tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, ExpertReportAnnotation, Photo, NotificationContent, Notification
+from tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, Photo, NotificationContent, Notification
 from tigacrafting.models import ExpertReportAnnotation, Categories, Complex, OtherSpecies, Taxon, IdentificationTask
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType

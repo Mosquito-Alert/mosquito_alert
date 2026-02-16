@@ -4,14 +4,14 @@ import uuid
 
 # Create your tests here.
 from django.test import TestCase, override_settings
-from tigaserver_app.models import Report, EuropeCountry, ExpertReportAnnotation, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp, UserSubscription, LauEurope, TemporaryBoundary
+from tigaserver_app.models import Report, EuropeCountry, Categories, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp, UserSubscription, LauEurope, TemporaryBoundary
 from PIL import Image, ExifTags
 import os
 from django.contrib.gis.geos import Polygon, MultiPolygon, Point, LineString
 from django.core.cache import cache
 from django.utils import timezone
 from tigaserver_app.models import TigaUser, Report, Photo, Fix
-from tigacrafting.models import FavoritedReports
+from tigacrafting.models import ExpertReportAnnotation, FavoritedReports
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APITransactionTestCase

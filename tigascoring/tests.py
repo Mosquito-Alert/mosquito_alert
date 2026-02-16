@@ -1,9 +1,9 @@
 from django.test import TestCase
 from django.utils.translation import activate, deactivate, gettext as _
-from tigaserver_app.models import TigaUser, Report, Photo, ExpertReportAnnotation, Award, \
+from tigaserver_app.models import TigaUser, Report, Photo, Award, \
     Notification, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
     ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
-from tigacrafting.models import Categories
+from tigacrafting.models import Categories, ExpertReportAnnotation
 from tigaserver_project import settings as conf
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from datetime import datetime

@@ -1,6 +1,6 @@
 import pytest
 
-from tigaserver_app.models import ExpertReportAnnotation
+from tigacrafting.models import ExpertReportAnnotation
 
 # NOTE: needed for token with perms fixture
 @pytest.fixture
