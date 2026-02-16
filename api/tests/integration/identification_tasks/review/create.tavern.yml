@@ -92,7 +92,7 @@ stages:
         public_photo_uuid: "{identification_task.photo.uuid}"
         is_safe: True
         public_note: "Test new public note"
-        result: null
+        classification: null
     response:
       status_code: 201
       json:
