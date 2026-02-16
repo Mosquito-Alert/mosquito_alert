@@ -1,7 +1,11 @@
 [run]
-include = 
-    tiga*/*
-
 omit = 
     */migrations/*
     */tests/*
+    */templates/*
+    */static/*
+    compose/
+    locale/
+    requirements/
+    templates/
+    util_scripts/
