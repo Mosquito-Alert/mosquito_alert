@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.conf import settings
 from django_filters import rest_framework as filters
 import json
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, MapDataSerializer, CoverageMonthMapSerializer, TagSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, CoverageMonthMapSerializer, TagSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, ReportResponse, Device
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -685,37 +685,6 @@ def uuid_list_autocomplete(request):
         qs = ExpertReportAnnotation.objects.filter(user=user).filter(report__type='adult').filter(report__version_UUID__startswith=uuid)
         qs = qs.values('report__version_UUID').distinct()
         return Response(qs, status=status.HTTP_200_OK)
-
-package_filter = (
-        Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) |
-        Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) |
-        Q(package_name='cat.ibeji.tigatrapp') |
-        Q(package_name='Mosquito Alert')
-)
-
-# this function can be called by scripts and replicates the api behaviour, without calling API. Therefore, no timeouts
-def all_reports_internal(year: int):
-    queryset = Report.objects.published().filter( package_filter )\
-        .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).filter(server_upload_time__year=year)
-
-    serializer = MapDataSerializer(
-        queryset.prefetch_related('expert_report_annotations', 'responses', 'photos').select_related('identification_task'),
-        many=True
-    )
-    return serializer.data
-
-
-def non_visible_reports_internal(year: int):
-    queryset = Report.objects.published(False)
-
-    if year is not None:
-        queryset = queryset.filter(server_upload_time__year=year)
-
-    serializer = MapDataSerializer(
-        queryset.prefetch_related('expert_report_annotations', 'responses', 'photos').select_related('identification_task'),
-        many=True
-    )
-    return serializer.data
 
 
 class OWCampaignsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
