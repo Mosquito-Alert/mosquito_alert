@@ -347,6 +347,23 @@ class TestIdentificationTaskAPI:
         assert response.status_code == status.HTTP_200_OK
         assert (response.data['result'] == None) == expect_null
 
+    def test_result_characteristics(self, api_client, permitted_user, identification_task):
+        identification_task.result_source = IdentificationTask.ResultSource.EXPERT
+        identification_task.sex = 'female'
+        identification_task.is_gravid = True
+        identification_task.is_blood_fed = True
+        identification_task.save()
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task),
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        characteristics = response.data['result']['characteristics']
+        assert characteristics['sex'] == 'female'
+        assert characteristics['is_gravid'] == True
+        assert characteristics['is_blood_fed'] == True
+
 @pytest.mark.django_db
 class TestIdentificationTaskPredictionAPI:
     @classmethod
