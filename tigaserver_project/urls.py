@@ -10,7 +10,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from stats.views import show_usage, workload_stats, \
     stats_user_score, stats_user_ranking, global_assignments, global_assignments_list
-from tigacrafting.views import expert_report_annotation, expert_status, picture_validation, notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, expert_report_pending, expert_report_complete, report_expiration, aimalog_datatable, aimalog, coarse_filter
+from tigacrafting.views import expert_report_annotation, expert_status, notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, expert_report_pending, expert_report_complete, report_expiration, aimalog_datatable, aimalog, coarse_filter
 from django.views.i18n import JavaScriptCatalog
 from django.urls import include,path
 from django.contrib.auth import views as auth_views
@@ -87,7 +87,6 @@ urlpatterns += i18n_patterns(
     path('experts/status/reports/complete', expert_report_complete, name='expert_report_complete'),
     path('experts/status/reports/single/<uuid:version_uuid>/', RedirectView.as_view(url='https://app.mosquitoalert.com/identification_tasks/%(version_uuid)s/', permanent=True), name='single_report_view'),
     path('experts/status/people/', expert_status, name='expert_status'),
-    path('photo_grid/', picture_validation, name='picture_validation'),
     path('coarse_filter/', coarse_filter, name='coarse_filter'),
     path('notifications/', notifications_version_two, name='notifications'),
     path('notifications/list', notifications_table, name='notifications_table'),

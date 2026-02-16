@@ -5,21 +5,16 @@ import json
 from rest_framework.decorators import api_view
 
 from tigacrafting.models import *
-from tigaserver_app.models import Report
 from django.db.models import Count
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
-from django.template.context_processors import csrf
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.urls import reverse
 from django.conf import settings
 from django.http import HttpResponse
-from django.forms.models import modelformset_factory
-from tigacrafting.forms import PhotoGrid
-from tigaserver_app.models import Notification, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, Categories,AcknowledgedNotification, UserSubscription
+from tigaserver_app.models import Notification, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, AcknowledgedNotification, UserSubscription
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
-import urllib
 from tigaserver_app.serializers import DataTableNotificationSerializer, DataTableAimalertSerializer
 from django.db import transaction
 import logging
@@ -165,40 +160,6 @@ def expert_report_complete(request):
 
     return Response(context)
 
-def auto_annotate_notsure(report: Report) -> None:
-    ExpertReportAnnotation.create_auto_annotation(
-        report=report,
-        category=Categories.objects.get(pk=9),
-        validation_value=None
-    )
-
-def auto_annotate_probably_albopictus(report: Report) -> None:
-    ExpertReportAnnotation.create_auto_annotation(
-        report=report,
-        category=Categories.objects.get(pk=4),
-        validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
-    )
-
-def auto_annotate_albopictus(report: Report) -> None:
-    ExpertReportAnnotation.create_auto_annotation(
-        report=report,
-        category=Categories.objects.get(pk=4),
-        validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY
-    )
-
-def auto_annotate_culex(report: Report) -> None:
-    ExpertReportAnnotation.create_auto_annotation(
-        report=report,
-        category=Categories.objects.get(pk=10),
-        validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
-    )
-
-def auto_annotate_other_species(report: Report) -> None:
-    ExpertReportAnnotation.create_auto_annotation(
-        report=report,
-        category=Categories.objects.get(pk=2),
-        validation_value=None
-    )
 
 @login_required
 def coarse_filter(request):
@@ -212,155 +173,6 @@ def coarse_filter(request):
         return render(request, 'tigacrafting/coarse_filter.html', context)
     else:
         return HttpResponse("You need to belong to the coarse filter group to access this page, please contact MoveLab.")
-
-@login_required
-def picture_validation(request,tasks_per_page='300',visibility='visible', usr_note='', type='all', country='all', aithr='1.00'):
-    this_user = request.user
-    this_user_is_coarse = this_user.groups.filter(name='coarse_filter').exists()
-    super_movelab = User.objects.get(pk=24)
-
-    if not this_user_is_coarse:
-        return HttpResponse("You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab.")
-
-    args = {}
-    args.update(csrf(request))
-    PictureValidationFormSet = modelformset_factory(Report, form=PhotoGrid, extra=0, can_order=False)
-    if request.method == 'POST':
-        save_formset = request.POST.get('save_formset', "F")
-        tasks_per_page = request.POST.get('tasks_per_page', tasks_per_page)
-        if save_formset == "T":
-            formset = PictureValidationFormSet(request.POST)
-            if formset.is_valid():
-                for f in formset:
-                    report = f.save(commit=False)
-                    #check that the report hasn't been assigned to anyone before saving, as a precaution to not hide assigned reports
-                    who_has = report.get_who_has()
-                    if who_has == '':
-                        report.save()
-
-###############-------------------------------- FastUpload --------------------------------###############
-
-                        #print(f.cleaned_data)
-                        if f.cleaned_data['fastUpload']:
-                            #check that annotation does not exist, to avoid duplicates
-                            if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
-                                ExpertReportAnnotation.create_super_expert_approval(report=report)
-###############------------------------------ FI FastUpload --------------------------------###############
-
-                        if f.cleaned_data['other_species']:
-                            auto_annotate_other_species(report)
-                        if f.cleaned_data['probably_culex']:
-                            auto_annotate_culex(report)
-                        if f.cleaned_data['probably_albopictus']:
-                            auto_annotate_probably_albopictus(report)
-                        if f.cleaned_data['sure_albopictus']:
-                            auto_annotate_albopictus(report)
-                        if f.cleaned_data['not_sure']:
-                            auto_annotate_notsure(report)
-
-        page = request.POST.get('page')
-        visibility = request.POST.get('visibility')
-        usr_note = request.POST.get('usr_note')
-        type = request.POST.get('type', type)
-        country = request.POST.get('country', country)
-        aithr = request.POST.get('aithr', aithr)
-        if aithr == '':
-            aithr = '0.75'
-
-        if not page:
-            page = request.GET.get('page',"1")
-        return HttpResponseRedirect(reverse('picture_validation') + '?page=' + page + '&tasks_per_page='+tasks_per_page + '&visibility=' + visibility + '&usr_note=' + urllib.parse.quote_plus(usr_note) + '&type=' + type + '&country=' + country + '&aithr=' + aithr)
-    else:
-        tasks_per_page = request.GET.get('tasks_per_page', tasks_per_page)
-        type = request.GET.get('type', type)
-        country = request.GET.get('country', country)
-        visibility = request.GET.get('visibility', visibility)
-        usr_note = request.GET.get('usr_note', usr_note)
-        aithr = request.GET.get('aithr', aithr)
-        if aithr == '':
-            aithr = '0.75'
-
-    reports_qs = Report.objects.in_coarse_filter().order_by('-server_upload_time')
-
-    if type == 'adult':
-        type_readable = "Adults"
-        reports_qs = reports_qs.filter(
-            type=Report.TYPE_ADULT
-        )
-    elif type == 'site':
-        type_readable = "Breeding sites - Storm drains"
-        reports_qs = reports_qs.filter(type=Report.TYPE_SITE).filter(
-            type=Report.TYPE_SITE,
-            breeding_site_type=Report.BreedingSiteType.STORM_DRAIN
-        )
-    elif type == 'site-o':
-        type_readable = "Breeding sites - Other"
-        reports_qs = reports_qs.filter(
-            type=Report.TYPE_SITE
-        ).exclude(
-            breeding_site_type=Report.BreedingSiteType.STORM_DRAIN
-        )
-    elif type == 'all':
-        type_readable = "All"
-
-    if visibility == 'visible':
-        reports_qs = reports_qs.filter(hide=False)
-    elif visibility == 'hidden':
-        reports_qs = reports_qs.filter(hide=True)
-
-    if usr_note and usr_note != '':
-        reports_qs = reports_qs.filter(note__icontains=usr_note)
-
-    if country and country != '':
-        if country == 'all':
-            country_readable = 'All'
-        else:
-            country = get_object_or_404(EuropeCountry, int(country))
-            country_readable = country.name_engl
-            reports_qs = reports_qs.filter(country=country)
-
-    if aithr:
-        reports_qs = reports_qs.filter(
-            models.Q(identification_task__pred_insect_confidence__isnull=True)
-            | models.Q(identification_task__pred_insect_confidence__lte=float(aithr))
-        )
-
-    reports_qs = reports_qs.prefetch_related('photos').select_related('country', 'identification_task').order_by('-server_upload_time')
-    paginator = Paginator(
-        reports_qs,
-        int(tasks_per_page)
-    )
-    page_num = request.GET.get('page', 1)
-
-    objects = paginator.get_page(page_num)
-    page_query = objects
-    page_query.ordered = True
-
-    this_formset = PictureValidationFormSet(queryset=page_query)
-    args['formset'] = this_formset
-    args['objects'] = objects
-    args['page'] = page_num
-    args['pages'] = range(1, paginator.num_pages + 1)
-    args['new_reports_unfiltered'] = page_query
-    args['tasks_per_page'] = tasks_per_page
-    args['aithr'] = aithr
-    args['visibility'] = visibility
-    args['usr_note'] = usr_note
-    args['type'] = type
-    args['country'] = country
-
-    args['country_readable'] = country_readable
-
-    args['countries'] = EuropeCountry.objects.all().order_by('name_engl')
-
-    args['type_readable'] = type_readable
-
-    args['n_query_records'] = reports_qs.count()
-
-    range_list = [ n for n in range(5, 101, 5) ]
-    args['tasks_per_page_choices'] = range_list + [200,300]
-
-    return render(request, 'tigacrafting/photo_grid.html', args)
 
 @login_required
 def aimalog(request):
