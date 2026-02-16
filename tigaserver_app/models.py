@@ -2254,15 +2254,6 @@ class Report(TimeZoneModelMixin, models.Model):
 
         return ExpertReportAnnotation.STATUS_PUBLIC
 
-    def get_who_has(self):
-        result = []
-        for ano in self.expert_report_annotations.all().select_related('user'):
-            result.append(
-                ano.user.username + (': validated' if ano.validation_complete else ': pending')
-            )
-
-        return ", ".join(result)
-
     def get_final_photo_url_for_notification(self):
         identification_task = getattr(self, "identification_task", None)
         photo = None
