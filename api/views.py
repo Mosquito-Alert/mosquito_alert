@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Callable, Optional
 import uuid
 
@@ -294,6 +295,11 @@ class BaseReportViewSet(
 
     permission_classes = (ReportPermissions,)
 
+    @property
+    @abstractmethod
+    def filename_csv(self):
+        raise NotImplementedError
+
     def get_permissions(self):
         # Check if the request is for an action
         if self.action and hasattr(self, self.action):
@@ -352,8 +358,7 @@ class BaseReportViewSet(
                 ),
                 content_type=CSVStreamingRenderer.media_type,
             )
-            # TODO: set filename dynamically?
-            response["Content-Disposition"] = 'attachment; filename="reports.csv"'
+            response["Content-Disposition"] = 'attachment; filename="{}"'.format(self.filename_csv)
             return response
 
         return super().list(request, *args, **kwargs)
@@ -458,6 +463,8 @@ class BiteViewSet(BaseReportViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_BITE)
 
+    filename_csv = "bites.csv"
+
     @extend_schema(responses={
         (200, 'application/json'): BiteGeoModelSerializer(many=True),
         (200, GeoJsonRenderer.media_type): BiteGeoJsonModelSerializer(many=True),
@@ -490,6 +497,8 @@ class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_SITE)
 
+    filename_csv = "breeding_sites.csv"
+
     @extend_schema(responses={
         (200, 'application/json'): BreedingSiteGeoModelSerializer(many=True),
         (200, GeoJsonRenderer.media_type): BreedingSiteGeoJsonModelSerializer(many=True),
@@ -521,6 +530,8 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
     filterset_class = ObservationFilter
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_ADULT)
+
+    filename_csv = "observations.csv"
 
     @extend_schema(responses={
         (200, 'application/json'): ObservationGeoModelSerializer(many=True),

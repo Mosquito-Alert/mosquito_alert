@@ -3,7 +3,7 @@ from datetime import timedelta
 import jwt
 import pytest
 import time_machine
-import pytest
+import re
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -235,7 +235,8 @@ class BaseReportTest:
         )
         assert response.status_code == status.HTTP_200_OK
         assert response['Content-Type'] == 'text/csv'
-        assert 'attachment; filename="reports.csv"' in response['Content-Disposition']
+        content_disposition = response.get('Content-Disposition', '')
+        assert re.search(r'attachment;\s*filename="?.+\.csv"?', content_disposition)
         first_chunk = next(response.streaming_content)
         assert first_chunk.startswith(b"") or b"," in first_chunk
 
