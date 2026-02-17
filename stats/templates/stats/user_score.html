@@ -98,7 +98,6 @@
                 <div class="col-xs-12 report_container">
                     {% for item in score_data.score_detail.adult.score_items %}
                     <div class="report_box {% if item.report_score == 0 %}expert_rejected{%else%}expert_approved{%endif%}" onclick="javascript:create_dialog('{{ item.report }}');">
-                        <!--<img url="http://webserver.mosquitoalert.com{{ item.report_photo }}" width="20" height="20">-->
                         {{ item.report_score }} {% trans 'XP' %}
                     </div>
                     {% endfor %}
