@@ -7,7 +7,8 @@
 
 In this repository there is the backend infrastructure powering the Mosquito Alert citizen science platform. It manages data collection, validation, and dissemination for mosquito surveillance reports submitted through mobile applications.
 
-**Live Server**: [https://webserver.mosquitoalert.com](https://webserver.mosquitoalert.com)  
+**Live Server**: [https://api.mosquitoalert.com/v1/](https://api.mosquitoalert.com/v1/) | [https://webserver.mosquitoalert.com](https://webserver.mosquitoalert.com)
+
 **Project Website**: [https://mosquitoalert.com](https://mosquitoalert.com)
 
 ## 📋 Table of Contents
@@ -30,8 +31,6 @@ In this repository there is the backend infrastructure powering the Mosquito Ale
   - [🧪 Testing](#-testing)
     - [Running Tests](#running-tests)
     - [Test Configuration](#test-configuration)
-  - [🔧 Development](#-development)
-    - [Setting Up Development Environment](#setting-up-development-environment)
   - [🤝 Contributing](#-contributing)
     - [Contribution Guidelines](#contribution-guidelines)
     - [Reporting Issues](#reporting-issues)
@@ -106,7 +105,6 @@ The project uses Django settings modules:
 Environment variables can be set for:
 - Database connection
 - Secret keys
-- API credentials
 - Email configuration
 - Storage backends
 
@@ -207,29 +205,6 @@ Tests are configured in `pytest.ini`:
 - Uses `tigaserver_project.settings_dev` for testing
 - Database reuse enabled (`--reuse-db`)
 - Integration tests with Tavern
-
-## 🔧 Development
-
-### Setting Up Development Environment
-
-1. **Install development dependencies**
-   ```bash
-   pip install -r requirements/dev.pip
-   ```
-
-2. **Enable debug mode**  
-   Set `DJANGO_SETTINGS_MODULE=tigaserver_project.settings_dev`
-
-3. **Run migrations after model changes**
-   ```bash
-   python3 manage.py makemigrations
-   python3 manage.py migrate
-   ```
-
-4. **Create fixtures for testing**
-   ```bash
-   python3 manage.py dumpdata app.Model --indent 2 > fixtures/data.json
-   ```
 
 ## 🤝 Contributing
 
