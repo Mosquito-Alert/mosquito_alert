@@ -113,8 +113,8 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://webserver.mosquitoalert.com",
-    "http://www.mosquitoalert.com",
+    "https://webserver.mosquitoalert.com",
+    "https://www.mosquitoalert.com",
     "https://app.mosquitoalert.com",
     "https://map.mosquitoalert.com",
     "https://map2.mosquitoalert.com"
