@@ -4,6 +4,7 @@ import django.conf.global_settings as DEFAULT_SETTINGS
 from datetime import datetime
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.gdal import DataSource
+from corsheaders.defaults import default_headers
 
 from zoneinfo import ZoneInfo
 
@@ -119,6 +120,13 @@ CORS_ALLOWED_ORIGINS = [
     "https://map.mosquitoalert.com",
     "https://map2.mosquitoalert.com"
 ]
+
+
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    'sentry-trace',
+    'baggage',
+)
 
 ROOT_URLCONF = 'tigaserver_project.urls'
 
