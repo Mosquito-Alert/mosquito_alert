@@ -9,13 +9,13 @@ from django.conf import settings
 from django_filters import rest_framework as filters
 import json
 from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, MapDataSerializer, CoverageMonthMapSerializer, TagSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
-from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, Categories, ReportResponse, Device
+from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, ReportResponse, Device
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
-from tigacrafting.models import ExpertReportAnnotation
+from tigacrafting.models import ExpertReportAnnotation, Categories
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.utils import IntegrityError
