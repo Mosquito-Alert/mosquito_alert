@@ -822,14 +822,16 @@ def quick_upload_report(request):
         if report_id == '-1':
             raise ParseError(detail='report_id param is mandatory')
         report = get_object_or_404(Report, pk=report_id)
-        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
-            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
-        super_movelab = User.objects.get(pk=24)
-        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
-            ExpertReportAnnotation.create_super_expert_approval(report=report)
-            return Response(data={'message': 'success', 'opcode': 0}, status=status.HTTP_200_OK)
-        else:
+        if report.type != Report.TYPE_SITE:
+            return Response(
+                data={'message': 'Report type is not site, cannot be quick uploaded', 'opcode': -2},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if report.published:
             return Response(data={'message': 'success', 'opcode': 1}, status=status.HTTP_200_OK)
+        report.published_at = timezone.now()
+        report.save()
+        return Response(data={'message': 'success', 'opcode': 0}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

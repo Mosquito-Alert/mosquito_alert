@@ -700,7 +700,6 @@ class ExpertReportAnnotation(LifecycleModel):
     aegypti_certainty_category = models.IntegerField('Aegypti Certainty', choices=AEGYPTI_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows an Aedes aegypti')
     tiger_certainty_notes = models.TextField('Internal Species Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
     site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito breeding site')
-    site_certainty_notes = models.TextField('Internal Site Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
     edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
     message_for_user = models.TextField('Message to User', blank=True, help_text='Message that user will receive when viewing report on phone')
     status = models.IntegerField('Status', choices=STATUS_CATEGORIES, default=1, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
@@ -820,19 +819,6 @@ class ExpertReportAnnotation(LifecycleModel):
                     'status': 1,  # public
                     'simplified_annotation': False,
                     'revise': False,
-                    'validation_complete': True,
-                }
-            )
-        elif report.type == Report.TYPE_SITE:
-            ExpertReportAnnotation.objects.update_or_create(
-                user=User.objects.get(pk=24),  # "super_movelab"
-                report=report,
-                defaults={
-                    'best_photo': report.photos.first(),
-                    'site_certainty_notes': 'auto',
-                    'status': 1,  # public
-                    'simplified_annotation': False,
-                    'revise': True,
                     'validation_complete': True,
                 }
             )
