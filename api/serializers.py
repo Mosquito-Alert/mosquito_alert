@@ -14,6 +14,7 @@ from rest_framework import serializers
 
 from drf_extra_fields.geo_fields import PointField
 import minify_html
+from rest_framework_csv.renderers import CSVStreamingRenderer
 from rest_framework_dataclasses.serializers import DataclassSerializer
 from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
@@ -722,7 +723,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             return None
 
         # Owner always sees it
-        if request.user == obj.user:
+        if request.user.pk == obj.user_id:
             return obj.note
 
         return None
@@ -1462,6 +1463,12 @@ class ObservationSerializer(BaseReportWithPhotosSerializer):
             ret = super().to_representation(instance)
             if self.allow_null and not instance.report.published:
                 return None
+
+            request = self.context.get("request")
+            if request and request.accepted_renderer.format == CSVStreamingRenderer.format:
+                if "public_note" in ret:
+                    ret["public_note"] = None
+
             return ret
 
         class Meta:
