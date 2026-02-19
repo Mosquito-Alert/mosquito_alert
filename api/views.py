@@ -376,13 +376,13 @@ class BaseReportViewSet(
         for obj in queryset.iterator(chunk_size=batch_size):
             batch.append(obj)
             if len(batch) >= batch_size:
-                serializer = serializer_class(batch, many=True, exclude_fields=exclude_fields)
+                serializer = self.get_serializer(batch, many=True, exclude_fields=exclude_fields)
                 yield from serializer.data
                 batch = []
 
         # Serialize any leftover objects
         if batch:
-            serializer = serializer_class(batch, many=True, exclude_fields=exclude_fields)
+            serializer = self.get_serializer(batch, many=True, exclude_fields=exclude_fields)
             yield from serializer.data
 
     def _get_device_from_jwt(self) -> Optional[Device]:
