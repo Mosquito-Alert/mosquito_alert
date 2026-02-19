@@ -40,7 +40,7 @@ from rest_framework_csv.renderers import CSVStreamingRenderer
 from rest_framework_gis.filters import DistanceToPointFilter
 from rest_framework_simplejwt.tokens import Token
 
-from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, FavoritedReports, UserStat
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, UserStat
 from tigaserver_app.models import (
     TigaUser,
     EuropeCountry,
@@ -890,13 +890,6 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             'best_photo',
             'taxon',
         ).prefetch_related('tags').annotate(
-            is_favourite=models.Exists(
-                FavoritedReports.objects.filter(
-                    user=models.OuterRef('user'),
-                    report=models.OuterRef('report')
-                )
-            )
-        ).annotate(
             report_pk_str=models.functions.Cast('report_id', output_field=models.CharField()),
         )
 

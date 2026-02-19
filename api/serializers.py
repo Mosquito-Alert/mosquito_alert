@@ -25,8 +25,7 @@ from tigacrafting.models import (
     Taxon,
     ExpertReportAnnotation,
     UserStat,
-    PhotoPrediction,
-    FavoritedReports
+    PhotoPrediction
 )
 from tigacrafting.permissions import Permissions, Role
 from tigaserver_app.models import (
@@ -1073,17 +1072,11 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
             }
 
     class ObservationFlagsSerializer(serializers.ModelSerializer):
-        is_favourite = WritableSerializerMethodField(
-            field_class=serializers.BooleanField,
-            default=False,
-        )
+        is_favourite = serializers.BooleanField(required=False, default=False)
         is_visible = WritableSerializerMethodField(
             field_class=serializers.BooleanField,
             default=True,
         )
-
-        def get_is_favourite(self, obj) -> bool:
-            return obj.is_favourite
 
         def get_is_visible(self, obj) -> bool:
             return obj.status != ExpertReportAnnotation.STATUS_HIDDEN
@@ -1171,34 +1164,6 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         if not can_set_is_decisive:
             data['validation_complete_executive'] = False
         return data
-
-    def create(self, validated_data):
-        is_favourite = validated_data.pop("is_favourite", False)
-        with transaction.atomic():
-            instance = super().create(validated_data)
-            if is_favourite:
-                FavoritedReports.objects.get_or_create(
-                    user=instance.user,
-                    report=instance.report,
-                )
-
-        return instance
-
-    def update(self, instance, validated_data):
-        is_favourite = validated_data.pop("is_favourite", False)
-        with transaction.atomic():
-            instance = super().update(instance, validated_data)
-            if is_favourite:
-                FavoritedReports.objects.get_or_create(
-                    user=instance.user,
-                    report=instance.report,
-                )
-            else:
-                FavoritedReports.objects.filter(
-                    user=instance.user,
-                    report=instance.report,
-                ).delete()
-        return instance
 
     class Meta:
         model = ExpertReportAnnotation
