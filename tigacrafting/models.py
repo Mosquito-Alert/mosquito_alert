@@ -718,6 +718,7 @@ class ExpertReportAnnotation(LifecycleModel):
     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure, 0 for none')
     other_species = models.ForeignKey('tigacrafting.OtherSpecies', related_name='expert_report_annotations', null=True, blank=True, help_text='Additional info supplied if the user selected the Other species category', on_delete=models.SET_NULL, )
     validation_complete_executive = models.BooleanField(default=False, db_index=True, help_text='Available only to national supervisor. Causes the report to be completely validated, with the final classification decided by the national supervisor')
+    is_favourite = models.BooleanField(default=False)
 
     taxon = models.ForeignKey('tigacrafting.Taxon', null=True, blank=True, on_delete=models.PROTECT)
     confidence = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
@@ -763,10 +764,6 @@ class ExpertReportAnnotation(LifecycleModel):
         if not self.confidence:
             return False
         return get_is_high_confidence(value=self.confidence)
-
-    @cached_property
-    def is_favourite(self) -> bool:
-        return FavoritedReports.objects.filter(user=self.user, report=self.report).exists()
 
     @classmethod
     def _get_auto_message(cls, category: 'Categories', validation_value: int, locale: str = 'en') -> Optional[str]:
@@ -1470,15 +1467,6 @@ class Taxon(MP_Node):
 
     def __str__(self) -> str:
         return f"{self.name} [{self.get_rank_display()}]"
-
-
-class FavoritedReports(models.Model):
-    user = models.ForeignKey(User, related_name='favorited_by', help_text='User which marked the report as favorite', on_delete=models.CASCADE,)
-    report = models.ForeignKey('tigaserver_app.Report', related_name='favorites', help_text='User which marked the report as favorite', on_delete=models.CASCADE)
-    note = models.TextField('Brief note stating why this report interested you', blank=True, help_text='Add a brief description that will help you remember the report')
-
-    class Meta:
-        unique_together = ('user','report',)
 
 
 class Alert(models.Model):
