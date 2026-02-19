@@ -1004,6 +1004,11 @@ class SpeciesIdentificationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Male mosquitoes cannot be blood-fed or gravid.")
             return data
 
+        def to_internal_value(self, data):
+            if self.allow_null and data is None:
+                return {}
+            return super().to_internal_value(data)
+
         def to_representation(self, instance):
             if self.allow_null and instance.sex is None:
                 return None
