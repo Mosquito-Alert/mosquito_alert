@@ -1347,10 +1347,7 @@ class CreateReviewSerializer(serializers.ModelSerializer):
             identification_task=identification_task,
             defaults=validated_data
         )
-        obj.create_replicas()
-
-        identification_task.refresh_from_db()
-        return identification_task
+        return obj.identification_task
 
     class Meta:
         model = IdentificationTask

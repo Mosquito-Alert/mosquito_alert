@@ -1,7 +1,7 @@
 from collections import defaultdict, Counter
 from decimal import Decimal, localcontext
 import numbers
-from typing import List, Optional, Literal, Dict, Any, Tuple
+from typing import List, Optional, Dict, Any, Tuple
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -772,79 +772,6 @@ class ExpertReportAnnotation(LifecycleModel):
 
         return msg_dict.get(locale)
 
-    @classmethod
-    def create_auto_annotation(cls, report: 'tigaserver_app.models.Report', category: 'Categories', validation_value: Optional[Literal[VALIDATION_CATEGORY_PROBABLY, VALIDATION_CATEGORY_DEFINITELY]] = None):
-        obj, _ = ExpertReportAnnotation.objects.update_or_create(
-            user=User.objects.get(username="innie"),
-            identification_task=report.identification_task,
-            defaults={
-                'validation_complete': True,
-                'simplified_annotation': False,
-                'best_photo': report.photos.first(),
-                'category': category,
-                'tiger_certainty_notes': 'auto',
-                'validation_value': int(validation_value) if validation_value else None,
-                'edited_user_notes': cls._get_auto_message(
-                    category=category,
-                    validation_value=int(validation_value) if validation_value else None,
-                    locale=report.user.locale
-                ) or ""
-            }
-        )
-        obj.create_replicas()
-        cls.create_super_expert_approval(report=report)
-
-    @classmethod
-    def create_super_expert_approval(cls, report: 'tigaserver_app.models.Report'):
-        from tigaserver_app.models import Report
-
-        if report.type == Report.TYPE_ADULT:
-            # TODO: at some point, superexpert should not auto-review. Remove all
-            #       annotations from superexpert that are revise=False and are in
-            #       a ExpertReportAnnotation that are replicas or executive validation.
-            ExpertReportAnnotation.objects.update_or_create(
-                user=User.objects.get(pk=25),  # "super_reritja"
-                identification_task=report.identification_task,
-                defaults={
-                    'status': 1,  # public
-                    'simplified_annotation': False,
-                    'revise': False,
-                    'validation_complete': True,
-                }
-            )
-
-    def create_replicas(self):
-        username_replicas = ["innie", "minnie", "manny"]
-
-        report_annotations = ExpertReportAnnotation.objects.filter(identification_task=self.identification_task).count()
-        if report_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
-            return
-        num_missing_annotations = settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - report_annotations
-
-        fieldnames = [
-            field.name for field in ExpertReportAnnotation._meta.fields if field.name not in ('id', 'user')
-        ]
-        obj_dict = {
-            fname: getattr(self, fname) for fname in fieldnames
-        }
-        for dummy_user in User.objects.filter(username__in=username_replicas).exclude(username=self.user.username)[:num_missing_annotations]:
-            ExpertReportAnnotation.objects.update_or_create(
-                user=dummy_user,
-                identification_task=self.identification_task,
-                defaults={
-                    **obj_dict,
-                    'tiger_certainty_category': self.tiger_certainty_category,
-                    'simplified_annotation': True,
-                    'tiger_certainty_notes': 'exec_auto' if self.validation_complete_executive else 'auto',
-                    'validation_complete': True,
-                    'validation_complete_executive': False,
-                    'best_photo': None,
-                    'edited_user_notes': "",
-                    'message_for_user': "",
-                    'revise': False
-                }
-            )
-
     def get_score(self):
         score = -3
         if self.aegypti_certainty_category == 2:
@@ -1008,10 +935,6 @@ class ExpertReportAnnotation(LifecycleModel):
 
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
 
-        if self.validation_complete and self.validation_complete_executive:
-            self.create_replicas()
-            # self.create_super_expert_approval(report=self.report)
-
         self.identification_task.refresh()
 
     def delete(self, *args, **kwargs):
@@ -1021,10 +944,8 @@ class ExpertReportAnnotation(LifecycleModel):
             ExpertReportAnnotation.objects.filter(
                 identification_task=identification_task,
                 validation_complete=True,
-                validation_complete_executive=False
-            ).filter(
-                models.Q(user__username__in=["innie", "minnie"]) 
-                | models.Q(user__pk=25, revise=False)   # pk 25 = "super_reritja"
+                validation_complete_executive=False,
+                user__pk=25, revise=False # pk 25 = "super_reritja"
             ).delete()
 
         result = super().delete(*args, **kwargs)
