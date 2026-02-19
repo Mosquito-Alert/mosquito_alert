@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigacrafting', '0043_identificationtask_is_blood_fed_and_more'),
+        ('tigacrafting', '0044_expertreportannotation_is_favourite_and_more'),
     ]
 
     operations = [
