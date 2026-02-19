@@ -1007,7 +1007,11 @@ class SpeciesIdentificationSerializer(serializers.ModelSerializer):
 
         def to_internal_value(self, data):
             if self.allow_null and data is None:
-                return {}
+                return {
+                    'sex': None,
+                    'is_blood_fed': None,
+                    'is_gravid': None,
+                }
             return super().to_internal_value(data)
 
         def to_representation(self, instance):

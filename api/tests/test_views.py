@@ -27,7 +27,7 @@ from api.tests.clients import AppAPIClient
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
-from api.tests.integration.identification_tasks.factories import create_annotation
+from api.tests.integration.identification_tasks.factories import create_annotation, create_review
 from api.tests.factories import create_report_object, create_boundary_contains_point
 from api.tests.utils import grant_permission_to_user
 from api.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
@@ -1376,6 +1376,49 @@ class TestIdentificationTaskReviewApi:
             assert identification_task.sex == sex
             assert identification_task.is_blood_fed == is_blood_fed
             assert identification_task.is_gravid == is_gravid
+
+    def test_overwrite_and_existing_review_with_characteristics_None(self, api_client, endpoint, user_with_role_reviewer, dummy_image, identification_task, taxon_root):
+        # Create a review with characteristics
+        review = create_review(
+            identification_task=identification_task,
+            overwrite=True,
+            user=user_with_role_reviewer,
+            taxon=taxon_root,
+            sex='female',
+            is_blood_fed=True,
+            is_gravid=True
+        )
+        another_photo = Photo.objects.create(
+            photo=dummy_image,
+            report=identification_task.report,
+        )
+
+        post_data = {
+            'action': 'overwrite',
+            'public_photo_uuid': another_photo.uuid,
+            'is_safe': True,
+            'public_note': 'Test',
+            'classification': {
+                'taxon_id': taxon_root.pk,
+                'confidence_label': 'definitely'
+            },
+            'characteristics': None # This is what is being tested.
+        }
+        response = api_client.post(
+            endpoint,
+            data=post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        review.refresh_from_db()
+        assert review.sex == None
+        assert review.is_blood_fed == None
+        assert review.is_gravid == None
+
+        identification_task.refresh_from_db()
+        assert identification_task.sex == None
+        assert identification_task.is_blood_fed == None
+        assert identification_task.is_gravid == None
 
 @pytest.mark.django_db
 class TestPermissionsApi:
