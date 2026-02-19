@@ -24,7 +24,7 @@ def remove_expert_report_annotations_without_identification_task(apps, schema_ed
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tigacrafting', '0044_remove_expertreportannotation_site_certainty_notes'),
+        ('tigacrafting', '0045_remove_expertreportannotation_site_certainty_notes'),
     ]
 
     operations = [
