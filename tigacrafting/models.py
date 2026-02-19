@@ -743,10 +743,6 @@ class ExpertReportAnnotation(LifecycleModel):
             ),
         ]
 
-    @cached_property
-    def country(self) -> Optional['tigaserver_app.EuropeCountry']:
-        return self.report.country
-
     def is_superexpert(self):
         return self.user.groups.filter(name='superexpert').exists()
 
