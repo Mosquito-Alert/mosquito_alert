@@ -20,6 +20,8 @@ jobs:
   test:
     name: Test application
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout Code Repository

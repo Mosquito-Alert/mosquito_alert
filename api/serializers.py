@@ -14,6 +14,7 @@ from rest_framework import serializers
 
 from drf_extra_fields.geo_fields import PointField
 import minify_html
+from rest_framework_csv.renderers import CSVStreamingRenderer
 from rest_framework_dataclasses.serializers import DataclassSerializer
 from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
@@ -24,8 +25,7 @@ from tigacrafting.models import (
     Taxon,
     ExpertReportAnnotation,
     UserStat,
-    PhotoPrediction,
-    FavoritedReports
+    PhotoPrediction
 )
 from tigacrafting.permissions import Permissions, Role
 from tigaserver_app.models import (
@@ -722,7 +722,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
             return None
 
         # Owner always sees it
-        if request.user == obj.user:
+        if request.user.pk == obj.user_id:
             return obj.note
 
         return None
@@ -1004,6 +1004,15 @@ class SpeciesIdentificationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Male mosquitoes cannot be blood-fed or gravid.")
             return data
 
+        def to_internal_value(self, data):
+            if self.allow_null and data is None:
+                return {
+                    'sex': None,
+                    'is_blood_fed': None,
+                    'is_gravid': None,
+                }
+            return super().to_internal_value(data)
+
         def to_representation(self, instance):
             if self.allow_null and instance.sex is None:
                 return None
@@ -1063,17 +1072,11 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
             }
 
     class ObservationFlagsSerializer(serializers.ModelSerializer):
-        is_favourite = WritableSerializerMethodField(
-            field_class=serializers.BooleanField,
-            default=False,
-        )
+        is_favourite = serializers.BooleanField(required=False, default=False)
         is_visible = WritableSerializerMethodField(
             field_class=serializers.BooleanField,
             default=True,
         )
-
-        def get_is_favourite(self, obj) -> bool:
-            return obj.is_favourite
 
         def get_is_visible(self, obj) -> bool:
             return obj.status != ExpertReportAnnotation.STATUS_HIDDEN
@@ -1161,34 +1164,6 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         if not can_set_is_decisive:
             data['validation_complete_executive'] = False
         return data
-
-    def create(self, validated_data):
-        is_favourite = validated_data.pop("is_favourite", False)
-        with transaction.atomic():
-            instance = super().create(validated_data)
-            if is_favourite:
-                FavoritedReports.objects.get_or_create(
-                    user=instance.user,
-                    report=instance.report,
-                )
-
-        return instance
-
-    def update(self, instance, validated_data):
-        is_favourite = validated_data.pop("is_favourite", False)
-        with transaction.atomic():
-            instance = super().update(instance, validated_data)
-            if is_favourite:
-                FavoritedReports.objects.get_or_create(
-                    user=instance.user,
-                    report=instance.report,
-                )
-            else:
-                FavoritedReports.objects.filter(
-                    user=instance.user,
-                    report=instance.report,
-                ).delete()
-        return instance
 
     class Meta:
         model = ExpertReportAnnotation
@@ -1462,6 +1437,12 @@ class ObservationSerializer(BaseReportWithPhotosSerializer):
             ret = super().to_representation(instance)
             if self.allow_null and not instance.report.published:
                 return None
+
+            request = self.context.get("request")
+            if request and request.accepted_renderer.format == CSVStreamingRenderer.format:
+                if "public_note" in ret:
+                    ret["public_note"] = None
+
             return ret
 
         class Meta:

@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
-from tigacrafting.models import ExpertReportAnnotation, Categories
+from tigacrafting.models import ExpertReportAnnotation, Categories, IdentificationTask
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -790,6 +790,11 @@ def flip_report(request):
             if flip_to_type == Report.TYPE_SITE:
                 report.flipped_to = report.type + '#site'
                 report.type = Report.TYPE_SITE
+                try:
+                    identification_task = report.identification_task
+                    identification_task.delete()
+                except Report.identification_task.RelatedObjectDoesNotExist:
+                    pass
                 report.save()
                 if flip_to_subtype == 'storm_drain_water':
                     rr_type_stormdrain.save()
@@ -811,6 +816,7 @@ def flip_report(request):
                 report.flipped_to = report.type + '#adult'
                 report.type = Report.TYPE_ADULT
                 report.save()
+                IdentificationTask.get_or_create_for_report(report=report)
                 message = "Report changed to Adult"
 
             return Response(data={'message': message, 'new_type': flip_to_type, 'new_subtype': flip_to_subtype, 'opcode': 0}, status=status.HTTP_200_OK)

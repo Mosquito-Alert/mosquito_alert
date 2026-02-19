@@ -9,7 +9,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework.exceptions import ValidationError
 from rest_framework_gis.filterset import GeoFilterSet
 
-from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, FavoritedReports
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon
 from tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry, Photo, TemporaryBoundary
 
 User = get_user_model()
@@ -341,22 +341,6 @@ class AnnotationFilter(filters.FilterSet):
             )
         )
 
-    is_favourite = filters.BooleanFilter(
-        method="filter_by_is_favourite"
-    )
-
-    def filter_by_is_favourite(self, queryset, name, value):
-        if not value:
-            return queryset
-        return queryset.annotate(
-            is_favourite=models.Exists(
-                FavoritedReports.objects.filter(
-                    user=models.OuterRef('user'),
-                    report=models.OuterRef('report'),
-                )
-            )
-        ).filter(is_favourite=value)
-
     type = filters.ChoiceFilter(
         choices=[('short', 'short'), ('long', 'long')],
         method="filter_by_type"
@@ -372,7 +356,9 @@ class AnnotationFilter(filters.FilterSet):
 
     class Meta:
         model = ExpertReportAnnotation
-        fields = {}
+        fields = {
+            "is_favourite": ["exact"],
+        }
 
 class TaxonFilter(filters.FilterSet):
     rank = filters.MultipleChoiceFilter(

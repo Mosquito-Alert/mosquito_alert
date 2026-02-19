@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Callable, Optional
 import uuid
 
@@ -39,7 +40,7 @@ from rest_framework_csv.renderers import CSVStreamingRenderer
 from rest_framework_gis.filters import DistanceToPointFilter
 from rest_framework_simplejwt.tokens import Token
 
-from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, FavoritedReports, UserStat
+from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, UserStat
 from tigaserver_app.models import (
     TigaUser,
     EuropeCountry,
@@ -294,6 +295,11 @@ class BaseReportViewSet(
 
     permission_classes = (ReportPermissions,)
 
+    @property
+    @abstractmethod
+    def filename_csv(self):
+        raise NotImplementedError
+
     def get_permissions(self):
         # Check if the request is for an action
         if self.action and hasattr(self, self.action):
@@ -352,8 +358,7 @@ class BaseReportViewSet(
                 ),
                 content_type=CSVStreamingRenderer.media_type,
             )
-            # TODO: set filename dynamically?
-            response["Content-Disposition"] = 'attachment; filename="reports.csv"'
+            response["Content-Disposition"] = 'attachment; filename="{}"'.format(self.filename_csv)
             return response
 
         return super().list(request, *args, **kwargs)
@@ -371,13 +376,13 @@ class BaseReportViewSet(
         for obj in queryset.iterator(chunk_size=batch_size):
             batch.append(obj)
             if len(batch) >= batch_size:
-                serializer = serializer_class(batch, many=True, exclude_fields=exclude_fields)
+                serializer = self.get_serializer(batch, many=True, exclude_fields=exclude_fields)
                 yield from serializer.data
                 batch = []
 
         # Serialize any leftover objects
         if batch:
-            serializer = serializer_class(batch, many=True, exclude_fields=exclude_fields)
+            serializer = self.get_serializer(batch, many=True, exclude_fields=exclude_fields)
             yield from serializer.data
 
     def _get_device_from_jwt(self) -> Optional[Device]:
@@ -458,6 +463,8 @@ class BiteViewSet(BaseReportViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_BITE)
 
+    filename_csv = "bites.csv"
+
     @extend_schema(responses={
         (200, 'application/json'): BiteGeoModelSerializer(many=True),
         (200, GeoJsonRenderer.media_type): BiteGeoJsonModelSerializer(many=True),
@@ -490,6 +497,8 @@ class BreedingSiteViewSet(BaseReportWithPhotosViewSet):
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_SITE)
 
+    filename_csv = "breeding_sites.csv"
+
     @extend_schema(responses={
         (200, 'application/json'): BreedingSiteGeoModelSerializer(many=True),
         (200, GeoJsonRenderer.media_type): BreedingSiteGeoJsonModelSerializer(many=True),
@@ -521,6 +530,8 @@ class ObservationViewSest(BaseReportWithPhotosViewSet):
     filterset_class = ObservationFilter
 
     queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_ADULT)
+
+    filename_csv = "observations.csv"
 
     @extend_schema(responses={
         (200, 'application/json'): ObservationGeoModelSerializer(many=True),
@@ -879,13 +890,6 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             'best_photo',
             'taxon',
         ).prefetch_related('tags').annotate(
-            is_favourite=models.Exists(
-                FavoritedReports.objects.filter(
-                    user=models.OuterRef('user'),
-                    report=models.OuterRef('report')
-                )
-            )
-        ).annotate(
             report_pk_str=models.functions.Cast('report_id', output_field=models.CharField()),
         )
 

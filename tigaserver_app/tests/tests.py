@@ -11,7 +11,7 @@ from django.contrib.gis.geos import Polygon, MultiPolygon, Point, LineString
 from django.core.cache import cache
 from django.utils import timezone
 from tigaserver_app.models import TigaUser, Report, Photo, Fix
-from tigacrafting.models import ExpertReportAnnotation, Categories
+from tigacrafting.models import ExpertReportAnnotation, Categories, IdentificationTask
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APITransactionTestCase
@@ -1382,9 +1382,16 @@ class AnnotateCoarseTestCase(APITestCase):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
         r_adult = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        _ = Photo.objects.create(report=r_adult)
+
+        self.assertEqual(IdentificationTask.objects.filter(report=r_adult).count(), 1)
+
         # Check report types
         self.assertEqual(r_adult.type, 'adult', "Report type should be adult, is {0}".format(r_adult.type))
         r_site = Report.objects.get(pk='00042fb1-408f-4da4-898d-4331a9ec3129')
+        _ = Photo.objects.create(report=r_site)
+
+        self.assertEqual(IdentificationTask.objects.filter(report=r_site).count(), 0)
         self.assertEqual(r_site.type, 'site', "Report type should be site, is {0}".format(r_site.type))
         # flip adult to storm drain water
         data = {
@@ -1398,6 +1405,7 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertTrue(adult_reloaded.type==Report.TYPE_SITE,"Report type should have changed to site, is {0}".format(adult_reloaded.type))
         self.assertEqual(adult_reloaded.breeding_site_type, Report.BreedingSiteType.STORM_DRAIN)
         self.assertTrue(adult_reloaded.breeding_site_has_water)
+        self.assertEqual(IdentificationTask.objects.filter(report=r_adult).count(), 0)
 
         n_responses = ReportResponse.objects.filter(report=adult_reloaded).count()
         self.assertTrue( n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses) )
@@ -1428,6 +1436,7 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertTrue(site_reloaded.flipped, "Report should be marked as flipped")
         self.assertTrue(site_reloaded.flipped_to == 'site#adult',"Report should be marked as flipped from site to adult, field has value of {0}".format(adult_reloaded.flipped_to))
         #print(site_reloaded.flipped_on)
+        self.assertEqual(IdentificationTask.objects.filter(report=r_site).count(), 1)
 
     def test_hide(self):
         u = User.objects.get(pk=25)

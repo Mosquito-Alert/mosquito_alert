@@ -3,7 +3,7 @@ from datetime import timedelta
 import jwt
 import pytest
 import time_machine
-import pytest
+import re
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -20,14 +20,14 @@ from rest_framework.test import APIClient
 
 from rest_framework_simplejwt.settings import api_settings
 
-from tigacrafting.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction, FavoritedReports
+from tigacrafting.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction
 from tigaserver_app.models import TigaUser, Report, Device, MobileApp, Photo, TemporaryBoundary
 
 from api.tests.clients import AppAPIClient
 from api.tests.integration.observations.factories import create_observation_object
 from api.tests.integration.breeding_sites.factories import create_breeding_site_object
 from api.tests.integration.bites.factories import create_bite_object
-from api.tests.integration.identification_tasks.factories import create_annotation
+from api.tests.integration.identification_tasks.factories import create_annotation, create_review
 from api.tests.factories import create_report_object, create_boundary_contains_point
 from api.tests.utils import grant_permission_to_user
 from api.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
@@ -235,7 +235,8 @@ class BaseReportTest:
         )
         assert response.status_code == status.HTTP_200_OK
         assert response['Content-Type'] == 'text/csv'
-        assert 'attachment; filename="reports.csv"' in response['Content-Disposition']
+        content_disposition = response.get('Content-Disposition', '')
+        assert re.search(r'attachment;\s*filename="?.+\.csv"?', content_disposition)
         first_chunk = next(response.streaming_content)
         assert first_chunk.startswith(b"") or b"," in first_chunk
 
@@ -1080,7 +1081,7 @@ class TestIdentificationTaskAnnotationsApi:
         "is_favourite",
         [True, False]
     )
-    def test_is_favourite_creates_FavoritedReports(self, api_client, endpoint, common_post_data, with_add_permission, is_favourite):
+    def test_is_favourite(self, api_client, endpoint, common_post_data, with_add_permission, is_favourite):
         post_data = common_post_data
         post_data['observation_flags'] = {
             'is_favourite': is_favourite
@@ -1096,34 +1097,6 @@ class TestIdentificationTaskAnnotationsApi:
 
         annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
         assert annotation.is_favourite == is_favourite
-        assert FavoritedReports.objects.filter(
-            report=annotation.identification_task.report,
-            user=annotation.user
-        ).exists() == is_favourite
-
-    def test_is_favourite_does_nothing_if_already_exists_FavoritedReports(self, api_client, user, identification_task, endpoint, common_post_data, with_add_permission):
-        FavoritedReports.objects.create(
-            report=identification_task.report,
-            user=user
-        )
-
-        post_data = common_post_data
-        post_data['is_favourite'] = True
-
-        response = api_client.post(
-            endpoint,
-            data=post_data,
-            format='json'
-        )
-        assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['observation_flags']['is_favourite'] is True
-
-        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
-        assert annotation.is_favourite
-        assert FavoritedReports.objects.filter(
-            report=annotation.identification_task.report,
-            user=annotation.user
-        ).exists()
 
     @pytest.mark.parametrize(
         "taxon, sex, is_blood_fed, is_gravid, expected_status_code",
@@ -1138,9 +1111,10 @@ class TestIdentificationTaskAnnotationsApi:
             (pytest.lazy_fixture('taxon_root'), 'female', False, True, status.HTTP_201_CREATED),
             (pytest.lazy_fixture('taxon_root'), 'female', True, False, status.HTTP_201_CREATED),
             (pytest.lazy_fixture('taxon_root'), 'female', True, True, status.HTTP_201_CREATED),
+            (pytest.lazy_fixture('taxon_root'), None, None, None, status.HTTP_201_CREATED),
         ]
     )
-    def test_characteristics(self, api_client, endpoint, identification_task, common_post_data, with_add_permission, taxon, sex, is_blood_fed, is_gravid, expected_status_code):
+    def test_characteristics(self, api_client, user, endpoint, identification_task, common_post_data, with_add_permission, taxon, sex, is_blood_fed, is_gravid, expected_status_code):
         post_data = common_post_data
         post_data['best_photo_uuid'] = identification_task.photo.uuid
         if taxon:
@@ -1155,7 +1129,7 @@ class TestIdentificationTaskAnnotationsApi:
             'sex': sex,
             'is_blood_fed': is_blood_fed,
             'is_gravid': is_gravid
-        }
+        } if sex else None
 
         response = api_client.post(
             endpoint,
@@ -1163,6 +1137,14 @@ class TestIdentificationTaskAnnotationsApi:
             format='json'
         )
         assert response.status_code == expected_status_code
+        if expected_status_code == status.HTTP_201_CREATED:
+            annotation = ExpertReportAnnotation.objects.get(
+                identification_task=identification_task,
+                user=user
+            )
+            assert annotation.sex == sex
+            assert annotation.is_blood_fed == is_blood_fed
+            assert annotation.is_gravid == is_gravid
 
     @pytest.mark.parametrize(
         "pre_assign",
@@ -1315,6 +1297,7 @@ class TestIdentificationTaskReviewApi:
             (pytest.lazy_fixture('taxon_root'), 'female', False, True, status.HTTP_201_CREATED),
             (pytest.lazy_fixture('taxon_root'), 'female', True, False, status.HTTP_201_CREATED),
             (pytest.lazy_fixture('taxon_root'), 'female', True, True, status.HTTP_201_CREATED),
+            (pytest.lazy_fixture('taxon_root'), None, None, None, status.HTTP_201_CREATED),
         ]
     )
     def test_characteristics(self, api_client, endpoint, user_with_role_reviewer, identification_task, dummy_image, taxon, sex, is_blood_fed, is_gravid, expected_status_code):
@@ -1339,11 +1322,12 @@ class TestIdentificationTaskReviewApi:
                 'taxon_id': taxon.pk,
                 'confidence_label': 'definitely'
             }
+
         post_data['characteristics'] = {
             'sex': sex,
             'is_blood_fed': is_blood_fed,
             'is_gravid': is_gravid
-        }
+        } if sex else None
 
         response = api_client.post(
             endpoint,
@@ -1364,6 +1348,49 @@ class TestIdentificationTaskReviewApi:
             assert identification_task.sex == sex
             assert identification_task.is_blood_fed == is_blood_fed
             assert identification_task.is_gravid == is_gravid
+
+    def test_overwrite_and_existing_review_with_characteristics_None(self, api_client, endpoint, user_with_role_reviewer, dummy_image, identification_task, taxon_root):
+        # Create a review with characteristics
+        review = create_review(
+            identification_task=identification_task,
+            overwrite=True,
+            user=user_with_role_reviewer,
+            taxon=taxon_root,
+            sex='female',
+            is_blood_fed=True,
+            is_gravid=True
+        )
+        another_photo = Photo.objects.create(
+            photo=dummy_image,
+            report=identification_task.report,
+        )
+
+        post_data = {
+            'action': 'overwrite',
+            'public_photo_uuid': another_photo.uuid,
+            'is_safe': True,
+            'public_note': 'Test',
+            'classification': {
+                'taxon_id': taxon_root.pk,
+                'confidence_label': 'definitely'
+            },
+            'characteristics': None # This is what is being tested.
+        }
+        response = api_client.post(
+            endpoint,
+            data=post_data,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        review.refresh_from_db()
+        assert review.sex == None
+        assert review.is_blood_fed == None
+        assert review.is_gravid == None
+
+        identification_task.refresh_from_db()
+        assert identification_task.sex == None
+        assert identification_task.is_blood_fed == None
+        assert identification_task.is_gravid == None
 
 @pytest.mark.django_db
 class TestPermissionsApi:
