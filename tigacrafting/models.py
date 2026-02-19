@@ -16,7 +16,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
-from django.utils import translation
 from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -346,9 +345,9 @@ class IdentificationTask(LifecycleModel):
         self.taxon, self.confidence, self.uncertainty, self.agreement = self.get_taxon_consensus(
             annotations=[annotation,]
         )
-        self.is_safe = annotation.status != ExpertReportAnnotation.STATUS_HIDDEN
+        self.is_safe = annotation.status != ExpertReportAnnotation.Status.HIDDEN
         self.status = default_status
-        self.is_flagged = annotation.status == ExpertReportAnnotation.STATUS_FLAGGED
+        self.is_flagged = annotation.status == ExpertReportAnnotation.Status.FLAGGED
         self.sex = annotation.sex
         self.is_gravid = annotation.is_gravid
         self.is_blood_fed = annotation.is_blood_fed
@@ -494,7 +493,7 @@ class IdentificationTask(LifecycleModel):
                 if executive_annotation:
                     # Case 2: Executive validation
                     default_status = (
-                        self.Status.DONE if executive_annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
+                        self.Status.DONE if executive_annotation.status == ExpertReportAnnotation.Status.PUBLIC
                         else self.Status.REVIEW
                     )
                     self._update_from_annotation(
@@ -555,8 +554,8 @@ class IdentificationTask(LifecycleModel):
                         tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
                     )
 
-                    self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_HIDDEN).exists()
-                    self.is_flagged = finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists()
+                    self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.Status.HIDDEN).exists()
+                    self.is_flagged = finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.Status.FLAGGED).exists()
 
                     if not self.is_safe or self.is_flagged:
                         self.status = self.Status.REVIEW
@@ -673,10 +672,10 @@ class ExpertReportAnnotation(LifecycleModel):
     VALIDATION_CATEGORY_PROBABLY = 1
     VALIDATION_CATEGORIES = ((VALIDATION_CATEGORY_DEFINITELY, 'Definitely'), (VALIDATION_CATEGORY_PROBABLY, 'Probably'))
 
-    STATUS_HIDDEN = -1
-    STATUS_FLAGGED = 0
-    STATUS_PUBLIC = 1
-    STATUS_CATEGORIES = ((STATUS_PUBLIC, 'public'), (STATUS_FLAGGED, 'flagged'), (STATUS_HIDDEN, 'hidden'))
+    class Status(models.IntegerChoices):
+        PUBLIC = 1, 'Public'
+        FLAGGED = 0, 'Flagged'
+        HIDDEN = -1, 'Hidden'
 
     class DecisionLevel(models.TextChoices):
         NORMAL = 'normal', _('Normal')
@@ -685,14 +684,10 @@ class ExpertReportAnnotation(LifecycleModel):
 
     user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
     identification_task = models.ForeignKey(IdentificationTask, editable=False, related_name='expert_report_annotations', on_delete=models.CASCADE)
-    tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
-    aegypti_certainty_category = models.IntegerField('Aegypti Certainty', choices=AEGYPTI_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows an Aedes aegypti')
     tiger_certainty_notes = models.TextField('Internal Species Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
-    site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito breeding site')
     edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
     message_for_user = models.TextField('Message to User', blank=True, help_text='Message that user will receive when viewing report on phone')
-    status = models.IntegerField('Status', choices=STATUS_CATEGORIES, default=1, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
-    #last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
+    status = models.IntegerField('Status', choices=Status.choices, default=Status.PUBLIC, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
     last_modified = models.DateTimeField(default=timezone.now)
     validation_complete = models.BooleanField(default=False, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True, on_delete=models.SET_NULL, )
@@ -762,36 +757,6 @@ class ExpertReportAnnotation(LifecycleModel):
             msg_dict = notsure_msg_dict
 
         return msg_dict.get(locale)
-
-    def get_score(self):
-        score = -3
-        if self.aegypti_certainty_category == 2:
-            score = 4
-        elif self.aegypti_certainty_category == 1:
-            score = 3
-        else:
-            score = self.tiger_certainty_category
-
-        if score is not None:
-            return score
-        else:
-            return -3
-
-    def get_category_euro(self) -> str:
-        if not self.taxon:
-            return "Unclassified"
-        if self.taxon.is_relevant:
-            with translation.override('en'):
-                return "{} {}".format(self.confidence_label, self.taxon.name)
-        if self.taxon.is_root():
-            if self.category_id == 9: # Not sure
-                return "Not sure"
-            return "Other species"
-        return "Other species - " + self.taxon.name
-
-    def get_status_bootstrap(self):
-        result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if self.status == 1 else ('glyphicon glyphicon-flag' if self.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
-        return result
 
     def _get_confidence(self) -> float:
         if self.validation_value == self.VALIDATION_CATEGORY_DEFINITELY:
@@ -892,20 +857,6 @@ class ExpertReportAnnotation(LifecycleModel):
             complex=self.complex,
             other_species=self.other_species
         )
-
-    @hook(
-        BEFORE_SAVE,
-        condition=WhenFieldHasChanged('category')
-    )
-    def on_category_change(self):
-        if self.category:
-            self.tiger_certainty_category = -2
-            if self.category.pk == 4: # albopictus
-                self.tiger_certainty_category = 2
-
-            self.aegypti_certainty_category = -2
-            if self.category.pk == 5: # aegypti
-                self.aegypti_certainty_category = 2
 
     def save(self, *args, **kwargs):
         if not kwargs.pop('skip_lastmodified', False):

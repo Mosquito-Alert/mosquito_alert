@@ -323,7 +323,7 @@ class AnnotationFilter(filters.FilterSet):
         if not value:
             return queryset
         return queryset.filter(
-            status=ExpertReportAnnotation.STATUS_FLAGGED
+            status=ExpertReportAnnotation.Status.FLAGGED
         )
 
     type = filters.ChoiceFilter(

@@ -997,9 +997,9 @@ class TestIdentificationTaskAnnotationsApi:
     @pytest.mark.parametrize(
         "status, expected_result",
         [
-            (ExpertReportAnnotation.STATUS_FLAGGED, True),
-            (ExpertReportAnnotation.STATUS_HIDDEN, False),
-            (ExpertReportAnnotation.STATUS_PUBLIC, False),
+            (ExpertReportAnnotation.Status.FLAGGED, True),
+            (ExpertReportAnnotation.Status.HIDDEN, False),
+            (ExpertReportAnnotation.Status.PUBLIC, False),
         ]
     )
     def test_is_flagged_representation(self, identification_task, user, api_client, endpoint, status, expected_result):
@@ -1019,8 +1019,8 @@ class TestIdentificationTaskAnnotationsApi:
     @pytest.mark.parametrize(
         "is_flagged, expected_result",
         [
-            (True, ExpertReportAnnotation.STATUS_FLAGGED),
-            (False, ExpertReportAnnotation.STATUS_PUBLIC),
+            (True, ExpertReportAnnotation.Status.FLAGGED),
+            (False, ExpertReportAnnotation.Status.PUBLIC),
         ]
     )
     def test_is_flagged_sets_status_to_flagged(self, api_client, endpoint, common_post_data, with_add_permission, is_flagged, expected_result):
@@ -1055,8 +1055,8 @@ class TestIdentificationTaskAnnotationsApi:
     @pytest.mark.parametrize(
         "is_visible, expected_result",
         [
-            (True, ExpertReportAnnotation.STATUS_PUBLIC),
-            (False, ExpertReportAnnotation.STATUS_HIDDEN),
+            (True, ExpertReportAnnotation.Status.PUBLIC),
+            (False, ExpertReportAnnotation.Status.HIDDEN),
         ]
     )
     def test_is_visible_sets_status_to_public(self, api_client, endpoint, common_post_data, with_add_permission, is_visible, expected_result):
@@ -1182,7 +1182,7 @@ class TestIdentificationTaskAnnotationsApi:
         assert response.status_code == status.HTTP_201_CREATED
 
         annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
-        assert annotation.status == ExpertReportAnnotation.STATUS_HIDDEN
+        assert annotation.status == ExpertReportAnnotation.Status.HIDDEN
         assert annotation.taxon is None
 
 @pytest.mark.django_db
@@ -1263,7 +1263,7 @@ class TestIdentificationTaskReviewApi:
             user=user_with_role_reviewer
         )
         assert annotation.decision_level == ExpertReportAnnotation.DecisionLevel.FINAL
-        assert annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
+        assert annotation.status == ExpertReportAnnotation.Status.PUBLIC
         assert annotation.validation_complete
         assert annotation.best_photo.uuid == another_photo.uuid
         assert not annotation.simplified_annotation
