@@ -716,7 +716,7 @@ class ExpertReportAnnotation(LifecycleModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['user', 'report'], name='unique_assignation'),
+            models.UniqueConstraint(fields=['user', 'identification_task'], name='unique_assignation'),
             models.CheckConstraint(
                 check=models.Q(confidence__gte=0) & models.Q(confidence__lte=1),
                 name='expertreportannotation_confidence_between_0_and_1'
