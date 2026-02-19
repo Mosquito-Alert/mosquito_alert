@@ -447,18 +447,6 @@ class IdentificationTask(LifecycleModel):
 
             return annotated_qs.values_list(field_name, flat=True).first()
 
-        # NOTE: Do not remove! This is crucial.
-        # When refresh() is called after saving ExpertReportAnnotation,
-        # ExpertReportAnnotation.identification_task is returned before the refresh.
-        # This means the annotation object may contain an outdated status of
-        # identification_task.
-        # If save() is called again, it would refresh an outdated version
-        # of identification_task, potentially triggering unintended side effects,
-        # such as executing the on_done() @hook multiple times and causing duplicate flows.
-        # Therefore, regardless of the current state of identification_task,
-        # we must always ensure we are working with the latest version from the database.
-        self.refresh_from_db()
-
         # Querysets for expert annotations
         experts_annotations_qs = self.expert_report_annotations.filter(user__groups__name='expert').exclude(user__groups__name='superexpert')
         finished_experts_annotations_qs = experts_annotations_qs.filter(validation_complete=True)
@@ -1020,13 +1008,7 @@ class ExpertReportAnnotation(LifecycleModel):
             self.create_replicas()
             # self.create_super_expert_approval(report=self.report)
 
-        if self.identification_task:
-            self.identification_task.refresh()
-        elif self.is_superexpert() and self.validation_complete and self.revise:
-            report = self.identification_task.report
-            if self.status == self.STATUS_HIDDEN and not report.hide:
-                report.hide = True
-                report.save()
+        self.identification_task.refresh()
 
     def delete(self, *args, **kwargs):
         identification_task = self.identification_task
