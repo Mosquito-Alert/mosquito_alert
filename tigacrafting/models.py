@@ -693,9 +693,8 @@ class ExpertReportAnnotation(LifecycleModel):
     STATUS_CATEGORIES = ((STATUS_PUBLIC, 'public'), (STATUS_FLAGGED, 'flagged'), (STATUS_HIDDEN, 'hidden'))
 
     user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
-    report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations', on_delete=models.CASCADE, )
     # NOTE: identification_task is nullable due to legacy. There are annotations to sites.
-    identification_task = models.ForeignKey(IdentificationTask, null=True, blank=True, editable=False, related_name='expert_report_annotations', on_delete=models.CASCADE)
+    identification_task = models.ForeignKey(IdentificationTask, editable=False, related_name='expert_report_annotations', on_delete=models.CASCADE)
     tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
     aegypti_certainty_category = models.IntegerField('Aegypti Certainty', choices=AEGYPTI_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows an Aedes aegypti')
     tiger_certainty_notes = models.TextField('Internal Species Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
@@ -819,7 +818,7 @@ class ExpertReportAnnotation(LifecycleModel):
     def create_replicas(self):
         username_replicas = ["innie", "minnie", "manny"]
 
-        report_annotations = ExpertReportAnnotation.objects.filter(report=self.report).count()
+        report_annotations = ExpertReportAnnotation.objects.filter(identification_task=self.identification_task).count()
         if report_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
             return
         num_missing_annotations = settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - report_annotations
@@ -833,7 +832,7 @@ class ExpertReportAnnotation(LifecycleModel):
         for dummy_user in User.objects.filter(username__in=username_replicas).exclude(username=self.user.username)[:num_missing_annotations]:
             ExpertReportAnnotation.objects.update_or_create(
                 user=dummy_user,
-                report=self.report,
+                identification_task=self.identification_task,
                 defaults={
                     **obj_dict,
                     'tiger_certainty_category': self.tiger_certainty_category,
@@ -850,43 +849,35 @@ class ExpertReportAnnotation(LifecycleModel):
 
     def get_score(self):
         score = -3
-        if self.report.type == 'site':
-            score = self.site_certainty_category
-        elif self.report.type == 'adult':
-            if self.aegypti_certainty_category == 2:
-                score = 4
-            elif self.aegypti_certainty_category == 1:
-                score = 3
-            else:
-                score = self.tiger_certainty_category
+        if self.aegypti_certainty_category == 2:
+            score = 4
+        elif self.aegypti_certainty_category == 1:
+            score = 3
+        else:
+            score = self.tiger_certainty_category
+
         if score is not None:
             return score
         else:
             return -3
 
     def get_category_euro(self) -> str:
-        if self.report.type == 'site':
-            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
-        elif self.report.type == 'adult':
-            if not self.taxon:
-                return "Unclassified"
-            if self.taxon.is_relevant:
-                with translation.override('en'):
-                    return "{} {}".format(self.confidence_label, self.taxon.name)
-            if self.taxon.is_root():
-                if self.category_id == 9: # Not sure
-                    return "Not sure"
-                return "Other species"
-            return "Other species - " + self.taxon.name
+        if not self.taxon:
+            return "Unclassified"
+        if self.taxon.is_relevant:
+            with translation.override('en'):
+                return "{} {}".format(self.confidence_label, self.taxon.name)
+        if self.taxon.is_root():
+            if self.category_id == 9: # Not sure
+                return "Not sure"
+            return "Other species"
+        return "Other species - " + self.taxon.name
 
     def get_category(self) -> str:
-        if self.report.type == 'site':
-            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
-        elif self.report.type == 'adult':
-            if self.get_score() > 2:
-                return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES))[self.get_score()-2]
-            else:
-                return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_score()]
+        if self.get_score() > 2:
+            return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES))[self.get_score()-2]
+        else:
+            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_score()]
 
     def get_status_bootstrap(self):
         result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if self.status == 1 else ('glyphicon glyphicon-flag' if self.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
@@ -915,12 +906,12 @@ class ExpertReportAnnotation(LifecycleModel):
 
         # If the user is the supervisor of that country -> False
         if self.user.userstat.national_supervisor_of:
-            if self.user.userstat.national_supervisor_of == self.report.country:
+            if self.user.userstat.national_supervisor_of == self.identification_task.country:
                 return False
 
         # Return False if no simplified_annotation found or if the objects to be
         # created is suposed to be the last.
-        total_completed_annotations_qs = self.report.expert_report_annotations.all()
+        total_completed_annotations_qs = ExpertReportAnnotation.objects.filter(identification_task=self.identification_task)
         return (
             total_completed_annotations_qs.filter(simplified_annotation=False).exists() or
             total_completed_annotations_qs.count() < settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1
@@ -1021,9 +1012,6 @@ class ExpertReportAnnotation(LifecycleModel):
         if self.simplified_annotation:
             self.message_for_user = ""
 
-        if not self.identification_task or str(self.identification_task.pk) != str(self.report.pk):
-            self.identification_task = IdentificationTask.objects.filter(report=self.report).first()
-
         self.confidence = self._get_confidence()
 
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
@@ -1035,22 +1023,23 @@ class ExpertReportAnnotation(LifecycleModel):
         if self.identification_task:
             self.identification_task.refresh()
         elif self.is_superexpert() and self.validation_complete and self.revise:
-            if self.status == self.STATUS_HIDDEN and not self.report.hide:
-                self.report.hide = True
-                self.report.save()
+            report = self.identification_task.report
+            if self.status == self.STATUS_HIDDEN and not report.hide:
+                report.hide = True
+                report.save()
 
     def delete(self, *args, **kwargs):
+        identification_task = self.identification_task
+
         if self.validation_complete_executive:
             ExpertReportAnnotation.objects.filter(
-                report=self.report,
+                identification_task=identification_task,
                 validation_complete=True,
                 validation_complete_executive=False
             ).filter(
                 models.Q(user__username__in=["innie", "minnie"]) 
                 | models.Q(user__pk=25, revise=False)   # pk 25 = "super_reritja"
             ).delete()
-
-        identification_task = self.identification_task
 
         result = super().delete(*args, **kwargs)
 
