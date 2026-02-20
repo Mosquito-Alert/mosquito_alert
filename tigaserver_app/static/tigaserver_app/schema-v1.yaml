@@ -545,18 +545,6 @@ paths:
             application/json:
               schema: {}
           description: ''
-  /api/missions/:
-    get:
-      operationId: listget_new_missions
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
-          description: ''
   /api/stats/workload_data/user/:
     get:
       operationId: listworkload_stats_per_users
