@@ -81,7 +81,7 @@ class ScoringTestCase(TestCase):
         superexperts_group.user_set.add(reritja_user)
         c_4 = Categories.objects.get(pk=4)  # Aedes albopictus
         anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, identification_task=identification_task, category=c_4,
-                                                             validation_complete=True, revise=True,
+                                                             validation_complete=True, is_decisive=True,
                                                              validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         retval = compute_user_score_in_xp_v2(user_id)
         # 6 points first of season

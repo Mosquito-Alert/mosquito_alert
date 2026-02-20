@@ -1105,19 +1105,13 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         default=False
     )
 
-    is_decisive = WritableSerializerMethodField(
-        field_class=serializers.BooleanField,
-        default=False,
-    )
+    is_decisive = serializers.BooleanField(default=False)
 
     def get_type(self, obj) -> Literal['short', 'long']:
         return 'short' if obj.simplified_annotation else 'long'
 
     def get_is_flagged(self, obj) -> bool:
         return obj.status == ExpertReportAnnotation.STATUS_FLAGGED
-
-    def get_is_decisive(self, obj) -> bool:
-        return obj.validation_complete_executive or obj.revise
 
     def validate(self, data):
         data = super().validate(data)
@@ -1147,7 +1141,6 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
             else:
                 data["status"] = ExpertReportAnnotation.STATUS_PUBLIC
 
-        data['validation_complete_executive'] = data.pop("is_decisive")
         user_role = data['user']
         if isinstance(user_role, User):
             try:
@@ -1162,7 +1155,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
                 country=data['identification_task'].report.country
             )
         if not can_set_is_decisive:
-            data['validation_complete_executive'] = False
+            data['is_decisive'] = False
         return data
 
     class Meta:
@@ -1292,7 +1285,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
     public_photo = SimplePhotoSerializer(source='photo', read_only=True)
     review = IdentificationTaskReviewSerializer(source='*', allow_null=True, read_only=True)
     result = IdentificationTaskResultSerializer(source='*', read_only=True, allow_null=True)
-    assignments = UserAssignmentSerializer(many=True, read_only=True)
+    assignments = UserAssignmentSerializer(source='expert_report_annotations', many=True, read_only=True)
 
     @extend_schema_field(SimplifiedObservationWithPhotosSerializer)
     def get_observation(self, obj: IdentificationTask) -> dict:
@@ -1355,7 +1348,6 @@ class CreateAgreeReviewSerializer(CreateReviewSerializer):
     def to_internal_value(self, data):
         data = super().to_internal_value(data)
 
-        data['revise'] = False
         data['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not data['identification_task'].is_safe else ExpertReportAnnotation.STATUS_PUBLIC
 
         return data
@@ -1392,7 +1384,7 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificat
         ret['validation_value'] = ret.pop('validation_value', None)
         ret['confidence'] = ret.pop('confidence', 0)
 
-        ret['revise'] = True
+        ret['is_decisive'] = True
         ret['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not ret.pop('is_safe') or ret['taxon'] is None else ExpertReportAnnotation.STATUS_PUBLIC
         ret['simplified_annotation'] = False
 

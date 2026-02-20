@@ -738,7 +738,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             "assignees",
             queryset=User.objects.filter(
                 models.Exists(
-                    ExpertReportAnnotation.objects.is_assignment().filter(
+                    ExpertReportAnnotation.objects.filter(
                         user=models.OuterRef('pk'),
                         identification_task_id=models.OuterRef(models.OuterRef('identificationtask'))
                     )
@@ -774,7 +774,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     @action(detail=False, methods=["POST",], url_path="assignments/next", permission_classes=[IdentificationTaskAssignmentPermissions,], serializer_class=AssignmentSerializer)
     def assign_next(self, request):
         # Checking if there are any assignments with pending annotation for that user.
-        assignment = ExpertReportAnnotation.objects.is_assignment().completed(False).filter(
+        assignment = ExpertReportAnnotation.objects.completed(False).filter(
             user=request.user
         ).order_by('-created').first()
         if not assignment:
@@ -914,7 +914,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
 
         def create(self, request, *args, **kwargs):
             # Check if it was assigned only (not completed)
-            pending_annotation = ExpertReportAnnotation.objects.is_assignment().completed(False).filter(
+            pending_annotation = ExpertReportAnnotation.objects.completed(False).filter(
                 identification_task_id=self.kwargs['observation_uuid'],
                 user=request.user
             ).first()

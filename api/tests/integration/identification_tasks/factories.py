@@ -33,7 +33,7 @@ def create_review(identification_task: IdentificationTask, overwrite: bool = Fal
     return ExpertReportAnnotation.objects.create(
         identification_task=identification_task,
         user=user,
-        revise=overwrite,
+        is_decisive=overwrite,
         validation_complete=True,
         **kwargs
     )

@@ -326,21 +326,6 @@ class AnnotationFilter(filters.FilterSet):
             status=ExpertReportAnnotation.STATUS_FLAGGED
         )
 
-    is_decisive = filters.BooleanFilter(
-        method="filter_by_is_decisive"
-    )
-
-    def filter_by_is_decisive(self, queryset, name, value):
-        if not value:
-            return queryset
-        return queryset.filter(
-            models.Q(
-                models.Q(revise=True)
-                | models.Q(validation_complete_executive=True),
-                _negated=not value
-            )
-        )
-
     type = filters.ChoiceFilter(
         choices=[('short', 'short'), ('long', 'long')],
         method="filter_by_type"
@@ -358,6 +343,7 @@ class AnnotationFilter(filters.FilterSet):
         model = ExpertReportAnnotation
         fields = {
             "is_favourite": ["exact"],
+            "is_decisive": ["exact"],
         }
 
 class TaxonFilter(filters.FilterSet):

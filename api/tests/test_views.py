@@ -955,48 +955,6 @@ class TestIdentificationTaskAnnotationsApi:
         assert annotation.validation_value == validation_value
 
     @pytest.mark.parametrize(
-        "validation_complete_executive, revise, expected_result",
-        [
-            (False, False, False),
-            (False, True, True),
-            (True, False, True),
-            (True, True, True),
-        ]
-    )
-    def test_is_decisive_representation(self, identification_task, user, api_client, endpoint, validation_complete_executive, revise, expected_result):
-        obj = create_annotation(
-            identification_task=identification_task,
-            user=user,
-            validation_complete_executive=validation_complete_executive,
-            revise=revise
-        )
-
-        response = api_client.get(
-            endpoint + f'{obj.pk}/',
-            format='json'
-        )
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['is_decisive'] == expected_result
-
-    @pytest.mark.parametrize(
-        "is_decisive",
-        [True, False]
-    )
-    def test_is_decisive_sets_validation_complete_executive(self, api_client, endpoint, user_with_role_supervisor_in_country, common_post_data, with_add_permission, is_decisive):
-        post_data = common_post_data
-        post_data['is_decisive'] = is_decisive
-
-        response = api_client.post(
-            endpoint,
-            data=post_data,
-            format='json'
-        )
-        assert response.status_code == status.HTTP_201_CREATED
-
-        annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
-        assert annotation.validation_complete_executive == is_decisive
-
-    @pytest.mark.parametrize(
         "status, expected_result",
         [
             (ExpertReportAnnotation.STATUS_FLAGGED, True),
@@ -1225,12 +1183,11 @@ class TestIdentificationTaskReviewApi:
             identification_task=identification_task,
             user=user_with_role_reviewer
         )
-        assert not annotation.validation_complete_executive
+        assert not annotation.is_decisive
         assert annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
         assert annotation.validation_complete
         assert annotation.best_photo is None
         assert annotation.simplified_annotation
-        assert not annotation.revise
 
         identification_task.refresh_from_db()
         assert identification_task.review_type == IdentificationTask.Review.AGREE
@@ -1268,12 +1225,11 @@ class TestIdentificationTaskReviewApi:
             identification_task=identification_task,
             user=user_with_role_reviewer
         )
-        assert not annotation.validation_complete_executive
+        assert annotation.is_decisive
         assert annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
         assert annotation.validation_complete
         assert annotation.best_photo.uuid == another_photo.uuid
         assert not annotation.simplified_annotation
-        assert annotation.revise
 
         identification_task.refresh_from_db()
         assert identification_task.review_type == IdentificationTask.Review.OVERWRITE
