@@ -871,12 +871,6 @@ class ExpertReportAnnotation(LifecycleModel):
             return "Other species"
         return "Other species - " + self.taxon.name
 
-    def get_category(self) -> str:
-        if self.get_score() > 2:
-            return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES))[self.get_score()-2]
-        else:
-            return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_score()]
-
     def get_status_bootstrap(self):
         result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if self.status == 1 else ('glyphicon glyphicon-flag' if self.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
         return result

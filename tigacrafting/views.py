@@ -98,37 +98,15 @@ def expert_status(request):
 
 # var is an ExpertReportAnnotation
 def reportannotation_formatter(var: ExpertReportAnnotation):
-    if var.identification_task.report.type == 'site':
-        return {
-            'report_id': var.identification_task.report.version_UUID,
-            'report_type': var.identification_task.report.type,
-            'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
-            'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
-            'draftStatus': var.get_status_bootstrap(),
-            'getScore': var.get_score(),
-            'getCategory': var.get_category()
-        }
-    elif var.identification_task.report.type == 'adult':
-        return {
-            'report_id': var.identification_task.report.version_UUID,
-            'report_type': var.identification_task.report.type,
-            'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
-            'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
-            'draftStatus': var.get_status_bootstrap(),
-            'getScore': var.get_score(),
-            'getCategory': var.get_category_euro()
-        }
-    else:
-        return {
-            'report_id': var.identification_task.report.version_UUID,
-            'report_type': var.identification_task.report.type,
-            'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
-            'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
-            'draftStatus': var.get_status_bootstrap(),
-            'getScore': var.get_score(),
-            'getCategory': var.get_category()
-        }
-
+    return {
+        'report_id': var.identification_task.report.version_UUID,
+        'report_type': var.identification_task.report.type,
+        'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
+        'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
+        'draftStatus': var.get_status_bootstrap(),
+        'getScore': var.get_score(),
+        'getCategory': var.get_category_euro()
+    }
 
 
 @api_view(['GET'])
