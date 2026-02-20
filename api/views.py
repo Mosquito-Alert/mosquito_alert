@@ -749,13 +749,11 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             "report__photos",
             queryset=Photo.objects.visible(),
         )
-    ).annotate(
-        pk_str=models.functions.Cast('pk', output_field=models.CharField()),
     )
     serializer_class = IdentificationTaskSerializer
     filterset_class = IdentificationTaskFilter
     filter_backends = (DjangoFilterBackend, SearchFilter)
-    search_fields = ("report__report_id", "pk_str")
+    search_fields = ("report__report_id", "report__version_UUID")
     permission_classes = (IdentificationTaskPermissions | UserRolePermission,)
 
     lookup_field = 'pk'
@@ -893,7 +891,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         serializer_class = AnnotationSerializer
         filter_backends = (DjangoFilterBackend, SearchFilter)
         filterset_class = AnnotationFilter
-        search_fields = ("identification_task_id",)
+        search_fields = ("identification_task__report__version_UUID",)
         permission_classes = (AnnotationPermissions | UserRolePermission, )
 
         parent_lookup_kwargs = {
