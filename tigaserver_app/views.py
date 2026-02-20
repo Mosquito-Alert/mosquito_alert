@@ -663,17 +663,6 @@ def clear_blocked(request, username, report=None):
 
 
 @api_view(['GET'])
-def reports_id_filtered(request):
-    if request.method == 'GET':
-        report_id = request.query_params.get('report_id', -1)
-        if report_id == -1:
-            raise ParseError(detail='report_id is mandatory')
-        qs = Report.objects.filter(type='adult').non_deleted().filter(report_id__startswith=report_id).order_by('-version_time')
-        serializer = ReportSerializer(qs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@api_view(['GET'])
 def uuid_list_autocomplete(request):
     if request.method == 'GET':
         user = request.user

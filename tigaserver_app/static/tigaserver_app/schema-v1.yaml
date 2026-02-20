@@ -545,18 +545,6 @@ paths:
             application/json:
               schema: {}
           description: ''
-  /api/reports_id_filtered/:
-    get:
-      operationId: listreports_id_filtereds
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
-          description: ''
   /api/uuid_list_autocomplete/:
     get:
       operationId: listuuid_list_autocompletes
