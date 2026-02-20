@@ -1088,7 +1088,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
                 "is_visible"
             )
 
-    observation_uuid = serializers.UUIDField(source="report_id", read_only=True)
+    observation_uuid = serializers.UUIDField(source="identification_task_id", read_only=True)
     user_hidden_obj = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     user = SimpleAnnotatorUserSerializer(read_only=True)
@@ -1817,7 +1817,7 @@ class CreatePhotoPredictionSerializer(PhotoPredictionSerializer):
         photo__uuid = data.pop('photo__uuid')
 
         try:
-            data['photo'] = Photo.objects.get(uuid=photo__uuid, report__identification_task=data['identification_task_id'])
+            data['photo'] = Photo.objects.get(uuid=photo__uuid, report_id=data['identification_task_id'])
         except Photo.DoesNotExist:
             raise serializers.ValidationError("The selected photo does not belong to this identification task or does not exist.")
 

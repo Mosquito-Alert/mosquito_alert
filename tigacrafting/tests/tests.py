@@ -25,26 +25,6 @@ import tigaserver_project.settings as conf
 from django.utils import timezone
 
 
-def user_summary(user):
-    print("############################################".format(user.username, ))
-    print("#### USER - {0} \t\t####".format(user.username,))
-    assigned_reports = ExpertReportAnnotation.objects.filter(user=user).filter(report__type='adult').values('report').distinct()
-    assigned_reports_count = assigned_reports.count()
-    if user.groups.filter(name='eu_group_europe').exists():
-        print("#### Group - europe \t\t####")
-    elif user.groups.filter(name='eu_group_spain').exists:
-        print("#### Group - spain \t\t####")
-    print("#### National supervisor - {0} \t\t####".format( 'Yes' if user.userstat.is_national_supervisor() else 'No', ))
-    if user.userstat.is_national_supervisor():
-        print("#### Supervised country - {0} \t\t####".format(user.userstat.national_supervisor_of.name_engl))
-    print("#### Assigned reports - {0} \t\t####".format(str(assigned_reports_count), ))
-    reports = Report.objects.filter(version_UUID__in=assigned_reports)
-    for r in reports:
-        print("#### Report {0} - {1} \t\t####".format(r.version_UUID, str(r.country), ))
-    print("############################################".format(user.username, ))
-    print("")
-
-
 def create_report(version_number, version_uuid, user, country):
     non_naive_time = timezone.now()
     point_on_surface = country.geom.point_on_surface
@@ -683,8 +663,8 @@ class NewReportAssignment(TransactionTestCase):
         assigned_reports = ExpertReportAnnotation.objects.filter(user=this_user)
         print("User {0} has been assigned".format( this_user.username ))
         for assignation in assigned_reports:
-            is_supervised = User.objects.filter(userstat__national_supervisor_of=assignation.report.country).exists()
-            print( "Report {0} in country {1}, assignation number {2}, country is supervised {3}".format( assignation.report.version_UUID, assignation.report.country, assignation.id, is_supervised ) )
+            is_supervised = User.objects.filter(userstat__national_supervisor_of=assignation.identification_task.report.country).exists()
+            print( "Report {0} in country {1}, assignation number {2}, country is supervised {3}".format( assignation.identification_task.report.version_UUID, assignation.identification_task.report.country, assignation.id, is_supervised ) )
 
     def test_check_users(self):
         self.create_team()
@@ -722,7 +702,11 @@ class NewReportAssignment(TransactionTestCase):
         for this_user in User.objects.exclude(id=24):
             this_user.userstat.assign_reports()
         for r in Report.objects.all():
-            annos = ExpertReportAnnotation.objects.filter(report=r)
+            try:
+                identification_task = r.identification_task
+            except Report.identification_task.RelatedObjectDoesNotExist:
+                identification_task, _ = IdentificationTask.get_or_create_for_report(r)
+            annos = ExpertReportAnnotation.objects.filter(identification_task=identification_task)
             if annos.count() == 3:
                 long_report_count = annos.filter(simplified_annotation=False).count()
                 short_report_count = annos.filter(simplified_annotation=True).count()
@@ -751,7 +735,7 @@ class NewReportAssignment(TransactionTestCase):
             supervised_country = this_user.userstat.national_supervisor_of
             reports_in_supervised_country = Report.objects.filter(country=supervised_country).count()
             #there's less than 5 reports in supervised country
-            assigned_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__country=supervised_country).count()
+            assigned_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(identification_task__report__country=supervised_country).count()
             if reports_in_supervised_country <= 5:
                 #all of them should be assigned to this user
                 self.assertEqual( reports_in_supervised_country, assigned_reports, "Less than 5 ({0}) reports available belong to country {1}, all of them should be assigned, but only {2} are".format(reports_in_supervised_country, supervised_country, assigned_reports ) )
@@ -765,7 +749,7 @@ class NewReportAssignment(TransactionTestCase):
             bb = this_user.userstat.native_of
             reports_in_bounding_box = Report.objects.filter(country=bb).count()
             # there's less than 5 reports in supervised country
-            assigned_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__country=bb).count()
+            assigned_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(identification_task__report__country=bb).count()
             if reports_in_bounding_box <= 5:
                 # all of them should be assigned to this user
                 self.assertEqual(reports_in_bounding_box, assigned_reports, "Less than 5 ({0}) reports available belong to country {1}, all of them should be assigned, but only {2} are".format(reports_in_bounding_box, bb, assigned_reports))
@@ -788,21 +772,21 @@ class NewReportAssignment(TransactionTestCase):
             # everyone should have less than 5 reports assigned
             self.assertTrue( assigned_reports <= 5, "User {0} has been assigned more than 5 reports ({1})".format( this_user.username, assigned_reports ) )
             # no regular user should yet receive reports from supervised countries
-            supervised_country_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__country__in=supervised_countries).count()
+            supervised_country_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(identification_task__report__country__in=supervised_countries).count()
             try:
                 self.assertTrue(supervised_country_reports == 0,"User {0} has been assigned some reports ({1}) from supervised countries".format(this_user.username,supervised_country_reports))
             except AssertionError:
                 self.print_assigned_reports(this_user)
                 raise
             # ... or from bounding boxes
-            bb_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(report__country__is_bounding_box=True).count()
+            bb_reports = ExpertReportAnnotation.objects.filter(user=this_user).filter(identification_task__report__country__is_bounding_box=True).count()
             self.assertTrue(bb_reports == 0, "User {0} has been assigned some reports ({1}) from bounding boxes".format(this_user.username, bb_reports))
 
         # let's take a closer look at es experts
         spain_users = User.objects.filter( Q(userstat__native_of__isnull=True) | Q( userstat__native_of__gid=17 ) ).exclude( groups__name='eu_group_europe' ).exclude( id__in=[24,25] )
         for this_user in spain_users:
             # All spain user assigned reports should be in Spain
-            assigned_reports_not_spain = ExpertReportAnnotation.objects.filter(user=this_user).exclude( report__country__gid = 17).count()
+            assigned_reports_not_spain = ExpertReportAnnotation.objects.filter(user=this_user).exclude(identification_task__report__country__gid = 17).count()
             self.assertTrue(assigned_reports_not_spain == 0, "Spain user {0} has been assigned some reports ({1}) outside spain".format(this_user.username, assigned_reports_not_spain))
 
         # for symmetry sake, the same for eu experts
@@ -810,7 +794,7 @@ class NewReportAssignment(TransactionTestCase):
         # euro_users = User.objects.filter( groups__name='eu_group_europe' ).exclude(id__in=[24, 25]).filter( userstat__national_supervisor_of__isnull = True )
         # for this_user in euro_users:
         #     # All reports should be euro
-        #     assigned_reports_spain = ExpertReportAnnotation.objects.filter(user=this_user).filter( report__country__gid = 17).count()
+        #     assigned_reports_spain = ExpertReportAnnotation.objects.filter(user=this_user).filter(identification_task__report__country__gid = 17).count()
         #     self.assertTrue(assigned_reports_spain == 0, "Euro user {0} has been assigned some reports ({1}) from spain".format(this_user.username, assigned_reports_spain))        
 
         #check grabbed reports
@@ -824,8 +808,8 @@ class NewReportAssignment(TransactionTestCase):
             # Get all reports in supervised country
             supervised_country = this_user.userstat.national_supervisor_of
             for assigned_report in ExpertReportAnnotation.objects.filter(user=this_user):
-                if assigned_report.report.country == supervised_country:
-                    self.assertTrue( assigned_report.simplified_annotation==False, "User {0}, national supervisor of {1}, has been assigned report {2} as simplified".format( this_user.username, supervised_country, assigned_report.report ))
+                if assigned_report.identification_task.report.country == supervised_country:
+                    self.assertTrue( assigned_report.simplified_annotation==False, "User {0}, national supervisor of {1}, has been assigned report {2} as simplified".format( this_user.username, supervised_country, assigned_report.identification_task.report ))
 
 
     def test_simplified_assignation_two_experts_and_ns_report_from_not_supervised_country(self):
@@ -896,7 +880,7 @@ class NewReportAssignment(TransactionTestCase):
 
         national_supervisor_isleofman = User.objects.get(pk=3)
         national_supervisor_isleofman.userstat.assign_reports()
-        server_upload_time_first_report = ExpertReportAnnotation.objects.filter(user=national_supervisor_isleofman).order_by('id')[0].report.server_upload_time
+        server_upload_time_first_report = ExpertReportAnnotation.objects.filter(user=national_supervisor_isleofman).order_by('id')[0].identification_task.report.server_upload_time
         server_upload_time_first_report_str = server_upload_time_first_report.strftime('%Y-%m-%d')
         self.assertTrue( server_upload_time_first_report_str == timezone.now().strftime('%Y-%m-%d'), "Server upload time of first assigned report should be {0}, is {1}".format( timezone.now().strftime('%Y-%m-%d'), server_upload_time_first_report_str ) )
 
@@ -990,9 +974,9 @@ class NewReportAssignment(TransactionTestCase):
         cp_1 = Complex.objects.create(description="Green/Teal")
         _ = taxon_root.add_child(name=cp_1.description, rank=Taxon.TaxonomicRank.SPECIES_COMPLEX, is_relevant=True, content_object=cp_1)
 
-        anno_u1 = ExpertReportAnnotation.objects.create(user=user_spain_1, report=r, category=c_1, validation_complete=True)
-        anno_u4 = ExpertReportAnnotation.objects.create(user=user_spain_4, report=r, category=c_2,validation_complete=True)
-        anno_u6 = ExpertReportAnnotation.objects.create(user=user_spain_6, report=r, category=c_3,validation_complete=True)
+        anno_u1 = ExpertReportAnnotation.objects.create(user=user_spain_1, identification_task=identification_task, category=c_1, validation_complete=True)
+        anno_u4 = ExpertReportAnnotation.objects.create(user=user_spain_4, identification_task=identification_task, category=c_2,validation_complete=True)
+        anno_u6 = ExpertReportAnnotation.objects.create(user=user_spain_6, identification_task=identification_task, category=c_3,validation_complete=True)
 
         #Three different categories -> Conflict
         identification_task.refresh_from_db()
@@ -1054,7 +1038,7 @@ class NewReportAssignment(TransactionTestCase):
         faroes_native_regular_user.userstat.assign_reports()
 
         #should have been assigned the Faroes report, since the report is outdated and therefore no longer blocked by NS
-        n_assigned_to_faroes_user = ExpertReportAnnotation.objects.filter(user=faroes_native_regular_user).filter(report=r).count()
+        n_assigned_to_faroes_user = ExpertReportAnnotation.objects.filter(user=faroes_native_regular_user).filter(identification_task__report=r).count()
         self.assertTrue( n_assigned_to_faroes_user == 1, "Number of reports assigned to Faroes user {0} is {1}, should be 1".format( faroes_native_regular_user.username, n_assigned_to_faroes_user ) )
 
 
@@ -1062,6 +1046,8 @@ class NewReportAssignment(TransactionTestCase):
     def test_validation_notification(self):
         self.create_report_pool()
         r = Report.objects.get(pk='1')
+        Photo.objects.create(report=r, photo='./testdata/splash.png')
+        identification_task = r.identification_task
         reritja_user = User.objects.get(pk=25)
         superexperts_group = Group.objects.get(name='superexpert')
         superexperts_group.user_set.add(reritja_user)
@@ -1091,7 +1077,7 @@ class NewReportAssignment(TransactionTestCase):
             if locale != 'zh-cn':
                 r.app_language = locale
                 r.save()
-                anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, report=r, category=c_3,
+                anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, identification_task=identification_task, category=c_3,
                                                                      validation_complete=True, revise=True,
                                                                      validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
                 anno_reritja.save()
@@ -1147,7 +1133,7 @@ class NewReportAssignment(TransactionTestCase):
         catalan_assignments = ExpertReportAnnotation.objects.filter(user=catalan)
         self.assertTrue(catalan_assignments.count() == 5, "User {0} should be assigned 5 reports, has {1}".format(catalan.id, catalan_assignments.count()))
         for anno in catalan_assignments:
-            self.assertTrue( anno.report.nuts_2 == 'ES51', "Report {0} should be located in Catalonia, but is assigned to nuts2 {1}".format( anno.report.version_UUID, anno.report.nuts_2 ) )
+            self.assertTrue( anno.identification_task.report.nuts_2 == 'ES51', "Report {0} should be located in Catalonia, but is assigned to nuts2 {1}".format( anno.identification_task.report.version_UUID, anno.identification_task.report.nuts_2 ) )
 
         # All reports assigned to andalusian expert should be from Andalucía
         andalusian = User.objects.get(pk=2)
@@ -1155,7 +1141,7 @@ class NewReportAssignment(TransactionTestCase):
         andalusian_assignments = ExpertReportAnnotation.objects.filter(user=andalusian)
         self.assertTrue(andalusian_assignments.count() == 5, "User {0} should be assigned 5 reports, has {1}".format(andalusian.id, andalusian_assignments.count()))
         for anno in andalusian_assignments:
-            self.assertTrue(anno.report.nuts_2 == 'ES61', "Report {0} should be located in Andalucía, but is assigned to nuts2 {1}".format(anno.report.version_UUID, anno.report.nuts_2))
+            self.assertTrue(anno.identification_task.report.nuts_2 == 'ES61', "Report {0} should be located in Andalucía, but is assigned to nuts2 {1}".format(anno.identification_task.report.version_UUID, anno.identification_task.report.nuts_2))
 
         '''
         european_expert = User.objects.get(pk=3)
@@ -1163,8 +1149,8 @@ class NewReportAssignment(TransactionTestCase):
         european_assignments = ExpertReportAnnotation.objects.filter(user=european_expert)
         self.assertTrue(european_assignments.count() == 5, "User {0} should be assigned 5 reports, has {1}".format(european_expert.id, european_assignments.count()))
         for anno in european_assignments:
-            self.assertFalse(anno.report.nuts_2 == 'ES51', "Report {0} should not be located in Catalunya, it is")
-            self.assertFalse(anno.report.nuts_2 == 'ES61', "Report {0} should not be located in Andalucía, it is")
+            self.assertFalse(anno.identification_task.report.nuts_2 == 'ES51', "Report {0} should not be located in Catalunya, it is")
+            self.assertFalse(anno.identification_task.report.nuts_2 == 'ES61', "Report {0} should not be located in Andalucía, it is")
         '''
 
 
@@ -1193,18 +1179,18 @@ class NewReportAssignment(TransactionTestCase):
         self.assertTrue(extremaduran_assignments.count() == 5, "User {0} should be assigned 5 reports, has {1}".format(extremaduran.id, extremaduran_assignments.count()))
 
         # Assign reports to expert 1 - they should get 2 extremadura, 2 spain and 1 european
-        self.assertTrue( extremaduran_assignments.filter(report__nuts_2='ES43').count() == 2, "Expert should be assigned 2 extremadura reports, has been assigned {0}".format( extremaduran_assignments.filter(report__nuts_2='ES43').count() ) )
-        self.assertTrue( extremaduran_assignments.filter(report__country__gid=17).exclude(report__nuts_2='ES43').count() == 2, "Expert should be assigned 2 spanish not extremadura reports, has been assigned {0}".format( extremaduran_assignments.filter(report__country__gid=17).exclude(report__nuts_2='ES43').count() ))
-        self.assertTrue( extremaduran_assignments.exclude(report__country__gid=17).exclude(report__country__isnull=True).count() == 1, "Expert should be assigned 1 european report, has been assigned {0}".format( extremaduran_assignments.exclude(report__country__gid=17).exclude(report__country__isnull=True).count() ))
+        self.assertTrue( extremaduran_assignments.filter(identification_task__report__nuts_2='ES43').count() == 2)
+        self.assertTrue( extremaduran_assignments.filter(identification_task__report__country__gid=17).exclude(identification_task__report__nuts_2='ES43').count() == 2)
+        self.assertTrue( extremaduran_assignments.exclude(identification_task__report__country__gid=17).exclude(identification_task__report__country__isnull=True).count() == 1)
 
         generic_spain = User.objects.get(pk=2)
         self.assertTrue(generic_spain.userstat.nuts2_assignation == None, "User {0} should not be regionalized it is ({1}) ".format(extremaduran.id, generic_spain.userstat.nuts2_assignation))
         generic_assignments = ExpertReportAnnotation.objects.filter(user=generic_spain)
         self.assertTrue(generic_assignments.count() == 5, "User {0} should be assigned 5 reports, has {1}".format(generic_spain.id, generic_assignments.count()))
-        self.assertTrue(generic_assignments.filter(report__country__gid=17).count() == 4, "Expert should be assigned 4 spanish reports, has been assigned {0}".format( generic_assignments.filter(report__country__gid=17).count() ))
-        n_european = generic_assignments.exclude(report__country__gid=17).exclude(report__country__isnull=True).count()
+        self.assertTrue(generic_assignments.filter(identification_task__report__country__gid=17).count() == 4)
+        n_european = generic_assignments.exclude(identification_task__report__country__gid=17).exclude(identification_task__report__country__isnull=True).count()
         self.assertTrue(n_european == 1,"Expert should be 1 european report, has been assigned {0}".format(n_european))
-        # print( generic_assignments.exclude(report__country__gid=17).exclude(report__country__isnull=True).first().report.country.name_engl )
+        # print( generic_assignments.exclude(identification_task__report__country__gid=17).exclude(identification_task__report__country__isnull=True).first().identification_task.report.country.name_engl )
 
 @pytest.mark.django_db
 class BaseTestTaxonRelationModel(ABC):
@@ -1504,8 +1490,8 @@ class TestExpertReportAnnotationModel:
             (1.1, pytest.raises(IntegrityError)),
         ]
     )
-    def test_confidence_raise_if_not_between_0_and_1(self, user, adult_report, value, expected_raise):
-        obj = ExpertReportAnnotation.objects.create(user=user, report=adult_report)
+    def test_confidence_raise_if_not_between_0_and_1(self, user, identification_task, value, expected_raise):
+        obj = ExpertReportAnnotation.objects.create(user=user, identification_task=identification_task)
 
         # Need to force update, because save() sets the confidence automatically
         with expected_raise:
@@ -1528,21 +1514,21 @@ class TestExpertReportAnnotationModel:
         obj = ExpertReportAnnotation(confidence=confidence_value)
         assert obj.confidence_label == expected_result
 
-    def test_userstat_grabbed_reports_is_incremented_on_create(self, user, adult_report):
+    def test_userstat_grabbed_reports_is_incremented_on_create(self, user, identification_task):
         userstat = user.userstat
         assert userstat.grabbed_reports == 0
 
-        _ = ExpertReportAnnotation.objects.create(user=user, report=adult_report)
+        _ = ExpertReportAnnotation.objects.create(user=user, identification_task=identification_task)
 
         userstat.refresh_from_db()
 
         assert userstat.grabbed_reports == 1
 
-    def test_taxon_is_set_on_create(self, taxon_root, user, adult_report):
+    def test_taxon_is_set_on_create(self, taxon_root, user, identification_task):
         category = Categories.objects.create(name="test")
         taxon = taxon_root.add_child(name="test", rank=Taxon.TaxonomicRank.SPECIES, content_object=category)
 
-        obj = ExpertReportAnnotation.objects.create(category=category, user=user, report=adult_report)
+        obj = ExpertReportAnnotation.objects.create(category=category, user=user, identification_task=identification_task)
         assert obj.taxon == taxon
 
     @pytest.mark.parametrize(
@@ -1553,24 +1539,19 @@ class TestExpertReportAnnotationModel:
             (ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY, 1)
         ]
     )
-    def test_confidence_is_set_on_create(self, user, adult_report, value, expected_result):
-        obj = ExpertReportAnnotation.objects.create(validation_value=value, user=user, report=adult_report)
+    def test_confidence_is_set_on_create(self, user, identification_task, value, expected_result):
+        obj = ExpertReportAnnotation.objects.create(validation_value=value, user=user, identification_task=identification_task)
         assert obj.confidence == expected_result
-
-    def test_identification_task_is_set_on_create(self, user, identification_task):
-        obj = ExpertReportAnnotation.objects.create(user=user, report=identification_task.report)
-
-        assert obj.identification_task == identification_task
 
     def test_identification_task_is_called_to_refresh_on_create(self, user, identification_task):
         with patch.object(IdentificationTask, 'refresh') as mocked_refresh:
-            _ = ExpertReportAnnotation.objects.create(user=user, report=identification_task.report)
+            _ = ExpertReportAnnotation.objects.create(user=user, identification_task=identification_task)
 
             # Check if refresh() was called
             mocked_refresh.assert_called_once()
 
     def test_identification_task_is_called_to_refresh_on_save(self, user, identification_task):
-        obj = ExpertReportAnnotation.objects.create(user=user, report=identification_task.report)
+        obj = ExpertReportAnnotation.objects.create(user=user, identification_task=identification_task)
 
         with patch.object(obj.identification_task, "refresh") as mocked_refresh:
             obj.save()
@@ -1578,46 +1559,12 @@ class TestExpertReportAnnotationModel:
             mocked_refresh.assert_called_once()
 
     def test_identification_task_is_called_to_refresh_on_delete(self, user, identification_task):
-        obj = ExpertReportAnnotation.objects.create(user=user, report=identification_task.report)
+        obj = ExpertReportAnnotation.objects.create(user=user, identification_task=identification_task)
 
         with patch.object(obj.identification_task, "refresh") as mocked_refresh:
             obj.delete()
 
             mocked_refresh.assert_called_once()
-
-    def test_without_identification_task_is_marked_hidden_if_superexpert_revise_hidden(self, adult_report):
-        assert getattr(adult_report, 'identification_task', None) is None
-        assert not adult_report.hide
-
-        super_reritja, _ = User.objects.get_or_create(pk=25, username='super_reritja')
-        superexperts_group, _ = Group.objects.get_or_create(name='superexpert')
-        superexperts_group.user_set.add(super_reritja)
-
-        # Now superexpert mark as hidden
-        obj = ExpertReportAnnotation.objects.create(
-            user=super_reritja,
-            report=adult_report,
-            status=ExpertReportAnnotation.STATUS_HIDDEN,
-            validation_complete=True,
-            revise=False
-        )
-        # It is revise=False -> does nothing
-        adult_report.refresh_from_db()
-        assert not adult_report.hide
-
-        # Mark as revise
-        obj.revise = True
-        obj.save()
-
-        adult_report.refresh_from_db()
-        assert adult_report.hide
-
-        # If now superexpert mark as not hidden, does nothing.
-        obj.status = ExpertReportAnnotation.STATUS_PUBLIC
-        obj.save()
-
-        adult_report.refresh_from_db()
-        assert adult_report.hide
 
 @pytest.mark.django_db
 class TestIdentificationTaskModel:
@@ -1804,7 +1751,7 @@ class TestIdentificationTaskModel:
     # methods
     def test_assign_to_user_creates_expert_report_annotation(self, user, identification_task):
         annotations_qs = ExpertReportAnnotation.objects.filter(
-            report=identification_task.report
+            identification_task=identification_task
         )
         assert annotations_qs.count() == 0
 
@@ -1887,7 +1834,7 @@ class TestIdentificationTaskFlow:
         user_expert.groups.add(expert_group)
 
         return ExpertReportAnnotation.objects.create(
-            report=identification_task.report,
+            identification_task=identification_task,
             user=user_expert,
             validation_complete=validation_complete,
             **kwargs
@@ -1901,7 +1848,7 @@ class TestIdentificationTaskFlow:
         user_expert.groups.add(superexpert_group)
 
         return ExpertReportAnnotation.objects.create(
-            report=identification_task.report,
+            identification_task=identification_task,
             user=user_expert,
             revise=overwrite,
             validation_complete=validation_complete,

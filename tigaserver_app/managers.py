@@ -70,14 +70,21 @@ class ReportQuerySet(models.QuerySet):
         )
 
     def in_coarse_filter(self) -> QuerySet:
-        from tigacrafting.models import ExpertReportAnnotation, IdentificationTask
+        from tigaserver_app.models import Report
+        from tigacrafting.models import IdentificationTask
 
-        return self.browsable().has_photos().filter(
-            models.Exists(
-                IdentificationTask.objects.filter(report_id=models.OuterRef('pk')).new()
-            ) | ~models.Exists(
-                # NOTE: case for reports with no identification task (e.g: breeding sites)
-                ExpertReportAnnotation.objects.filter(report_id=models.OuterRef('pk'))
+        return self.published(status=False).filter(
+            models.Q(
+                models.Q(type=Report.TYPE_ADULT)
+                & models.Exists(
+                    IdentificationTask.objects.filter(report_id=models.OuterRef('pk')).new()
+                )
+            ) |
+            models.Q(
+                models.Q(type=Report.TYPE_SITE)
+                & models.Exists(
+                    self.has_photos(state=False).filter(pk=models.OuterRef('pk'))
+                )
             )
         ).order_by('-server_upload_time')
 

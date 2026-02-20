@@ -375,7 +375,6 @@ class IdentificationTask(LifecycleModel):
         #       save().
 
         ExpertReportAnnotation.objects.get_or_create(
-            report=self.report,
             identification_task=self,
             user=user
         )
@@ -446,6 +445,18 @@ class IdentificationTask(LifecycleModel):
                 annotated_qs = annotated_qs.order_by('-vote_count')
 
             return annotated_qs.values_list(field_name, flat=True).first()
+
+        # NOTE: Do not remove! This is crucial.
+        # When refresh() is called after saving ExpertReportAnnotation,
+        # ExpertReportAnnotation.identification_task is returned before the refresh.
+        # This means the annotation object may contain an outdated status of
+        # identification_task.
+        # If save() is called again, it would refresh an outdated version
+        # of identification_task, potentially triggering unintended side effects,
+        # such as executing the on_done() @hook multiple times and causing duplicate flows.
+        # Therefore, regardless of the current state of identification_task,
+        # we must always ensure we are working with the latest version from the database.
+        self.refresh_from_db()
 
         # Querysets for expert annotations
         experts_annotations_qs = self.expert_report_annotations.filter(user__groups__name='expert').exclude(user__groups__name='superexpert')
@@ -765,7 +776,7 @@ class ExpertReportAnnotation(LifecycleModel):
     def create_auto_annotation(cls, report: 'tigaserver_app.models.Report', category: 'Categories', validation_value: Optional[Literal[VALIDATION_CATEGORY_PROBABLY, VALIDATION_CATEGORY_DEFINITELY]] = None):
         obj, _ = ExpertReportAnnotation.objects.update_or_create(
             user=User.objects.get(username="innie"),
-            report=report,
+            identification_task=report.identification_task,
             defaults={
                 'validation_complete': True,
                 'simplified_annotation': False,
@@ -793,7 +804,7 @@ class ExpertReportAnnotation(LifecycleModel):
             #       a ExpertReportAnnotation that are replicas or executive validation.
             ExpertReportAnnotation.objects.update_or_create(
                 user=User.objects.get(pk=25),  # "super_reritja"
-                report=report,
+                identification_task=report.identification_task,
                 defaults={
                     'status': 1,  # public
                     'simplified_annotation': False,
@@ -811,7 +822,7 @@ class ExpertReportAnnotation(LifecycleModel):
         num_missing_annotations = settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - report_annotations
 
         fieldnames = [
-            field.name for field in ExpertReportAnnotation._meta.fields if field.name not in ('id', 'user', 'report')
+            field.name for field in ExpertReportAnnotation._meta.fields if field.name not in ('id', 'user')
         ]
         obj_dict = {
             fname: getattr(self, fname) for fname in fieldnames
