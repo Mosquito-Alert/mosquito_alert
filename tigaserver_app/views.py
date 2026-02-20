@@ -874,13 +874,13 @@ def annotate_coarse(request):
             user=request.user,
             identification_task=report.identification_task,
             edited_user_notes=ExpertReportAnnotation._get_auto_message(
-                    category=category,
-                    validation_value=int(validation_value) if validation_value else None,
-                    locale=report.user.locale
-                ) or "",
+                category=category,
+                validation_value=int(validation_value) if validation_value else None,
+                locale=report.user.locale
+            ) or "",
             status=ExpertReportAnnotation.STATUS_PUBLIC,
             validation_complete=True,
-            revise=False,
+            revise=True,
             best_photo=report.photos.first(),
             simplified_annotation=False,
             category=category,

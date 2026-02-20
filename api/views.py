@@ -794,8 +794,8 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         request=PolymorphicProxySerializer(
             component_name="MetaCreateIdentificationTaskReview",
             serializers={
-                CreateAgreeReviewSerializer().fields['action'].get_default(): CreateAgreeReviewSerializer,
-                CreateOverwriteReviewSerializer().fields['action'].get_default(): CreateOverwriteReviewSerializer,
+                list(CreateAgreeReviewSerializer().fields['action'].choices.values())[0]: CreateAgreeReviewSerializer,
+                list(CreateOverwriteReviewSerializer().fields['action'].choices.values())[0]: CreateOverwriteReviewSerializer,
             },
             resource_type_field_name="action",
         ),
@@ -810,8 +810,8 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         task = self.get_object()
 
         review_type = self.request.data.get("action")
-        agree_value = CreateAgreeReviewSerializer().fields['action'].get_default()
-        overwrite_value = CreateOverwriteReviewSerializer().fields['action'].get_default()
+        agree_value = list(CreateAgreeReviewSerializer().fields['action'].choices.values())[0]
+        overwrite_value = list(CreateOverwriteReviewSerializer().fields['action'].choices.values())[0]
         if review_type == agree_value:
             serializer_klass = CreateAgreeReviewSerializer
         elif review_type == overwrite_value:
@@ -824,13 +824,19 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         context = self.get_serializer_context()
         context['identification_task'] = task
 
-        serializer = serializer_klass(context=context, data=request.data)
+        # Check if already exist and ExpertAnnotationReport. If so, update (pass to serializer)
+        try:
+            annotation = ExpertReportAnnotation.objects.filter(user=request.user, identification_task=task).latest('created')
+        except ExpertReportAnnotation.DoesNotExist:
+            annotation = None
+
+        serializer = serializer_klass(instance=annotation, context=context, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         headers = self._get_location_header(serializer.data)
 
-        response_serializer = IdentificationTaskSerializer.IdentificationTaskReviewSerializer(serializer.instance)
+        response_serializer = IdentificationTaskSerializer.IdentificationTaskReviewSerializer(serializer.instance.identification_task)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def _get_location_header(self, data):

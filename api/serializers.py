@@ -1328,41 +1328,32 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         }
 
 class CreateReviewSerializer(serializers.ModelSerializer):
-    action = serializers.HiddenField(default=None)
+    action = serializers.HiddenField(default=lambda field: field.context['request'].review_type, source='*')
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
-    def validate(self, data):
-        del data['review_type']
-        data['validation_complete'] = True
-        data['simplified_annotation'] = True
-        data['identification_task'] = self.context.get('identification_task')
+    def validate_action(self, value):
+        return {}
 
-        return data
+    def to_internal_value(self, data):
+        ret = super().to_internal_value(data)
+        ret['validation_complete'] = True
+        ret['simplified_annotation'] = True
+        ret['identification_task'] = self.context.get('identification_task')
 
-    def create(self, validated_data):
-        identification_task = validated_data.pop('identification_task')
-
-        # TODO: Create a Review model for this.
-        obj, _ = ExpertReportAnnotation.objects.update_or_create(
-            user=self.context.get('request').user,
-            identification_task=identification_task,
-            defaults=validated_data
-        )
-        return obj.identification_task
+        return ret
 
     class Meta:
-        model = IdentificationTask
+        model = ExpertReportAnnotation
         fields = (
             'action',
+            'user',
         )
-        extra_kwargs = {
-            'action': {'source': 'review_type','read_only': False},
-        }
 
 class CreateAgreeReviewSerializer(CreateReviewSerializer):
-    action = serializers.ChoiceField(source='review_type', choices=[IdentificationTask.Review.AGREE.value], default=IdentificationTask.Review.AGREE.value)
+    action = serializers.ChoiceField(source='*', choices=[IdentificationTask.Review.AGREE.value])
 
-    def validate(self, data):
-        data = super().validate(data)
+    def to_internal_value(self, data):
+        data = super().to_internal_value(data)
 
         data['revise'] = False
         data['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not data['identification_task'].is_safe else ExpertReportAnnotation.STATUS_PUBLIC
@@ -1370,28 +1361,19 @@ class CreateAgreeReviewSerializer(CreateReviewSerializer):
         return data
 
     class Meta(CreateReviewSerializer.Meta):
-        fields = (
-            'action',
-        )
+        pass
 
 class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificationSerializer):
-    action = serializers.ChoiceField(source='review_type', choices=[IdentificationTask.Review.OVERWRITE.value], default=IdentificationTask.Review.OVERWRITE.value)
+    action = serializers.ChoiceField(source='*', choices=[IdentificationTask.Review.OVERWRITE.value])
+    is_safe = serializers.BooleanField(source='*', required=True)
 
     public_photo_uuid = serializers.UUIDField(source='photo__uuid', write_only=True)
 
+    def validate_is_safe(self, value):
+        return {'is_safe': value}
+
     def validate(self, data):
         data = super().validate(data)
-
-        # Case Not an insect will be empty taxon. In case of update we need to for it to None
-        data['taxon'] = data.pop('taxon', None)
-
-        data['validation_value'] = data.pop('validation_value', None)
-        data['confidence'] = data.pop('confidence', 0)
-
-        data['revise'] = True
-        data['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not data.pop('is_safe') or data['taxon'] is None else ExpertReportAnnotation.STATUS_PUBLIC
-        data['simplified_annotation'] = False
-        data['edited_user_notes'] = data.pop('public_note', None) or ""
 
         if public_photo_uuid := data.pop('photo__uuid', None):
             try:
@@ -1401,16 +1383,29 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificat
 
         return data
 
+    def to_internal_value(self, data):
+        ret = super().to_internal_value(data)
+
+        # Case Not an insect will be empty taxon. In case of update we need to for it to None
+        ret['taxon'] = ret.pop('taxon', None)
+
+        ret['validation_value'] = ret.pop('validation_value', None)
+        ret['confidence'] = ret.pop('confidence', 0)
+
+        ret['revise'] = True
+        ret['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not ret.pop('is_safe') or ret['taxon'] is None else ExpertReportAnnotation.STATUS_PUBLIC
+        ret['simplified_annotation'] = False
+
+        return ret
+
     class Meta(CreateReviewSerializer.Meta):
-        fields = (
-            'action',
+        fields = CreateReviewSerializer.Meta.fields + (
             'public_photo_uuid',
             'is_safe',
             'public_note',
         ) + SpeciesIdentificationSerializer.Meta.fields
         extra_kwargs = {
-            'is_safe': {'read_only': False},
-            'public_note': {'allow_null': True, 'allow_blank': False, 'read_only': False}
+            'public_note': {'source': 'edited_user_notes', 'required': True, 'allow_null': True, 'allow_blank': False, 'read_only': False}
         }
 
 class ObservationGeoModelSerializer(BaseReportGeoModelSerializer):
