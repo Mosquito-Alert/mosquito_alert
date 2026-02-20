@@ -83,7 +83,7 @@ class ReportQuerySet(models.QuerySet):
             models.Q(
                 models.Q(type=Report.TYPE_SITE)
                 & models.Exists(
-                    self.has_photos(state=False).filter(pk=models.OuterRef('pk'))
+                    self.has_photos().filter(pk=models.OuterRef('pk'))
                 )
             )
         ).order_by('-server_upload_time')
