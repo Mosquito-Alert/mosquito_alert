@@ -73,7 +73,7 @@ class ReportQuerySet(models.QuerySet):
         from tigaserver_app.models import Report
         from tigacrafting.models import IdentificationTask
 
-        return self.published(status=False).filter(
+        return self.published(state=False).filter(
             models.Q(
                 models.Q(type=Report.TYPE_ADULT)
                 & models.Exists(
