@@ -662,19 +662,6 @@ def clear_blocked(request, username, report=None):
         return Response(status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-def uuid_list_autocomplete(request):
-    if request.method == 'GET':
-        user = request.user
-        uuid = request.query_params.get('uuid', -1)
-
-        if uuid == -1:
-            raise ParseError(detail='uuid is mandatory')
-
-        qs = ExpertReportAnnotation.objects.filter(user=user).filter(report__type='adult').filter(report__version_UUID__startswith=uuid)
-        qs = qs.values('report__version_UUID').distinct()
-        return Response(qs, status=status.HTTP_200_OK)
-
 package_filter = (
         Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) |
         Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) |

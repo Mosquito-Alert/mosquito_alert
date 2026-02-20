@@ -545,18 +545,6 @@ paths:
             application/json:
               schema: {}
           description: ''
-  /api/uuid_list_autocomplete/:
-    get:
-      operationId: listuuid_list_autocompletes
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
-          description: ''
   /api/missions/:
     get:
       operationId: listget_new_missions
