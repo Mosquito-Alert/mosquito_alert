@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.conf import settings
 from django_filters import rest_framework as filters
 import json
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, MapDataSerializer, CoverageMonthMapSerializer, TagSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, MapDataSerializer, CoverageMonthMapSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, ReportResponse, Device
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -343,25 +343,6 @@ def coverage_month_internal():
     queryset = CoverageAreaMonth.objects.all()
     serializer = CoverageMonthMapSerializer(queryset, many=True)
     return serializer.data
-
-
-class TagFilter(filters.FilterSet):
-    name = filters.Filter(method='filter_partial_name')
-
-    def filter_partial_name(self, qs, name, value):
-        name = value
-        if not name:
-            return qs
-        return qs.filter(name__icontains=name)
-
-    class Meta:
-        model = Tag
-        fields = ['name']
-
-class TagViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-    filterset_class = TagFilter
 
 
 @api_view(['POST'])

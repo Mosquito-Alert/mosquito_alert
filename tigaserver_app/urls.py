@@ -12,7 +12,6 @@ router.register(r'photos', views.PhotoViewSet)
 router.register(r'fixes', views.FixViewSet)
 router.register(r'owcampaigns', views.OWCampaignsViewSet)
 router.register(r'organizationpins', views.OrganizationsPinViewSet)
-router.register(r'tags', views.TagViewSet)
 
 urlpatterns = [
     path('mark_notif_as_ack/', views.mark_notif_as_ack),

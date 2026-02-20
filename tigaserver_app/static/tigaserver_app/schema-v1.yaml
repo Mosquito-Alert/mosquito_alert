@@ -1428,33 +1428,6 @@ paths:
                 - masked_lon
                 - masked_lat
           description: ''
-  /api/tags/:
-    get:
-      operationId: listTags
-      parameters:
-      - name: name
-        required: false
-        in: query
-        description: name
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  properties:
-                    id:
-                      type: integer
-                      readOnly: true
-                    name:
-                      type: string
-                      maxLength: 100
-                  required:
-                  - name
-          description: ''
   /en/stats/workload/:
     get:
       operationId: listworkload_stats
