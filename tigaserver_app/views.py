@@ -653,7 +653,7 @@ def clear_blocked(request, username, report=None):
         annotations_qs = user.expert_report_annotations.blocking()
 
         if report:
-            annotations_qs = annotations_qs.filter(report=get_object_or_404(Report, pk=report))
+            annotations_qs = annotations_qs.filter(identification_task__report=get_object_or_404(Report, pk=report))
 
         delete_annotations_and_notify(
             annotations_qs=annotations_qs
@@ -682,8 +682,8 @@ def uuid_list_autocomplete(request):
         if uuid == -1:
             raise ParseError(detail='uuid is mandatory')
 
-        qs = ExpertReportAnnotation.objects.filter(user=user).filter(report__type='adult').filter(report__version_UUID__startswith=uuid)
-        qs = qs.values('report__version_UUID').distinct()
+        qs = ExpertReportAnnotation.objects.filter(user=user).filter(identification_task__report__version_UUID__startswith=uuid)
+        qs = qs.values('identification_task__report__version_UUID').distinct()
         return Response(qs, status=status.HTTP_200_OK)
 
 
@@ -742,10 +742,15 @@ def hide_report(request):
             raise ParseError(detail='hide param is mandatory')
         hide = hide_val == 'true'
         report = get_object_or_404(Report,pk=report_id)
-        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+        if ExpertReportAnnotation.objects.filter(identification_task__report=report).count() > 0:
             return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
         report.hide = hide
         report.save()
+        try:
+            identification_task = report.identification_task
+            identification_task.refresh()
+        except Report.identification_task.RelatedObjectDoesNotExist:
+            pass
         return Response(data={'message': 'hide set to {0}'.format( hide ), 'opcode': 0}, status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
@@ -755,7 +760,7 @@ def flip_report(request):
         flip_to_subtype = request.data.get('flip_to_subtype', '')
         report_id = request.data.get('report_id', '')
         report = get_object_or_404(Report,pk=report_id)
-        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+        if ExpertReportAnnotation.objects.filter(identification_task__report=report).count() > 0:
             return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
         if flip_to_type == '': # adult | site
             raise ParseError(detail='flip_to_type param is mandatory')
@@ -852,7 +857,7 @@ def annotate_coarse(request):
         #     raise ParseError(detail='category_id param is mandatory')
         report = get_object_or_404(Report, pk=report_id)
         # This prevents auto annotating a report which has been claimed by someone between reloads
-        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+        if ExpertReportAnnotation.objects.filter(identification_task__report=report).count() > 0:
             return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
         category = get_object_or_404(Categories, pk=category_id)
         if validation_value == '' or not category.specify_certainty_level:

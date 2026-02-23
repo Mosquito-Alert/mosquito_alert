@@ -1088,7 +1088,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
                 "is_visible"
             )
 
-    observation_uuid = serializers.UUIDField(source="report_id", read_only=True)
+    observation_uuid = serializers.UUIDField(source="identification_task_id", read_only=True)
     user_hidden_obj = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     user = SimpleAnnotatorUserSerializer(read_only=True)
@@ -1126,13 +1126,13 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         data['validation_complete'] = True
 
         try:
-            data['report'] = Report.objects.get(type='adult', pk=self.context.get('observation_uuid'))
-        except Report.DoesNotExist:
-            raise serializers.ValidationError("The observation does not exist.")
+            data['identification_task'] = IdentificationTask.objects.get(pk=self.context.get('observation_uuid'))
+        except IdentificationTask.DoesNotExist:
+            raise serializers.ValidationError("There is no identification task associated with the observation.")
 
         if best_photo_uuid := data.pop('best_photo_uuid', None):
             try:
-                data['best_photo'] = Photo.objects.get(report=data['report'], uuid=best_photo_uuid)
+                data['best_photo'] = Photo.objects.get(report=data['identification_task'].report, uuid=best_photo_uuid)
             except Photo.DoesNotExist:
                 raise serializers.ValidationError("The photo does not exist or does not belong to the observation.")
 
@@ -1159,7 +1159,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
             can_set_is_decisive = user_role.has_role_permission_by_model(
                 action='mark_as_decisive',
                 model=ExpertReportAnnotation,
-                country=data['report'].country
+                country=data['identification_task'].report.country
             )
         if not can_set_is_decisive:
             data['validation_complete_executive'] = False
@@ -1211,9 +1211,9 @@ class AssignmentSerializer(BaseAssignmentSerializer):
     observation = serializers.SerializerMethodField()
 
     @extend_schema_field(AssignedObservationSerializer)
-    def get_observation(self, obj) -> dict:
+    def get_observation(self, obj: ExpertReportAnnotation) -> dict:
         serializer = type(self).AssignedObservationSerializer(
-            obj.report,
+            obj.identification_task.report,
             context={**self.context, "hide_note_if_not_owner": False}  # always show note
         )
         return serializer.data
@@ -1295,7 +1295,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
     assignments = UserAssignmentSerializer(many=True, read_only=True)
 
     @extend_schema_field(SimplifiedObservationWithPhotosSerializer)
-    def get_observation(self, obj) -> dict:
+    def get_observation(self, obj: IdentificationTask) -> dict:
         serializer = SimplifiedObservationWithPhotosSerializer(
             obj.report,
             context={**self.context, "hide_note_if_not_owner": False}  # always show note
@@ -1334,22 +1334,21 @@ class CreateReviewSerializer(serializers.ModelSerializer):
         del data['review_type']
         data['validation_complete'] = True
         data['simplified_annotation'] = True
-        data['report'] = self.context.get('report')
+        data['identification_task'] = self.context.get('identification_task')
 
         return data
 
     def create(self, validated_data):
-        report = validated_data.pop('report')
+        identification_task = validated_data.pop('identification_task')
 
         # TODO: Create a Review model for this.
         obj, _ = ExpertReportAnnotation.objects.update_or_create(
             user=self.context.get('request').user,
-            report=report,
+            identification_task=identification_task,
             defaults=validated_data
         )
         obj.create_replicas()
 
-        identification_task = report.identification_task
         identification_task.refresh_from_db()
         return identification_task
 
@@ -1369,7 +1368,7 @@ class CreateAgreeReviewSerializer(CreateReviewSerializer):
         data = super().validate(data)
 
         data['revise'] = False
-        data['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not data['report'].identification_task.is_safe else ExpertReportAnnotation.STATUS_PUBLIC
+        data['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not data['identification_task'].is_safe else ExpertReportAnnotation.STATUS_PUBLIC
 
         return data
 
@@ -1399,7 +1398,7 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificat
 
         if public_photo_uuid := data.pop('photo__uuid', None):
             try:
-                data['best_photo'] = Photo.objects.get(report=data['report'], uuid=public_photo_uuid)
+                data['best_photo'] = Photo.objects.get(report=data['identification_task'].report, uuid=public_photo_uuid)
             except Photo.DoesNotExist:
                 raise serializers.ValidationError("The photo does not exist or does not belong to the observation.")
 
@@ -1433,7 +1432,7 @@ class ObservationSerializer(BaseReportWithPhotosSerializer):
         photo = SimplePhotoSerializer(required=True)
         result = IdentificationTaskSerializer.IdentificationTaskResultSerializer(source='*', allow_null=True, read_only=True)
 
-        def to_representation(self, instance):
+        def to_representation(self, instance: IdentificationTask):
             ret = super().to_representation(instance)
             if self.allow_null and not instance.report.published:
                 return None
@@ -1818,7 +1817,7 @@ class CreatePhotoPredictionSerializer(PhotoPredictionSerializer):
         photo__uuid = data.pop('photo__uuid')
 
         try:
-            data['photo'] = Photo.objects.get(uuid=photo__uuid, report__identification_task=data['identification_task_id'])
+            data['photo'] = Photo.objects.get(uuid=photo__uuid, report_id=data['identification_task_id'])
         except Photo.DoesNotExist:
             raise serializers.ValidationError("The selected photo does not belong to this identification task or does not exist.")
 
