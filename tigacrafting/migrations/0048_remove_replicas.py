@@ -14,14 +14,34 @@ def remove_replicas(apps, schema_editor):
         validation_complete=False
     ).delete()
 
-    # Mark as revised all annotations by superexperts for tasks that have annotations by
-    task_qs = IdentificationTask.objects.filter(
-        expert_report_annotations__user__username__in=[
-            "innie",
-            "minnie",
-            "manny",
-        ]
-    ).distinct()
+    ExpertReportAnnotation.objects.filter(
+        user__username__in=["innie", "minnie", "manny"],
+    ).delete()
+
+    User.objects.filter(
+        username__in=["innie", "minnie", "manny"],
+    ).delete()
+
+    task_qs = IdentificationTask.objects.annotate(
+        count_annotations=models.Count(
+            'expert_report_annotations',
+            filter=~models.Q(expert_report_annotations__user__in=superexperts) & models.Q(expert_report_annotations__validation_complete=True)
+        ),
+        has_superexpert_annotations=models.Exists(
+            ExpertReportAnnotation.objects.filter(
+                identification_task=models.OuterRef('pk'),
+                user__in=superexperts,
+                validation_complete=True
+            )
+        )
+    ).filter(
+        count_annotations=0,
+        has_superexpert_annotations=True,
+        review_type__isnull=False,
+    ).exclude(
+        result_source='ai'
+    )
+
     for task in task_qs.iterator():
         ExpertReportAnnotation.objects.filter(
             user__in=superexperts,
@@ -35,19 +55,11 @@ def remove_replicas(apps, schema_editor):
             taxon=task.taxon,
             confidence=task.confidence,
             validation_value=2 if task.confidence >= 0.8 else 1,
-            status=0 if not task.is_safe else (0 if task.is_flagged else 1),
+            status=-1 if not task.is_safe else (0 if task.is_flagged else 1),
             sex=task.sex,
             is_gravid=task.is_gravid,
             is_blood_fed=task.is_blood_fed,
         )
-
-    ExpertReportAnnotation.objects.filter(
-        user__username__in=["innie", "minnie", "manny"],
-    ).delete()
-
-    User.objects.filter(
-        username__in=["innie", "minnie", "manny"],
-    ).delete()
 
 
 class Migration(migrations.Migration):
