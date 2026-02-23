@@ -878,7 +878,7 @@ def annotate_coarse(request):
                 validation_value=int(validation_value) if validation_value else None,
                 locale=report.user.locale
             ) or "",
-            status=ExpertReportAnnotation.STATUS_PUBLIC,
+            status=ExpertReportAnnotation.Status.PUBLIC,
             validation_complete=True,
             decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
             best_photo=report.photos.first(),

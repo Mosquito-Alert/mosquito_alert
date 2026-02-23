@@ -966,7 +966,7 @@ class SpeciesIdentificationSerializer(serializers.ModelSerializer):
         def to_internal_value(self, data):
             if self.allow_null and data is None:
                 return {
-                    'status': ExpertReportAnnotation.STATUS_HIDDEN
+                    'status': ExpertReportAnnotation.Status.HIDDEN
                 }
             ret = super().to_internal_value(data)
             ret['validation_value'] = ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY if data.pop('confidence_label') == 'definitely' else ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
@@ -1080,7 +1080,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         )
 
         def get_is_visible(self, obj) -> bool:
-            return obj.status != ExpertReportAnnotation.STATUS_HIDDEN
+            return obj.status != ExpertReportAnnotation.Status.HIDDEN
 
         class Meta:
             model = ExpertReportAnnotation
@@ -1115,7 +1115,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         return 'short' if obj.simplified_annotation else 'long'
 
     def get_is_flagged(self, obj) -> bool:
-        return obj.status == ExpertReportAnnotation.STATUS_FLAGGED
+        return obj.status == ExpertReportAnnotation.Status.FLAGGED
 
     def get_is_decisive(self, obj) -> bool:
         return obj.decision_level in [ExpertReportAnnotation.DecisionLevel.EXECUTIVE, ExpertReportAnnotation.DecisionLevel.FINAL]
@@ -1142,11 +1142,11 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         # Only if status not set yet (for example classification None sets it to hidden).
         if not data.get("status", None):
             if not is_visible:
-                data["status"] = ExpertReportAnnotation.STATUS_HIDDEN
+                data["status"] = ExpertReportAnnotation.Status.HIDDEN
             elif is_flagged:
-                data["status"] = ExpertReportAnnotation.STATUS_FLAGGED
+                data["status"] = ExpertReportAnnotation.Status.FLAGGED
             else:
-                data["status"] = ExpertReportAnnotation.STATUS_PUBLIC
+                data["status"] = ExpertReportAnnotation.Status.PUBLIC
 
         data['decision_level'] = ExpertReportAnnotation.DecisionLevel.EXECUTIVE if data.pop("is_decisive", False) else ExpertReportAnnotation.DecisionLevel.NORMAL
         user_role = data['user']
@@ -1400,7 +1400,7 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificat
         ret['confidence'] = ret.pop('confidence', 0)
 
         ret['decision_level'] = ExpertReportAnnotation.DecisionLevel.FINAL
-        ret['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not ret.pop('is_safe') or ret['taxon'] is None else ExpertReportAnnotation.STATUS_PUBLIC
+        ret['status'] = ExpertReportAnnotation.Status.HIDDEN if not ret.pop('is_safe') or ret['taxon'] is None else ExpertReportAnnotation.Status.PUBLIC
         ret['simplified_annotation'] = False
 
         return ret

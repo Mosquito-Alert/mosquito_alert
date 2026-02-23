@@ -30,7 +30,7 @@ def remove_autoflagged_reports(apps, schema_editor):
             filter=models.Q(
                 expert_report_annotations__user__groups__name='expert',
                 expert_report_annotations__validation_complete=True,
-                expert_report_annotations__status=ExpertReportAnnotationModel.STATUS_FLAGGED
+                expert_report_annotations__status=ExpertReportAnnotationModel.Status.FLAGGED
             )
         )
     ).filter(
@@ -43,8 +43,8 @@ def remove_autoflagged_reports(apps, schema_editor):
         user__groups__name='expert',
         validation_complete=True,
         report__pk__in=models.Subquery(reports_to_update.values('pk')), 
-        status=ExpertReportAnnotationModel.STATUS_FLAGGED
-    ).update(status=ExpertReportAnnotationModel.STATUS_PUBLIC)
+        status=ExpertReportAnnotationModel.Status.FLAGGED
+    ).update(status=ExpertReportAnnotationModel.Status.PUBLIC)
 
 class Migration(migrations.Migration):
 

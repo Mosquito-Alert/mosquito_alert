@@ -22,7 +22,7 @@ def mark_hidden_reports_not_published_from_identification_task(apps, schema_edit
                 report=models.OuterRef('pk'),
                 validation_complete=True,
                 revise=True,
-                status=ExpertReportAnnotationModel.STATUS_HIDDEN
+                status=ExpertReportAnnotationModel.Status.HIDDEN
             )
         )
     ).update(hide=True)

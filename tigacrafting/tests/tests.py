@@ -2077,7 +2077,7 @@ class TestIdentificationTaskFlow:
                 identification_task=identification_task,
                 category=category,
                 validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
-                status=ExpertReportAnnotation.STATUS_PUBLIC,
+                status=ExpertReportAnnotation.Status.PUBLIC,
             )
 
         identification_task.refresh_from_db()
@@ -2097,7 +2097,7 @@ class TestIdentificationTaskFlow:
                 identification_task=identification_task,
                 category=category_1,
                 validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
-                status=ExpertReportAnnotation.STATUS_PUBLIC,
+                status=ExpertReportAnnotation.Status.PUBLIC,
             )
 
         # Mark as flagged
@@ -2105,7 +2105,7 @@ class TestIdentificationTaskFlow:
             identification_task=identification_task,
             category=category_1,
             validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
-            status=ExpertReportAnnotation.STATUS_FLAGGED,
+            status=ExpertReportAnnotation.Status.FLAGGED,
         )
 
         identification_task.refresh_from_db()
@@ -2123,7 +2123,7 @@ class TestIdentificationTaskFlow:
         # Mark as flagged
         self._add_annotation(
             identification_task=identification_task,
-            status=ExpertReportAnnotation.STATUS_FLAGGED,
+            status=ExpertReportAnnotation.Status.FLAGGED,
         )
 
         identification_task.refresh_from_db()
@@ -2147,7 +2147,7 @@ class TestIdentificationTaskFlow:
                 identification_task=identification_task,
                 category=category_1,
                 validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
-                status=ExpertReportAnnotation.STATUS_PUBLIC,
+                status=ExpertReportAnnotation.Status.PUBLIC,
                 edited_user_notes="public message",
                 message_for_user="message to user",
                 best_photo=another_photo
@@ -2158,7 +2158,7 @@ class TestIdentificationTaskFlow:
             identification_task=identification_task,
             category=category_2,
             validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY,
-            status=ExpertReportAnnotation.STATUS_PUBLIC,
+            status=ExpertReportAnnotation.Status.PUBLIC,
             edited_user_notes="random public message",
             message_for_user="random message to user",
             best_photo=another_photo
@@ -2181,7 +2181,7 @@ class TestIdentificationTaskFlow:
             overwrite=overwrite,
             category=category_2,
             validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
-            status=ExpertReportAnnotation.STATUS_HIDDEN,
+            status=ExpertReportAnnotation.Status.HIDDEN,
             edited_user_notes="new public message",
             message_for_user="new message to user",
             best_photo=first_photo,
@@ -2205,7 +2205,7 @@ class TestIdentificationTaskFlow:
                 decision_level=ExpertReportAnnotation.DecisionLevel.FINAL
             )
             # Change to FLAGGED
-            annotation_review.status = ExpertReportAnnotation.STATUS_FLAGGED
+            annotation_review.status = ExpertReportAnnotation.Status.FLAGGED
             annotation_review.save()
 
             identification_task.refresh_from_db()
@@ -2242,7 +2242,7 @@ class TestIdentificationTaskFlow:
             identification_task=identification_task,
             category=category_1,
             validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY,
-            status=ExpertReportAnnotation.STATUS_PUBLIC,
+            status=ExpertReportAnnotation.Status.PUBLIC,
             edited_user_notes="public message",
             message_for_user="message to user",
             best_photo=another_photo,
@@ -2262,7 +2262,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.is_flagged == False
 
         # Now change to flagged
-        annotation.status = ExpertReportAnnotation.STATUS_FLAGGED
+        annotation.status = ExpertReportAnnotation.Status.FLAGGED
         annotation.save()
 
         identification_task.refresh_from_db()
