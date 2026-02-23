@@ -6,6 +6,7 @@ from uuid import UUID
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
 from django.db import transaction, models
+from django.utils import timezone
 
 from drf_spectacular.utils import extend_schema_field
 from drf_spectacular.helpers import lazy_serializer
@@ -1117,7 +1118,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         return obj.status == ExpertReportAnnotation.STATUS_FLAGGED
 
     def get_is_decisive(self, obj) -> bool:
-        return obj.validation_complete_executive or obj.revise
+        return obj.decision_level in [ExpertReportAnnotation.DecisionLevel.EXECUTIVE, ExpertReportAnnotation.DecisionLevel.FINAL]
 
     def validate(self, data):
         data = super().validate(data)
@@ -1147,7 +1148,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
             else:
                 data["status"] = ExpertReportAnnotation.STATUS_PUBLIC
 
-        data['validation_complete_executive'] = data.pop("is_decisive")
+        data['decision_level'] = ExpertReportAnnotation.DecisionLevel.EXECUTIVE if data.pop("is_decisive", False) else ExpertReportAnnotation.DecisionLevel.NORMAL
         user_role = data['user']
         if isinstance(user_role, User):
             try:
@@ -1162,7 +1163,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
                 country=data['identification_task'].report.country
             )
         if not can_set_is_decisive:
-            data['validation_complete_executive'] = False
+            data['decision_level'] = ExpertReportAnnotation.DecisionLevel.NORMAL
         return data
 
     class Meta:
@@ -1292,7 +1293,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
     public_photo = SimplePhotoSerializer(source='photo', read_only=True)
     review = IdentificationTaskReviewSerializer(source='*', allow_null=True, read_only=True)
     result = IdentificationTaskResultSerializer(source='*', read_only=True, allow_null=True)
-    assignments = UserAssignmentSerializer(many=True, read_only=True)
+    assignments = UserAssignmentSerializer(source='expert_report_annotations', many=True, read_only=True)
 
     @extend_schema_field(SimplifiedObservationWithPhotosSerializer)
     def get_observation(self, obj: IdentificationTask) -> dict:
@@ -1327,7 +1328,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
             'updated_at': {'read_only': True},
         }
 
-class CreateReviewSerializer(serializers.ModelSerializer):
+class CreateReviewSerializer(serializers.Serializer):
     action = serializers.HiddenField(default=lambda field: field.context['request'].review_type, source='*')
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -1336,14 +1337,11 @@ class CreateReviewSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         ret = super().to_internal_value(data)
-        ret['validation_complete'] = True
-        ret['simplified_annotation'] = True
         ret['identification_task'] = self.context.get('identification_task')
 
         return ret
 
     class Meta:
-        model = ExpertReportAnnotation
         fields = (
             'action',
             'user',
@@ -1352,13 +1350,21 @@ class CreateReviewSerializer(serializers.ModelSerializer):
 class CreateAgreeReviewSerializer(CreateReviewSerializer):
     action = serializers.ChoiceField(source='*', choices=[IdentificationTask.Review.AGREE.value])
 
-    def to_internal_value(self, data):
-        data = super().to_internal_value(data)
+    def validate(self, data):
+        data = super().validate(data)
 
-        data['revise'] = False
-        data['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not data['identification_task'].is_safe else ExpertReportAnnotation.STATUS_PUBLIC
+        if data['identification_task'].is_reviewed:
+            raise serializers.ValidationError("This observation has already been reviewed. You can not agree with it.")
 
         return data
+
+    def create(self, validated_data):
+        identification_task = validated_data['identification_task']
+        identification_task.review_type = IdentificationTask.Review.AGREE
+        identification_task.reviewed_at = timezone.now()
+        identification_task.reviewed_by = validated_data['user']
+        identification_task.save()
+        return identification_task
 
     class Meta(CreateReviewSerializer.Meta):
         pass
@@ -1390,15 +1396,17 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificat
         ret['taxon'] = ret.pop('taxon', None)
 
         ret['validation_value'] = ret.pop('validation_value', None)
+        ret['validation_complete'] = True
         ret['confidence'] = ret.pop('confidence', 0)
 
-        ret['revise'] = True
+        ret['decision_level'] = ExpertReportAnnotation.DecisionLevel.FINAL
         ret['status'] = ExpertReportAnnotation.STATUS_HIDDEN if not ret.pop('is_safe') or ret['taxon'] is None else ExpertReportAnnotation.STATUS_PUBLIC
         ret['simplified_annotation'] = False
 
         return ret
 
     class Meta(CreateReviewSerializer.Meta):
+        model = ExpertReportAnnotation
         fields = CreateReviewSerializer.Meta.fields + (
             'public_photo_uuid',
             'is_safe',

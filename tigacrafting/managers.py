@@ -278,7 +278,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
         return self.filter(
             models.Exists(
-                ExpertReportAnnotation.objects.is_annotation().filter(
+                ExpertReportAnnotation.objects.completed().filter(
                     identification_task=models.OuterRef('pk'),
                     user__in=users,
                 )
@@ -286,13 +286,11 @@ class IdentificationTaskQuerySet(models.QuerySet):
         )
 
     def assigned_to(self,  users: List[User]) -> QuerySet:
-        # NOTE: this queryset only returns assignments, discarding for example
-        #       assignees that has reviewed (revise=False)
         from .models import ExpertReportAnnotation
 
         return self.filter(
             models.Exists(
-                ExpertReportAnnotation.objects.is_assignment().filter(
+                ExpertReportAnnotation.objects.filter(
                     identification_task=models.OuterRef('pk'),
                     user__in=users
                 )
@@ -359,18 +357,6 @@ class IdentificationTaskQuerySet(models.QuerySet):
 IdentificationTaskManager = models.Manager.from_queryset(IdentificationTaskQuerySet)
 
 class ExpertReportAnnotationQuerySet(models.QuerySet):
-    def is_annotation(self) -> QuerySet:
-        return self.is_assignment().completed()
-
-    def is_assignment(self) -> QuerySet:
-        # Revisions from superexpert are not assignments.
-        return self.exclude(
-            user__groups__name='superexpert',
-            revise=False
-        ).filter(
-            identification_task__isnull=False
-        )
-
     def completed(self, state: bool = True) -> QuerySet:
         return self.filter(validation_complete=state)
 
@@ -378,8 +364,6 @@ class ExpertReportAnnotationQuerySet(models.QuerySet):
         return self.filter(
             validation_complete=False,
             created__lte=timezone.now() - timedelta(days=days),
-        ).exclude(
-            user__groups__name='superexpert'
         )
 
     def blocking(self) -> QuerySet:

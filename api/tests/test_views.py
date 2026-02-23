@@ -955,20 +955,18 @@ class TestIdentificationTaskAnnotationsApi:
         assert annotation.validation_value == validation_value
 
     @pytest.mark.parametrize(
-        "validation_complete_executive, revise, expected_result",
+        "decision_level, expected_result",
         [
-            (False, False, False),
-            (False, True, True),
-            (True, False, True),
-            (True, True, True),
+            (ExpertReportAnnotation.DecisionLevel.NORMAL, False),
+            (ExpertReportAnnotation.DecisionLevel.EXECUTIVE, True),
+            (ExpertReportAnnotation.DecisionLevel.FINAL, True),
         ]
     )
-    def test_is_decisive_representation(self, identification_task, user, api_client, endpoint, validation_complete_executive, revise, expected_result):
+    def test_is_decisive_representation(self, identification_task, user, api_client, endpoint, decision_level, expected_result):
         obj = create_annotation(
             identification_task=identification_task,
             user=user,
-            validation_complete_executive=validation_complete_executive,
-            revise=revise
+            decision_level=decision_level,
         )
 
         response = api_client.get(
@@ -982,7 +980,7 @@ class TestIdentificationTaskAnnotationsApi:
         "is_decisive",
         [True, False]
     )
-    def test_is_decisive_sets_validation_complete_executive(self, api_client, endpoint, user_with_role_supervisor_in_country, common_post_data, with_add_permission, is_decisive):
+    def test_is_decisive_sets_decision_level_executive(self, api_client, endpoint, user_with_role_supervisor_in_country, common_post_data, with_add_permission, is_decisive):
         post_data = common_post_data
         post_data['is_decisive'] = is_decisive
 
@@ -994,7 +992,7 @@ class TestIdentificationTaskAnnotationsApi:
         assert response.status_code == status.HTTP_201_CREATED
 
         annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
-        assert annotation.validation_complete_executive == is_decisive
+        assert annotation.decision_level == (ExpertReportAnnotation.DecisionLevel.EXECUTIVE if is_decisive else ExpertReportAnnotation.DecisionLevel.NORMAL)
 
     @pytest.mark.parametrize(
         "status, expected_result",
@@ -1202,7 +1200,7 @@ class TestIdentificationTaskReviewApi:
         return api_client
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
-    def test_agree_review_create_expertreportannotation(self, api_client, endpoint, user_with_role_reviewer, identification_task):
+    def test_agree_review(self, api_client, endpoint, user_with_role_reviewer, identification_task):
         assert ExpertReportAnnotation.objects.filter(
             identification_task=identification_task,
             user=user_with_role_reviewer
@@ -1221,20 +1219,16 @@ class TestIdentificationTaskReviewApi:
         )
         assert response.status_code == status.HTTP_201_CREATED
 
-        annotation = ExpertReportAnnotation.objects.get(
+        # Not expert report annotation created
+        assert ExpertReportAnnotation.objects.filter(
             identification_task=identification_task,
             user=user_with_role_reviewer
-        )
-        assert not annotation.validation_complete_executive
-        assert annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
-        assert annotation.validation_complete
-        assert annotation.best_photo is None
-        assert annotation.simplified_annotation
-        assert not annotation.revise
+        ).count() == 0
 
         identification_task.refresh_from_db()
         assert identification_task.review_type == IdentificationTask.Review.AGREE
         assert identification_task.reviewed_at == timezone.now()
+        assert identification_task.reviewed_by == user_with_role_reviewer
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_overwrite_review_create_expertreportannotation(self, api_client, endpoint, user_with_role_reviewer, identification_task, taxon_root, dummy_image):
@@ -1268,16 +1262,16 @@ class TestIdentificationTaskReviewApi:
             identification_task=identification_task,
             user=user_with_role_reviewer
         )
-        assert not annotation.validation_complete_executive
+        assert annotation.decision_level == ExpertReportAnnotation.DecisionLevel.FINAL
         assert annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
         assert annotation.validation_complete
         assert annotation.best_photo.uuid == another_photo.uuid
         assert not annotation.simplified_annotation
-        assert annotation.revise
 
         identification_task.refresh_from_db()
         assert identification_task.review_type == IdentificationTask.Review.OVERWRITE
         assert identification_task.reviewed_at == timezone.now()
+        assert identification_task.reviewed_by == user_with_role_reviewer
         assert identification_task.is_safe
         assert identification_task.public_note == 'new test public note'
         assert identification_task.taxon == taxon_root
@@ -1353,7 +1347,6 @@ class TestIdentificationTaskReviewApi:
         # Create a review with characteristics
         review = create_review(
             identification_task=identification_task,
-            overwrite=True,
             user=user_with_role_reviewer,
             taxon=taxon_root,
             sex='female',
@@ -1425,8 +1418,10 @@ class TestPermissionsApi:
         assert not response.data['general']['permissions']['review']['add']
         assert not response.data['general']['permissions']['review']['view']
 
-    def test_general_role_reviewer(self, api_client, user, group_superexpert, me_endpoint):
-        user.groups.add(group_superexpert)
+    def test_general_role_reviewer(self, api_client, user, me_endpoint):
+        grant_permission_to_user(
+            codename="add_review", model_class=IdentificationTask, user=user
+        )
 
         response = api_client.get(
             me_endpoint,

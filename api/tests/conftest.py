@@ -265,11 +265,6 @@ def group_expert():
     return group
 
 @pytest.fixture
-def group_superexpert():
-    group, _ = Group.objects.get_or_create(name="superexpert")
-    return group
-
-@pytest.fixture
 def user_with_role_annotator(user, group_expert):
     user.groups.add(group_expert)
     return user
@@ -292,8 +287,10 @@ def user_with_role_supervisor_in_country(user, group_expert, es_country):
     return user
 
 @pytest.fixture
-def user_with_role_reviewer(user, group_superexpert):
-    user.groups.add(group_superexpert)
+def user_with_role_reviewer(user):
+    grant_permission_to_user(
+        codename="add_review", model_class=IdentificationTask, user=user
+    )
     return user
 
 @pytest.fixture

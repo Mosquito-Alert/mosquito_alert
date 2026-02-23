@@ -880,7 +880,7 @@ def annotate_coarse(request):
             ) or "",
             status=ExpertReportAnnotation.STATUS_PUBLIC,
             validation_complete=True,
-            revise=True,
+            decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
             best_photo=report.photos.first(),
             simplified_annotation=False,
             category=category,
