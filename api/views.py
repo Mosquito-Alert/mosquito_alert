@@ -749,13 +749,11 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             "report__photos",
             queryset=Photo.objects.visible(),
         )
-    ).annotate(
-        pk_str=models.functions.Cast('pk', output_field=models.CharField()),
     )
     serializer_class = IdentificationTaskSerializer
     filterset_class = IdentificationTaskFilter
     filter_backends = (DjangoFilterBackend, SearchFilter)
-    search_fields = ("report__report_id", "pk_str")
+    search_fields = ("report__report_id", "report__version_UUID")
     permission_classes = (IdentificationTaskPermissions | UserRolePermission,)
 
     lookup_field = 'pk'
@@ -824,7 +822,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             )
 
         context = self.get_serializer_context()
-        context['report'] = task.report
+        context['identification_task'] = task
 
         serializer = serializer_klass(context=context, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -886,17 +884,14 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     class AnnotationViewSet(IdentificationTaskNestedAttribute, NestedViewSetMixin, ListModelMixin, RetrieveModelMixin, CreateModelMixin, GenericNoMobileViewSet):
         queryset = ExpertReportAnnotation.objects.is_annotation().select_related(
             'user',
-            'report',
             'best_photo',
             'taxon',
-        ).prefetch_related('tags').annotate(
-            report_pk_str=models.functions.Cast('report_id', output_field=models.CharField()),
-        )
+        ).prefetch_related('tags')
 
         serializer_class = AnnotationSerializer
         filter_backends = (DjangoFilterBackend, SearchFilter)
         filterset_class = AnnotationFilter
-        search_fields = ("report_pk_str",) #NOTE: not filtering by 'report__report_id' because in not being shown in the response.
+        search_fields = ("identification_task__report__version_UUID",)
         permission_classes = (AnnotationPermissions | UserRolePermission, )
 
         parent_lookup_kwargs = {

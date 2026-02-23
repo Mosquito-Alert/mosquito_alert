@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 from tigaserver_app.models import *
-from tigacrafting.models import UserStat
+from tigacrafting.models import UserStat, ExpertReportAnnotation
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
@@ -75,11 +75,11 @@ def workload_pending_per_user(request):
             return
 
         pending_detail = []
-        for ano in user.userstat.pending_annotations.select_related('report').iterator():
+        for ano in user.userstat.pending_annotations.select_related('identification_task', 'identification_task__report').iterator():
             pending_detail.append(
                 {
-                    'report_id': ano.report_id, 
-                    'created': ano.report.creation_time.strftime('%d/%m/%Y - %H:%M:%S')
+                    'report_id': ano.identification_task.report.pk, 
+                    'created': ano.identification_task.report.creation_time.strftime('%d/%m/%Y - %H:%M:%S')
                 }
             )
 

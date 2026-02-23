@@ -74,12 +74,13 @@ class ScoringTestCase(TestCase):
                                                      '00000000-0000-0000-0000-000000000002')
         report_in_season.save()
         _ = Photo.objects.create(report=report_in_season, photo='tigacrafting/tests/testdata/splash.png')
+        identification_task = report_in_season.identification_task
         report_in_season.refresh_from_db()
         reritja_user = User.objects.get(pk=25)
         superexperts_group = Group.objects.get(name='superexpert')
         superexperts_group.user_set.add(reritja_user)
         c_4 = Categories.objects.get(pk=4)  # Aedes albopictus
-        anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, report=report_in_season, category=c_4,
+        anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, identification_task=identification_task, category=c_4,
                                                              validation_complete=True, revise=True,
                                                              validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         retval = compute_user_score_in_xp_v2(user_id)

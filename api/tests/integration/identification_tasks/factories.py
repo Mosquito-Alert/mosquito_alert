@@ -15,7 +15,7 @@ def create_annotation(identification_task: IdentificationTask, user: Optional[Us
     user.groups.add(expert_group)
 
     return ExpertReportAnnotation.objects.create(
-        report=identification_task.report,
+        identification_task=identification_task,
         user=user,
         validation_complete=True,
         **kwargs
@@ -31,7 +31,7 @@ def create_review(identification_task: IdentificationTask, overwrite: bool = Fal
     user.groups.add(superexpert_group)
 
     return ExpertReportAnnotation.objects.create(
-        report=identification_task.report,
+        identification_task=identification_task,
         user=user,
         revise=overwrite,
         validation_complete=True,
