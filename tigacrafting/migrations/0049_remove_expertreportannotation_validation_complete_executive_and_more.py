@@ -11,13 +11,19 @@ def populate_reviewed_by(apps, schema_editor):
 
     # Until now, only superexpert was allowed to set review,
     # so we can safely set reviewed_by to that user for all those tasks.
-    # TODO: not setting pk to 25... It should be set to the actual user in superexpert group with the last created annotation.
     superexperts = User.objects.filter(groups__name="superexpert").values_list('id', flat=True)
     last_superexpert = ExpertReportAnnotation.objects.filter(
         user__in=superexperts,
         identification_task=models.OuterRef('pk')
-    ).order_by('-created_at').values('user_id')[0]
-    IdentificationTask.objects.filter(review_type__isnull=False).update(review_by=models.Subquery(last_superexpert))
+    ).order_by('-created').values('user_id')[:1]
+    IdentificationTask.objects.filter(
+        review_type__isnull=False
+    ).update(
+        reviewed_by=models.functions.Coalesce(
+            models.Subquery(last_superexpert),
+            models.Value(25) # default super_reritja pk.
+        )
+    )
 
     ExpertReportAnnotation.objects.filter(
         user__in=superexperts,

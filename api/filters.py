@@ -343,7 +343,7 @@ class AnnotationFilter(filters.FilterSet):
         model = ExpertReportAnnotation
         fields = {
             "is_favourite": ["exact"],
-            "is_decisive": ["exact"],
+            "decision_level": ["exact"],
         }
 
 class TaxonFilter(filters.FilterSet):

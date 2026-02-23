@@ -1078,7 +1078,7 @@ class NewReportAssignment(TransactionTestCase):
                 r.app_language = locale
                 r.save()
                 anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, identification_task=identification_task, category=c_3,
-                                                                     validation_complete=True, is_decisive=True,
+                                                                     validation_complete=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
                                                                      validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
                 anno_reritja.save()
                 nc = NotificationContent.objects.order_by('-id').first()
@@ -1677,6 +1677,9 @@ class TestIdentificationTaskModel:
     def test_reviewed_at_is_nullable(self):
         assert IdentificationTask._meta.get_field("reviewed_at").null
 
+    def test_reviewed_by_is_nullable(self):
+        assert IdentificationTask._meta.get_field("reviewed_by").null
+
     def test_taxon_is_nullable(self):
         assert IdentificationTask._meta.get_field("taxon").null
 
@@ -1841,11 +1844,9 @@ class TestIdentificationTaskFlow:
         )
 
     def _add_review(self, identification_task: IdentificationTask, overwrite: bool = False, validation_complete: bool = True, **kwargs) -> ExpertReportAnnotation:
-        superexpert_group, _ = Group.objects.get_or_create(name='superexpert')
         user_expert = User.objects.create(
             username=str(uuid.uuid4())
         )
-        user_expert.groups.add(superexpert_group)
 
         if not overwrite:
             identification_task.review_type = IdentificationTask.Review.AGREE
@@ -1856,7 +1857,7 @@ class TestIdentificationTaskFlow:
             return ExpertReportAnnotation.objects.create(
                 identification_task=identification_task,
                 user=user_expert,
-                is_decisive=overwrite,
+                decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
                 validation_complete=validation_complete,
                 **kwargs
             )
@@ -2006,7 +2007,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.total_annotations == 0
         assert identification_task.total_finished_annotations == 0
 
-        self._add_review(identification_task=identification_task, overwrite=False, validation_complete=False)
+        self._add_review(identification_task=identification_task, overwrite=False)
 
         identification_task.refresh_from_db()
         assert identification_task.total_annotations == 0
@@ -2037,7 +2038,10 @@ class TestIdentificationTaskFlow:
         _ = self._add_annotation(identification_task=identification_task)
         assert identification_task.assignees.count() == 1
 
-        self._add_review(identification_task=identification_task)
+        self._add_review(identification_task=identification_task, overwrite=False)
+        assert identification_task.assignees.count() == 1
+
+        self._add_review(identification_task=identification_task, overwrite=True)
         assert identification_task.assignees.count() == 2
 
     # status field transition
@@ -2198,7 +2202,7 @@ class TestIdentificationTaskFlow:
 
             annotation_review = ExpertReportAnnotation.objects.get(
                 identification_task=identification_task,
-                is_decisive=True
+                decision_level=ExpertReportAnnotation.DecisionLevel.FINAL
             )
             # Change to FLAGGED
             annotation_review.status = ExpertReportAnnotation.STATUS_FLAGGED
@@ -2242,7 +2246,7 @@ class TestIdentificationTaskFlow:
             edited_user_notes="public message",
             message_for_user="message to user",
             best_photo=another_photo,
-            is_decisive=True
+            decision_level=ExpertReportAnnotation.DecisionLevel.EXECUTIVE
         )
 
         identification_task.refresh_from_db()
@@ -2271,6 +2275,7 @@ class TestIdentificationTaskFlow:
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_reviewed_at_is_set_after_review(self, identification_task, overwrite):
         assert not identification_task.is_reviewed
+        assert identification_task.reviewed_by is None
 
         self._add_review(identification_task=identification_task, overwrite=overwrite)
 
@@ -2278,6 +2283,7 @@ class TestIdentificationTaskFlow:
 
         assert identification_task.is_reviewed
         assert identification_task.reviewed_at == timezone.now()
+        assert identification_task.reviewed_by is not None
 
     @pytest.mark.parametrize(
         "overwrite, expected_result",

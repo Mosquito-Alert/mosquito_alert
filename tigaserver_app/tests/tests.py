@@ -983,7 +983,7 @@ class NotificationTestCase(APITestCase):
         identification_task = r.identification_task
 
         # this should cause send_finished_identification_task_notification to be called
-        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task, category=self.categories[2], validation_complete=True, is_decisive=True, validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
+        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task, category=self.categories[2], validation_complete=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL, validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         anno_reritja.save()
 
         # there should be a new Notification
@@ -1007,7 +1007,7 @@ class NotificationTestCase(APITestCase):
         # this should cause send_finished_identification_task_notification to be called
         anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task,
                                                              category=self.categories[2], validation_complete=True,
-                                                             is_decisive=True,
+                                                             decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
                                                              validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         anno_reritja.save()
 

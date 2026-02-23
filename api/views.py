@@ -809,34 +809,33 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     def review(self, request, *args, **kwargs):
         task = self.get_object()
 
+        context = self.get_serializer_context()
+        context['identification_task'] = task
+
         review_type = self.request.data.get("action")
         agree_value = list(CreateAgreeReviewSerializer().fields['action'].choices.values())[0]
         overwrite_value = list(CreateOverwriteReviewSerializer().fields['action'].choices.values())[0]
         if review_type == agree_value:
-            serializer_klass = CreateAgreeReviewSerializer
+            serializer = CreateAgreeReviewSerializer(context=context, data=request.data)
         elif review_type == overwrite_value:
-            serializer_klass = CreateOverwriteReviewSerializer
+            # Check if already exist and ExpertAnnotationReport. If so, update (pass to serializer)
+            try:
+                annotation = ExpertReportAnnotation.objects.filter(user=request.user, identification_task=task).latest('created')
+            except ExpertReportAnnotation.DoesNotExist:
+                annotation = None
+            serializer = CreateOverwriteReviewSerializer(instance=annotation, context=context, data=request.data)
         else:
             raise ValidationError(
                 f"Invalid 'review_type'. Must be '{agree_value}' or '{overwrite_value}'"
             )
 
-        context = self.get_serializer_context()
-        context['identification_task'] = task
-
-        # Check if already exist and ExpertAnnotationReport. If so, update (pass to serializer)
-        try:
-            annotation = ExpertReportAnnotation.objects.filter(user=request.user, identification_task=task).latest('created')
-        except ExpertReportAnnotation.DoesNotExist:
-            annotation = None
-
-        serializer = serializer_klass(instance=annotation, context=context, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         headers = self._get_location_header(serializer.data)
 
-        response_serializer = IdentificationTaskSerializer.IdentificationTaskReviewSerializer(serializer.instance.identification_task)
+        task.refresh_from_db()
+        response_serializer = IdentificationTaskSerializer.IdentificationTaskReviewSerializer(task)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def _get_location_header(self, data):
@@ -888,7 +887,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         ]
     )
     class AnnotationViewSet(IdentificationTaskNestedAttribute, NestedViewSetMixin, ListModelMixin, RetrieveModelMixin, CreateModelMixin, GenericNoMobileViewSet):
-        queryset = ExpertReportAnnotation.objects.is_annotation().select_related(
+        queryset = ExpertReportAnnotation.objects.completed().select_related(
             'user',
             'best_photo',
             'taxon',

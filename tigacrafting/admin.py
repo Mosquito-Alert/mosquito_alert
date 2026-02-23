@@ -15,7 +15,7 @@ class ExpertReportAnnotationInlineAdmin(admin.StackedInline):
     ordering = ('last_modified',)
     fields = (
         'user',
-        ('validation_complete', 'is_decisive', 'simplified_annotation'),
+        ('validation_complete', 'decision_level', 'simplified_annotation'),
         ('category', 'complex', 'other_species', 'validation_value'),
         ("taxon", "confidence"),
         ("sex", "is_blood_fed", "is_gravid"),

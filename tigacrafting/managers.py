@@ -278,7 +278,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
         return self.filter(
             models.Exists(
-                ExpertReportAnnotation.objects.is_annotation().filter(
+                ExpertReportAnnotation.objects.completed().filter(
                     identification_task=models.OuterRef('pk'),
                     user__in=users,
                 )
@@ -357,9 +357,6 @@ class IdentificationTaskQuerySet(models.QuerySet):
 IdentificationTaskManager = models.Manager.from_queryset(IdentificationTaskQuerySet)
 
 class ExpertReportAnnotationQuerySet(models.QuerySet):
-    def is_annotation(self) -> QuerySet:
-        return self.completed()
-
     def completed(self, state: bool = True) -> QuerySet:
         return self.filter(validation_complete=state)
 
@@ -367,8 +364,6 @@ class ExpertReportAnnotationQuerySet(models.QuerySet):
         return self.filter(
             validation_complete=False,
             created__lte=timezone.now() - timedelta(days=days),
-        ).exclude(
-            user__groups__name='superexpert'
         )
 
     def blocking(self) -> QuerySet:

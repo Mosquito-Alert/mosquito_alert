@@ -13,7 +13,10 @@ def endpoint(identification_task):
 
 @pytest.fixture
 def assignment(assigned_only_identification_task, user):
-    return assigned_only_identification_task.get(user=user, identification_task=assigned_only_identification_task)
+    return ExpertReportAnnotation.objects.get(
+        user=user,
+        identification_task=assigned_only_identification_task
+    )
 
 @pytest.fixture
 def me_endpoint():

@@ -10,7 +10,7 @@ def refresh_task(task_data):
     db.connections.close_all()
     task, force = task_data
     try:
-        task.refresh(force=force, commit=True)
+        task.refresh(force=force)
     except Exception as e:
         print(task.pk, e)
 
@@ -49,6 +49,6 @@ class Command(BaseCommand):
             # If multiprocessing is not enabled, handle tasks without it
             for task in tqdm(identification_tasks_qs.iterator(), total=identification_tasks_qs.count()):
                 try:
-                    task.refresh(force=options['force'], commit=True)
+                    task.refresh(force=options['force'])
                 except Exception as e:
                     print(task.pk, e)
