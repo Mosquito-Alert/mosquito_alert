@@ -28,10 +28,6 @@ MOSQUITO_BITE_ANSWER_ID = 101
 BREEDING_SITE_MOSQUITO_QUESTION_ID = 11
 BREEDING_SITE_MOSQUITO_ANSWER_ID = 101
 
-CULEX_CATEGORY_ID = 10
-AEDES_CATEGORY_IDS = [4, 5, 6, 7]
-
-
 '''
 score metadata structure - json
 {
@@ -102,19 +98,6 @@ def is_mosquito_report_followed(report):
 
 def is_storm_drain(report):
     return report.breeding_site_type == Report.BreedingSiteType.STORM_DRAIN
-
-def is_culex(validation_result):
-    if validation_result['category'] is not None:
-        if validation_result['category'].id == CULEX_CATEGORY_ID:
-            return True
-    return False
-
-
-def is_aedes(validation_result):
-    if validation_result['category'] is not None:
-        if validation_result['category'].id in AEDES_CATEGORY_IDS:
-            return True
-    return False
 
 
 def get_user_class(max, min, user_score):
@@ -206,7 +189,6 @@ def get_site_report_score(report, result):
 
 
 def get_adult_report_score(report, result):
-    validation_result = report.get_final_combined_expert_category_euro_struct()
     local_result = {}
     local_result['report'] = report.version_UUID
     local_result['report_date'] = report.creation_time.strftime("%d/%m/%Y")
@@ -225,7 +207,12 @@ def get_adult_report_score(report, result):
     if picture is not None:
         local_result['report_photo'] = picture.get_small_url()
 
-    if is_aedes(validation_result) or is_culex(validation_result):
+    
+    try:
+        identification_task = report.identification_task
+    except Report.identification_task.RelatedObjectDoesNotExist:
+        identification_task = None
+    if identification_task and identification_task.taxon_id in [10, 112, 113, 114, 115]: # Is culex or target aedes
         if picture:
             #local_result['awards'].append({"reason_untranslated": "picture", "reason": _("picture"), "xp_awarded": MOSQUITO_PICTURE_REWARD})
             local_result['awards'].append(

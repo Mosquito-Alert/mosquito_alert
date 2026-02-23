@@ -5,8 +5,6 @@ from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Report, ReportResponse,  Photo, \
     Fix, CoverageAreaMonth, Session, EuropeCountry, OWCampaigns, OrganizationPin, UserSubscription
 from tigacrafting.models import Alert
-from django.contrib.auth.models import User
-from tigaserver_app.questions_table import data as the_translation_key
 from django.urls import reverse
 from django.db import models
 from django.utils import timezone
@@ -37,26 +35,6 @@ class UserListingField(serializers.RelatedField):
 class ReportListingField(serializers.RelatedField):
     def to_native(self, value):
         return value.version_UUID
-
-
-class FullReportResponseSerializer(serializers.ModelSerializer):
-
-    translated_question = serializers.SerializerMethodField()
-    translated_answer = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ReportResponse
-        fields = ('id', 'translated_question', 'translated_answer', 'question_id', 'question', 'answer_id', 'answer', 'answer_value', 'report')
-
-    def get_translated_question(self, obj):
-        report_lang = obj.report.app_language
-        lang_table = the_translation_key.get(report_lang, the_translation_key['en'])
-        return lang_table.get(obj.question,'')
-
-    def get_translated_answer(self, obj):
-        report_lang = obj.report.app_language
-        lang_table = the_translation_key.get(report_lang, the_translation_key['en'])
-        return lang_table.get(obj.answer, '')
 
 
 class ReportResponseSerializer(serializers.ModelSerializer):
@@ -307,86 +285,6 @@ class FixSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.Mode
         model = Fix
         fields = ['user_coverage_uuid', 'fix_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power', 'mask_size']
 
-
-class MapDataSerializer(serializers.ModelSerializer):
-    version_UUID = serializers.CharField()
-    creation_time = serializers.ReadOnlyField()
-    creation_date = serializers.ReadOnlyField()
-    creation_day_since_launch = serializers.ReadOnlyField()
-    creation_year = serializers.ReadOnlyField()
-    creation_month = serializers.ReadOnlyField()
-    site_cat = serializers.ReadOnlyField()
-    type = serializers.CharField()
-    lon = serializers.ReadOnlyField()
-    lat = serializers.ReadOnlyField()
-    movelab_annotation = serializers.ReadOnlyField()
-    movelab_annotation_euro = serializers.ReadOnlyField()
-    tiger_responses = serializers.ReadOnlyField()
-    tiger_responses_text = serializers.ReadOnlyField()
-    site_responses = serializers.ReadOnlyField()
-    site_responses_text = serializers.ReadOnlyField()
-    tigaprob_cat = serializers.ReadOnlyField()
-    latest_version = serializers.SerializerMethodField()
-    visible = serializers.SerializerMethodField()
-    n_photos = serializers.ReadOnlyField()
-    final_expert_status_text = serializers.SerializerMethodField(method_name='get_final_expert_status')
-    responses = FullReportResponseSerializer(many=True)
-    country = serializers.SerializerMethodField(method_name='get_country')
-    cached_visible = serializers.SerializerMethodField()
-
-    def get_final_expert_status(self, obj):
-        return obj.get_final_expert_status()
-
-    def get_latest_version(self, obj):
-        return True
-
-    def get_country(self,obj):
-        if obj.country is None:
-            return None
-        else:
-            return obj.country.iso3_code
-
-    def get_visible(self, obj) -> bool:
-        return obj.published
-
-    def get_cached_visible(self, obj) -> bool:
-        return obj.published
-
-    class Meta:
-        model = Report
-        fields = (
-            'version_UUID',
-            'creation_time',
-            'creation_date',
-            'creation_day_since_launch',
-            'creation_year',
-            'creation_month',
-            'site_cat',
-            'type',
-            'lon',
-            'lat',
-            'location_is_masked',
-            'movelab_annotation',
-            'movelab_annotation_euro',
-            'tiger_responses',
-            'tiger_responses_text',
-            'site_responses',
-            'site_responses_text',
-            'tigaprob_cat',
-            'latest_version',
-            'visible',
-            'n_photos',
-            'final_expert_status_text',
-            'responses',
-            'country',
-            'updated_at',
-            'datetime_fix_offset',
-            'point',
-            'nuts_2',
-            'nuts_3',
-            'cached_visible',
-            'session',
-        )
 
 
 class CoverageMonthMapSerializer(serializers.ModelSerializer):
