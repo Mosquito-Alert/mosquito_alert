@@ -764,7 +764,7 @@ class ExpertReportAnnotation(models.Model):
                 self.is_simplified = self._can_be_simplified()
 
         if self.is_simplified:
-            self.message_for_user = ""
+            self.message_for_user = None
 
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
 
