@@ -521,22 +521,22 @@ class IdentificationTask(LifecycleModel):
                     self.photo_id = get_most_voted_field(
                         field_name='best_photo',
                         lookup_filter=taxon_filter,
-                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                        tie_break_field='-is_simplified' # In the case of tie, the extended version has prevalence.
                     )
                     self.public_note = get_most_voted_field(field_name='public_note', lookup_filter=taxon_filter)
                     self.sex = get_most_voted_field(
                         field_name='sex',
-                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                        tie_break_field='-is_simplified' # In the case of tie, the extended version has prevalence.
                     )
                     self.is_blood_fed = get_most_voted_field(
                         field_name='is_blood_fed',
                         lookup_filter={'sex': self.sex},
-                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                        tie_break_field='-is_simplified' # In the case of tie, the extended version has prevalence.
                     )
                     self.is_gravid = get_most_voted_field(
                         field_name='is_gravid',
                         lookup_filter={'sex': self.sex},
-                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                        tie_break_field='-is_simplified' # In the case of tie, the extended version has prevalence.
                     )
 
                     self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.Status.HIDDEN).exists()
@@ -669,7 +669,7 @@ class ExpertReportAnnotation(models.Model):
 
     validation_complete = models.BooleanField(default=True, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
-    simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
+    is_simplified = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
 
     decision_level = models.CharField(max_length=16, choices=DecisionLevel.choices, default=DecisionLevel.NORMAL)
     is_favourite = models.BooleanField(default=False)
@@ -740,11 +740,11 @@ class ExpertReportAnnotation(models.Model):
             if self.user.userstat.national_supervisor_of == self.identification_task.country:
                 return False
 
-        # Return False if no simplified_annotation found or if the objects to be
+        # Return False if no is_simplified found or if the objects to be
         # created is suposed to be the last.
         total_completed_annotations_qs = ExpertReportAnnotation.objects.filter(identification_task=self.identification_task)
         return (
-            total_completed_annotations_qs.filter(simplified_annotation=False).exists() or
+            total_completed_annotations_qs.filter(is_simplified=False).exists() or
             total_completed_annotations_qs.count() < settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1
         )
 
@@ -761,9 +761,9 @@ class ExpertReportAnnotation(models.Model):
             _userstat.grabbed_reports += 1
             _userstat.save()
             if not self.validation_complete:
-                self.simplified_annotation = self._can_be_simplified()
+                self.is_simplified = self._can_be_simplified()
 
-        if self.simplified_annotation:
+        if self.is_simplified:
             self.message_for_user = ""
 
         super(ExpertReportAnnotation, self).save(*args, **kwargs)

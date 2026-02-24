@@ -1096,7 +1096,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
     )
 
     def get_type(self, obj) -> Literal['short', 'long']:
-        return 'short' if obj.simplified_annotation else 'long'
+        return 'short' if obj.is_simplified else 'long'
 
     def get_is_flagged(self, obj) -> bool:
         return obj.status == ExpertReportAnnotation.Status.FLAGGED
@@ -1179,7 +1179,7 @@ class BaseAssignmentSerializer(serializers.ModelSerializer):
     annotation_type = serializers.SerializerMethodField()
 
     def get_annotation_type(self, obj) -> Literal['short', 'long']:
-        return 'short' if obj.simplified_annotation else 'long'
+        return 'short' if obj.is_simplified else 'long'
 
     class Meta:
         model = ExpertReportAnnotation
@@ -1384,7 +1384,7 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificat
 
         ret['decision_level'] = ExpertReportAnnotation.DecisionLevel.FINAL
         ret['status'] = ExpertReportAnnotation.Status.HIDDEN if not ret.pop('is_safe') or ret['taxon'] is None else ExpertReportAnnotation.Status.PUBLIC
-        ret['simplified_annotation'] = False
+        ret['is_simplified'] = False
 
         return ret
 

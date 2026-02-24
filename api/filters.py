@@ -343,7 +343,7 @@ class AnnotationFilter(filters.FilterSet):
     def filter_by_type(self, queryset, name, value):
         if not value:
             return queryset
-        return queryset.filter(simplified_annotation=(value == 'short'))
+        return queryset.filter(is_simplified=(value == 'short'))
 
     order_by = filters.OrderingFilter(
         fields=(("created", "created_at"), ("last_modified", "updated_at"))

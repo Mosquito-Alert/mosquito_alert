@@ -707,10 +707,10 @@ class NewReportAssignment(TransactionTestCase):
                 identification_task, _ = IdentificationTask.get_or_create_for_report(r)
             annos = ExpertReportAnnotation.objects.filter(identification_task=identification_task)
             if annos.count() == 3:
-                long_report_count = annos.filter(simplified_annotation=False).count()
-                short_report_count = annos.filter(simplified_annotation=True).count()
-                long_annotation_id = annos.filter(simplified_annotation=False).first().id
-                short_annotation_ids = [ a.id for a in annos.filter(simplified_annotation=True) ]
+                long_report_count = annos.filter(is_simplified=False).count()
+                short_report_count = annos.filter(is_simplified=True).count()
+                long_annotation_id = annos.filter(is_simplified=False).first().id
+                short_annotation_ids = [ a.id for a in annos.filter(is_simplified=True) ]
                 self.assertTrue( long_report_count == 1, "Report {0} has {0} LONG assignations, should be 1".format( r.version_UUID, str(long_report_count) )  )
                 self.assertTrue(short_report_count == 2, "Report {0} has {0} SHORT assignations, should be 2".format(r.version_UUID, str(short_report_count)))
                 # since long annotation is last to be assigned, id should be the highest
@@ -808,7 +808,7 @@ class NewReportAssignment(TransactionTestCase):
             supervised_country = this_user.userstat.national_supervisor_of
             for assigned_report in ExpertReportAnnotation.objects.filter(user=this_user):
                 if assigned_report.identification_task.report.country == supervised_country:
-                    self.assertTrue( assigned_report.simplified_annotation==False, "User {0}, national supervisor of {1}, has been assigned report {2} as simplified".format( this_user.username, supervised_country, assigned_report.identification_task.report ))
+                    self.assertTrue( assigned_report.is_simplified==False, "User {0}, national supervisor of {1}, has been assigned report {2} as simplified".format( this_user.username, supervised_country, assigned_report.identification_task.report ))
 
 
     def test_simplified_assignation_two_experts_and_ns_report_from_not_supervised_country(self):
@@ -827,9 +827,9 @@ class NewReportAssignment(TransactionTestCase):
         anno_1 = annos[0]
         anno_2 = annos[1]
         anno_3 = annos[2]
-        self.assertTrue( anno_1.simplified_annotation, "Annotation with id {0} should be simplified, it is NOT".format( anno_1.id ) )
-        self.assertTrue( anno_2.simplified_annotation, "Annotation with id {0} should be simplified, it is NOT".format( anno_2.id ) )
-        self.assertFalse( anno_3.simplified_annotation, "Annotation with id {0} should NOT be simplified, it is".format( anno_3.id ) )
+        self.assertTrue( anno_1.is_simplified, "Annotation with id {0} should be simplified, it is NOT".format( anno_1.id ) )
+        self.assertTrue( anno_2.is_simplified, "Annotation with id {0} should be simplified, it is NOT".format( anno_2.id ) )
+        self.assertFalse( anno_3.is_simplified, "Annotation with id {0} should NOT be simplified, it is".format( anno_3.id ) )
 
     def test_simplified_assignation_two_experts_and_ns_report_from_supervised_country(self):
         #self.create_micro_team()
@@ -860,9 +860,9 @@ class NewReportAssignment(TransactionTestCase):
         anno_2 = annos[1]
         anno_3 = annos[2]
         # First assignation is to NS, should be complete
-        self.assertFalse(anno_1.simplified_annotation,"Annotation with id {0} (NS) should NOT be simplified, it is".format(anno_1.id))
-        self.assertTrue(anno_2.simplified_annotation,"Annotation with id {0} should be simplified, it is NOT".format(anno_2.id))
-        self.assertTrue(anno_3.simplified_annotation,"Annotation with id {0} should be simplified, it is NOT".format(anno_3.id))
+        self.assertFalse(anno_1.is_simplified,"Annotation with id {0} (NS) should NOT be simplified, it is".format(anno_1.id))
+        self.assertTrue(anno_2.is_simplified,"Annotation with id {0} should be simplified, it is NOT".format(anno_2.id))
+        self.assertTrue(anno_3.is_simplified,"Annotation with id {0} should be simplified, it is NOT".format(anno_3.id))
 
 
     # tests that reports that should go to national supervisor don't because of expired precedence period

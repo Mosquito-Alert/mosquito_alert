@@ -831,7 +831,7 @@ def annotate_coarse(request):
             status=ExpertReportAnnotation.Status.PUBLIC,
             decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
             best_photo=report.photos.first(),
-            simplified_annotation=False,
+            is_simplified=False,
             taxon=taxon,
             confidence=confidence,
         )

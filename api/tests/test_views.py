@@ -1266,7 +1266,7 @@ class TestIdentificationTaskReviewApi:
         assert annotation.status == ExpertReportAnnotation.Status.PUBLIC
         assert annotation.validation_complete
         assert annotation.best_photo.uuid == another_photo.uuid
-        assert not annotation.simplified_annotation
+        assert not annotation.is_simplified
 
         identification_task.refresh_from_db()
         assert identification_task.review_type == IdentificationTask.Review.OVERWRITE
