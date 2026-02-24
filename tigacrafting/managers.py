@@ -264,7 +264,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
             supervisor_has_annotated=models.Exists(
                 ExpertReportAnnotation.objects.filter(
                     identification_task=models.OuterRef('pk'),
-                    validation_complete=True,
+                    is_finished=True,
                     user__userstat__national_supervisor_of__isnull=False,
                     user__userstat__national_supervisor_of=models.OuterRef('report__country'),
                 )
@@ -358,11 +358,11 @@ IdentificationTaskManager = models.Manager.from_queryset(IdentificationTaskQuery
 
 class ExpertReportAnnotationQuerySet(models.QuerySet):
     def completed(self, state: bool = True) -> QuerySet:
-        return self.filter(validation_complete=state)
+        return self.filter(is_finished=state)
 
     def stale(self, days: int = settings.ENTOLAB_LOCK_PERIOD) -> QuerySet:
         return self.filter(
-            validation_complete=False,
+            is_finished=False,
             created__lte=timezone.now() - timedelta(days=days),
         )
 

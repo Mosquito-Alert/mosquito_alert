@@ -244,7 +244,7 @@ class IdentificationTask(LifecycleModel):
     message_for_user = models.TextField(null=True, blank=True, editable=False)
 
     total_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # total experts
-    total_finished_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # when validation_complete = True (only for experts)
+    total_finished_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # when is_finished = True (only for experts)
 
     result_source = models.CharField(max_length=8, choices=ResultSource.choices, editable=False, blank=True, null=True)
 
@@ -356,7 +356,7 @@ class IdentificationTask(LifecycleModel):
             identification_task=self,
             user=user,
             defaults={
-                'validation_complete': False,
+                'is_finished': False,
             }
         )
 
@@ -444,11 +444,11 @@ class IdentificationTask(LifecycleModel):
 
         # Querysets for expert annotations
         experts_annotations_qs = self.expert_report_annotations.exclude(decision_level=ExpertReportAnnotation.DecisionLevel.FINAL)
-        finished_experts_annotations_qs = experts_annotations_qs.filter(validation_complete=True)
+        finished_experts_annotations_qs = experts_annotations_qs.filter(is_finished=True)
 
         # Find executive and final annotations
         executive_annotation = finished_experts_annotations_qs.filter(decision_level=ExpertReportAnnotation.DecisionLevel.EXECUTIVE).order_by('-last_modified').first()
-        final_annotation = self.expert_report_annotations.filter(validation_complete=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL).order_by('-last_modified').first()
+        final_annotation = self.expert_report_annotations.filter(is_finished=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL).order_by('-last_modified').first()
 
         # Photo predictions
         final_photo_prediction = self.photo_predictions.filter(is_decisive=True).first()
@@ -667,7 +667,7 @@ class ExpertReportAnnotation(models.Model):
     public_note = models.TextField(null=True,  blank=True, help_text='Notes to display on public map')
     message_for_user = models.TextField(null=True, blank=True, help_text='Message that user will receive when viewing report on phone')
 
-    validation_complete = models.BooleanField(default=True, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
+    is_finished = models.BooleanField(default=True, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     is_simplified = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
 
@@ -760,7 +760,7 @@ class ExpertReportAnnotation(models.Model):
             _userstat = self.user.userstat
             _userstat.grabbed_reports += 1
             _userstat.save()
-            if not self.validation_complete:
+            if not self.is_finished:
                 self.is_simplified = self._can_be_simplified()
 
         if self.is_simplified:
@@ -776,7 +776,7 @@ class ExpertReportAnnotation(models.Model):
         if self.decision_level == self.DecisionLevel.EXECUTIVE:
             ExpertReportAnnotation.objects.filter(
                 identification_task=identification_task,
-                validation_complete=True,
+                is_finished=True,
                 decision_level=self.DecisionLevel.NORMAL,
             ).delete()
 
@@ -806,7 +806,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
 
     @property
     def completed_annotations(self):
-        return self.user.expert_report_annotations.filter(validation_complete=True)
+        return self.user.expert_report_annotations.filter(is_finished=True)
 
     @property
     def num_completed_annotations(self) -> int:
@@ -814,7 +814,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
 
     @property
     def pending_annotations(self):
-        return self.user.expert_report_annotations.filter(validation_complete=False)
+        return self.user.expert_report_annotations.filter(is_finished=False)
 
     @property
     def num_pending_annotations(self) -> int:

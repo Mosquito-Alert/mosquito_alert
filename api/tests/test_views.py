@@ -1164,7 +1164,7 @@ class TestIdentificationTaskAnnotationsApi:
             annotation.refresh_from_db()
         else:
             annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
-        assert annotation.validation_complete
+        assert annotation.is_finished
 
     def test_classification_null_shoud_set_status_to_hidden(self, api_client, endpoint, common_post_data, with_add_permission):
         post_data = common_post_data
@@ -1264,7 +1264,7 @@ class TestIdentificationTaskReviewApi:
         )
         assert annotation.decision_level == ExpertReportAnnotation.DecisionLevel.FINAL
         assert annotation.status == ExpertReportAnnotation.Status.PUBLIC
-        assert annotation.validation_complete
+        assert annotation.is_finished
         assert annotation.best_photo.uuid == another_photo.uuid
         assert not annotation.is_simplified
 

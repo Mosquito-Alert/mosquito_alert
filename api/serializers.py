@@ -1108,7 +1108,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         data = super().validate(data)
 
         data['user'] = data.pop('user_hidden_obj')
-        data['validation_complete'] = True
+        data['is_finished'] = True
 
         try:
             data['identification_task'] = IdentificationTask.objects.get(pk=self.context.get('observation_uuid'))
@@ -1267,7 +1267,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         annotation_id = serializers.SerializerMethodField(allow_null=True)
 
         def get_annotation_id(self, obj) -> Optional[int]:
-            return obj.pk if obj.validation_complete else None
+            return obj.pk if obj.is_finished else None
 
         class Meta(BaseAssignmentSerializer.Meta):
             fields = ("user", "annotation_id",) + BaseAssignmentSerializer.Meta.fields
@@ -1379,7 +1379,7 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificat
         # Case Not an insect will be empty taxon. In case of update we need to for it to None
         ret['taxon'] = ret.pop('taxon', None)
 
-        ret['validation_complete'] = True
+        ret['is_finished'] = True
         ret['confidence'] = ret.pop('confidence', 0)
 
         ret['decision_level'] = ExpertReportAnnotation.DecisionLevel.FINAL
