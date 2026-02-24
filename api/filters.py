@@ -289,9 +289,15 @@ class AnnotationFilter(filters.FilterSet):
 
     classification_confidence = filters.RangeFilter(field_name="confidence")
     classification_confidence_label = filters.ChoiceFilter(
-        choices=[('definitely', 'definitely'), ('probably', 'probably')],
+        choices=[(x, x) for x in ExpertReportAnnotation.ConfidenceCategory.labels],
         method="filter_by_confidence_label"
     )
+
+    def filter_by_confidence_label(self, queryset, name, value):
+        if not value:
+            return queryset
+        confidence = next(val for val, lab in ExpertReportAnnotation.ConfidenceCategory.choices if lab == value)
+        return queryset.filter(confidence=confidence)
 
     characteristics_sex = filters.ChoiceFilter(
         choices=[('male', 'male'), ('female', 'female')],
@@ -307,13 +313,6 @@ class AnnotationFilter(filters.FilterSet):
     updated_at = filters.IsoDateTimeFromToRangeFilter(
         field_name="last_modified", label="Updated at"
     )
-
-    def filter_by_confidence_label(self, queryset, name, value):
-        if not value:
-            return queryset
-        return queryset.filter(
-            validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY if value == 'definitely' else ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
-        )
 
     is_flagged = filters.BooleanFilter(
         method="filter_by_is_flagged"

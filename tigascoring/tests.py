@@ -3,7 +3,7 @@ from django.utils.translation import activate, deactivate, gettext as _
 from tigaserver_app.models import TigaUser, Report, Photo, Award, \
     Notification, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
     ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
-from tigacrafting.models import Categories, ExpertReportAnnotation
+from tigacrafting.models import Taxon, ExpertReportAnnotation
 from tigaserver_project import settings as conf
 from tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from datetime import datetime
@@ -16,7 +16,7 @@ import string
 
 
 class ScoringTestCase(TestCase):
-    fixtures = ['auth_group.json', 'awardcategory.json', 'tigausers.json', 'reritja_like.json', 'categories.json','europe_countries.json', 'granter_user.json', 'taxon.json']
+    fixtures = ['auth_group.json', 'awardcategory.json', 'tigausers.json', 'reritja_like.json', 'europe_countries.json', 'granter_user.json', 'taxon.json']
 
     def create_single_report(self, day, month, year, user, id, hour=None, minute=None, second=None, report_app_language='es'):
         if hour is None:
@@ -79,10 +79,10 @@ class ScoringTestCase(TestCase):
         reritja_user = User.objects.get(pk=25)
         superexperts_group = Group.objects.get(name='superexpert')
         superexperts_group.user_set.add(reritja_user)
-        c_4 = Categories.objects.get(pk=4)  # Aedes albopictus
-        anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, identification_task=identification_task, category=c_4,
-                                                             validation_complete=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
-                                                             validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
+        aedes_albopictus = Taxon.objects.get(pk=112)
+        anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, identification_task=identification_task, taxon=aedes_albopictus,
+                                                             decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
+                                                             confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY)
         retval = compute_user_score_in_xp_v2(user_id)
         # 6 points first of season
         # 6 points first of day

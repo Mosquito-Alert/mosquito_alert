@@ -934,13 +934,13 @@ class TestIdentificationTaskAnnotationsApi:
         }
 
     @pytest.mark.parametrize(
-        "confidence_label, validation_value",
+        "confidence_label, confidence",
         [
-            ('definitely', ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY),
-            ('probably', ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY),
+            ('definitely', 1),
+            ('probably', 0.75),
         ]
     )
-    def test_confidence_label_sets_obj_validation_value(self, api_client, endpoint, common_post_data, with_add_permission, confidence_label, validation_value):
+    def test_confidence_label_sets_obj_confidence(self, api_client, endpoint, common_post_data, with_add_permission, confidence_label, confidence):
         post_data = common_post_data
         post_data['classification']['confidence_label'] = confidence_label
 
@@ -952,7 +952,7 @@ class TestIdentificationTaskAnnotationsApi:
         assert response.status_code == status.HTTP_201_CREATED
 
         annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
-        assert annotation.validation_value == validation_value
+        assert annotation.confidence == confidence
 
     @pytest.mark.parametrize(
         "decision_level, expected_result",
@@ -1349,6 +1349,7 @@ class TestIdentificationTaskReviewApi:
             identification_task=identification_task,
             user=user_with_role_reviewer,
             taxon=taxon_root,
+            confidence=1.0,
             sex='female',
             is_blood_fed=True,
             is_gravid=True

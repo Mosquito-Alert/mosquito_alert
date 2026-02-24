@@ -4,8 +4,6 @@ import numbers
 from typing import List, Optional, Dict, Any, Tuple
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction
@@ -20,13 +18,12 @@ from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, BEFORE_SAVE, AFTER_CREATE, BEFORE_CREATE
-from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged, WhenFieldValueIs, WhenFieldValueIsNot
-from django_lifecycle.priority import HIGHEST_PRIORITY
+from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, AFTER_CREATE
+from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged
 from treebeard.mp_tree import MP_Node
 
 from .managers import ExpertReportAnnotationManager, IdentificationTaskManager
-from .messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict, notsure_msg_dict
+from .messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict
 from .permissions import UserRolePermissionMixin, Role, AnnotationPermission, IdentificationTaskPermission, BasePermission
 from .stats import calculate_norm_entropy
 
@@ -301,21 +298,6 @@ class IdentificationTask(LifecycleModel):
             return False
         return get_is_high_confidence(value=self.confidence)
 
-    @property
-    def validation_value(self) -> Optional[int]:
-        if not self.taxon:
-            return
-
-        if not isinstance(self.taxon.content_object, Categories):
-            return
-
-        if not self.taxon.content_object.specify_certainty_level:
-            return
-
-        if self.is_high_confidence:
-            return ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY
-        return ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
-
     @cached_property
     def exclusivity_end(self) -> Optional[timezone.datetime]:
         country = self.report.country
@@ -372,7 +354,10 @@ class IdentificationTask(LifecycleModel):
 
         ExpertReportAnnotation.objects.get_or_create(
             identification_task=self,
-            user=user
+            user=user,
+            defaults={
+                'validation_complete': False,
+            }
         )
 
     def get_display_identification_label(self) -> str:
@@ -654,11 +639,7 @@ class IdentificationTask(LifecycleModel):
             ),
         ]
 
-class ExpertReportAnnotation(LifecycleModel):
-    VALIDATION_CATEGORY_DEFINITELY = 2
-    VALIDATION_CATEGORY_PROBABLY = 1
-    VALIDATION_CATEGORIES = ((VALIDATION_CATEGORY_DEFINITELY, 'Definitely'), (VALIDATION_CATEGORY_PROBABLY, 'Probably'))
-
+class ExpertReportAnnotation(models.Model):
     class Status(models.IntegerChoices):
         PUBLIC = 1, 'Public'
         FLAGGED = 0, 'Flagged'
@@ -669,6 +650,10 @@ class ExpertReportAnnotation(LifecycleModel):
         EXECUTIVE = 'executive', _('Executive')
         FINAL = 'final', _('Final')
 
+    class ConfidenceCategory(float, models.Choices):
+        DEFINITELY = 1, 'definitely'
+        PROBABLY = 0.75, 'probably'
+
     user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
     identification_task = models.ForeignKey(IdentificationTask, editable=False, related_name='expert_report_annotations', on_delete=models.CASCADE)
     tiger_certainty_notes = models.TextField('Internal Species Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
@@ -676,21 +661,17 @@ class ExpertReportAnnotation(LifecycleModel):
     message_for_user = models.TextField('Message to User', blank=True, help_text='Message that user will receive when viewing report on phone')
     status = models.IntegerField('Status', choices=Status.choices, default=Status.PUBLIC, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
     last_modified = models.DateTimeField(default=timezone.now)
-    validation_complete = models.BooleanField(default=False, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
+    validation_complete = models.BooleanField(default=True, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True, on_delete=models.SET_NULL, )
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     created = models.DateTimeField(auto_now_add=True)
     simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
     tags = TaggableManager(blank=True)
-    category = models.ForeignKey('tigacrafting.Categories', related_name='expert_report_annotations', null=True, blank=True, help_text='Simple category assigned by expert or superexpert. Mutually exclusive with complex. If this field has value, then probably there is a validation value', on_delete=models.SET_NULL, )
-    complex = models.ForeignKey('tigacrafting.Complex', related_name='expert_report_annotations', null=True, blank=True, help_text='Complex category assigned by expert or superexpert. Mutually exclusive with category. If this field has value, there should not be a validation value', on_delete=models.SET_NULL, )
-    validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure, 0 for none')
-    other_species = models.ForeignKey('tigacrafting.OtherSpecies', related_name='expert_report_annotations', null=True, blank=True, help_text='Additional info supplied if the user selected the Other species category', on_delete=models.SET_NULL, )
     decision_level = models.CharField(max_length=16, choices=DecisionLevel.choices, default=DecisionLevel.NORMAL)
     is_favourite = models.BooleanField(default=False)
 
     taxon = models.ForeignKey('tigacrafting.Taxon', null=True, blank=True, on_delete=models.PROTECT)
-    confidence = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
+    confidence = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
     sex = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female')], null=True, blank=True, default=None)
     is_blood_fed = models.BooleanField(null=True, blank=True, default=None)
     is_gravid = models.BooleanField(null=True, blank=True, default=None)
@@ -731,35 +712,17 @@ class ExpertReportAnnotation(LifecycleModel):
         return get_is_high_confidence(value=self.confidence)
 
     @classmethod
-    def _get_auto_message(cls, category: 'Categories', validation_value: int, locale: str = 'en') -> Optional[str]:
+    def _get_auto_message(cls, taxon: 'Taxon', confidence: float, locale: str = 'en') -> Optional[str]:
         msg_dict = other_insect_msg_dict
-        if not category:
+        if not taxon:
             return msg_dict.get(locale)
 
-        if category.pk == 4:  # albopictus
-            msg_dict = albopictus_msg_dict if validation_value == cls.VALIDATION_CATEGORY_DEFINITELY else albopictus_probably_msg_dict
-        elif category.pk == 10:  # culex
+        if taxon.pk == 112:  # albopictus
+            msg_dict = albopictus_msg_dict if get_is_high_confidence(value=confidence) else albopictus_probably_msg_dict
+        elif taxon.pk == 10:  # culex
             msg_dict = culex_msg_dict
-        elif category.pk == 9:  # not sure
-            msg_dict = notsure_msg_dict
 
         return msg_dict.get(locale)
-
-    def _get_confidence(self) -> float:
-        if self.validation_value == self.VALIDATION_CATEGORY_DEFINITELY:
-            return 1.0
-        elif self.validation_value == self.VALIDATION_CATEGORY_PROBABLY:
-            return 0.75
-        else:
-            taxon = Taxon.get_from_old_classification(
-                category=self.category,
-                complex=self.complex,
-                other_species=self.other_species
-            )
-            if taxon :
-                return 1.0 if taxon.rank < Taxon.TaxonomicRank.SPECIES_COMPLEX else 0.75
-
-            return 0.0
 
     def _can_be_simplified(self) -> bool:
         # If decision_level is Final -> False
@@ -779,75 +742,12 @@ class ExpertReportAnnotation(LifecycleModel):
             total_completed_annotations_qs.count() < settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1
         )
 
-    @hook(
-        BEFORE_CREATE,
-        priority=HIGHEST_PRIORITY,
-        condition=(
-            WhenFieldValueIsNot('taxon', None)
-            | (WhenFieldValueIs('category', None)
-                & WhenFieldValueIs('complex', None)
-                & WhenFieldValueIs('other_species', None)
-            )
-        )
-    )
-    @hook(
-        BEFORE_SAVE,
-        priority=HIGHEST_PRIORITY,
-        condition=WhenFieldHasChanged('taxon', has_changed=True)
-    )
-    def on_taxon_change(self):
-        try:
-            taxon = self.taxon or Taxon.objects.get(pk=self.taxon_id)
-        except Taxon.DoesNotExist:
-            taxon = None
-
-        if not taxon:
-            # Set as 'Off-topic'. This is not a mosquito observation.
-            self.category = Categories.objects.filter(pk=1).first()
-            return
-
-        _taxon_content_object = taxon.content_object
-        if isinstance(_taxon_content_object, Complex):
-            # Set category to 'Complex'
-            self.category = Categories.objects.filter(pk=8).first()
-            self.complex = _taxon_content_object
-        elif isinstance(_taxon_content_object, OtherSpecies):
-            # Set category to 'Other species'
-            self.category = Categories.objects.filter(pk=2).first()
-            self.other_species = _taxon_content_object
-        elif isinstance(_taxon_content_object, Categories):
-            self.category = _taxon_content_object
-        else:
-            self.category = None
-            self.complex = None
-            self.other_species = None
-
-    @hook(
-        BEFORE_CREATE,
-        condition=(
-            WhenFieldValueIs('taxon', None)
-        )
-    )
-    @hook(
-        BEFORE_SAVE,
-        condition=(
-            WhenFieldHasChanged('taxon', has_changed=False)
-            & (WhenFieldHasChanged('category', has_changed=True)
-                | WhenFieldHasChanged('other_species', has_changed=True)
-                | WhenFieldHasChanged('complex', has_changed=True)
-            )
-        )
-    )
-    def on_old_classification_change(self):
-        self.taxon = Taxon.get_from_old_classification(
-            category=self.category,
-            complex=self.complex,
-            other_species=self.other_species
-        )
-
     def save(self, *args, **kwargs):
         if not kwargs.pop('skip_lastmodified', False):
             self.last_modified = timezone.now()
+
+        if self.taxon is None:
+            self.confidence = 0.0
 
         # On create only
         if self._state.adding:
@@ -859,8 +759,6 @@ class ExpertReportAnnotation(LifecycleModel):
 
         if self.simplified_annotation:
             self.message_for_user = ""
-
-        self.confidence = self._get_confidence()
 
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
 
@@ -1043,35 +941,6 @@ class UserStat(UserRolePermissionMixin, models.Model):
         except UserStat.DoesNotExist:
             UserStat.objects.create(user=instance)
 
-class Categories(models.Model):
-    name = models.TextField('Name of the classification category', help_text='Usually a species category. Can also be other/special case values')
-    specify_certainty_level = models.BooleanField(default=False, help_text='Indicates if for this row a certainty level must be supplied')
-
-    taxa = GenericRelation('tigacrafting.Taxon')
-
-    def __str__(self):
-        return self.name
-
-
-class Complex(models.Model):
-    description = models.TextField('Name of the complex category', help_text='This table is reserved for species combinations')
-
-    taxa = GenericRelation('tigacrafting.Taxon')
-
-    def __str__(self):
-        return self.description
-
-
-class OtherSpecies(models.Model):
-    name = models.TextField('Name of other species', help_text='List of other, not controlled species')
-    category = models.TextField('Subcategory of other species', blank=True, help_text='The subcategory of other species, i.e. Other insects, Culicidae')
-    ordering = models.IntegerField('Auxiliary help to tweak list ordering', blank=True, null=True)
-
-    taxa = GenericRelation('tigacrafting.Taxon')
-
-    def __str__(self):
-        return self.name
-
 
 class Taxon(MP_Node):
     @classmethod
@@ -1100,22 +969,6 @@ class Taxon(MP_Node):
         # Round down to the nearest multiple of 10
         return (rank // cls.RANK_GROUP_STEP) * cls.RANK_GROUP_STEP
 
-    @classmethod
-    def get_from_old_classification(cls, category: Optional[Categories] = None, complex: Optional[Complex] = None, other_species: Optional[OtherSpecies] = None) -> Optional['Taxon']:
-        if complex:
-            return complex.taxa.first()
-
-        if other_species:
-            return other_species.taxa.first()
-
-        if category:
-            # Special case for 'Not sure':
-            if category.pk == 9:
-                return cls.get_root()
-            return category.taxa.first()
-
-        return None
-
     class TaxonomicRank(models.IntegerChoices):
         # DOMAIN = 0, _("Domain")
         # KINGDOM = 10, _("Kingdom")
@@ -1132,15 +985,6 @@ class Taxon(MP_Node):
     RANK_GROUP_STEP = TaxonomicRank.ORDER - TaxonomicRank.CLASS
 
     # Relations
-    content_type = models.ForeignKey(
-        ContentType, on_delete=models.CASCADE, null=True, blank=True,
-        limit_choices_to={
-            'app_label': 'tigacrafting',
-            'model__in': (Categories._meta.model_name, Complex._meta.model_name, OtherSpecies._meta.model_name)
-        }
-    )
-    object_id = models.PositiveIntegerField(null=True, blank=True)
-    content_object = GenericForeignKey("content_type", "object_id")
 
     # Attributes - Mandatory
     rank = models.PositiveSmallIntegerField(choices=TaxonomicRank.choices)
@@ -1263,14 +1107,6 @@ class Taxon(MP_Node):
         constraints = [
             models.UniqueConstraint(fields=["name", "rank"], name="unique_name_rank"),
             models.UniqueConstraint(fields=["depth"], condition=models.Q(depth=1), name="unique_root"),
-            models.UniqueConstraint(
-                fields=["content_type", "object_id"],
-                condition=models.Q(content_type__isnull=False, object_id__isnull=False),
-                name="unique_content_type_object_id"
-            ),
-        ]
-        indexes = [
-            models.Index(fields=["content_type", "object_id"]),
         ]
 
     def __str__(self) -> str:

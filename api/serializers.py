@@ -953,12 +953,19 @@ class SimpleAnnotatorUserSerializer(SimpleUserSerializer):
 class SpeciesIdentificationSerializer(serializers.ModelSerializer):
     class SpeciesClassificationSerializer(serializers.ModelSerializer):
         taxon = SimpleTaxonSerializer(read_only=True)
-        confidence_label = serializers.ChoiceField(
-            source="validation_value",
-            choices=['definitely', 'probably'],
-            required=True
+        confidence_label = WritableSerializerMethodField(
+            field_class=serializers.ChoiceField,
+            source="confidence",
+            choices=ExpertReportAnnotation.ConfidenceCategory.labels,
+            required=True,
         )
         is_high_confidence = serializers.SerializerMethodField()
+
+        @extend_schema_field(serializers.ChoiceField(choices=ExpertReportAnnotation.ConfidenceCategory.labels))
+        def get_confidence_label(self, obj) -> str:
+            if obj.confidence == 1:
+                return ExpertReportAnnotation.ConfidenceCategory.DEFINITELY.label
+            return ExpertReportAnnotation.ConfidenceCategory.PROBABLY.label
 
         def get_is_high_confidence(self, obj) -> bool:
             return obj.is_high_confidence
@@ -969,7 +976,7 @@ class SpeciesIdentificationSerializer(serializers.ModelSerializer):
                     'status': ExpertReportAnnotation.Status.HIDDEN
                 }
             ret = super().to_internal_value(data)
-            ret['validation_value'] = ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY if data.pop('confidence_label') == 'definitely' else ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY
+            ret['confidence'] = next(val for val, lab in ExpertReportAnnotation.ConfidenceCategory.choices if lab == ret['confidence'])
             return ret
 
         def to_representation(self, instance):
@@ -977,7 +984,6 @@ class SpeciesIdentificationSerializer(serializers.ModelSerializer):
                 return None
 
             ret = super().to_representation(instance)
-            ret['confidence_label'] = 'definitely' if instance.validation_value == ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY else 'probably'
 
             return ret
 
@@ -1395,7 +1401,6 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificat
         # Case Not an insect will be empty taxon. In case of update we need to for it to None
         ret['taxon'] = ret.pop('taxon', None)
 
-        ret['validation_value'] = ret.pop('validation_value', None)
         ret['validation_complete'] = True
         ret['confidence'] = ret.pop('confidence', 0)
 

@@ -14,9 +14,8 @@ from django.conf import settings
 from django.test import TransactionTestCase
 from django.utils.translation import activate, deactivate, gettext as _
 from tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, Photo, NotificationContent, Notification
-from tigacrafting.models import ExpertReportAnnotation, Categories, Complex, OtherSpecies, Taxon, IdentificationTask
+from tigacrafting.models import ExpertReportAnnotation, Taxon, IdentificationTask
 from django.contrib.auth.models import User, Group
-from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.db import IntegrityError
 from django.db.models import Q
@@ -964,34 +963,28 @@ class NewReportAssignment(TransactionTestCase):
             common_name=""
         )
 
-        c_1 = Categories.objects.create(name='Red',specify_certainty_level=False)
-        _ = taxon_root.add_child(name=c_1.name, rank=Taxon.TaxonomicRank.SPECIES, is_relevant=True, content_object=c_1)
-        c_2 = Categories.objects.create(name='Orange', specify_certainty_level=False)
-        _ = taxon_root.add_child(name=c_2.name, rank=Taxon.TaxonomicRank.SPECIES, is_relevant=True, content_object=c_2)
-        c_3 = Categories.objects.create(name='Blue', specify_certainty_level=False)
-        _ = taxon_root.add_child(name=c_3.name, rank=Taxon.TaxonomicRank.SPECIES, is_relevant=True, content_object=c_3)
+        t_1 = taxon_root.add_child(name='Red', rank=Taxon.TaxonomicRank.SPECIES, is_relevant=True)
+        t_2 = taxon_root.add_child(name='Orange', rank=Taxon.TaxonomicRank.SPECIES, is_relevant=True)
+        t_3 = taxon_root.add_child(name='Blue', rank=Taxon.TaxonomicRank.SPECIES, is_relevant=True)
 
-        cp_1 = Complex.objects.create(description="Green/Teal")
-        _ = taxon_root.add_child(name=cp_1.description, rank=Taxon.TaxonomicRank.SPECIES_COMPLEX, is_relevant=True, content_object=cp_1)
+        t_4 = taxon_root.add_child(name="Green/Teal", rank=Taxon.TaxonomicRank.SPECIES_COMPLEX, is_relevant=True)
 
-        anno_u1 = ExpertReportAnnotation.objects.create(user=user_spain_1, identification_task=identification_task, category=c_1, validation_complete=True)
-        anno_u4 = ExpertReportAnnotation.objects.create(user=user_spain_4, identification_task=identification_task, category=c_2,validation_complete=True)
-        anno_u6 = ExpertReportAnnotation.objects.create(user=user_spain_6, identification_task=identification_task, category=c_3,validation_complete=True)
+        anno_u1 = ExpertReportAnnotation.objects.create(user=user_spain_1, identification_task=identification_task, taxon=t_1, confidence=1.0)
+        anno_u4 = ExpertReportAnnotation.objects.create(user=user_spain_4, identification_task=identification_task, taxon=t_2, confidence=1.0)
+        anno_u6 = ExpertReportAnnotation.objects.create(user=user_spain_6, identification_task=identification_task, taxon=t_3, confidence=1.0)
 
         #Three different categories -> Conflict
         identification_task.refresh_from_db()
         self.assertEqual(identification_task.status, IdentificationTask.Status.CONFLICT)
 
-        anno_u6.category = None
-        anno_u6.complex = cp_1
+        anno_u6.taxon = t_4
         anno_u6.save()
 
         # Two categories, one conflict -> Conflict
         identification_task.refresh_from_db()
         self.assertEqual(identification_task.status, IdentificationTask.Status.CONFLICT)
 
-        anno_u6.category = c_1
-        anno_u6.complex = None
+        anno_u6.taxon = t_1
         anno_u6.save()
 
         # Two equal categories, one different -> No Conflict
@@ -1053,33 +1046,20 @@ class NewReportAssignment(TransactionTestCase):
         superexperts_group.user_set.add(reritja_user)
         reritja_user.save()
 
-        c_1 = Categories.objects.create(pk=1, name="Unclassified", specify_certainty_level=False)
-        c_1.save()
-        c_2 = Categories.objects.create(pk=2, name="Other species", specify_certainty_level=False)
-        c_2.save()
-        c_3 = Categories.objects.create(pk=3, name="Aedes albopictus", specify_certainty_level=True)
-        c_3.save()
-        c_4 = Categories.objects.create(pk=4, name="Aedes aegypti", specify_certainty_level=True)
-        c_4.save()
-        c_5 = Categories.objects.create(pk=5, name="Aedes japonicus", specify_certainty_level=True)
-        c_5.save()
-        c_6 = Categories.objects.create(pk=6, name="Aedes koreicus", specify_certainty_level=True)
-        c_6.save()
-        c_7 = Categories.objects.create(pk=7, name="Complex", specify_certainty_level=False)
-        c_7.save()
-        c_8 = Categories.objects.create(pk=8, name="Not sure", specify_certainty_level=False)
-        c_8.save()
-        c_9 = Categories.objects.create(pk=9, name="Culex sp.", specify_certainty_level=True)
-        c_9.save()
+        taxon_root = Taxon.add_root(
+            rank=Taxon.TaxonomicRank.GENUS,
+            name="genus",
+            common_name=""
+        )
 
         for l in conf.LANGUAGES:
             locale = l[0]
             if locale != 'zh-cn':
                 r.app_language = locale
                 r.save()
-                anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, identification_task=identification_task, category=c_3,
-                                                                     validation_complete=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
-                                                                     validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
+                anno_reritja = ExpertReportAnnotation.objects.create(user=reritja_user, identification_task=identification_task, taxon=taxon_root,
+                                                                     decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
+                                                                     confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY)
                 anno_reritja.save()
                 nc = NotificationContent.objects.order_by('-id').first()
                 # native title should be in the same language as the report
@@ -1191,55 +1171,6 @@ class NewReportAssignment(TransactionTestCase):
         n_european = generic_assignments.exclude(identification_task__report__country__gid=17).exclude(identification_task__report__country__isnull=True).count()
         self.assertTrue(n_european == 1,"Expert should be 1 european report, has been assigned {0}".format(n_european))
         # print( generic_assignments.exclude(identification_task__report__country__gid=17).exclude(identification_task__report__country__isnull=True).first().identification_task.report.country.name_engl )
-
-@pytest.mark.django_db
-class BaseTestTaxonRelationModel(ABC):
-    model = None  # This must be defined in subclasses
-
-    @classmethod
-    @abstractmethod
-    def create_obj(cls):
-        raise NotImplementedError
-
-    # fields
-    def test_taxa_should_return_None_if_no_taxon_linked(self):
-        obj = self.create_obj()
-        assert obj.taxa.first() is None
-
-    def test_taxa_should_return_taxon_if_linked(self, taxon_root):
-        obj = self.create_obj()
-        obj.taxa.set([taxon_root,])
-
-        assert obj.taxa.first() == taxon_root
-        assert taxon_root.content_object == obj
-
-
-class TestCategoriesModel(BaseTestTaxonRelationModel):
-    model = Categories
-
-    @classmethod
-    def create_obj(self):
-        return Categories.objects.create(
-            name='test'
-        )
-
-class TestComplexModel(BaseTestTaxonRelationModel):
-    model = Complex
-
-    @classmethod
-    def create_obj(self):
-        return Complex.objects.create(
-            description='test'
-        )
-
-class TestOtherSpeciesModel(BaseTestTaxonRelationModel):
-    model = OtherSpecies
-
-    @classmethod
-    def create_obj(self):
-        return OtherSpecies.objects.create(
-            name='test'
-        )
 
 @pytest.mark.django_db
 class TestTaxonModel:
@@ -1444,24 +1375,6 @@ class TestTaxonModel:
         with pytest.raises(IntegrityError):
             Taxon.add_root(name="", rank=taxon_root.rank)
 
-    def test_unique_content_type_object_id_constraint(self, taxon_root):
-        content_type = ContentType.objects.first()
-        object_id = 1
-
-        taxon = taxon_root.add_child(
-            name="Same Name",
-            rank=Taxon.TaxonomicRank.SPECIES,
-            content_type=content_type,
-            object_id=object_id
-        )
-        with pytest.raises(IntegrityError):
-            taxon_root.add_child(
-            name=taxon.name + " test",
-            rank=Taxon.TaxonomicRank.SPECIES,
-            content_type=content_type,
-            object_id=object_id
-        )
-
     def test__str__(self, taxon_root):
         taxon = taxon_root.add_child(
             name="Aedes Albopictus",
@@ -1477,8 +1390,8 @@ class TestExpertReportAnnotationModel:
     def test_taxon_field_can_be_null(self):
         assert ExpertReportAnnotation._meta.get_field("taxon").null
 
-    def test_confidence_field_default_is_0(self):
-        assert ExpertReportAnnotation._meta.get_field("confidence").default == 0
+    def test_confidence_field_cannot_be_null(self):
+        assert not ExpertReportAnnotation._meta.get_field("confidence").null
 
     @pytest.mark.parametrize(
         "value, expected_raise",
@@ -1524,25 +1437,6 @@ class TestExpertReportAnnotationModel:
 
         assert userstat.grabbed_reports == 1
 
-    def test_taxon_is_set_on_create(self, taxon_root, user, identification_task):
-        category = Categories.objects.create(name="test")
-        taxon = taxon_root.add_child(name="test", rank=Taxon.TaxonomicRank.SPECIES, content_object=category)
-
-        obj = ExpertReportAnnotation.objects.create(category=category, user=user, identification_task=identification_task)
-        assert obj.taxon == taxon
-
-    @pytest.mark.parametrize(
-        "value, expected_result",
-        [
-            (None, 0),
-            (ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY, 0.75),
-            (ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY, 1)
-        ]
-    )
-    def test_confidence_is_set_on_create(self, user, identification_task, value, expected_result):
-        obj = ExpertReportAnnotation.objects.create(validation_value=value, user=user, identification_task=identification_task)
-        assert obj.confidence == expected_result
-
     def test_identification_task_is_called_to_refresh_on_create(self, user, identification_task):
         with patch.object(IdentificationTask, 'refresh') as mocked_refresh:
             _ = ExpertReportAnnotation.objects.create(user=user, identification_task=identification_task)
@@ -1565,6 +1459,13 @@ class TestExpertReportAnnotationModel:
             obj.delete()
 
             mocked_refresh.assert_called_once()
+
+    def test_confidence_set_to_0_if_not_taxon(self, user, identification_task):
+        obj = ExpertReportAnnotation.objects.create(user=user, identification_task=identification_task, taxon=None, confidence=0.5)
+
+        obj.refresh_from_db()
+
+        assert obj.confidence == 0
 
 @pytest.mark.django_db
 class TestIdentificationTaskModel:
@@ -2057,26 +1958,20 @@ class TestIdentificationTaskFlow:
     def test_status_should_be_conflict(self, identification_task, taxon_root, num_is_relevant, expected_result):
         genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
 
-        categories = []
+        taxa = []
         for i in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT):
-            category = Categories.objects.create(name='specie {}'.format(i))
-            # NOTE: pk=9 is reserved for Not sure.
-            if category.pk == 9:
-                category.pk = 10
-                category.save()
-            categories.append(category)
-            _ = genus.add_child(
-                name=category.name,
+            t = genus.add_child(
+                name='specie {}'.format(i),
                 rank=Taxon.TaxonomicRank.SPECIES,
-                content_object=category,
                 is_relevant=i < num_is_relevant
             )
+            taxa.append(t)
 
-        for category in categories:
+        for taxon in taxa:
             self._add_annotation(
                 identification_task=identification_task,
-                category=category,
-                validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
+                taxon=taxon,
+                confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
                 status=ExpertReportAnnotation.Status.PUBLIC,
             )
 
@@ -2086,25 +1981,23 @@ class TestIdentificationTaskFlow:
         assert identification_task.is_flagged == expected_result
 
     def test_should_be_flagged(self, identification_task, taxon_root):
-        category_1 = Categories.objects.create(name='specie 1')
-        category_2 = Categories.objects.create(name='specie 2')
         genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
-        specie_1 = genus.add_child(name='specie 1', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_1)
-        specie_2 = genus.add_child(name='specie 2', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_2)
+        specie_1 = genus.add_child(name='specie 1', rank=Taxon.TaxonomicRank.SPECIES)
+        specie_2 = genus.add_child(name='specie 2', rank=Taxon.TaxonomicRank.SPECIES)
 
         for _ in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1):
             self._add_annotation(
                 identification_task=identification_task,
-                category=category_1,
-                validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
+                taxon=specie_1,
+                confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
                 status=ExpertReportAnnotation.Status.PUBLIC,
             )
 
         # Mark as flagged
         self._add_annotation(
             identification_task=identification_task,
-            category=category_1,
-            validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
+            taxon=specie_1,
+            confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
             status=ExpertReportAnnotation.Status.FLAGGED,
         )
 
@@ -2133,11 +2026,9 @@ class TestIdentificationTaskFlow:
     # overview general
     @pytest.mark.parametrize("overwrite", [False, True])
     def test_fields_are_overwriten_on_review(self, identification_task, taxon_root, overwrite):
-        category_1 = Categories.objects.create(name='specie 1')
-        category_2 = Categories.objects.create(name='specie 2')
         genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
-        specie_1 = genus.add_child(name='specie 1', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_1)
-        specie_2 = genus.add_child(name='specie 2', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_2)
+        specie_1 = genus.add_child(name='specie 1', rank=Taxon.TaxonomicRank.SPECIES)
+        specie_2 = genus.add_child(name='specie 2', rank=Taxon.TaxonomicRank.SPECIES)
 
         first_photo = identification_task.report.photos.first()
         another_photo = Photo.objects.create(report=identification_task.report, photo='./testdata/splash.png')
@@ -2145,8 +2036,8 @@ class TestIdentificationTaskFlow:
         for _ in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1):
             self._add_annotation(
                 identification_task=identification_task,
-                category=category_1,
-                validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
+                taxon=specie_1,
+                confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
                 status=ExpertReportAnnotation.Status.PUBLIC,
                 edited_user_notes="public message",
                 message_for_user="message to user",
@@ -2156,8 +2047,8 @@ class TestIdentificationTaskFlow:
         # Disagree with others
         self._add_annotation(
             identification_task=identification_task,
-            category=category_2,
-            validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY,
+            taxon=specie_2,
+            confidence=ExpertReportAnnotation.ConfidenceCategory.PROBABLY,
             status=ExpertReportAnnotation.Status.PUBLIC,
             edited_user_notes="random public message",
             message_for_user="random message to user",
@@ -2179,8 +2070,8 @@ class TestIdentificationTaskFlow:
         self._add_review(
             identification_task=identification_task,
             overwrite=overwrite,
-            category=category_2,
-            validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY,
+            taxon=specie_2,
+            confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
             status=ExpertReportAnnotation.Status.HIDDEN,
             edited_user_notes="new public message",
             message_for_user="new message to user",
@@ -2225,23 +2116,18 @@ class TestIdentificationTaskFlow:
             assert identification_task.status == IdentificationTask.Status.DONE
 
     def test_executive_annotation(self, identification_task, taxon_root):
-        category_1 = Categories.objects.create(name='specie 1')
-        category_2 = Categories.objects.create(name='specie 2')
         genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
-        specie_1 = genus.add_child(name='specie 1', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_1)
-        specie_2 = genus.add_child(name='specie 2', rank=Taxon.TaxonomicRank.SPECIES, content_object=category_2)
+        specie_1 = genus.add_child(name='specie 1', rank=Taxon.TaxonomicRank.SPECIES)
+        specie_2 = genus.add_child(name='specie 2', rank=Taxon.TaxonomicRank.SPECIES)
 
         first_photo = identification_task.report.photos.first()
         another_photo = Photo.objects.create(report=identification_task.report, photo='./testdata/splash.png')
 
-        # Since superexpert will automatically review the executive validations, adding User with pk=25
-        super_reritja, _ = User.objects.get_or_create(pk=25, username='super_reritja')
-
         # Executive annotation
         annotation = self._add_annotation(
             identification_task=identification_task,
-            category=category_1,
-            validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_PROBABLY,
+            taxon=specie_1,
+            confidence=ExpertReportAnnotation.ConfidenceCategory.PROBABLY,
             status=ExpertReportAnnotation.Status.PUBLIC,
             edited_user_notes="public message",
             message_for_user="message to user",

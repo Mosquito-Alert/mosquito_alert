@@ -279,11 +279,11 @@ function hide_or_show_report(report_id, hide_value){
     });
 }
 
-function classify_picture(report_id, category_id, validation_value){
+function classify_picture(report_id, taxon_id, confidence){
     $('#' + report_id).block({ message: 'Writing classification' });
     $.ajax({
         url: '/api/annotate_coarse/',
-        data: { "report_id": report_id, "category_id": category_id, "validation_value": validation_value },
+        data: { "report_id": report_id, "taxon_id": taxon_id, "confidence": confidence },
         type: "POST",
         headers: { "X-CSRFToken": csrf_token },
         dataType: "json",
@@ -493,11 +493,10 @@ function single_report_template(report){
                 <div class="buttons_internal_grid">
                     <button type="button" id="hide_${ report.version_UUID }" title="Hide report" data-report-id="${ report.version_UUID }" class="${ hide_additional_button_class } btn btn-primary foot_btn btn_hide_report">Hide</button>
                     <button type="button" id="show_${ report.version_UUID }" title="Show report" data-report-id="${ report.version_UUID }" class="${ show_additional_button_class } btn btn-primary foot_btn btn_show_report">Show</button>
-                    <button type="button" id="other_${ report.version_UUID }" title="Other species" data-category="2" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_other">O.species</button>
-                    <button type="button" id="pculex_${ report.version_UUID }" title="Probably culex" data-category="10" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_pculex">P.culex</button>
-                    <button type="button" id="palbo_${ report.version_UUID }" title="Probably albopictus" data-category="4" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_palbo">P.albo.</button>
-                    <button type="button" id="dalbo_${ report.version_UUID }" title="Definitely albopictus" data-category="4" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_dalbo">D.albo.</button>
-                    <button type="button" id="ns_${ report.version_UUID }" title="Not sure" data-category="9" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_notsure">N.S.</button>
+                    <button type="button" id="other_${ report.version_UUID }" title="Other species" data-taxon="1" data-confidence="1" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_other">O.species</button>
+                    <button type="button" id="pculex_${ report.version_UUID }" title="Probably culex" data-taxon="10" data-confidence="0.75" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_pculex">P.culex</button>
+                    <button type="button" id="palbo_${ report.version_UUID }" title="Probably albopictus" data-taxon="112" data-confidence="0.75" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_palbo">P.albo.</button>
+                    <button type="button" id="dalbo_${ report.version_UUID }" title="Definitely albopictus" data-taxon="112" data-confidence="1" data-report-id="${ report.version_UUID }" class="${ adult_additional_button_class } btn btn-primary foot_btn btn_dalbo">D.albo.</button>
                     <button type="button" id="flip_${ report.version_UUID }" title="Change report type" data-type="${ report.type }" data-site-cat="${ site_cat }" data-report-id="${ report.version_UUID }" class="btn btn-danger foot_btn btn_notsure btn_flip">Flip</button>
                     <button type="button" id="quick_upload_${ report.version_UUID }" title="Set quick upload for site report" data-type="${ report.type }" data-report-id="${ report.version_UUID }" class="${ quick_upload_additional_button_class } btn btn-warning foot_btn btn_quick">Quick upload</button>
                 </div>
@@ -582,62 +581,67 @@ $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primar
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_other', function(){
-    const category_id = $(this).data("category");
+    const taxon_id = $(this).data("taxon");
     const report_id = $(this).data("report-id");
+    const confidence = $(this).data("confidence");
     if(ask_confirmation){
         if(confirm(`About to classify report with id ${report_id} as 'Other species'. Continue?`)==true){
-            classify_picture(report_id, category_id, null);
+            classify_picture(report_id, taxon_id, confidence);
         }
     }else{
-        classify_picture(report_id, category_id, null);
+        classify_picture(report_id, taxon_id, confidence);
     }
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_pculex', function(){
-    const category_id = $(this).data("category");
+    const taxon_id = $(this).data("taxon");
     const report_id = $(this).data("report-id");
+    const confidence = $(this).data("confidence");
     if(ask_confirmation){
         if(confirm(`About to classify report with id ${report_id} as 'Probably Culex'. Continue?`)==true){
-            classify_picture(report_id, category_id, 1);
+            classify_picture(report_id, taxon_id, confidence);
         }
     }else{
-        classify_picture(report_id, category_id, 1);
+        classify_picture(report_id, taxon_id, confidence);
     }
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_palbo', function(){
-    const category_id = $(this).data("category");
+    const taxon_id = $(this).data("taxon");
     const report_id = $(this).data("report-id");
+    const confidence = $(this).data("confidence");
     if(ask_confirmation){
         if(confirm(`About to classify report with id ${report_id} as 'Probably Albopictus'. Continue?`)==true){
-            classify_picture(report_id, category_id, 1);
+            classify_picture(report_id, taxon_id, confidence);
         }
     }else{
-        classify_picture(report_id, category_id, 1);
+        classify_picture(report_id, taxon_id, confidence);
     }
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_dalbo', function(){
-    const category_id = $(this).data("category");
+    const taxon_id = $(this).data("taxon");
     const report_id = $(this).data("report-id");
+    const confidence = $(this).data("confidence");
     if(ask_confirmation){
         if(confirm(`About to classify report with id ${report_id} as 'Definitely Albopictus'. Continue?`)==true){
-            classify_picture(report_id, category_id, 2);
+            classify_picture(report_id, taxon_id, confidence);
         }
     }else{
-        classify_picture(report_id, category_id, 2);
+        classify_picture(report_id, taxon_id, confidence);
     }
 });
 
 $('div#photo_grid').on('click', 'div.buttons_internal_grid button.btn.btn-primary.foot_btn.btn_notsure', function(){
-    const category_id = $(this).data("category");
+    const taxon_id = $(this).data("taxon");
     const report_id = $(this).data("report-id");
+    const confidence = $(this).data("confidence");
     if(ask_confirmation){
         if(confirm(`About to classify report with id ${report_id} as 'Not sure'. Continue?`)==true){
-            classify_picture(report_id, category_id, null);
+            classify_picture(report_id, taxon_id, confidence);
         }
     }else{
-        classify_picture(report_id, category_id, null);
+        classify_picture(report_id, taxon_id, confidence);
     }
 });
 
