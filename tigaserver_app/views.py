@@ -856,6 +856,11 @@ def annotate_coarse(request):
         # if category_id == -1:
         #     raise ParseError(detail='category_id param is mandatory')
         report = get_object_or_404(Report, pk=report_id)
+        if report.type != Report.TYPE_ADULT:
+            return Response(
+                data={'message': 'Report type is not adult, cannot be annotated', 'opcode': -2},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         # This prevents auto annotating a report which has been claimed by someone between reloads
         if ExpertReportAnnotation.objects.filter(identification_task__report=report).count() > 0:
             return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
@@ -865,10 +870,21 @@ def annotate_coarse(request):
         else:
             validation_value = int(validation_value)
 
-        ExpertReportAnnotation.create_auto_annotation(
-            report=report,
+        ExpertReportAnnotation.objects.create(
+            user=request.user,
+            identification_task=report.identification_task,
+            edited_user_notes=ExpertReportAnnotation._get_auto_message(
+                category=category,
+                validation_value=int(validation_value) if validation_value else None,
+                locale=report.user.locale
+            ) or "",
+            status=ExpertReportAnnotation.Status.PUBLIC,
+            validation_complete=True,
+            decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
+            best_photo=report.photos.first(),
+            simplified_annotation=False,
             category=category,
-            validation_value=validation_value
+            validation_value=int(validation_value) if validation_value else None,
         )
 
         return Response(data={'message':'success', 'opcode': 0}, status=status.HTTP_200_OK)

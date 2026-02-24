@@ -330,7 +330,7 @@ stages:
       headers:
         Authorization: "Bearer {jwt_token_user:s}"
     response:
-      status_code: 404  # Annotation from reviewer is considered a reivew
+      status_code: 200
   - name: User with role annotation can retrieve annotation from another user
     request:
       url: "{api_live_url}/{endpoint}/{annotation_from_another_user.pk}/"

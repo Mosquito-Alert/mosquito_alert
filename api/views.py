@@ -738,7 +738,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
             "assignees",
             queryset=User.objects.filter(
                 models.Exists(
-                    ExpertReportAnnotation.objects.is_assignment().filter(
+                    ExpertReportAnnotation.objects.filter(
                         user=models.OuterRef('pk'),
                         identification_task_id=models.OuterRef(models.OuterRef('identificationtask'))
                     )
@@ -774,7 +774,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     @action(detail=False, methods=["POST",], url_path="assignments/next", permission_classes=[IdentificationTaskAssignmentPermissions,], serializer_class=AssignmentSerializer)
     def assign_next(self, request):
         # Checking if there are any assignments with pending annotation for that user.
-        assignment = ExpertReportAnnotation.objects.is_assignment().completed(False).filter(
+        assignment = ExpertReportAnnotation.objects.completed(False).filter(
             user=request.user
         ).order_by('-created').first()
         if not assignment:
@@ -794,8 +794,8 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         request=PolymorphicProxySerializer(
             component_name="MetaCreateIdentificationTaskReview",
             serializers={
-                CreateAgreeReviewSerializer().fields['action'].get_default(): CreateAgreeReviewSerializer,
-                CreateOverwriteReviewSerializer().fields['action'].get_default(): CreateOverwriteReviewSerializer,
+                list(CreateAgreeReviewSerializer().fields['action'].choices.values())[0]: CreateAgreeReviewSerializer,
+                list(CreateOverwriteReviewSerializer().fields['action'].choices.values())[0]: CreateOverwriteReviewSerializer,
             },
             resource_type_field_name="action",
         ),
@@ -809,28 +809,33 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
     def review(self, request, *args, **kwargs):
         task = self.get_object()
 
+        context = self.get_serializer_context()
+        context['identification_task'] = task
+
         review_type = self.request.data.get("action")
-        agree_value = CreateAgreeReviewSerializer().fields['action'].get_default()
-        overwrite_value = CreateOverwriteReviewSerializer().fields['action'].get_default()
+        agree_value = list(CreateAgreeReviewSerializer().fields['action'].choices.values())[0]
+        overwrite_value = list(CreateOverwriteReviewSerializer().fields['action'].choices.values())[0]
         if review_type == agree_value:
-            serializer_klass = CreateAgreeReviewSerializer
+            serializer = CreateAgreeReviewSerializer(context=context, data=request.data)
         elif review_type == overwrite_value:
-            serializer_klass = CreateOverwriteReviewSerializer
+            # Check if already exist and ExpertAnnotationReport. If so, update (pass to serializer)
+            try:
+                annotation = ExpertReportAnnotation.objects.filter(user=request.user, identification_task=task).latest('created')
+            except ExpertReportAnnotation.DoesNotExist:
+                annotation = None
+            serializer = CreateOverwriteReviewSerializer(instance=annotation, context=context, data=request.data)
         else:
             raise ValidationError(
                 f"Invalid 'review_type'. Must be '{agree_value}' or '{overwrite_value}'"
             )
 
-        context = self.get_serializer_context()
-        context['identification_task'] = task
-
-        serializer = serializer_klass(context=context, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         headers = self._get_location_header(serializer.data)
 
-        response_serializer = IdentificationTaskSerializer.IdentificationTaskReviewSerializer(serializer.instance)
+        task.refresh_from_db()
+        response_serializer = IdentificationTaskSerializer.IdentificationTaskReviewSerializer(task)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def _get_location_header(self, data):
@@ -882,7 +887,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
         ]
     )
     class AnnotationViewSet(IdentificationTaskNestedAttribute, NestedViewSetMixin, ListModelMixin, RetrieveModelMixin, CreateModelMixin, GenericNoMobileViewSet):
-        queryset = ExpertReportAnnotation.objects.is_annotation().select_related(
+        queryset = ExpertReportAnnotation.objects.completed().select_related(
             'user',
             'best_photo',
             'taxon',
@@ -908,7 +913,7 @@ class IdentificationTaskViewSet(RetrieveModelMixin, ListModelMixin, GenericNoMob
 
         def create(self, request, *args, **kwargs):
             # Check if it was assigned only (not completed)
-            pending_annotation = ExpertReportAnnotation.objects.is_assignment().completed(False).filter(
+            pending_annotation = ExpertReportAnnotation.objects.completed(False).filter(
                 identification_task_id=self.kwargs['observation_uuid'],
                 user=request.user
             ).first()

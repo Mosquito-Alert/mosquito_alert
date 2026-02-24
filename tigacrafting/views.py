@@ -103,9 +103,8 @@ def reportannotation_formatter(var: ExpertReportAnnotation):
         'report_type': var.identification_task.report.type,
         'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
         'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
-        'draftStatus': var.get_status_bootstrap(),
-        'getScore': var.get_score(),
-        'getCategory': var.get_category_euro()
+        'draftStatus': ExpertReportAnnotation.Status(var.status).label,
+        'getCategory': var.taxon.name if var.taxon else None,
     }
 
 

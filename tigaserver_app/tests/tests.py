@@ -983,7 +983,7 @@ class NotificationTestCase(APITestCase):
         identification_task = r.identification_task
 
         # this should cause send_finished_identification_task_notification to be called
-        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task, category=self.categories[2], validation_complete=True, revise=True, validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
+        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task, category=self.categories[2], validation_complete=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL, validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         anno_reritja.save()
 
         # there should be a new Notification
@@ -1007,7 +1007,7 @@ class NotificationTestCase(APITestCase):
         # this should cause send_finished_identification_task_notification to be called
         anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task,
                                                              category=self.categories[2], validation_complete=True,
-                                                             revise=True,
+                                                             decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
                                                              validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         anno_reritja.save()
 
@@ -1243,6 +1243,10 @@ class NotificationTestCase(APITestCase):
 
 class AnnotateCoarseTestCase(APITestCase):
     fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json', 'taxon.json']
+    @classmethod
+    def setUpTestData(cls):
+        cls.random_user = User.objects.create(username='random_user', password='random_password')
+
     def test_annotate_taken(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
@@ -1251,8 +1255,7 @@ class AnnotateCoarseTestCase(APITestCase):
         annos = ExpertReportAnnotation.objects.filter(identification_task=r.identification_task)
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Give report to one expert
-        innie = User.objects.get(pk=150) #innie
-        anno = ExpertReportAnnotation(user=innie, identification_task=r.identification_task)
+        anno = ExpertReportAnnotation(user=self.random_user, identification_task=r.identification_task)
         anno.save()
         # try to annotate
         category = Categories.objects.get(pk=2)
@@ -1273,8 +1276,7 @@ class AnnotateCoarseTestCase(APITestCase):
         annos = ExpertReportAnnotation.objects.filter(identification_task=r_adult.identification_task)
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Give report to one expert
-        innie = User.objects.get(pk=150)  # innie
-        anno = ExpertReportAnnotation(user=innie, identification_task=r_adult.identification_task)
+        anno = ExpertReportAnnotation(user=self.random_user, identification_task=r_adult.identification_task)
         anno.save()
         # try to annotate
         data = {
