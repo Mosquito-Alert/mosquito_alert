@@ -1,7 +1,7 @@
 from collections import defaultdict, Counter
 from decimal import Decimal, localcontext
 import numbers
-from typing import List, Optional, Literal, Dict, Any, Tuple
+from typing import List, Optional, Dict, Any, Tuple
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -16,7 +16,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
-from django.utils import translation
 from taggit.managers import TaggableManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -255,6 +254,7 @@ class IdentificationTask(LifecycleModel):
     # Review
     review_type = models.CharField(max_length=16, choices=Review.choices, default=None, editable=False, blank=True, null=True)
     reviewed_at = models.DateTimeField(null=True, blank=True, editable=False)
+    reviewed_by = models.ForeignKey(User, null=True, blank=True, editable=False, on_delete=models.SET_NULL, related_name='identification_tasks_reviewed')
 
     pred_insect_confidence = models.FloatField(null=True, blank=True, editable=False, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)], help_text="The insect confidence from the predictions.")
 
@@ -283,11 +283,7 @@ class IdentificationTask(LifecycleModel):
 
     @cached_property
     def annotations(self) -> models.QuerySet:
-        return self.expert_report_annotations.all().is_annotation()
-
-    @cached_property
-    def assignments(self) -> models.QuerySet:
-        return self.expert_report_annotations.all().is_assignment()
+        return self.expert_report_annotations.all().completed()
 
     @property
     def confidence_label(self) -> str:
@@ -349,9 +345,9 @@ class IdentificationTask(LifecycleModel):
         self.taxon, self.confidence, self.uncertainty, self.agreement = self.get_taxon_consensus(
             annotations=[annotation,]
         )
-        self.is_safe = annotation.status != ExpertReportAnnotation.STATUS_HIDDEN
+        self.is_safe = annotation.status != ExpertReportAnnotation.Status.HIDDEN
         self.status = default_status
-        self.is_flagged = annotation.status == ExpertReportAnnotation.STATUS_FLAGGED
+        self.is_flagged = annotation.status == ExpertReportAnnotation.Status.FLAGGED
         self.sex = annotation.sex
         self.is_gravid = annotation.is_gravid
         self.is_blood_fed = annotation.is_blood_fed
@@ -375,7 +371,6 @@ class IdentificationTask(LifecycleModel):
         #       save().
 
         ExpertReportAnnotation.objects.get_or_create(
-            report=self.report,
             identification_task=self,
             user=user
         )
@@ -403,8 +398,11 @@ class IdentificationTask(LifecycleModel):
         self.sex = self._meta.get_field('sex').default
         self.is_gravid = self._meta.get_field('is_gravid').default
         self.is_blood_fed = self._meta.get_field('is_blood_fed').default
+        self.review_type = None
+        self.reviewed_at = None
+        self.reviewed_by = None
 
-    def refresh(self, force: bool = False, commit: bool = True) -> None:
+    def refresh(self, force: bool = False) -> None:
         def get_most_voted_field(
                 field_name: str,
                 discard_nulls: bool = True,
@@ -460,12 +458,12 @@ class IdentificationTask(LifecycleModel):
         self.refresh_from_db()
 
         # Querysets for expert annotations
-        experts_annotations_qs = self.expert_report_annotations.filter(user__groups__name='expert').exclude(user__groups__name='superexpert')
+        experts_annotations_qs = self.expert_report_annotations.exclude(decision_level=ExpertReportAnnotation.DecisionLevel.FINAL)
         finished_experts_annotations_qs = experts_annotations_qs.filter(validation_complete=True)
 
-        # Find executive and superexpert annotations
-        executive_annotation = finished_experts_annotations_qs.filter(validation_complete_executive=True).order_by('-last_modified').first()
-        superexpert_annotation = self.expert_report_annotations.filter(validation_complete=True, user__groups__name='superexpert').order_by('-revise', '-last_modified').first()
+        # Find executive and final annotations
+        executive_annotation = finished_experts_annotations_qs.filter(decision_level=ExpertReportAnnotation.DecisionLevel.EXECUTIVE).order_by('-last_modified').first()
+        final_annotation = self.expert_report_annotations.filter(validation_complete=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL).order_by('-last_modified').first()
 
         # Photo predictions
         final_photo_prediction = self.photo_predictions.filter(is_decisive=True).first()
@@ -480,19 +478,22 @@ class IdentificationTask(LifecycleModel):
         self.total_finished_annotations = finished_experts_annotations_qs.count()
 
         current_photo_id = self.photo_id
-        if superexpert_annotation and superexpert_annotation.revise:
-            # Case 1: Superexpert review (overwrite)
+        if final_annotation:
+            # Case 1: Review (overwrite)
             self._update_from_annotation(
-                annotation=superexpert_annotation,
+                annotation=final_annotation,
                 default_status=self.Status.DONE
             )
+            self.reviewed_at = final_annotation.last_modified
+            self.reviewed_by = final_annotation.user
+            self.review_type = self.Review.OVERWRITE
         elif self.total_finished_annotations > 0:
             if not self.is_reviewed or force:
-                # TODO: ensure annotations are before superexpert review -> pending, there are annotations that not meet this requirement.
+                # TODO: ensure annotations were created before review -> pending, there are annotations that not meet this requirement.
                 if executive_annotation:
                     # Case 2: Executive validation
                     default_status = (
-                        self.Status.DONE if executive_annotation.status == ExpertReportAnnotation.STATUS_PUBLIC
+                        self.Status.DONE if executive_annotation.status == ExpertReportAnnotation.Status.PUBLIC
                         else self.Status.REVIEW
                     )
                     self._update_from_annotation(
@@ -553,8 +554,8 @@ class IdentificationTask(LifecycleModel):
                         tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
                     )
 
-                    self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_HIDDEN).exists()
-                    self.is_flagged = finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.STATUS_FLAGGED).exists()
+                    self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.Status.HIDDEN).exists()
+                    self.is_flagged = finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.Status.FLAGGED).exists()
 
                     if not self.is_safe or self.is_flagged:
                         self.status = self.Status.REVIEW
@@ -566,28 +567,7 @@ class IdentificationTask(LifecycleModel):
         # Ensure photo_id is updated and save the instance
         self.photo_id = self.photo_id or current_photo_id
 
-        if superexpert_annotation:
-            self.reviewed_at = superexpert_annotation.last_modified
-            self.review_type = self.Review.OVERWRITE if superexpert_annotation.revise else self.Review.AGREE
-        else:
-            self.reviewed_at = None
-            self.review_type = None
-
-        if self.is_reviewed:
-            self.status = self.Status.DONE
-            if self.review_type == self.Review.AGREE:
-                self.is_flagged = False
-
-        if not self.report.is_browsable:
-            self.status = self.Status.ARCHIVED
-
-        if self.status == self.Status.CONFLICT:
-            self.is_flagged = True
-
-        if commit:
-            # Save the updated instance
-            # NOTE: do not force saving only certain fields, as it may cause inconsistencies.
-            self.save()
+        self.save()
 
     @hook(
         AFTER_SAVE,
@@ -621,28 +601,33 @@ class IdentificationTask(LifecycleModel):
             self.report.save()
 
     def save(self, *args, **kwargs):
+        if self.is_reviewed:
+            self.status = self.Status.DONE
+            if self.review_type == self.Review.AGREE:
+                self.is_flagged = False
+
+        if self.status == self.Status.CONFLICT:
+            self.is_flagged = True
+
         if not self.report.is_browsable:
             self.status = self.Status.ARCHIVED
 
         super().save(*args, **kwargs)
 
-        if self.result_source == self.ResultSource.AI:
-            # Ensure that superexpert and national supervisor can see in old entolab.
-            # TODO: remove this when old entolab is removed.
-            if superexpert := User.objects.filter(pk=25).first():
-                self.assign_to_user(user=superexpert)
-            if country := self.report.country:
-                for ns in UserStat.objects.filter(national_supervisor_of=country).select_related('user'):
-                    self.assign_to_user(user=ns.user)
-
     class Meta:
         permissions = [
             ("view_archived_identificationtasks", "Can view archived records"),
+            ("add_review", "Can review")
         ]
         indexes = [
             models.Index(fields=['taxon', 'report']),
         ]
         constraints = [
+            models.CheckConstraint(
+                check=models.Q(review_type__isnull=True) | 
+                    (models.Q(reviewed_at__isnull=False) & models.Q(reviewed_by__isnull=False)),
+                name="review_requires_fields_if_set"
+            ),
             models.CheckConstraint(
                 check=models.Q(total_finished_annotations__lte=models.F('total_annotations')),
                 name='total_finished_annotations_lte_total_annotations'
@@ -687,27 +672,24 @@ class ExpertReportAnnotation(LifecycleModel):
     VALIDATION_CATEGORY_PROBABLY = 1
     VALIDATION_CATEGORIES = ((VALIDATION_CATEGORY_DEFINITELY, 'Definitely'), (VALIDATION_CATEGORY_PROBABLY, 'Probably'))
 
-    STATUS_HIDDEN = -1
-    STATUS_FLAGGED = 0
-    STATUS_PUBLIC = 1
-    STATUS_CATEGORIES = ((STATUS_PUBLIC, 'public'), (STATUS_FLAGGED, 'flagged'), (STATUS_HIDDEN, 'hidden'))
+    class Status(models.IntegerChoices):
+        PUBLIC = 1, 'Public'
+        FLAGGED = 0, 'Flagged'
+        HIDDEN = -1, 'Hidden'
+
+    class DecisionLevel(models.TextChoices):
+        NORMAL = 'normal', _('Normal')
+        EXECUTIVE = 'executive', _('Executive')
+        FINAL = 'final', _('Final')
 
     user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
-    report = models.ForeignKey('tigaserver_app.Report', related_name='expert_report_annotations', on_delete=models.CASCADE, )
-    # NOTE: identification_task is nullable due to legacy. There are annotations to sites.
-    identification_task = models.ForeignKey(IdentificationTask, null=True, blank=True, editable=False, related_name='expert_report_annotations', on_delete=models.CASCADE)
-    tiger_certainty_category = models.IntegerField('Tiger Certainty', choices=TIGER_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito')
-    aegypti_certainty_category = models.IntegerField('Aegypti Certainty', choices=AEGYPTI_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows an Aedes aegypti')
+    identification_task = models.ForeignKey(IdentificationTask, editable=False, related_name='expert_report_annotations', on_delete=models.CASCADE)
     tiger_certainty_notes = models.TextField('Internal Species Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
-    site_certainty_category = models.IntegerField('Site Certainty', choices=SITE_CATEGORIES, default=None, blank=True, null=True, help_text='Your degree of belief that at least one photo shows a tiger mosquito breeding site')
-    site_certainty_notes = models.TextField('Internal Site Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
     edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
     message_for_user = models.TextField('Message to User', blank=True, help_text='Message that user will receive when viewing report on phone')
-    status = models.IntegerField('Status', choices=STATUS_CATEGORIES, default=1, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
-    #last_modified = models.DateTimeField(auto_now=True, default=datetime.now())
+    status = models.IntegerField('Status', choices=Status.choices, default=Status.PUBLIC, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
     last_modified = models.DateTimeField(default=timezone.now)
     validation_complete = models.BooleanField(default=False, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
-    revise = models.BooleanField(default=False, help_text='For superexperts: Mark this if you want to substitute your annotation for the existing Expert annotations. Make sure to also complete your annotation form and then mark the "validation complete" box.')
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True, on_delete=models.SET_NULL, )
     linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -717,7 +699,7 @@ class ExpertReportAnnotation(LifecycleModel):
     complex = models.ForeignKey('tigacrafting.Complex', related_name='expert_report_annotations', null=True, blank=True, help_text='Complex category assigned by expert or superexpert. Mutually exclusive with category. If this field has value, there should not be a validation value', on_delete=models.SET_NULL, )
     validation_value = models.IntegerField('Validation Certainty', choices=VALIDATION_CATEGORIES, default=None, blank=True, null=True, help_text='Certainty value, 1 for probable, 2 for sure, 0 for none')
     other_species = models.ForeignKey('tigacrafting.OtherSpecies', related_name='expert_report_annotations', null=True, blank=True, help_text='Additional info supplied if the user selected the Other species category', on_delete=models.SET_NULL, )
-    validation_complete_executive = models.BooleanField(default=False, db_index=True, help_text='Available only to national supervisor. Causes the report to be completely validated, with the final classification decided by the national supervisor')
+    decision_level = models.CharField(max_length=16, choices=DecisionLevel.choices, default=DecisionLevel.NORMAL)
     is_favourite = models.BooleanField(default=False)
 
     taxon = models.ForeignKey('tigacrafting.Taxon', null=True, blank=True, on_delete=models.PROTECT)
@@ -730,7 +712,7 @@ class ExpertReportAnnotation(LifecycleModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['user', 'report'], name='unique_assignation'),
+            models.UniqueConstraint(fields=['user', 'identification_task'], name='unique_assignation'),
             models.CheckConstraint(
                 check=models.Q(confidence__gte=0) & models.Q(confidence__lte=1),
                 name='expertreportannotation_confidence_between_0_and_1'
@@ -744,10 +726,6 @@ class ExpertReportAnnotation(LifecycleModel):
                 name='expertreportannotation_gravid_only_if_female',
             ),
         ]
-
-    @cached_property
-    def country(self) -> Optional['tigaserver_app.EuropeCountry']:
-        return self.report.country
 
     def is_superexpert(self):
         return self.user.groups.filter(name='superexpert').exists()
@@ -780,136 +758,6 @@ class ExpertReportAnnotation(LifecycleModel):
 
         return msg_dict.get(locale)
 
-    @classmethod
-    def create_auto_annotation(cls, report: 'tigaserver_app.models.Report', category: 'Categories', validation_value: Optional[Literal[VALIDATION_CATEGORY_PROBABLY, VALIDATION_CATEGORY_DEFINITELY]] = None):
-        obj, _ = ExpertReportAnnotation.objects.update_or_create(
-            user=User.objects.get(username="innie"),
-            report=report,
-            defaults={
-                'validation_complete': True,
-                'simplified_annotation': False,
-                'best_photo': report.photos.first(),
-                'category': category,
-                'tiger_certainty_notes': 'auto',
-                'validation_value': int(validation_value) if validation_value else None,
-                'edited_user_notes': cls._get_auto_message(
-                    category=category,
-                    validation_value=int(validation_value) if validation_value else None,
-                    locale=report.user.locale
-                ) or ""
-            }
-        )
-        obj.create_replicas()
-        cls.create_super_expert_approval(report=report)
-
-    @classmethod
-    def create_super_expert_approval(cls, report: 'tigaserver_app.models.Report'):
-        from tigaserver_app.models import Report
-
-        if report.type == Report.TYPE_ADULT:
-            # TODO: at some point, superexpert should not auto-review. Remove all
-            #       annotations from superexpert that are revise=False and are in
-            #       a ExpertReportAnnotation that are replicas or executive validation.
-            ExpertReportAnnotation.objects.update_or_create(
-                user=User.objects.get(pk=25),  # "super_reritja"
-                report=report,
-                defaults={
-                    'status': 1,  # public
-                    'simplified_annotation': False,
-                    'revise': False,
-                    'validation_complete': True,
-                }
-            )
-        elif report.type == Report.TYPE_SITE:
-            ExpertReportAnnotation.objects.update_or_create(
-                user=User.objects.get(pk=24),  # "super_movelab"
-                report=report,
-                defaults={
-                    'best_photo': report.photos.first(),
-                    'site_certainty_notes': 'auto',
-                    'status': 1,  # public
-                    'simplified_annotation': False,
-                    'revise': True,
-                    'validation_complete': True,
-                }
-            )
-
-    def create_replicas(self):
-        username_replicas = ["innie", "minnie", "manny"]
-
-        report_annotations = ExpertReportAnnotation.objects.filter(report=self.report).count()
-        if report_annotations >= settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT:
-            return
-        num_missing_annotations = settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - report_annotations
-
-        fieldnames = [
-            field.name for field in ExpertReportAnnotation._meta.fields if field.name not in ('id', 'user', 'report')
-        ]
-        obj_dict = {
-            fname: getattr(self, fname) for fname in fieldnames
-        }
-        for dummy_user in User.objects.filter(username__in=username_replicas).exclude(username=self.user.username)[:num_missing_annotations]:
-            ExpertReportAnnotation.objects.update_or_create(
-                user=dummy_user,
-                report=self.report,
-                defaults={
-                    **obj_dict,
-                    'tiger_certainty_category': self.tiger_certainty_category,
-                    'simplified_annotation': True,
-                    'tiger_certainty_notes': 'exec_auto' if self.validation_complete_executive else 'auto',
-                    'validation_complete': True,
-                    'validation_complete_executive': False,
-                    'best_photo': None,
-                    'edited_user_notes': "",
-                    'message_for_user': "",
-                    'revise': False
-                }
-            )
-
-    def get_score(self):
-        score = -3
-        if self.report.type == 'site':
-            score = self.site_certainty_category
-        elif self.report.type == 'adult':
-            if self.aegypti_certainty_category == 2:
-                score = 4
-            elif self.aegypti_certainty_category == 1:
-                score = 3
-            else:
-                score = self.tiger_certainty_category
-        if score is not None:
-            return score
-        else:
-            return -3
-
-    def get_category_euro(self) -> str:
-        if self.report.type == 'site':
-            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
-        elif self.report.type == 'adult':
-            if not self.taxon:
-                return "Unclassified"
-            if self.taxon.is_relevant:
-                with translation.override('en'):
-                    return "{} {}".format(self.confidence_label, self.taxon.name)
-            if self.taxon.is_root():
-                if self.category_id == 9: # Not sure
-                    return "Not sure"
-                return "Other species"
-            return "Other species - " + self.taxon.name
-
-    def get_category(self) -> str:
-        if self.report.type == 'site':
-            return dict([(-3, 'Unclassified')] + list(SITE_CATEGORIES))[self.get_score()]
-        elif self.report.type == 'adult':
-            if self.get_score() > 2:
-                return dict([(-3, 'Unclassified')] + list(AEGYPTI_CATEGORIES))[self.get_score()-2]
-            else:
-                return dict([(-3, 'Unclassified')] + list(TIGER_CATEGORIES))[self.get_score()]
-
-    def get_status_bootstrap(self):
-        result = '<span data-toggle="tooltip" data-placement="bottom" title="' + self.get_status_display() + '" class="' + ('glyphicon glyphicon-eye-open' if self.status == 1 else ('glyphicon glyphicon-flag' if self.status == 0 else 'glyphicon glyphicon-eye-close')) + '"></span>'
-        return result
-
     def _get_confidence(self) -> float:
         if self.validation_value == self.VALIDATION_CATEGORY_DEFINITELY:
             return 1.0
@@ -927,18 +775,18 @@ class ExpertReportAnnotation(LifecycleModel):
             return 0.0
 
     def _can_be_simplified(self) -> bool:
-        # If the user is the superexpert -> False
-        if self.user.userstat.is_superexpert():
+        # If decision_level is Final -> False
+        if self.decision_level == self.DecisionLevel.FINAL:
             return False
 
         # If the user is the supervisor of that country -> False
         if self.user.userstat.national_supervisor_of:
-            if self.user.userstat.national_supervisor_of == self.report.country:
+            if self.user.userstat.national_supervisor_of == self.identification_task.country:
                 return False
 
         # Return False if no simplified_annotation found or if the objects to be
         # created is suposed to be the last.
-        total_completed_annotations_qs = self.report.expert_report_annotations.all()
+        total_completed_annotations_qs = ExpertReportAnnotation.objects.filter(identification_task=self.identification_task)
         return (
             total_completed_annotations_qs.filter(simplified_annotation=False).exists() or
             total_completed_annotations_qs.count() < settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1
@@ -1010,20 +858,6 @@ class ExpertReportAnnotation(LifecycleModel):
             other_species=self.other_species
         )
 
-    @hook(
-        BEFORE_SAVE,
-        condition=WhenFieldHasChanged('category')
-    )
-    def on_category_change(self):
-        if self.category:
-            self.tiger_certainty_category = -2
-            if self.category.pk == 4: # albopictus
-                self.tiger_certainty_category = 2
-
-            self.aegypti_certainty_category = -2
-            if self.category.pk == 5: # aegypti
-                self.aegypti_certainty_category = 2
-
     def save(self, *args, **kwargs):
         if not kwargs.pop('skip_lastmodified', False):
             self.last_modified = timezone.now()
@@ -1039,36 +873,21 @@ class ExpertReportAnnotation(LifecycleModel):
         if self.simplified_annotation:
             self.message_for_user = ""
 
-        if not self.identification_task or str(self.identification_task.pk) != str(self.report.pk):
-            self.identification_task = IdentificationTask.objects.filter(report=self.report).first()
-
         self.confidence = self._get_confidence()
 
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
 
-        if self.validation_complete and self.validation_complete_executive:
-            self.create_replicas()
-            # self.create_super_expert_approval(report=self.report)
-
-        if self.identification_task:
-            self.identification_task.refresh()
-        elif self.is_superexpert() and self.validation_complete and self.revise:
-            if self.status == self.STATUS_HIDDEN and not self.report.hide:
-                self.report.hide = True
-                self.report.save()
+        self.identification_task.refresh()
 
     def delete(self, *args, **kwargs):
-        if self.validation_complete_executive:
-            ExpertReportAnnotation.objects.filter(
-                report=self.report,
-                validation_complete=True,
-                validation_complete_executive=False
-            ).filter(
-                models.Q(user__username__in=["innie", "minnie"]) 
-                | models.Q(user__pk=25, revise=False)   # pk 25 = "super_reritja"
-            ).delete()
-
         identification_task = self.identification_task
+
+        if self.decision_level == self.DecisionLevel.EXECUTIVE:
+            ExpertReportAnnotation.objects.filter(
+                identification_task=identification_task,
+                validation_complete=True,
+                decision_level=self.DecisionLevel.NORMAL,
+            ).delete()
 
         result = super().delete(*args, **kwargs)
 
@@ -1149,7 +968,9 @@ class UserStat(UserRolePermissionMixin, models.Model):
     def get_role(self, country: Optional['tigaserver_app.EuropeCountry'] = None) -> Role:
         if self.user.is_superuser:
             return Role.ADMIN
-        if self.is_superexpert():
+        if self.user.has_perm('%(app_label)s.add_review' % {
+            'app_label': IdentificationTask._meta.app_label,
+        }):
             return Role.REVIEWER
         if self.is_expert():
             if country and self.national_supervisor_of == country:

@@ -45,7 +45,7 @@ def report_expiration(request, country_id=None):
     country = None
     if country_id is not None:
         country = get_object_or_404(EuropeCountry, pk=country_id)
-        qs = qs.filter(report__country=country)
+        qs = qs.filter(identification_task__report__country=country)
 
     data_dict = {}
     for annotation in qs.select_related('user'):
@@ -54,7 +54,7 @@ def report_expiration(request, country_id=None):
 
         data_dict[annotation.user.username].append(
             {
-                'report_uuid': annotation.report_id,
+                'report_uuid': annotation.identification_task.report_id,
                 'days': (timezone.now() - annotation.created).days
             }
         )
@@ -97,38 +97,15 @@ def expert_status(request):
         return HttpResponseRedirect(reverse('login'))
 
 # var is an ExpertReportAnnotation
-def reportannotation_formatter(var):
-    if var.report.type == 'site':
-        return {
-            'report_id': var.report.version_UUID,
-            'report_type': var.report.type,
-            'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
-            'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
-            'draftStatus': var.get_status_bootstrap(),
-            'getScore': var.get_score(),
-            'getCategory': var.get_category()
-        }
-    elif var.report.type == 'adult':
-        return {
-            'report_id': var.report.version_UUID,
-            'report_type': var.report.type,
-            'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
-            'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
-            'draftStatus': var.get_status_bootstrap(),
-            'getScore': var.get_score(),
-            'getCategory': var.get_category_euro()
-        }
-    else:
-        return {
-            'report_id': var.report.version_UUID,
-            'report_type': var.report.type,
-            'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
-            'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
-            'draftStatus': var.get_status_bootstrap(),
-            'getScore': var.get_score(),
-            'getCategory': var.get_category()
-        }
-
+def reportannotation_formatter(var: ExpertReportAnnotation):
+    return {
+        'report_id': var.identification_task.report.version_UUID,
+        'report_type': var.identification_task.report.type,
+        'givenToExpert': var.created.strftime("%d/%m/%Y - %H:%M:%S"),
+        'lastModified': var.last_modified.strftime("%d/%m/%Y - %H:%M:%S"),
+        'draftStatus': ExpertReportAnnotation.Status(var.status).label,
+        'getCategory': var.taxon.name if var.taxon else None,
+    }
 
 
 @api_view(['GET'])
@@ -138,7 +115,7 @@ def expert_report_pending(request):
     x = ExpertReportAnnotation.objects.filter(user=u, validation_complete=False)
 
     reports = []
-    for var in x.select_related('report'):
+    for var in x.select_related('identification_task', 'identification_task__report'):
         reports.append(reportannotation_formatter(var))
 
     context = {'pendingReports': reports}
@@ -153,7 +130,7 @@ def expert_report_complete(request):
     x = ExpertReportAnnotation.objects.filter(user=u, validation_complete=True)
 
     reports = []
-    for var in x.select_related('report'):
+    for var in x.select_related('identification_task', 'identification_task__report'):
         reports.append(reportannotation_formatter(var))
 
     context = {'completeReports': reports}

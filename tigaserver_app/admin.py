@@ -69,13 +69,13 @@ class PhotoInline(admin.StackedInline):
     model = Photo
     extra = 0
     max_num = 0
-    readonly_fields = ('photo', 'small_image_', 'report')
+    readonly_fields = ('photo', 'report')
 
 
 class ReportAdmin(SimpleHistoryAdmin):
     list_display = (
         'version_UUID', 'report_id', 'deleted', 'user', 'version_number', 'creation_time', 'version_time', 'type',
-        'package_version', 'os', 'n_photos'
+        'package_version', 'os',
     )
     list_filter = ['os', 'type', 'package_name', 'package_version']
     search_fields = ('version_UUID',)

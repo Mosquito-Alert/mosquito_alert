@@ -178,6 +178,7 @@ stages:
       strict:
         - json:off
       json:
-        count: 1
+        count: 2
         results:
+          - id: !int "{annotation.pk}"
           - id: !int "{annotation_from_another_user.pk}"

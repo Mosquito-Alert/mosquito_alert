@@ -979,9 +979,11 @@ class NotificationTestCase(APITestCase):
 
     def test_auto_notification_report_is_issued_and_readable_via_api(self):
         r = Report.objects.get(pk='1')
+        _ = Photo.objects.create(report=r, photo='./testdata/splash.png')
+        identification_task = r.identification_task
 
         # this should cause send_finished_identification_task_notification to be called
-        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, report=r, category=self.categories[2], validation_complete=True, revise=True, validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
+        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task, category=self.categories[2], validation_complete=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL, validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         anno_reritja.save()
 
         # there should be a new Notification
@@ -999,11 +1001,13 @@ class NotificationTestCase(APITestCase):
 
     def test_ack_notification(self):
         r = Report.objects.get(pk='1')
+        _ = Photo.objects.create(report=r, photo='./testdata/splash.png')
+        identification_task = r.identification_task
 
         # this should cause send_finished_identification_task_notification to be called
-        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, report=r,
+        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task,
                                                              category=self.categories[2], validation_complete=True,
-                                                             revise=True,
+                                                             decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
                                                              validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
         anno_reritja.save()
 
@@ -1239,15 +1243,19 @@ class NotificationTestCase(APITestCase):
 
 class AnnotateCoarseTestCase(APITestCase):
     fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json', 'taxon.json']
+    @classmethod
+    def setUpTestData(cls):
+        cls.random_user = User.objects.create(username='random_user', password='random_password')
+
     def test_annotate_taken(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
         r = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
-        annos = ExpertReportAnnotation.objects.filter(report=r)
+        _ = Photo.objects.create(report=r)  # Needed to create an identification task
+        annos = ExpertReportAnnotation.objects.filter(identification_task=r.identification_task)
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Give report to one expert
-        innie = User.objects.get(pk=150) #innie
-        anno = ExpertReportAnnotation(user=innie, report=r)
+        anno = ExpertReportAnnotation(user=self.random_user, identification_task=r.identification_task)
         anno.save()
         # try to annotate
         category = Categories.objects.get(pk=2)
@@ -1264,11 +1272,11 @@ class AnnotateCoarseTestCase(APITestCase):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
         r_adult = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
-        annos = ExpertReportAnnotation.objects.filter(report=r_adult)
+        _ = Photo.objects.create(report=r_adult)  # Needed to create an identification task
+        annos = ExpertReportAnnotation.objects.filter(identification_task=r_adult.identification_task)
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Give report to one expert
-        innie = User.objects.get(pk=150)  # innie
-        anno = ExpertReportAnnotation(user=innie, report=r_adult)
+        anno = ExpertReportAnnotation(user=self.random_user, identification_task=r_adult.identification_task)
         anno.save()
         # try to annotate
         data = {
@@ -1287,7 +1295,7 @@ class AnnotateCoarseTestCase(APITestCase):
         r = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
         _ = Photo.objects.create(report=r)  # Needed to create an identification task
         r.refresh_from_db()
-        annos = ExpertReportAnnotation.objects.filter(report=r)
+        annos = ExpertReportAnnotation.objects.filter(identification_task=r.identification_task)
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Let's change that
         for c_id in [2, 10, 4, 9]:
@@ -1324,7 +1332,7 @@ class AnnotateCoarseTestCase(APITestCase):
                 self.assertTrue(notsure_msg_dict['es'] in notif_content.body_html_native, "Report classified as not_sure associated notification should contain not_sure message, it does not")
                 #'Con esta foto no podemos identificar ninguna especie'
             Notification.objects.filter(report=r).delete()
-            for annotation in ExpertReportAnnotation.objects.filter(report=r):
+            for annotation in ExpertReportAnnotation.objects.filter(identification_task=r.identification_task):
                 annotation.delete()
         # test also definitely albopictus
         category = Categories.objects.get(pk=4)
@@ -1342,7 +1350,7 @@ class AnnotateCoarseTestCase(APITestCase):
         notif_content = notif.notification_content
         self.assertTrue(albopictus_msg_dict['es'] in notif_content.body_html_native,"Report classified as albopictus associated notification should contain definitely albopictus message, it does not")
         Notification.objects.filter(report=r).delete()
-        ExpertReportAnnotation.objects.filter(report=r).delete()
+        ExpertReportAnnotation.objects.filter(identification_task=r.identification_task).delete()
 
     def test_flip_adult_to_adult(self):
         u = User.objects.get(pk=25)
@@ -1456,21 +1464,16 @@ class AnnotateCoarseTestCase(APITestCase):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
         r_site = Report.objects.get(pk='00042fb1-408f-4da4-898d-4331a9ec3129')
-        n_annotations = ExpertReportAnnotation.objects.filter(report=r_site).count()
-        self.assertTrue(n_annotations == 0, "Report annotations should be 0, is not (is {0})".format(n_annotations))
+        self.assertFalse(r_site.published)
+
         data = {
             'report_id': r_site.version_UUID
         }
         response = self.client.post('/api/quick_upload_report/', data=data)
         self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
-        r_site_reloaded = Report.objects.get(pk='00042fb1-408f-4da4-898d-4331a9ec3129')
-        n_annotations = ExpertReportAnnotation.objects.filter(report=r_site_reloaded).count()
-        self.assertTrue(n_annotations == 1, "Report annotations should be 1, is not (is {0})".format(n_annotations))
-        annotation = ExpertReportAnnotation.objects.filter(report=r_site_reloaded).first()
-        self.assertTrue(annotation.best_photo_id is not None, "Report annotation should have picture, it has not")
-        self.assertTrue(annotation.site_certainty_notes == 'auto', "Report annotation notes should be 'auto'")
-        self.assertTrue(annotation.validation_complete, "Report annotation validation should be done")
-        self.assertTrue(annotation.revise, "Report annotation revision should be done")
+        
+        r_site.refresh_from_db()
+        self.assertTrue(r_site.published)
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class PhotoModelTest(TestCase):

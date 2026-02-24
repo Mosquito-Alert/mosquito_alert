@@ -1,69 +1,6 @@
 [
     {
         "model": "auth.user",
-        "pk": 150,
-        "fields":
-        {
-            "password": "password",
-            "last_login": null,
-            "is_superuser": false,
-            "username": "innie",
-            "first_name": "innie",
-            "last_name": "doe",
-            "email": "",
-            "is_staff": false,
-            "is_active": false,
-            "date_joined": "2021-07-28T12:22:06.005Z",
-            "groups":
-            [
-                3
-            ]
-        }
-    },
-    {
-        "model": "auth.user",
-        "pk": 151,
-        "fields":
-        {
-            "password": "password",
-            "last_login": null,
-            "is_superuser": false,
-            "username": "minnie",
-            "first_name": "minnie",
-            "last_name": "doe",
-            "email": "",
-            "is_staff": false,
-            "is_active": false,
-            "date_joined": "2021-07-28T12:22:06.244Z",
-            "groups":
-            [
-                3
-            ]
-        }
-    },
-    {
-        "model": "auth.user",
-        "pk": 152,
-        "fields":
-        {
-            "password": "password",
-            "last_login": null,
-            "is_superuser": false,
-            "username": "manny",
-            "first_name": "manny",
-            "last_name": "doe",
-            "email": "",
-            "is_staff": false,
-            "is_active": false,
-            "date_joined": "2021-07-28T12:22:06.464Z",
-            "groups":
-            [
-                3
-            ]
-        }
-    },
-    {
-        "model": "auth.user",
         "pk": 25,
         "fields":
         {

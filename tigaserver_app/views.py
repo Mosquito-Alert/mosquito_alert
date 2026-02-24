@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.conf import settings
 from django_filters import rest_framework as filters
 import json
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, MapDataSerializer, CoverageMonthMapSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, CoverageMonthMapSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, ReportResponse, Device
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -634,45 +634,13 @@ def clear_blocked(request, username, report=None):
         annotations_qs = user.expert_report_annotations.blocking()
 
         if report:
-            annotations_qs = annotations_qs.filter(report=get_object_or_404(Report, pk=report))
+            annotations_qs = annotations_qs.filter(identification_task__report=get_object_or_404(Report, pk=report))
 
         delete_annotations_and_notify(
             annotations_qs=annotations_qs
         )
 
         return Response(status=status.HTTP_200_OK)
-
-
-package_filter = (
-        Q(package_name='Tigatrapp', creation_time__gte=settings.IOS_START_TIME) |
-        Q(package_name='ceab.movelab.tigatrapp', package_version__gt=3) |
-        Q(package_name='cat.ibeji.tigatrapp') |
-        Q(package_name='Mosquito Alert')
-)
-
-# this function can be called by scripts and replicates the api behaviour, without calling API. Therefore, no timeouts
-def all_reports_internal(year: int):
-    queryset = Report.objects.published().filter( package_filter )\
-        .exclude(package_name='ceab.movelab.tigatrapp', package_version=10).filter(server_upload_time__year=year)
-
-    serializer = MapDataSerializer(
-        queryset.prefetch_related('expert_report_annotations', 'responses', 'photos').select_related('identification_task'),
-        many=True
-    )
-    return serializer.data
-
-
-def non_visible_reports_internal(year: int):
-    queryset = Report.objects.published(False)
-
-    if year is not None:
-        queryset = queryset.filter(server_upload_time__year=year)
-
-    serializer = MapDataSerializer(
-        queryset.prefetch_related('expert_report_annotations', 'responses', 'photos').select_related('identification_task'),
-        many=True
-    )
-    return serializer.data
 
 
 class OWCampaignsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -730,10 +698,15 @@ def hide_report(request):
             raise ParseError(detail='hide param is mandatory')
         hide = hide_val == 'true'
         report = get_object_or_404(Report,pk=report_id)
-        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+        if ExpertReportAnnotation.objects.filter(identification_task__report=report).count() > 0:
             return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
         report.hide = hide
         report.save()
+        try:
+            identification_task = report.identification_task
+            identification_task.refresh()
+        except Report.identification_task.RelatedObjectDoesNotExist:
+            pass
         return Response(data={'message': 'hide set to {0}'.format( hide ), 'opcode': 0}, status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
@@ -743,7 +716,7 @@ def flip_report(request):
         flip_to_subtype = request.data.get('flip_to_subtype', '')
         report_id = request.data.get('report_id', '')
         report = get_object_or_404(Report,pk=report_id)
-        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+        if ExpertReportAnnotation.objects.filter(identification_task__report=report).count() > 0:
             return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
         if flip_to_type == '': # adult | site
             raise ParseError(detail='flip_to_type param is mandatory')
@@ -816,14 +789,16 @@ def quick_upload_report(request):
         if report_id == '-1':
             raise ParseError(detail='report_id param is mandatory')
         report = get_object_or_404(Report, pk=report_id)
-        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
-            return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
-        super_movelab = User.objects.get(pk=24)
-        if not ExpertReportAnnotation.objects.filter(report=report).filter(user=super_movelab).exists():
-            ExpertReportAnnotation.create_super_expert_approval(report=report)
-            return Response(data={'message': 'success', 'opcode': 0}, status=status.HTTP_200_OK)
-        else:
+        if report.type != Report.TYPE_SITE:
+            return Response(
+                data={'message': 'Report type is not site, cannot be quick uploaded', 'opcode': -2},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if report.published:
             return Response(data={'message': 'success', 'opcode': 1}, status=status.HTTP_200_OK)
+        report.published_at = timezone.now()
+        report.save()
+        return Response(data={'message': 'success', 'opcode': 0}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -837,8 +812,13 @@ def annotate_coarse(request):
         # if category_id == -1:
         #     raise ParseError(detail='category_id param is mandatory')
         report = get_object_or_404(Report, pk=report_id)
+        if report.type != Report.TYPE_ADULT:
+            return Response(
+                data={'message': 'Report type is not adult, cannot be annotated', 'opcode': -2},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         # This prevents auto annotating a report which has been claimed by someone between reloads
-        if ExpertReportAnnotation.objects.filter(report=report).count() > 0:
+        if ExpertReportAnnotation.objects.filter(identification_task__report=report).count() > 0:
             return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
         category = get_object_or_404(Categories, pk=category_id)
         if validation_value == '' or not category.specify_certainty_level:
@@ -846,10 +826,21 @@ def annotate_coarse(request):
         else:
             validation_value = int(validation_value)
 
-        ExpertReportAnnotation.create_auto_annotation(
-            report=report,
+        ExpertReportAnnotation.objects.create(
+            user=request.user,
+            identification_task=report.identification_task,
+            edited_user_notes=ExpertReportAnnotation._get_auto_message(
+                category=category,
+                validation_value=int(validation_value) if validation_value else None,
+                locale=report.user.locale
+            ) or "",
+            status=ExpertReportAnnotation.Status.PUBLIC,
+            validation_complete=True,
+            decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
+            best_photo=report.photos.first(),
+            simplified_annotation=False,
             category=category,
-            validation_value=validation_value
+            validation_value=int(validation_value) if validation_value else None,
         )
 
         return Response(data={'message':'success', 'opcode': 0}, status=status.HTTP_200_OK)

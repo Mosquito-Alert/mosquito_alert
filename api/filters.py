@@ -323,22 +323,7 @@ class AnnotationFilter(filters.FilterSet):
         if not value:
             return queryset
         return queryset.filter(
-            status=ExpertReportAnnotation.STATUS_FLAGGED
-        )
-
-    is_decisive = filters.BooleanFilter(
-        method="filter_by_is_decisive"
-    )
-
-    def filter_by_is_decisive(self, queryset, name, value):
-        if not value:
-            return queryset
-        return queryset.filter(
-            models.Q(
-                models.Q(revise=True)
-                | models.Q(validation_complete_executive=True),
-                _negated=not value
-            )
+            status=ExpertReportAnnotation.Status.FLAGGED
         )
 
     type = filters.ChoiceFilter(
@@ -358,6 +343,7 @@ class AnnotationFilter(filters.FilterSet):
         model = ExpertReportAnnotation
         fields = {
             "is_favourite": ["exact"],
+            "decision_level": ["exact"],
         }
 
 class TaxonFilter(filters.FilterSet):
