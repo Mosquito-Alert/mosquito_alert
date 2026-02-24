@@ -2,6 +2,30 @@
 
 from django.db import migrations, models
 
+def make_blank_internal_note_null(apps, schema_editor):
+    ExpertReportAnnotation = apps.get_model('tigacrafting', 'ExpertReportAnnotation')
+    ExpertReportAnnotation.objects.filter(internal_note='').update(internal_note=None)
+
+def make_null_internal_note_blank(apps, schema_editor):
+    ExpertReportAnnotation = apps.get_model('tigacrafting', 'ExpertReportAnnotation')
+    ExpertReportAnnotation.objects.filter(internal_note=None).update(internal_note='')
+
+def make_blank_public_note_null(apps, schema_editor):
+    ExpertReportAnnotation = apps.get_model('tigacrafting', 'ExpertReportAnnotation')
+    ExpertReportAnnotation.objects.filter(public_note='').update(public_note=None)
+
+def make_null_public_note_blank(apps, schema_editor):
+    ExpertReportAnnotation = apps.get_model('tigacrafting', 'ExpertReportAnnotation')
+    ExpertReportAnnotation.objects.filter(public_note=None).update(public_note='')
+
+def make_blank_message_for_user_null(apps, schema_editor):
+    ExpertReportAnnotation = apps.get_model('tigacrafting', 'ExpertReportAnnotation')
+    ExpertReportAnnotation.objects.filter(message_for_user='').update(message_for_user=None)
+
+def make_null_message_for_user_blank(apps, schema_editor):
+    ExpertReportAnnotation = apps.get_model('tigacrafting', 'ExpertReportAnnotation')
+    ExpertReportAnnotation.objects.filter(message_for_user=None).update(message_for_user='')
+
 
 class Migration(migrations.Migration):
 
@@ -20,6 +44,7 @@ class Migration(migrations.Migration):
             name='internal_note',
             field=models.TextField(blank=True, help_text='Internal notes for yourself or other experts', null=True),
         ),
+        migrations.RunPython(make_blank_internal_note_null, reverse_code=make_null_internal_note_blank),
         migrations.RenameField(
             model_name='expertreportannotation',
             old_name='edited_user_notes',
@@ -30,6 +55,7 @@ class Migration(migrations.Migration):
             name='public_note',
             field=models.TextField(blank=True, help_text='Notes to display on public map', null=True),
         ),
+        migrations.RunPython(make_blank_public_note_null, reverse_code=make_null_public_note_blank),
         migrations.AlterField(
             model_name='expertreportannotation',
             name='last_modified',
@@ -40,4 +66,5 @@ class Migration(migrations.Migration):
             name='message_for_user',
             field=models.TextField(blank=True, help_text='Message that user will receive when viewing report on phone', null=True),
         ),
+        migrations.RunPython(make_blank_message_for_user_null, reverse_code=make_null_message_for_user_blank),
     ]
