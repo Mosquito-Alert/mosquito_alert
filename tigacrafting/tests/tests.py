@@ -2039,7 +2039,7 @@ class TestIdentificationTaskFlow:
                 taxon=specie_1,
                 confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
                 status=ExpertReportAnnotation.Status.PUBLIC,
-                edited_user_notes="public message",
+                public_note="public message",
                 message_for_user="message to user",
                 best_photo=another_photo
             )
@@ -2050,7 +2050,7 @@ class TestIdentificationTaskFlow:
             taxon=specie_2,
             confidence=ExpertReportAnnotation.ConfidenceCategory.PROBABLY,
             status=ExpertReportAnnotation.Status.PUBLIC,
-            edited_user_notes="random public message",
+            public_note="random public message",
             message_for_user="random message to user",
             best_photo=another_photo
         )
@@ -2073,7 +2073,7 @@ class TestIdentificationTaskFlow:
             taxon=specie_2,
             confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
             status=ExpertReportAnnotation.Status.HIDDEN,
-            edited_user_notes="new public message",
+            public_note="new public message",
             message_for_user="new message to user",
             best_photo=first_photo,
         )
@@ -2129,7 +2129,7 @@ class TestIdentificationTaskFlow:
             taxon=specie_1,
             confidence=ExpertReportAnnotation.ConfidenceCategory.PROBABLY,
             status=ExpertReportAnnotation.Status.PUBLIC,
-            edited_user_notes="public message",
+            public_note="public message",
             message_for_user="message to user",
             best_photo=another_photo,
             decision_level=ExpertReportAnnotation.DecisionLevel.EXECUTIVE

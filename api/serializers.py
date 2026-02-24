@@ -1045,26 +1045,6 @@ class SpeciesIdentificationSerializer(serializers.ModelSerializer):
 
 class AnnotationSerializer(SpeciesIdentificationSerializer):
     class AnnotationFeedbackSerializer(serializers.ModelSerializer):
-        def validate_public_note(self, value):
-            # edited_user_notes can not be null, cast to blank.
-            return value or ""
-
-        def validate_internal_note(self, value):
-            # tiger_certainty_notes can not be null, cast to blank.
-            return value or ""
-
-        def validate_user_note(self, value):
-            # message_for_user can not be null, cast to blank.
-            return value or ""
-
-        def to_representation(self, instance):
-            ret = super().to_representation(instance)
-            # Ensure public_note and user_note will be None instead of blank
-            ret['public_note'] = ret['public_note'] or None
-            ret['internal_note'] = ret['internal_note'] or None
-            ret['user_note'] = ret['user_note'] or None
-            return ret
-
         class Meta:
             model = ExpertReportAnnotation
             fields = (
@@ -1073,8 +1053,6 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
                 "user_note"
             )
             extra_kwargs = {
-                "public_note": {"source": "edited_user_notes", "allow_null": True},
-                "internal_note": {"source": "tiger_certainty_notes", "allow_null": True},
                 "user_note": {"source": "message_for_user", "allow_null": True},
             }
 
@@ -1418,7 +1396,7 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificat
             'public_note',
         ) + SpeciesIdentificationSerializer.Meta.fields
         extra_kwargs = {
-            'public_note': {'source': 'edited_user_notes', 'required': True, 'allow_null': True, 'allow_blank': False, 'read_only': False}
+            'public_note': {'required': True, 'allow_null': True, 'allow_blank': False, 'read_only': False}
         }
 
 class ObservationGeoModelSerializer(BaseReportGeoModelSerializer):

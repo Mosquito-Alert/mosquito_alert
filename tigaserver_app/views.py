@@ -823,7 +823,7 @@ def annotate_coarse(request):
         ExpertReportAnnotation.objects.create(
             user=request.user,
             identification_task=report.identification_task,
-            edited_user_notes=ExpertReportAnnotation._get_auto_message(
+            public_note=ExpertReportAnnotation._get_auto_message(
                 taxon=taxon,
                 confidence=confidence,
                 locale=report.user.locale

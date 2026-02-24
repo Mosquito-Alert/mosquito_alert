@@ -20,7 +20,7 @@ class ExpertReportAnnotationInlineAdmin(admin.StackedInline):
         ("sex", "is_blood_fed", "is_gravid"),
         'status',
         'best_photo',
-        ('edited_user_notes', 'message_for_user'),
+        ('public_note', 'message_for_user'),
         ('created', 'last_modified')
     )
     def get_readonly_fields(self, request, obj=None):

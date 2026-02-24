@@ -322,7 +322,7 @@ class IdentificationTask(LifecycleModel):
         """Helper function to update attributes from an annotation."""
         self.result_source = self.ResultSource.EXPERT
         self.photo_id = annotation.best_photo_id
-        self.public_note = annotation.edited_user_notes
+        self.public_note = annotation.public_note
         self.message_for_user = annotation.message_for_user
         self.taxon, self.confidence, self.uncertainty, self.agreement = self.get_taxon_consensus(
             annotations=[annotation,]
@@ -523,7 +523,7 @@ class IdentificationTask(LifecycleModel):
                         lookup_filter=taxon_filter,
                         tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
                     )
-                    self.public_note = get_most_voted_field(field_name='edited_user_notes', lookup_filter=taxon_filter)
+                    self.public_note = get_most_voted_field(field_name='public_note', lookup_filter=taxon_filter)
                     self.sex = get_most_voted_field(
                         field_name='sex',
                         tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
@@ -654,27 +654,33 @@ class ExpertReportAnnotation(models.Model):
         DEFINITELY = 1, 'definitely'
         PROBABLY = 0.75, 'probably'
 
+    # Relations
     user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
     identification_task = models.ForeignKey(IdentificationTask, editable=False, related_name='expert_report_annotations', on_delete=models.CASCADE)
-    tiger_certainty_notes = models.TextField('Internal Species Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
-    edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
-    message_for_user = models.TextField('Message to User', blank=True, help_text='Message that user will receive when viewing report on phone')
-    status = models.IntegerField('Status', choices=Status.choices, default=Status.PUBLIC, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
-    last_modified = models.DateTimeField(default=timezone.now)
-    validation_complete = models.BooleanField(default=True, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True, on_delete=models.SET_NULL, )
-    linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
     tags = TaggableManager(blank=True)
+    taxon = models.ForeignKey('tigacrafting.Taxon', null=True, blank=True, on_delete=models.PROTECT)
+
+    status = models.IntegerField('Status', choices=Status.choices, default=Status.PUBLIC, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
+
+    internal_note = models.TextField(null=True, blank=True, help_text='Internal notes for yourself or other experts')
+    public_note = models.TextField(null=True,  blank=True, help_text='Notes to display on public map')
+    message_for_user = models.TextField(null=True, blank=True, help_text='Message that user will receive when viewing report on phone')
+
+    validation_complete = models.BooleanField(default=True, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
+    linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
+    simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
+
     decision_level = models.CharField(max_length=16, choices=DecisionLevel.choices, default=DecisionLevel.NORMAL)
     is_favourite = models.BooleanField(default=False)
 
-    taxon = models.ForeignKey('tigacrafting.Taxon', null=True, blank=True, on_delete=models.PROTECT)
     confidence = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
     sex = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female')], null=True, blank=True, default=None)
     is_blood_fed = models.BooleanField(null=True, blank=True, default=None)
     is_gravid = models.BooleanField(null=True, blank=True, default=None)
+
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    last_modified = models.DateTimeField(auto_now=True, editable=False)
 
     objects = ExpertReportAnnotationManager()
 
