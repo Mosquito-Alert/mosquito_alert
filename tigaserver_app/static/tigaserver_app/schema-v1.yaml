@@ -545,42 +545,6 @@ paths:
             application/json:
               schema: {}
           description: ''
-  /api/reports_id_filtered/:
-    get:
-      operationId: listreports_id_filtereds
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
-          description: ''
-  /api/uuid_list_autocomplete/:
-    get:
-      operationId: listuuid_list_autocompletes
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
-          description: ''
-  /api/missions/:
-    get:
-      operationId: listget_new_missions
-      parameters: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
-          description: ''
   /api/stats/workload_data/user/:
     get:
       operationId: listworkload_stats_per_users
@@ -1451,33 +1415,6 @@ paths:
                 - phone_upload_time
                 - masked_lon
                 - masked_lat
-          description: ''
-  /api/tags/:
-    get:
-      operationId: listTags
-      parameters:
-      - name: name
-        required: false
-        in: query
-        description: name
-        schema:
-          type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  properties:
-                    id:
-                      type: integer
-                      readOnly: true
-                    name:
-                      type: string
-                      maxLength: 100
-                  required:
-                  - name
           description: ''
   /en/stats/workload/:
     get:

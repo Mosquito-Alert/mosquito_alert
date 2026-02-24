@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from typing import Union
 from rest_framework import serializers
-from taggit.models import Tag
 from tigaserver_app.models import Notification, NotificationContent, NotificationTopic, SentNotification, TigaUser, Report, ReportResponse,  Photo, \
     Fix, CoverageAreaMonth, Session, EuropeCountry, OWCampaigns, OrganizationPin, UserSubscription
 from tigacrafting.models import Alert
@@ -292,12 +291,6 @@ class CoverageMonthMapSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoverageAreaMonth
         fields = ('lat', 'lon', 'year', 'month', 'n_fixes')
-
-class TagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = ('id','name')
-
 
 class NotificationContentSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)

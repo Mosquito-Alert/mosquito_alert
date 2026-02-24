@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.conf import settings
 from django_filters import rest_framework as filters
 import json
-from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, CoverageMonthMapSerializer, TagSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
+from tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, CoverageMonthMapSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 from tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, ReportResponse, Device
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
@@ -345,25 +345,6 @@ def coverage_month_internal():
     return serializer.data
 
 
-class TagFilter(filters.FilterSet):
-    name = filters.Filter(method='filter_partial_name')
-
-    def filter_partial_name(self, qs, name, value):
-        name = value
-        if not name:
-            return qs
-        return qs.filter(name__icontains=name)
-
-    class Meta:
-        model = Tag
-        fields = ['name']
-
-class TagViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-    filterset_class = TagFilter
-
-
 @api_view(['POST'])
 def token(request):
     token = request.query_params.get('token', -1)
@@ -660,31 +641,6 @@ def clear_blocked(request, username, report=None):
         )
 
         return Response(status=status.HTTP_200_OK)
-
-
-@api_view(['GET'])
-def reports_id_filtered(request):
-    if request.method == 'GET':
-        report_id = request.query_params.get('report_id', -1)
-        if report_id == -1:
-            raise ParseError(detail='report_id is mandatory')
-        qs = Report.objects.filter(type='adult').non_deleted().filter(report_id__startswith=report_id).order_by('-version_time')
-        serializer = ReportSerializer(qs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-@api_view(['GET'])
-def uuid_list_autocomplete(request):
-    if request.method == 'GET':
-        user = request.user
-        uuid = request.query_params.get('uuid', -1)
-
-        if uuid == -1:
-            raise ParseError(detail='uuid is mandatory')
-
-        qs = ExpertReportAnnotation.objects.filter(user=user).filter(identification_task__report__version_UUID__startswith=uuid)
-        qs = qs.values('identification_task__report__version_UUID').distinct()
-        return Response(qs, status=status.HTTP_200_OK)
 
 
 class OWCampaignsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
