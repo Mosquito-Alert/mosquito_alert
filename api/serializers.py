@@ -1053,7 +1053,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
                 "user_note"
             )
             extra_kwargs = {
-                "user_note": {"source": "message_for_user", "allow_null": True},
+                "user_note": {"source": "message_for_user"},
             }
 
     class ObservationFlagsSerializer(serializers.ModelSerializer):
