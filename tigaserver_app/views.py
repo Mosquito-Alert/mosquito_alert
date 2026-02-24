@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
 from tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
-from tigacrafting.models import ExpertReportAnnotation, Categories, IdentificationTask
+from tigacrafting.models import ExpertReportAnnotation, Taxon, IdentificationTask
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -805,12 +805,10 @@ def quick_upload_report(request):
 def annotate_coarse(request):
     if request.method == 'POST':
         report_id = request.POST.get('report_id', '-1')
-        category_id = request.POST.get('category_id', -1)
-        validation_value = request.POST.get('validation_value', None)
+        taxon_id = request.POST.get('taxon_id', -1)
+        confidence = float(request.POST.get('confidence', ExpertReportAnnotation.ConfidenceCategory.PROBABLY))
         if report_id == '-1':
             raise ParseError(detail='report_id param is mandatory')
-        # if category_id == -1:
-        #     raise ParseError(detail='category_id param is mandatory')
         report = get_object_or_404(Report, pk=report_id)
         if report.type != Report.TYPE_ADULT:
             return Response(
@@ -820,27 +818,22 @@ def annotate_coarse(request):
         # This prevents auto annotating a report which has been claimed by someone between reloads
         if ExpertReportAnnotation.objects.filter(identification_task__report=report).count() > 0:
             return Response(data={'message': 'success', 'opcode': -1}, status=status.HTTP_400_BAD_REQUEST)
-        category = get_object_or_404(Categories, pk=category_id)
-        if validation_value == '' or not category.specify_certainty_level:
-            validation_value = None
-        else:
-            validation_value = int(validation_value)
+        taxon = get_object_or_404(Taxon, pk=taxon_id)
 
         ExpertReportAnnotation.objects.create(
             user=request.user,
             identification_task=report.identification_task,
             edited_user_notes=ExpertReportAnnotation._get_auto_message(
-                category=category,
-                validation_value=int(validation_value) if validation_value else None,
+                taxon=taxon,
+                confidence=confidence,
                 locale=report.user.locale
             ) or "",
             status=ExpertReportAnnotation.Status.PUBLIC,
-            validation_complete=True,
             decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
             best_photo=report.photos.first(),
             simplified_annotation=False,
-            category=category,
-            validation_value=int(validation_value) if validation_value else None,
+            taxon=taxon,
+            confidence=confidence,
         )
 
         return Response(data={'message':'success', 'opcode': 0}, status=status.HTTP_200_OK)

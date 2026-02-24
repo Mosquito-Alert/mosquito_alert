@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone as dt_timezone
-from decimal import Decimal
 import uuid
 
 # Create your tests here.
@@ -11,12 +10,12 @@ from django.contrib.gis.geos import Polygon, MultiPolygon, Point, LineString
 from django.core.cache import cache
 from django.utils import timezone
 from tigaserver_app.models import TigaUser, Report, Photo, Fix
-from tigacrafting.models import ExpertReportAnnotation, Categories, IdentificationTask
+from tigacrafting.models import ExpertReportAnnotation, IdentificationTask, Taxon
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APITransactionTestCase
 import io
-from tigacrafting.messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict, notsure_msg_dict
+from tigacrafting.messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict
 from django.db import transaction
 from django.db.utils import IntegrityError
 import tempfile
@@ -913,7 +912,7 @@ class FixEndpointTestCase(APITestCase):
 
 class NotificationTestCase(APITestCase):
 
-    fixtures = ['auth_group.json', 'reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json']
+    fixtures = ['auth_group.json', 'reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json', 'taxon.json']
 
     def setUp(self):
         t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
@@ -947,26 +946,6 @@ class NotificationTestCase(APITestCase):
             p.save()
             a = a + 1
         self.reritja_user = User.objects.get(pk=25)
-        c_1 = Categories.objects.create(pk=1, name="Unclassified", specify_certainty_level=False)
-        c_1.save()
-        c_2 = Categories.objects.create(pk=2, name="Other species", specify_certainty_level=False)
-        c_2.save()
-        c_3 = Categories.objects.create(pk=3, name="Aedes albopictus", specify_certainty_level=True)
-        c_3.save()
-        c_4 = Categories.objects.create(pk=4, name="Aedes aegypti", specify_certainty_level=True)
-        c_4.save()
-        c_5 = Categories.objects.create(pk=5, name="Aedes japonicus", specify_certainty_level=True)
-        c_5.save()
-        c_6 = Categories.objects.create(pk=6, name="Aedes koreicus", specify_certainty_level=True)
-        c_6.save()
-        c_7 = Categories.objects.create(pk=7, name="Complex", specify_certainty_level=False)
-        c_7.save()
-        c_8 = Categories.objects.create(pk=8, name="Not sure", specify_certainty_level=False)
-        c_8.save()
-        c_9 = Categories.objects.create(pk=9, name="Culex sp.", specify_certainty_level=True)
-        c_9.save()
-
-        self.categories = [c_1, c_2, c_3, c_4, c_5, c_6, c_7, c_8, c_9]
 
         t1 = NotificationTopic(topic_code="global", topic_description="This is the global topic")
         t1.save()
@@ -983,7 +962,8 @@ class NotificationTestCase(APITestCase):
         identification_task = r.identification_task
 
         # this should cause send_finished_identification_task_notification to be called
-        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task, category=self.categories[2], validation_complete=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL, validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
+        aedes_albopictus = Taxon.objects.get(pk=112)
+        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task, taxon=aedes_albopictus, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL, confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY)
         anno_reritja.save()
 
         # there should be a new Notification
@@ -1005,10 +985,11 @@ class NotificationTestCase(APITestCase):
         identification_task = r.identification_task
 
         # this should cause send_finished_identification_task_notification to be called
+        aedes_albopictus = Taxon.objects.get(pk=112)
         anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task,
-                                                             category=self.categories[2], validation_complete=True,
+                                                             taxon=aedes_albopictus,
                                                              decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
-                                                             validation_value=ExpertReportAnnotation.VALIDATION_CATEGORY_DEFINITELY)
+                                                             confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY)
         anno_reritja.save()
 
         self.client.force_authenticate(user=self.reritja_user)
@@ -1242,7 +1223,7 @@ class NotificationTestCase(APITestCase):
 
 
 class AnnotateCoarseTestCase(APITestCase):
-    fixtures = ['photos.json', 'categories.json','users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json', 'taxon.json']
+    fixtures = ['photos.json', 'users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json', 'taxon.json']
     @classmethod
     def setUpTestData(cls):
         cls.random_user = User.objects.create(username='random_user', password='random_password')
@@ -1255,13 +1236,11 @@ class AnnotateCoarseTestCase(APITestCase):
         annos = ExpertReportAnnotation.objects.filter(identification_task=r.identification_task)
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Give report to one expert
-        anno = ExpertReportAnnotation(user=self.random_user, identification_task=r.identification_task)
-        anno.save()
+        anno = ExpertReportAnnotation.objects.create(user=self.random_user, identification_task=r.identification_task)
         # try to annotate
-        category = Categories.objects.get(pk=2)
         data = {
             'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
-            'category_id': str(2)
+            'taxon_id': str(112), # aedes albopictus
         }
         response = self.client.post('/api/annotate_coarse/', data=data)
         self.assertEqual(response.status_code, 400, "Response should be 400, is {0}".format(response.status_code))
@@ -1276,8 +1255,7 @@ class AnnotateCoarseTestCase(APITestCase):
         annos = ExpertReportAnnotation.objects.filter(identification_task=r_adult.identification_task)
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Give report to one expert
-        anno = ExpertReportAnnotation(user=self.random_user, identification_task=r_adult.identification_task)
-        anno.save()
+        r_adult.identification_task.assign_to_user(self.random_user)
         # try to annotate
         data = {
             'report_id': r_adult.version_UUID,
@@ -1298,54 +1276,42 @@ class AnnotateCoarseTestCase(APITestCase):
         annos = ExpertReportAnnotation.objects.filter(identification_task=r.identification_task)
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Let's change that
-        for c_id in [2, 10, 4, 9]:
-            category = Categories.objects.get(pk=c_id)
+        for t_id in [1, 10, 112]:
             data = {
                 'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
-                'category_id': str(c_id)
+                'taxon_id': str(t_id),
+                'confidence': ExpertReportAnnotation.ConfidenceCategory.PROBABLY
             }
-            if category.specify_certainty_level:
-                data['validation_value'] = '1' # Probably
             response = self.client.post('/api/annotate_coarse/', data=data)
             self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
             r.refresh_from_db()
-            if category.pk == 9:
-                # Not sure is displayed as 'Other species'
-                category = Categories.objects.get(pk=2)
-            self.assertEqual(r.identification_task.taxon.object_id, category.id)
-            if category.specify_certainty_level:
-                self.assertEqual(r.identification_task.validation_value, int(data['validation_value']))
-            else:
-                self.assertEqual(r.identification_task.confidence, Decimal('1.0'))
+            self.assertEqual(r.identification_task.taxon_id, t_id)
+            self.assertEqual(r.identification_task.confidence, float(data['confidence']))
             notif = Notification.objects.get(report=r)
             notif_content = notif.notification_content
-            if c_id == 2: #other species
+            if t_id == 1: #other species
                 self.assertTrue( other_insect_msg_dict['es'] in notif_content.body_html_native, "Report classified as other species associated notification should contain other insect message, it does not" )
                 #'no pertenece a la familia de los Culícidos'
-            elif c_id == 10: #culex sp.
+            elif t_id == 10: #culex sp.
                 self.assertTrue(culex_msg_dict['es'] in notif_content.body_html_native, "Report classified as culex associated notification should contain culex message, it does not")
                 #'no podemos asegurar totalmente que sea un Culex'
-            elif c_id == 4: #aedes albopictus
+            elif t_id == 112: #aedes albopictus
                 self.assertTrue(albopictus_probably_msg_dict['es'] in notif_content.body_html_native, "Report classified as albopictus associated notification should contain probably albopictus message, it does not")
                 #'Has conseguido que se pueda identificar perfectamente el mosquito tigre'
-            else: #c_id == 9 not_sure
-                self.assertTrue(notsure_msg_dict['es'] in notif_content.body_html_native, "Report classified as not_sure associated notification should contain not_sure message, it does not")
-                #'Con esta foto no podemos identificar ninguna especie'
             Notification.objects.filter(report=r).delete()
             for annotation in ExpertReportAnnotation.objects.filter(identification_task=r.identification_task):
                 annotation.delete()
         # test also definitely albopictus
-        category = Categories.objects.get(pk=4)
         data = {
             'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
-            'category_id': "4"
+            'taxon_id': "112",
         }
-        data['validation_value'] = '2' # Definitely
+        data['confidence'] = ExpertReportAnnotation.ConfidenceCategory.DEFINITELY # Definitely
         response = self.client.post('/api/annotate_coarse/', data=data)
         self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
         r.refresh_from_db()
-        self.assertEqual(r.identification_task.taxon.object_id, category.id)
-        self.assertEqual(r.identification_task.validation_value, int(data['validation_value']))
+        self.assertEqual(r.identification_task.taxon_id, 112)
+        self.assertEqual(r.identification_task.confidence, float(data['confidence']))
         notif = Notification.objects.get(report=r)
         notif_content = notif.notification_content
         self.assertTrue(albopictus_msg_dict['es'] in notif_content.body_html_native,"Report classified as albopictus associated notification should contain definitely albopictus message, it does not")

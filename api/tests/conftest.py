@@ -32,7 +32,6 @@ TEST_DATA_PATH = Path(Path(__file__).parent.absolute(), "test_data/")
 @pytest.fixture
 def taxa(db):
     call_command('loaddata', '/app/tigacrafting/fixtures/taxon.json')
-    call_command('loaddata', '/app/tigaserver_app/fixtures/categories.json')
 
 @pytest.fixture
 def user_password():

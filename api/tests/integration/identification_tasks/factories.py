@@ -19,7 +19,6 @@ def create_annotation(identification_task: IdentificationTask, user: Optional[Us
     return ExpertReportAnnotation.objects.create(
         identification_task=identification_task,
         user=user,
-        validation_complete=True,
         **kwargs
     )
 
@@ -35,6 +34,5 @@ def create_review(identification_task: IdentificationTask, user: Optional[User] 
         identification_task=identification_task,
         user=user,
         decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
-        validation_complete=True,
         **kwargs
     )
