@@ -316,7 +316,15 @@ SPECTACULAR_SETTINGS = {
     'REDOC_UI_SETTINGS': {
         'maxDisplayedEnumValues': '5',
         'sortTagsAlphabetically': True,
-        'sortOperationsAlphabetically': True
+        'sortOperationsAlphabetically': True,
+        'theme': {
+            'sidebar': {
+                'width': '380px'
+            },
+            'logo': {
+                'maxWidth': '260px',
+            }
+        }
     },
     'COMPONENT_SPLIT_REQUEST': True,
 }
