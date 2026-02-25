@@ -58,9 +58,10 @@ class DistanceOrderingFilter(filters.OrderingFilter):
             ('-distance', 'Distance (descending)'),
         ]
 
-    def filter(self, qs, value):
-        # OrderingFilter is CSV-based, so `value` is a list
-        if value and any(v in ['distance', '-distance'] for v in value):
+    def get_ordering_value(self, param):
+        descending = param.startswith("-")
+        param = param[1:] if descending else param
+        if param == "distance":
             point_string = self.parent.request.query_params.get(DistanceToPointFilter.point_param, None)
             distance_param = self.parent.request.query_params.get(DistanceToPointFilter.dist_param, None)
 
@@ -79,12 +80,9 @@ class DistanceOrderingFilter(filters.OrderingFilter):
                     )
                 )
 
-            if 'distance' in value:
-                return qs.order_by(Distance(self.ordering_filter_field, point))
-            if '-distance' in value:
-                return qs.order_by(-Distance(self.ordering_filter_field, point))
+            return Distance(self.ordering_filter_field, point) if not descending else -Distance(self.ordering_filter_field, point)
 
-        return super().filter(qs, value)
+        return super().get_ordering_value(param)
 
 class BaseReportFilter(GeoFilterSet):
     user_uuid = filters.UUIDFilter(field_name="user")
