@@ -97,3 +97,48 @@ stages:
         - json:off
       json:
         count: 0
+  - id: filter_by_distance
+    name: Filter by distance
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      params:
+        point: "{published_object.point.x},{published_object.point.y}"
+        dist: 10000
+        order_by: "distance"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 2
+        results:
+          - uuid: "{published_object.pk}"
+          - uuid: "{published_object_in_10km.pk}"
+  - id: filter_by_reverse_distance
+    name: Filter by reverse distance
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      params:
+        point: "{published_object.point.x},{published_object.point.y}"
+        dist: 10000
+        order_by: "-distance"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 2
+        results:
+          - uuid: "{published_object_in_10km.pk}"
+          - uuid: "{published_object.pk}"
+  - id: order_by_distance_without_point
+    name: Order by distance without point should return 400
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      params:
+        order_by: "distance"
+    response:
+      status_code: 400

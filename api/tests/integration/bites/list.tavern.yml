@@ -69,3 +69,26 @@ stages:
     id: filter_by_user_uuid
   - type: ref
     id: filter_by_tags
+
+---
+
+test_name: 'Distance filters for bites list'
+
+includes:
+  - !include '../shared/reports/list.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_object
+    - published_object_in_10km
+    - published_object_in_100km
+
+stages:
+  - type: ref
+    id: filter_by_distance
+  - type: ref
+    id: filter_by_reverse_distance
+  - type: ref
+    id: order_by_distance_without_point

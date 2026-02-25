@@ -18,6 +18,22 @@ def published_object(app_user):
     return create_observation_object(user=app_user, is_published=True)
 
 @pytest.fixture
+def published_object_in_10km(app_user):
+    observation_obj = create_observation_object(user=app_user, is_published=True)
+    observation_obj.current_location_lon += 0.09  # ~10km east of the default location
+    observation_obj.save()
+
+    return observation_obj
+
+@pytest.fixture
+def published_object_in_100km(app_user):
+    observation_obj = create_observation_object(user=app_user, is_published=True)
+    observation_obj.current_location_lon += 0.9  # ~100km east of the default location
+    observation_obj.save()
+
+    return observation_obj
+
+@pytest.fixture
 def unpublished_object(app_user):
     return create_observation_object(user=app_user, is_published=False)
 

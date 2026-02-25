@@ -122,3 +122,26 @@ stages:
         count: 1
         results:
           - uuid: "{published_object.pk}"
+
+---
+
+test_name: 'Distance filters for observations list'
+
+includes:
+  - !include '../shared/reports/list.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_object
+    - published_object_in_10km
+    - published_object_in_100km
+
+stages:
+  - type: ref
+    id: filter_by_distance
+  - type: ref
+    id: filter_by_reverse_distance
+  - type: ref
+    id: order_by_distance_without_point
