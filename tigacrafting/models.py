@@ -244,7 +244,7 @@ class IdentificationTask(LifecycleModel):
     message_for_user = models.TextField(null=True, blank=True, editable=False)
 
     total_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # total experts
-    total_finished_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # when validation_complete = True (only for experts)
+    total_finished_annotations = models.PositiveSmallIntegerField(default=0, editable=False) # when is_finished = True (only for experts)
 
     result_source = models.CharField(max_length=8, choices=ResultSource.choices, editable=False, blank=True, null=True)
 
@@ -322,7 +322,7 @@ class IdentificationTask(LifecycleModel):
         """Helper function to update attributes from an annotation."""
         self.result_source = self.ResultSource.EXPERT
         self.photo_id = annotation.best_photo_id
-        self.public_note = annotation.edited_user_notes
+        self.public_note = annotation.public_note
         self.message_for_user = annotation.message_for_user
         self.taxon, self.confidence, self.uncertainty, self.agreement = self.get_taxon_consensus(
             annotations=[annotation,]
@@ -356,7 +356,7 @@ class IdentificationTask(LifecycleModel):
             identification_task=self,
             user=user,
             defaults={
-                'validation_complete': False,
+                'is_finished': False,
             }
         )
 
@@ -444,11 +444,11 @@ class IdentificationTask(LifecycleModel):
 
         # Querysets for expert annotations
         experts_annotations_qs = self.expert_report_annotations.exclude(decision_level=ExpertReportAnnotation.DecisionLevel.FINAL)
-        finished_experts_annotations_qs = experts_annotations_qs.filter(validation_complete=True)
+        finished_experts_annotations_qs = experts_annotations_qs.filter(is_finished=True)
 
         # Find executive and final annotations
         executive_annotation = finished_experts_annotations_qs.filter(decision_level=ExpertReportAnnotation.DecisionLevel.EXECUTIVE).order_by('-last_modified').first()
-        final_annotation = self.expert_report_annotations.filter(validation_complete=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL).order_by('-last_modified').first()
+        final_annotation = self.expert_report_annotations.filter(is_finished=True, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL).order_by('-last_modified').first()
 
         # Photo predictions
         final_photo_prediction = self.photo_predictions.filter(is_decisive=True).first()
@@ -521,22 +521,22 @@ class IdentificationTask(LifecycleModel):
                     self.photo_id = get_most_voted_field(
                         field_name='best_photo',
                         lookup_filter=taxon_filter,
-                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                        tie_break_field='-is_simplified' # In the case of tie, the extended version has prevalence.
                     )
-                    self.public_note = get_most_voted_field(field_name='edited_user_notes', lookup_filter=taxon_filter)
+                    self.public_note = get_most_voted_field(field_name='public_note', lookup_filter=taxon_filter)
                     self.sex = get_most_voted_field(
                         field_name='sex',
-                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                        tie_break_field='-is_simplified' # In the case of tie, the extended version has prevalence.
                     )
                     self.is_blood_fed = get_most_voted_field(
                         field_name='is_blood_fed',
                         lookup_filter={'sex': self.sex},
-                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                        tie_break_field='-is_simplified' # In the case of tie, the extended version has prevalence.
                     )
                     self.is_gravid = get_most_voted_field(
                         field_name='is_gravid',
                         lookup_filter={'sex': self.sex},
-                        tie_break_field='-simplified_annotation' # In the case of tie, the extended version has prevalence.
+                        tie_break_field='-is_simplified' # In the case of tie, the extended version has prevalence.
                     )
 
                     self.is_safe = not finished_experts_annotations_qs.filter(status=ExpertReportAnnotation.Status.HIDDEN).exists()
@@ -654,27 +654,33 @@ class ExpertReportAnnotation(models.Model):
         DEFINITELY = 1, 'definitely'
         PROBABLY = 0.75, 'probably'
 
+    # Relations
     user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
     identification_task = models.ForeignKey(IdentificationTask, editable=False, related_name='expert_report_annotations', on_delete=models.CASCADE)
-    tiger_certainty_notes = models.TextField('Internal Species Certainty Comments', blank=True, help_text='Internal notes for yourself or other experts')
-    edited_user_notes = models.TextField('Public Note', blank=True, help_text='Notes to display on public map')
-    message_for_user = models.TextField('Message to User', blank=True, help_text='Message that user will receive when viewing report on phone')
-    status = models.IntegerField('Status', choices=Status.choices, default=Status.PUBLIC, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
-    last_modified = models.DateTimeField(default=timezone.now)
-    validation_complete = models.BooleanField(default=True, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
     best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True, on_delete=models.SET_NULL, )
-    linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    simplified_annotation = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
     tags = TaggableManager(blank=True)
+    taxon = models.ForeignKey('tigacrafting.Taxon', null=True, blank=True, on_delete=models.PROTECT)
+
+    status = models.IntegerField('Status', choices=Status.choices, default=Status.PUBLIC, help_text='Whether report should be displayed on public map, flagged for further checking before public display), or hidden.')
+
+    internal_note = models.TextField(null=True, blank=True, help_text='Internal notes for yourself or other experts')
+    public_note = models.TextField(null=True,  blank=True, help_text='Notes to display on public map')
+    message_for_user = models.TextField(null=True, blank=True, help_text='Message that user will receive when viewing report on phone')
+
+    is_finished = models.BooleanField(default=True, db_index=True, help_text='Mark this when you have completed your review and are ready for your annotation to be displayed to public.')
+    linked_id = models.CharField('Linked ID', max_length=10, help_text='Use this field to add any other ID that you want to associate the record with (e.g., from some other database).', blank=True)
+    is_simplified = models.BooleanField(default=False, help_text='If True, the report annotation interface shows less input controls')
+
     decision_level = models.CharField(max_length=16, choices=DecisionLevel.choices, default=DecisionLevel.NORMAL)
     is_favourite = models.BooleanField(default=False)
 
-    taxon = models.ForeignKey('tigacrafting.Taxon', null=True, blank=True, on_delete=models.PROTECT)
     confidence = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
     sex = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female')], null=True, blank=True, default=None)
     is_blood_fed = models.BooleanField(null=True, blank=True, default=None)
     is_gravid = models.BooleanField(null=True, blank=True, default=None)
+
+    created = models.DateTimeField(auto_now_add=True, editable=False)
+    last_modified = models.DateTimeField(auto_now=True, editable=False)
 
     objects = ExpertReportAnnotationManager()
 
@@ -734,11 +740,11 @@ class ExpertReportAnnotation(models.Model):
             if self.user.userstat.national_supervisor_of == self.identification_task.country:
                 return False
 
-        # Return False if no simplified_annotation found or if the objects to be
+        # Return False if no is_simplified found or if the objects to be
         # created is suposed to be the last.
         total_completed_annotations_qs = ExpertReportAnnotation.objects.filter(identification_task=self.identification_task)
         return (
-            total_completed_annotations_qs.filter(simplified_annotation=False).exists() or
+            total_completed_annotations_qs.filter(is_simplified=False).exists() or
             total_completed_annotations_qs.count() < settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1
         )
 
@@ -754,11 +760,11 @@ class ExpertReportAnnotation(models.Model):
             _userstat = self.user.userstat
             _userstat.grabbed_reports += 1
             _userstat.save()
-            if not self.validation_complete:
-                self.simplified_annotation = self._can_be_simplified()
+            if not self.is_finished:
+                self.is_simplified = self._can_be_simplified()
 
-        if self.simplified_annotation:
-            self.message_for_user = ""
+        if self.is_simplified:
+            self.message_for_user = None
 
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
 
@@ -770,7 +776,7 @@ class ExpertReportAnnotation(models.Model):
         if self.decision_level == self.DecisionLevel.EXECUTIVE:
             ExpertReportAnnotation.objects.filter(
                 identification_task=identification_task,
-                validation_complete=True,
+                is_finished=True,
                 decision_level=self.DecisionLevel.NORMAL,
             ).delete()
 
@@ -800,7 +806,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
 
     @property
     def completed_annotations(self):
-        return self.user.expert_report_annotations.filter(validation_complete=True)
+        return self.user.expert_report_annotations.filter(is_finished=True)
 
     @property
     def num_completed_annotations(self) -> int:
@@ -808,7 +814,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
 
     @property
     def pending_annotations(self):
-        return self.user.expert_report_annotations.filter(validation_complete=False)
+        return self.user.expert_report_annotations.filter(is_finished=False)
 
     @property
     def num_pending_annotations(self) -> int:

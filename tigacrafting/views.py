@@ -112,7 +112,7 @@ def reportannotation_formatter(var: ExpertReportAnnotation):
 def expert_report_pending(request):
     user = request.query_params.get('u', None)
     u = User.objects.get(username=user)
-    x = ExpertReportAnnotation.objects.filter(user=u, validation_complete=False)
+    x = ExpertReportAnnotation.objects.filter(user=u, is_finished=False)
 
     reports = []
     for var in x.select_related('identification_task', 'identification_task__report'):
@@ -127,7 +127,7 @@ def expert_report_pending(request):
 def expert_report_complete(request):
     user = request.query_params.get('u', None)
     u = User.objects.get(username=user)
-    x = ExpertReportAnnotation.objects.filter(user=u, validation_complete=True)
+    x = ExpertReportAnnotation.objects.filter(user=u, is_finished=True)
 
     reports = []
     for var in x.select_related('identification_task', 'identification_task__report'):

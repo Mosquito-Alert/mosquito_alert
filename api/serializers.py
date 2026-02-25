@@ -1045,26 +1045,6 @@ class SpeciesIdentificationSerializer(serializers.ModelSerializer):
 
 class AnnotationSerializer(SpeciesIdentificationSerializer):
     class AnnotationFeedbackSerializer(serializers.ModelSerializer):
-        def validate_public_note(self, value):
-            # edited_user_notes can not be null, cast to blank.
-            return value or ""
-
-        def validate_internal_note(self, value):
-            # tiger_certainty_notes can not be null, cast to blank.
-            return value or ""
-
-        def validate_user_note(self, value):
-            # message_for_user can not be null, cast to blank.
-            return value or ""
-
-        def to_representation(self, instance):
-            ret = super().to_representation(instance)
-            # Ensure public_note and user_note will be None instead of blank
-            ret['public_note'] = ret['public_note'] or None
-            ret['internal_note'] = ret['internal_note'] or None
-            ret['user_note'] = ret['user_note'] or None
-            return ret
-
         class Meta:
             model = ExpertReportAnnotation
             fields = (
@@ -1073,9 +1053,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
                 "user_note"
             )
             extra_kwargs = {
-                "public_note": {"source": "edited_user_notes", "allow_null": True},
-                "internal_note": {"source": "tiger_certainty_notes", "allow_null": True},
-                "user_note": {"source": "message_for_user", "allow_null": True},
+                "user_note": {"source": "message_for_user"},
             }
 
     class ObservationFlagsSerializer(serializers.ModelSerializer):
@@ -1118,7 +1096,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
     )
 
     def get_type(self, obj) -> Literal['short', 'long']:
-        return 'short' if obj.simplified_annotation else 'long'
+        return 'short' if obj.is_simplified else 'long'
 
     def get_is_flagged(self, obj) -> bool:
         return obj.status == ExpertReportAnnotation.Status.FLAGGED
@@ -1130,7 +1108,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         data = super().validate(data)
 
         data['user'] = data.pop('user_hidden_obj')
-        data['validation_complete'] = True
+        data['is_finished'] = True
 
         try:
             data['identification_task'] = IdentificationTask.objects.get(pk=self.context.get('observation_uuid'))
@@ -1201,7 +1179,7 @@ class BaseAssignmentSerializer(serializers.ModelSerializer):
     annotation_type = serializers.SerializerMethodField()
 
     def get_annotation_type(self, obj) -> Literal['short', 'long']:
-        return 'short' if obj.simplified_annotation else 'long'
+        return 'short' if obj.is_simplified else 'long'
 
     class Meta:
         model = ExpertReportAnnotation
@@ -1289,7 +1267,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         annotation_id = serializers.SerializerMethodField(allow_null=True)
 
         def get_annotation_id(self, obj) -> Optional[int]:
-            return obj.pk if obj.validation_complete else None
+            return obj.pk if obj.is_finished else None
 
         class Meta(BaseAssignmentSerializer.Meta):
             fields = ("user", "annotation_id",) + BaseAssignmentSerializer.Meta.fields
@@ -1401,12 +1379,12 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificat
         # Case Not an insect will be empty taxon. In case of update we need to for it to None
         ret['taxon'] = ret.pop('taxon', None)
 
-        ret['validation_complete'] = True
+        ret['is_finished'] = True
         ret['confidence'] = ret.pop('confidence', 0)
 
         ret['decision_level'] = ExpertReportAnnotation.DecisionLevel.FINAL
         ret['status'] = ExpertReportAnnotation.Status.HIDDEN if not ret.pop('is_safe') or ret['taxon'] is None else ExpertReportAnnotation.Status.PUBLIC
-        ret['simplified_annotation'] = False
+        ret['is_simplified'] = False
 
         return ret
 
@@ -1418,7 +1396,7 @@ class CreateOverwriteReviewSerializer(CreateReviewSerializer, SpeciesIdentificat
             'public_note',
         ) + SpeciesIdentificationSerializer.Meta.fields
         extra_kwargs = {
-            'public_note': {'source': 'edited_user_notes', 'required': True, 'allow_null': True, 'allow_blank': False, 'read_only': False}
+            'public_note': {'required': True, 'allow_null': True, 'allow_blank': False, 'read_only': False}
         }
 
 class ObservationGeoModelSerializer(BaseReportGeoModelSerializer):

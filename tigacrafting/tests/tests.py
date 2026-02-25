@@ -707,10 +707,10 @@ class NewReportAssignment(TransactionTestCase):
                 identification_task, _ = IdentificationTask.get_or_create_for_report(r)
             annos = ExpertReportAnnotation.objects.filter(identification_task=identification_task)
             if annos.count() == 3:
-                long_report_count = annos.filter(simplified_annotation=False).count()
-                short_report_count = annos.filter(simplified_annotation=True).count()
-                long_annotation_id = annos.filter(simplified_annotation=False).first().id
-                short_annotation_ids = [ a.id for a in annos.filter(simplified_annotation=True) ]
+                long_report_count = annos.filter(is_simplified=False).count()
+                short_report_count = annos.filter(is_simplified=True).count()
+                long_annotation_id = annos.filter(is_simplified=False).first().id
+                short_annotation_ids = [ a.id for a in annos.filter(is_simplified=True) ]
                 self.assertTrue( long_report_count == 1, "Report {0} has {0} LONG assignations, should be 1".format( r.version_UUID, str(long_report_count) )  )
                 self.assertTrue(short_report_count == 2, "Report {0} has {0} SHORT assignations, should be 2".format(r.version_UUID, str(short_report_count)))
                 # since long annotation is last to be assigned, id should be the highest
@@ -808,7 +808,7 @@ class NewReportAssignment(TransactionTestCase):
             supervised_country = this_user.userstat.national_supervisor_of
             for assigned_report in ExpertReportAnnotation.objects.filter(user=this_user):
                 if assigned_report.identification_task.report.country == supervised_country:
-                    self.assertTrue( assigned_report.simplified_annotation==False, "User {0}, national supervisor of {1}, has been assigned report {2} as simplified".format( this_user.username, supervised_country, assigned_report.identification_task.report ))
+                    self.assertTrue( assigned_report.is_simplified==False, "User {0}, national supervisor of {1}, has been assigned report {2} as simplified".format( this_user.username, supervised_country, assigned_report.identification_task.report ))
 
 
     def test_simplified_assignation_two_experts_and_ns_report_from_not_supervised_country(self):
@@ -827,9 +827,9 @@ class NewReportAssignment(TransactionTestCase):
         anno_1 = annos[0]
         anno_2 = annos[1]
         anno_3 = annos[2]
-        self.assertTrue( anno_1.simplified_annotation, "Annotation with id {0} should be simplified, it is NOT".format( anno_1.id ) )
-        self.assertTrue( anno_2.simplified_annotation, "Annotation with id {0} should be simplified, it is NOT".format( anno_2.id ) )
-        self.assertFalse( anno_3.simplified_annotation, "Annotation with id {0} should NOT be simplified, it is".format( anno_3.id ) )
+        self.assertTrue( anno_1.is_simplified, "Annotation with id {0} should be simplified, it is NOT".format( anno_1.id ) )
+        self.assertTrue( anno_2.is_simplified, "Annotation with id {0} should be simplified, it is NOT".format( anno_2.id ) )
+        self.assertFalse( anno_3.is_simplified, "Annotation with id {0} should NOT be simplified, it is".format( anno_3.id ) )
 
     def test_simplified_assignation_two_experts_and_ns_report_from_supervised_country(self):
         #self.create_micro_team()
@@ -847,7 +847,7 @@ class NewReportAssignment(TransactionTestCase):
         self.assertTrue(n == 1, "There should be {0} annotations, {1} found".format(1, n))
         # NS Validates
         ns_validation = ExpertReportAnnotation.objects.get(user_id=3)
-        ns_validation.validation_complete = True
+        ns_validation.is_finished = True
         ns_validation.save()
         # Now report it's validated AND NO LONGER LOCKED, reassign
         for this_user in User.objects.exclude(id=24):
@@ -860,9 +860,9 @@ class NewReportAssignment(TransactionTestCase):
         anno_2 = annos[1]
         anno_3 = annos[2]
         # First assignation is to NS, should be complete
-        self.assertFalse(anno_1.simplified_annotation,"Annotation with id {0} (NS) should NOT be simplified, it is".format(anno_1.id))
-        self.assertTrue(anno_2.simplified_annotation,"Annotation with id {0} should be simplified, it is NOT".format(anno_2.id))
-        self.assertTrue(anno_3.simplified_annotation,"Annotation with id {0} should be simplified, it is NOT".format(anno_3.id))
+        self.assertFalse(anno_1.is_simplified,"Annotation with id {0} (NS) should NOT be simplified, it is".format(anno_1.id))
+        self.assertTrue(anno_2.is_simplified,"Annotation with id {0} should be simplified, it is NOT".format(anno_2.id))
+        self.assertTrue(anno_3.is_simplified,"Annotation with id {0} should be simplified, it is NOT".format(anno_3.id))
 
 
     # tests that reports that should go to national supervisor don't because of expired precedence period
@@ -1664,7 +1664,7 @@ class TestIdentificationTaskModel:
         assert annotations_qs.count() == 1
 
         annotation = annotations_qs.get(user=user)
-        assert annotation.validation_complete == False
+        assert annotation.is_finished == False
 
     # constraints
     @pytest.mark.parametrize(
@@ -1730,7 +1730,7 @@ class TestIdentificationTaskModel:
 
 @pytest.mark.django_db
 class TestIdentificationTaskFlow:
-    def _add_annotation(self, identification_task: IdentificationTask, validation_complete: bool = True, **kwargs) -> ExpertReportAnnotation:
+    def _add_annotation(self, identification_task: IdentificationTask, is_finished: bool = True, **kwargs) -> ExpertReportAnnotation:
         expert_group, _ = Group.objects.get_or_create(name='expert')
         user_expert = User.objects.create(
             username=str(uuid.uuid4())
@@ -1740,11 +1740,11 @@ class TestIdentificationTaskFlow:
         return ExpertReportAnnotation.objects.create(
             identification_task=identification_task,
             user=user_expert,
-            validation_complete=validation_complete,
+            is_finished=is_finished,
             **kwargs
         )
 
-    def _add_review(self, identification_task: IdentificationTask, overwrite: bool = False, validation_complete: bool = True, **kwargs) -> ExpertReportAnnotation:
+    def _add_review(self, identification_task: IdentificationTask, overwrite: bool = False, is_finished: bool = True, **kwargs) -> ExpertReportAnnotation:
         user_expert = User.objects.create(
             username=str(uuid.uuid4())
         )
@@ -1759,7 +1759,7 @@ class TestIdentificationTaskFlow:
                 identification_task=identification_task,
                 user=user_expert,
                 decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
-                validation_complete=validation_complete,
+                is_finished=is_finished,
                 **kwargs
             )
 
@@ -1833,15 +1833,15 @@ class TestIdentificationTaskFlow:
         assert identification_task.assignees.count() == 0
 
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
-            self._add_annotation(identification_task=identification_task, validation_complete=False)
+            self._add_annotation(identification_task=identification_task, is_finished=False)
 
             traveller.shift(timedelta(days=15))
 
             # Still assignable, not blocked yet.
             assert IdentificationTask.objects.blocked(days=15).count() == 0
 
-            self._add_annotation(identification_task=identification_task, validation_complete=True)
-            self._add_annotation(identification_task=identification_task, validation_complete=True)
+            self._add_annotation(identification_task=identification_task, is_finished=True)
+            self._add_annotation(identification_task=identification_task, is_finished=True)
 
             # Now it's blocked. Fully assigned but the only missing annotations is not complete.
             assert frozenset(IdentificationTask.objects.blocked(days=15)) == frozenset([identification_task])
@@ -1850,11 +1850,11 @@ class TestIdentificationTaskFlow:
         assert identification_task.status == IdentificationTask.Status.OPEN
         assert identification_task.assignees.count() == 0
 
-        annotation = self._add_annotation(identification_task=identification_task, validation_complete=False)
+        annotation = self._add_annotation(identification_task=identification_task, is_finished=False)
 
         assert frozenset(IdentificationTask.objects.annotating()) == frozenset([identification_task])
 
-        annotation.validation_complete = True
+        annotation.is_finished = True
         annotation.save()
 
         assert IdentificationTask.objects.annotating().count() == 0
@@ -1890,16 +1890,16 @@ class TestIdentificationTaskFlow:
 
     # counters
     @pytest.mark.parametrize(
-        "validation_complete, expected_result",
+        "is_finished, expected_result",
         [
             (True, 1),
             (False, 1),
         ]
     )
-    def test_total_annotations_should_be_increased_on_new_annotation(self, identification_task, validation_complete, expected_result):
+    def test_total_annotations_should_be_increased_on_new_annotation(self, identification_task, is_finished, expected_result):
         assert identification_task.total_annotations == 0
 
-        _ = self._add_annotation(identification_task=identification_task, validation_complete=validation_complete)
+        _ = self._add_annotation(identification_task=identification_task, is_finished=is_finished)
 
         identification_task.refresh_from_db()
         assert identification_task.total_annotations == expected_result
@@ -1915,18 +1915,18 @@ class TestIdentificationTaskFlow:
         assert identification_task.total_finished_annotations == 0
 
     @pytest.mark.parametrize(
-        "validation_complete, expected_result",
+        "is_finished, expected_result",
         [
             (True, 1),
             (False, 0),
         ]
     )
-    def test_total_finished_annotations_should_be_increased_on_new_annotation(self, identification_task, validation_complete, expected_result):
+    def test_total_finished_annotations_should_be_increased_on_new_annotation(self, identification_task, is_finished, expected_result):
         assert identification_task.total_finished_annotations == 0
 
         self._add_annotation(
             identification_task=identification_task,
-            validation_complete=validation_complete
+            is_finished=is_finished
         )
 
         identification_task.refresh_from_db()
@@ -2039,7 +2039,7 @@ class TestIdentificationTaskFlow:
                 taxon=specie_1,
                 confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
                 status=ExpertReportAnnotation.Status.PUBLIC,
-                edited_user_notes="public message",
+                public_note="public message",
                 message_for_user="message to user",
                 best_photo=another_photo
             )
@@ -2050,7 +2050,7 @@ class TestIdentificationTaskFlow:
             taxon=specie_2,
             confidence=ExpertReportAnnotation.ConfidenceCategory.PROBABLY,
             status=ExpertReportAnnotation.Status.PUBLIC,
-            edited_user_notes="random public message",
+            public_note="random public message",
             message_for_user="random message to user",
             best_photo=another_photo
         )
@@ -2073,7 +2073,7 @@ class TestIdentificationTaskFlow:
             taxon=specie_2,
             confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
             status=ExpertReportAnnotation.Status.HIDDEN,
-            edited_user_notes="new public message",
+            public_note="new public message",
             message_for_user="new message to user",
             best_photo=first_photo,
         )
@@ -2129,7 +2129,7 @@ class TestIdentificationTaskFlow:
             taxon=specie_1,
             confidence=ExpertReportAnnotation.ConfidenceCategory.PROBABLY,
             status=ExpertReportAnnotation.Status.PUBLIC,
-            edited_user_notes="public message",
+            public_note="public message",
             message_for_user="message to user",
             best_photo=another_photo,
             decision_level=ExpertReportAnnotation.DecisionLevel.EXECUTIVE
