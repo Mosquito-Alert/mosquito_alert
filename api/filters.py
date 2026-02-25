@@ -325,15 +325,15 @@ class AnnotationFilter(filters.FilterSet):
             status=ExpertReportAnnotation.Status.FLAGGED
         )
 
-    is_decisive = filters.BooleanFilter(
-        method="filter_by_is_decisive"
+    is_executive = filters.BooleanFilter(
+        method="filter_by_is_executive"
     )
 
-    def filter_by_is_decisive(self, queryset, name, value):
+    def filter_by_is_executive(self, queryset, name, value):
         if not value:
             return queryset
         return queryset.filter(
-            decision_level__in=[ExpertReportAnnotation.DecisionLevel.EXECUTIVE, ExpertReportAnnotation.DecisionLevel.FINAL]
+            decision_level=ExpertReportAnnotation.DecisionLevel.EXECUTIVE
         )
 
     type = filters.ChoiceFilter(

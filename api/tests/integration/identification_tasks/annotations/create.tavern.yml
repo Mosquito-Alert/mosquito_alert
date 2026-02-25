@@ -92,7 +92,7 @@ stages:
           user_note: null
         type: !anystr
         is_flagged: false
-        is_decisive: false
+        decision_level: 'normal'
         observation_flags:
           is_favourite: false
           is_visible: true
@@ -159,7 +159,7 @@ stages:
           user_note: null
         type: !anystr
         is_flagged: false
-        is_decisive: false
+        decision_level: 'normal'
         observation_flags:
           is_favourite: false
           is_visible: true
@@ -305,7 +305,7 @@ marks:
     - jwt_token_user
     - taxon_root
   - parametrize:
-      key: is_decisive
+      key: is_executive
       vals:
         - true
         - false
@@ -321,13 +321,13 @@ stages:
         classification:
           taxon_id: !int "{taxon_root.pk}"
           confidence_label: 'definitely'
-        is_decisive: "{is_decisive}"
+        is_executive: "{is_executive}"
     response:
       status_code: 201
       strict:
         - json:off
       json:
-        is_decisive: false
+        decision_level: 'normal'
 
 ---
 
@@ -345,10 +345,12 @@ marks:
     - jwt_token_user
     - taxon_root
   - parametrize:
-      key: is_decisive
+      key:
+        - is_executive
+        - expected_decision_level
       vals:
-        - true
-        - false
+        - [true, executive]
+        - [false, normal]
 
 stages:
   - name: Create classification
@@ -361,13 +363,13 @@ stages:
         classification:
           taxon_id: !int "{taxon_root.pk}"
           confidence_label: 'definitely'
-        is_decisive: "{is_decisive}"
+        is_executive: "{is_executive}"
     response:
       status_code: 201
       strict:
         - json:off
       json:
-        is_decisive: !bool "{is_decisive}"
+        decision_level: "{expected_decision_level}"
 
 ---
 
@@ -385,10 +387,12 @@ marks:
     - jwt_token_user
     - taxon_root
   - parametrize:
-      key: is_decisive
+      key:
+        - is_executive
+        - expected_decision_level
       vals:
-        - true
-        - false
+        - [true, executive]
+        - [false, normal]
 
 stages:
   - name: Create classification
@@ -401,10 +405,10 @@ stages:
         classification:
           taxon_id: !int "{taxon_root.pk}"
           confidence_label: 'definitely'
-        is_decisive: "{is_decisive}"
+        is_executive: "{is_executive}"
     response:
       status_code: 201
       strict:
         - json:off
       json:
-        is_decisive: !bool "{is_decisive}"
+        decision_level: "{expected_decision_level}"

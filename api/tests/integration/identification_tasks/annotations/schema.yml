@@ -22,7 +22,7 @@ variables:
       user_note: !anything
     type: !anystr
     is_flagged: !anybool
-    is_decisive: !anybool
+    decision_level: !anystr
     observation_flags:
       is_favourite: !anybool
       is_visible: !anybool

@@ -1090,19 +1090,13 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         default=False
     )
 
-    is_decisive = WritableSerializerMethodField(
-        field_class=serializers.BooleanField,
-        default=False,
-    )
+    is_executive = serializers.BooleanField(write_only=True, default=False)
 
     def get_type(self, obj) -> Literal['short', 'long']:
         return 'short' if obj.is_simplified else 'long'
 
     def get_is_flagged(self, obj) -> bool:
         return obj.status == ExpertReportAnnotation.Status.FLAGGED
-
-    def get_is_decisive(self, obj) -> bool:
-        return obj.decision_level in [ExpertReportAnnotation.DecisionLevel.EXECUTIVE, ExpertReportAnnotation.DecisionLevel.FINAL]
 
     def validate(self, data):
         data = super().validate(data)
@@ -1132,21 +1126,21 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
             else:
                 data["status"] = ExpertReportAnnotation.Status.PUBLIC
 
-        data['decision_level'] = ExpertReportAnnotation.DecisionLevel.EXECUTIVE if data.pop("is_decisive", False) else ExpertReportAnnotation.DecisionLevel.NORMAL
+        data['decision_level'] = ExpertReportAnnotation.DecisionLevel.EXECUTIVE if data.pop("is_executive", False) else ExpertReportAnnotation.DecisionLevel.NORMAL
         user_role = data['user']
         if isinstance(user_role, User):
             try:
                 user_role = user_role.userstat
             except UserStat.DoesNotExist:
                 user_role = None
-        can_set_is_decisive = False
+        can_set_is_executive = False
         if user_role:
-            can_set_is_decisive = user_role.has_role_permission_by_model(
+            can_set_is_executive = user_role.has_role_permission_by_model(
                 action='mark_as_decisive',
                 model=ExpertReportAnnotation,
                 country=data['identification_task'].report.country
             )
-        if not can_set_is_decisive:
+        if not can_set_is_executive:
             data['decision_level'] = ExpertReportAnnotation.DecisionLevel.NORMAL
         return data
 
@@ -1163,7 +1157,8 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
             "feedback",
             "type",
             "is_flagged",
-            "is_decisive",
+            "is_executive",
+            "decision_level",
             "observation_flags",
             "tags",
             "created_at",
@@ -1173,6 +1168,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
             "user_id": {'read_only': True},
             'created_at': {"source": "created", 'read_only': True},
             'updated_at': {"source": "last_modified", 'read_only': True},
+            'decision_level': {'read_only': True},
         }
 
 class BaseAssignmentSerializer(serializers.ModelSerializer):

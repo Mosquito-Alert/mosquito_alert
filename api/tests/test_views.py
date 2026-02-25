@@ -955,34 +955,15 @@ class TestIdentificationTaskAnnotationsApi:
         assert annotation.confidence == confidence
 
     @pytest.mark.parametrize(
-        "decision_level, expected_result",
+        "is_executive, expected_decision_level",
         [
-            (ExpertReportAnnotation.DecisionLevel.NORMAL, False),
-            (ExpertReportAnnotation.DecisionLevel.EXECUTIVE, True),
-            (ExpertReportAnnotation.DecisionLevel.FINAL, True),
+            (True, ExpertReportAnnotation.DecisionLevel.EXECUTIVE),
+            (False, ExpertReportAnnotation.DecisionLevel.NORMAL),
         ]
     )
-    def test_is_decisive_representation(self, identification_task, user, api_client, endpoint, decision_level, expected_result):
-        obj = create_annotation(
-            identification_task=identification_task,
-            user=user,
-            decision_level=decision_level,
-        )
-
-        response = api_client.get(
-            endpoint + f'{obj.pk}/',
-            format='json'
-        )
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data['is_decisive'] == expected_result
-
-    @pytest.mark.parametrize(
-        "is_decisive",
-        [True, False]
-    )
-    def test_is_decisive_sets_decision_level_executive(self, api_client, endpoint, user_with_role_supervisor_in_country, common_post_data, with_add_permission, is_decisive):
+    def test_is_executive_sets_decision_level_executive(self, api_client, endpoint, user_with_role_supervisor_in_country, common_post_data, with_add_permission, is_executive, expected_decision_level):
         post_data = common_post_data
-        post_data['is_decisive'] = is_decisive
+        post_data['is_executive'] = is_executive
 
         response = api_client.post(
             endpoint,
@@ -992,7 +973,7 @@ class TestIdentificationTaskAnnotationsApi:
         assert response.status_code == status.HTTP_201_CREATED
 
         annotation = ExpertReportAnnotation.objects.get(pk=response.data['id'])
-        assert annotation.decision_level == (ExpertReportAnnotation.DecisionLevel.EXECUTIVE if is_decisive else ExpertReportAnnotation.DecisionLevel.NORMAL)
+        assert annotation.decision_level == expected_decision_level
 
     @pytest.mark.parametrize(
         "status, expected_result",
