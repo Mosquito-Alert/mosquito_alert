@@ -1136,7 +1136,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         can_set_is_executive = False
         if user_role:
             can_set_is_executive = user_role.has_role_permission_by_model(
-                action='mark_as_decisive',
+                action='mark_as_executive',
                 model=ExpertReportAnnotation,
                 country=data['identification_task'].report.country
             )

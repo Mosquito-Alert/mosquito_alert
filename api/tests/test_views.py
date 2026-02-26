@@ -1455,7 +1455,7 @@ class TestPermissionsApi:
         assert response.data['general']['role'] == 'annotator'
         assert response.data['countries'][0]['country']['id'] == country.pk
         assert response.data['countries'][0]['role'] == 'supervisor'
-        assert response.data['countries'][0]['permissions']['annotation']['mark_as_decisive']
+        assert response.data['countries'][0]['permissions']['annotation']['mark_as_executive']
         assert response.data['countries'][0]['permissions']['identification_task']['view']
         assert not response.data['countries'][0]['permissions']['review']['add']
         assert not response.data['countries'][0]['permissions']['review']['view']
@@ -1475,7 +1475,7 @@ class TestPermissionsApi:
         assert response.data['general']['role'] == 'annotator'
         assert response.data['countries'][0]['role'] == 'annotator'
         assert response.data['countries'][0]['country']['id'] == country.pk
-        assert not response.data['countries'][0]['permissions']['annotation']['mark_as_decisive']
+        assert not response.data['countries'][0]['permissions']['annotation']['mark_as_executive']
         assert not response.data['countries'][0]['permissions']['identification_task']['view']
         assert not response.data['countries'][0]['permissions']['review']['add']
         assert not response.data['countries'][0]['permissions']['review']['view']

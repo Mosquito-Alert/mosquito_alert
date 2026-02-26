@@ -48,7 +48,7 @@ stages:
               change: false
               view: false
               delete: false
-              mark_as_decisive: false
+              mark_as_executive: false
             identification_task:
               add: false
               change: false
@@ -93,7 +93,7 @@ stages:
               change: false
               view: false
               delete: false
-              mark_as_decisive: false
+              mark_as_executive: false
             identification_task:
               add: false
               change: false

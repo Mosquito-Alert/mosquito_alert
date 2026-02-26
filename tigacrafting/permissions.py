@@ -24,7 +24,7 @@ class IdentificationTaskPermission(BasePermission):
 
 @dataclass
 class AnnotationPermission(BasePermission):
-    mark_as_decisive: bool
+    mark_as_executive: bool
     pass
 
 @dataclass
@@ -63,7 +63,7 @@ class UserRolePermissionMixin:
     def get_role_annotation_permission(self, role: Role) -> AnnotationPermission:
         return AnnotationPermission(
             add=role in [Role.ANNOTATOR, Role.SUPERVISOR, Role.REVIEWER, Role.ADMIN],
-            mark_as_decisive=role in [Role.SUPERVISOR, Role.REVIEWER, Role.ADMIN],
+            mark_as_executive=role in [Role.SUPERVISOR, Role.REVIEWER, Role.ADMIN],
             change=role in [Role.ADMIN],
             view=role in [Role.ANNOTATOR, Role.SUPERVISOR, Role.REVIEWER, Role.ADMIN],
             delete=role in [Role.ADMIN],
