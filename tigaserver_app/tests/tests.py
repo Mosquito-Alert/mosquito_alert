@@ -10,6 +10,7 @@ from django.contrib.gis.geos import Polygon, MultiPolygon, Point, LineString
 from django.core.cache import cache
 from django.utils import timezone
 from tigaserver_app.models import TigaUser, Report, Photo, Fix
+from tigaserver_app.utils import scrub_sensitive_exif
 from tigacrafting.models import ExpertReportAnnotation, IdentificationTask, Taxon
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
@@ -26,6 +27,7 @@ import semantic_version
 import io
 import piexif
 from pillow_heif import HeifFile
+import pytest
 
 
 class ReportEndpointTestCase(APITestCase):
@@ -1441,6 +1443,113 @@ class AnnotateCoarseTestCase(APITestCase):
         r_site.refresh_from_db()
         self.assertTrue(r_site.published)
 
+
+def get_full_exif_dict(exif) -> dict:
+    if not exif:
+        return {}
+    exif.update(exif.get_ifd(ExifTags.IFD.Exif))
+    exif[ExifTags.IFD.GPSInfo] = exif.get_ifd(ExifTags.IFD.GPSInfo)
+    exif_dict = {ExifTags.TAGS.get(tag, tag): value for tag, value in exif.items()}
+    exif_dict.pop('ExifOffset', None)
+    return exif_dict
+
+
+def get_full_exif_dict_from_bytes(img_bytes: bytes) -> dict:
+    """Extracts EXIF data from an in-memory image."""
+    with Image.open(img_bytes) as img:
+        exif = img.getexif()
+        if not exif:
+            return {}
+        return get_full_exif_dict(exif)
+
+
+@pytest.mark.parametrize(
+    "photo_path, expected_exif",
+    [
+        ("./testdata/exif/Canon_40D.jpg", {
+            'Orientation': 1,
+            'DateTime': '2008:07:31 10:38:11',
+            'DateTimeDigitized': '2008:05:30 15:56:01',
+            'DateTimeOriginal': '2008:05:30 15:56:01',
+            'GPSInfo': {0: b'\x02\x02\x00\x00'},
+        }),
+        ("./testdata/exif/DSCN0025.jpg", {
+            'DateTime': '2008:11:01 21:15:09',
+            'DateTimeDigitized': '2008:10:22 16:43:21',
+            'DateTimeOriginal': '2008:10:22 16:43:21',
+            'GPSInfo': {1: 'N',
+                        2: (43.0, 28.0, 6.114),
+                        3: 'E',
+                        4: (11.0, 52.0, 53.8859999),
+                        5: b'\x00',
+                        7: (14.0, 41.0, 49.03),
+                        8: '05',
+                        16: '\x00',
+                        18: 'WGS-84   ',
+                        29: '2008:10:23'},
+            'Orientation': 1
+        }),
+        ("./testdata/exif/DSCN0027.jpg", {
+            'DateTime': '2008:11:01 21:15:09',
+            'DateTimeDigitized': '2008:10:22 16:44:01',
+            'DateTimeOriginal': '2008:10:22 16:44:01',
+            'GPSInfo': {1: 'N',
+                        2: (43.0, 28.0, 6.39),
+                        3: 'E',
+                        4: (11.0, 52.0, 53.454),
+                        5: b'\x00',
+                        7: (14.0, 42.0, 29.03),
+                        8: '05',
+                        16: '\x00',
+                        18: 'WGS-84   ',
+                        29: '2008:10:23'},
+            'Orientation': 1
+        }),
+        ("./testdata/exif/DSCN0029.jpg", {
+            'DateTime': '2008:11:01 21:15:09',
+            'DateTimeDigitized': '2008:10:22 16:46:53',
+            'DateTimeOriginal': '2008:10:22 16:46:53',
+            'GPSInfo': {1: 'N',
+                        2: (43.0, 28.0, 5.67599999),
+                        3: 'E',
+                        4: (11.0, 52.0, 48.6179999),
+                        5: b'\x00',
+                        7: (14.0, 45.0, 20.91),
+                        8: '05',
+                        16: '\x00',
+                        18: 'WGS-84   ',
+                        29: '2008:10:23'},
+            'Orientation': 1
+        }),
+        ("./testdata/exif/Fujifilm_FinePix6900ZOOM.jpg", {
+            'DateTime': '2008:07:31 17:17:56',
+            'DateTimeDigitized': '2001:02:19 06:40:05',
+            'DateTimeOriginal': '2001:02:19 06:40:05',
+            'GPSInfo': {},
+            'Orientation': 1
+        }),
+        ("./testdata/exif/image00971.jpg", {}),
+        ("./testdata/exif/image01137.jpg", {}),
+        ("./testdata/exif/image01551.jpg", {}),
+        ("./testdata/exif/Nikon_COOLPIX_P1.jpg", {
+            'DateTime': '2008:07:31 17:43:03',
+            'DateTimeDigitized': '2008:03:07 09:55:46',
+            'DateTimeOriginal': '2008:03:07 09:55:46',
+            'GPSInfo': {},
+            'Orientation': 1
+        }),
+    ]
+)
+def test_scrub_sensitive_exif_function(photo_path, expected_exif):
+    """Helper function to test that EXIF data is scrubbed correctly."""
+    current_directory = os.path.dirname(__file__)
+
+    # Construct the path to the file
+    file_path = os.path.join(current_directory, photo_path)
+    scrubbed_exif = scrub_sensitive_exif(Image.open(file_path).getexif())
+    scrubbed_exif_dict = get_full_exif_dict(scrubbed_exif)
+    assert scrubbed_exif_dict == expected_exif
+
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class PhotoModelTest(TestCase):
     def setUp(self):
@@ -1500,9 +1609,11 @@ class PhotoModelTest(TestCase):
                 piexif.ImageIFD.Make: b"Dummy Camera",
                 piexif.ImageIFD.Model: b"Dummy Model",
                 piexif.ImageIFD.Software: b"Pillow Test",
+                piexif.ImageIFD.DateTime: b"2024:11:05 10:00:00",
+                piexif.ImageIFD.Orientation: 1,  # Normal orientation
             },
             "Exif": {
-                piexif.ExifIFD.DateTimeOriginal: b"2024:11:05 10:00:00",
+                piexif.ExifIFD.DateTimeOriginal: b"2024:11:05 09:00:00",
             },
             "GPS": {
                 piexif.GPSIFD.GPSLatitudeRef: b"N",
@@ -1516,6 +1627,7 @@ class PhotoModelTest(TestCase):
         exif_bytes = piexif.dump(exif_dict)
         img_bytes = io.BytesIO()
         img.save(img_bytes, format="JPEG", exif=exif_bytes)
+        img.close()
         img_bytes.seek(0)
         return img_bytes
 
@@ -1572,15 +1684,24 @@ class PhotoModelTest(TestCase):
             self.assertEqual(processed_image.height, expected_heigt)
             self.assertEqual(processed_image.format, "JPEG")
 
-    def test_exif_data_is_presserved(self):
-        def get_exif(img_bytes):
-            """Extracts EXIF data from an in-memory image."""
-            with Image.open(img_bytes) as img:
-                exif_data = img._getexif() or {}
-                exif = {ExifTags.TAGS.get(tag, tag): value for tag, value in exif_data.items()}
-            exif.pop('ExifOffset')
-            return exif
+    def test_photo_processing_without_exif(self):
+        # Create a simple image without EXIF data
+        img = Image.new("RGB", (100, 100), color="blue")
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format="JPEG")
+        img.close()
+        img_bytes.seek(0)
 
+        photo_instance = Photo.objects.create(
+            photo=SimpleUploadedFile('test_no_exif.jpg', img_bytes.read(), content_type=f"image/jpeg"),
+            report=self.report
+        )
+        photo_instance.refresh_from_db()
+
+        processed_exif = get_full_exif_dict_from_bytes(photo_instance.photo)
+        self.assertEqual(processed_exif, {})  # Expecting no EXIF data
+
+    def test_sensitive_exif_data_is_scrubbed(self):
         # Step 1: Create a dummy image with EXIF metadata
         original_img_bytes = self.create_image_with_exif()
 
@@ -1591,11 +1712,22 @@ class PhotoModelTest(TestCase):
         )
         photo_instance.refresh_from_db()
 
-        processed_exif = get_exif(photo_instance.photo)
-        original_exif = get_exif(original_img_bytes)
+        processed_exif = get_full_exif_dict_from_bytes(photo_instance.photo)
 
         # Step 3: Assert EXIF data is the same before and after processing
-        assert original_exif == processed_exif, "EXIF metadata was not preserved after processing."
+        self.assertEqual(processed_exif, {
+            'GPSInfo': {
+                piexif.GPSIFD.GPSLatitudeRef: "N",
+                piexif.GPSIFD.GPSLatitude: (34.0, 0.0, 0.0),  # 34°0'0" N
+                piexif.GPSIFD.GPSLongitudeRef: "E",
+                piexif.GPSIFD.GPSLongitude: (118.0, 0.0, 0.0),  # 118°0'0" E
+                piexif.GPSIFD.GPSAltitudeRef: b"\x00",
+                piexif.GPSIFD.GPSAltitude: 100.0,  # 100 meters
+            },
+            'DateTime': "2024:11:05 10:00:00",
+            'DateTimeOriginal': "2024:11:05 09:00:00",
+            'Orientation': 1,
+        })
 
 class ReportModelTest(TestCase):
     def test_tags_are_set_from_note_on_create(self):

@@ -1,5 +1,5 @@
 import os
-from PIL import Image, ImageOps, ExifTags
+from PIL import Image, ImageOps
 
 from django.db.models.fields.files import ImageFieldFile
 
@@ -7,6 +7,8 @@ from rest_framework import serializers
 
 from imagekit.models import ProcessedImageField as OriginalProcessedImageField
 from imagekit.utils import generate, open_image, suggest_extension
+
+from .utils import scrub_sensitive_exif
 
 class NullableTimeZoneDatetimeField(serializers.DateTimeField):
     def enforce_timezone(self, value):
@@ -28,12 +30,7 @@ class ProcessedImageExifFieldFile(ImageFieldFile):
         if not spec.options:
             spec.options = {}
         if exif := open_image(content).getexif():
-            # Remove tags related to size and format if they exist
-            tags_to_remove = ["ImageWidth", "ImageLength"]
-            for tag, value in ExifTags.TAGS.items():
-                if value in tags_to_remove:
-                    exif.pop(tag, None)
-            spec.options["exif"] = exif
+            spec.options["exif"] = scrub_sensitive_exif(exif)
         # ADDED CODE END
         content = generate(spec)
         return super().save(new_name, content, save)
