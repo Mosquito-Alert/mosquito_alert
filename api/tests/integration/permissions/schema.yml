@@ -14,7 +14,7 @@ variables:
           change: !anybool
           view: !anybool
           delete: !anybool
-          mark_as_decisive: !anybool
+          mark_as_executive: !anybool
         identification_task:
           add: !anybool
           change: !anybool
