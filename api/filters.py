@@ -365,16 +365,9 @@ class AnnotationFilter(filters.FilterSet):
             status=ExpertReportAnnotation.Status.FLAGGED
         )
 
-    is_executive = filters.BooleanFilter(
-        method="filter_by_is_executive"
+    decision_level = filters.MultipleChoiceFilter(
+        choices=ExpertReportAnnotation.DecisionLevel.choices,
     )
-
-    def filter_by_is_executive(self, queryset, name, value):
-        if not value:
-            return queryset
-        return queryset.filter(
-            decision_level=ExpertReportAnnotation.DecisionLevel.EXECUTIVE
-        )
 
     type = filters.ChoiceFilter(
         choices=[('short', 'short'), ('long', 'long')],
