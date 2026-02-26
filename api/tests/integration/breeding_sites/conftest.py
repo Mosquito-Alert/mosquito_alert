@@ -22,6 +22,24 @@ def published_object(app_user):
     return breeding_site_obj
 
 @pytest.fixture
+def published_object_in_10km(app_user):
+    breeding_site_obj = create_breeding_site_object(user=app_user)
+    breeding_site_obj.published_at = breeding_site_obj.server_upload_time
+    breeding_site_obj.current_location_lon += 0.09  # ~10km east of the default location
+    breeding_site_obj.save()
+
+    return breeding_site_obj
+
+@pytest.fixture
+def published_object_in_100km(app_user):
+    breeding_site_obj = create_breeding_site_object(user=app_user)
+    breeding_site_obj.published_at = breeding_site_obj.server_upload_time
+    breeding_site_obj.current_location_lon += 0.9  # ~100km east of the default location
+    breeding_site_obj.save()
+
+    return breeding_site_obj
+
+@pytest.fixture
 def unpublished_object(app_user):
     breeding_site_obj = create_breeding_site_object(user=app_user)
     breeding_site_obj.published_at = None

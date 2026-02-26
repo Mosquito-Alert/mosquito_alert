@@ -22,6 +22,24 @@ def published_object(app_user):
     return bite_obj
 
 @pytest.fixture
+def published_object_in_10km(app_user):
+    bite_obj = create_bite_object(user=app_user)
+    bite_obj.published_at = bite_obj.server_upload_time
+    bite_obj.current_location_lon += 0.09  # ~10km east of the default location
+    bite_obj.save()
+
+    return bite_obj
+
+@pytest.fixture
+def published_object_in_100km(app_user):
+    bite_obj = create_bite_object(user=app_user)
+    bite_obj.published_at = bite_obj.server_upload_time
+    bite_obj.current_location_lon += 0.9  # ~100km east of the default location
+    bite_obj.save()
+
+    return bite_obj
+
+@pytest.fixture
 def unpublished_object(app_user):
     bite_obj = create_bite_object(user=app_user)
     bite_obj.published_at = None

@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.geos import Point
 from django.db import models
 from django.utils import timezone
 
@@ -7,6 +9,7 @@ from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema_field
 
 from rest_framework.exceptions import ValidationError
+from rest_framework_gis.filters import DistanceToPointFilter
 from rest_framework_gis.filterset import GeoFilterSet
 
 from tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon
@@ -45,6 +48,42 @@ class CampaignFilter(filters.FilterSet):
 class TagFilter(filters.BaseInFilter, filters.CharFilter):
     pass
 
+
+class DistanceOrderingFilter(filters.OrderingFilter):
+    def __init__(self, ordering_filter_field, *args, **kwargs):
+        self.ordering_filter_field = ordering_filter_field
+        super().__init__(*args, **kwargs)
+        self.extra['choices'] += [
+            ('distance', 'Distance'),
+            ('-distance', 'Distance (descending)'),
+        ]
+
+    def get_ordering_value(self, param):
+        descending = param.startswith("-")
+        param = param[1:] if descending else param
+        if param == "distance":
+            point_string = self.parent.request.query_params.get(DistanceToPointFilter.point_param, None)
+            distance_param = self.parent.request.query_params.get(DistanceToPointFilter.dist_param, None)
+
+            if not point_string:
+                raise ValidationError(f"Ordering by distance not allowed. Missing required parameter: {DistanceToPointFilter.point_param}")
+            if not distance_param:
+                raise ValidationError(f"Ordering by distance not allowed. Missing required parameter: {DistanceToPointFilter.dist_param}")
+
+            try:
+                (x, y) = (float(n) for n in point_string.split(","))
+                point = Point(x, y, srid=4326)
+            except ValueError:
+                raise ValidationError(
+                    "Invalid geometry string supplied for parameter {}".format(
+                        DistanceToPointFilter.point_param
+                    )
+                )
+
+            return Distance(self.ordering_filter_field, point) if not descending else -Distance(self.ordering_filter_field, point)
+
+        return super().get_ordering_value(param)
+
 class BaseReportFilter(GeoFilterSet):
     user_uuid = filters.UUIDFilter(field_name="user")
     short_id = filters.CharFilter(field_name="report_id", label="Short ID")
@@ -58,7 +97,8 @@ class BaseReportFilter(GeoFilterSet):
         field_name="updated_at", label="Update at"
     )
 
-    order_by = filters.OrderingFilter(
+    order_by = DistanceOrderingFilter(
+        ordering_filter_field='point',
         fields=(("server_upload_time", "received_at"), ("creation_time", "created_at"))
     )
     tags = TagFilter(field_name='tags__name')
