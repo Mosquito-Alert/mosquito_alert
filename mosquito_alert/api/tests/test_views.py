@@ -4,9 +4,11 @@ import jwt
 import pytest
 import time_machine
 import re
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.contrib.gis.geos import Point
 from django.db import connection
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -1479,3 +1481,42 @@ class TestPermissionsApi:
         assert not response.data['countries'][0]['permissions']['identification_task']['view']
         assert not response.data['countries'][0]['permissions']['review']['add']
         assert not response.data['countries'][0]['permissions']['review']['view']
+
+
+@pytest.mark.django_db
+class TestFixesApi:
+    @pytest.fixture
+    def endpoint(self):
+        return '/api/v1/fixes/'
+
+    @pytest.mark.parametrize(
+        "user_last_location, user_last_location_update, fix_creation_time, expected_user_last_location, expected_user_last_location_update",
+        [
+            (None, None, timezone.datetime(2024, 1, 1, tzinfo=timezone.utc), Point(0.1, 0.1, srid=4326), timezone.datetime(2024, 1, 1, tzinfo=timezone.utc)),
+            (Point(10.0, 20.0, srid=4326), timezone.datetime(2024, 1, 1, tzinfo=timezone.utc), timezone.datetime(2024, 1, 1, tzinfo=timezone.utc), Point(0.1, 0.1, srid=4326), timezone.datetime(2024, 1, 1, tzinfo=timezone.utc)),
+            (Point(10.0, 20.0, srid=4326), timezone.datetime(2024, 1, 2, tzinfo=timezone.utc), timezone.datetime(2024, 1, 1, tzinfo=timezone.utc), Point(10.0, 20.0, srid=4326), timezone.datetime(2024, 1, 2, tzinfo=timezone.utc)),
+            (Point(10.0, 20.0, srid=4326), timezone.datetime(2024, 1, 1, tzinfo=timezone.utc), timezone.datetime(2024, 1, 2, tzinfo=timezone.utc), Point(0.1, 0.1, srid=4326), timezone.datetime(2024, 1, 2, tzinfo=timezone.utc)),
+        ]
+    )
+    def test_user_last_location_is_updated_on_fix_creation(self, app_user: TigaUser, app_api_client, endpoint, user_last_location, user_last_location_update, fix_creation_time, expected_user_last_location, expected_user_last_location_update):
+        app_user.last_location = user_last_location
+        app_user.last_location_update = user_last_location_update
+        app_user.save()
+        response = app_api_client.post(
+            endpoint,
+            data={
+                "coverage_uuid": str(uuid.uuid4()),
+                "created_at": fix_creation_time,
+                "sent_at": fix_creation_time,
+                "point": {
+                    "longitude": 0.1,
+                    "latitude": 0.1
+                },
+                },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        app_user.refresh_from_db()
+        assert app_user.last_location == expected_user_last_location
+        assert app_user.last_location_update == expected_user_last_location_update
