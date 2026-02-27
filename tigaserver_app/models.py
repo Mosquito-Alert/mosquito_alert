@@ -83,22 +83,22 @@ def grant_50_reports_achievement( report, granter ):
 
 
 def grant_first_of_season( report, granter ):
-    c = AwardCategory.objects.get(category_label=START_OF_SEASON)
-    grant_award( report, report.creation_time, report.user, granter, c )
+    if c := AwardCategory.objects.filter(category_label=START_OF_SEASON).first():
+        grant_award( report, report.creation_time, report.user, granter, c )
 
 
 def grant_first_of_day( report, granter ):
-    c = AwardCategory.objects.get(category_label=DAILY_PARTICIPATION)
-    grant_award( report, report.creation_time, report.user, granter, c )
+    if c := AwardCategory.objects.filter(category_label=DAILY_PARTICIPATION).first():
+        grant_award( report, report.creation_time, report.user, granter, c )
 
 
 def grant_two_consecutive_days_sending( report, granter ):
-    c = AwardCategory.objects.get(category_label=FIDELITY_DAY_2)
-    grant_award( report, report.creation_time, report.user, granter, c )
+    if c := AwardCategory.objects.filter(category_label=FIDELITY_DAY_2).first():
+        grant_award( report, report.creation_time, report.user, granter, c )
 
 
 def grant_three_consecutive_days_sending(report, granter):
-        c = AwardCategory.objects.get(category_label=FIDELITY_DAY_3)
+    if c := AwardCategory.objects.filter(category_label=FIDELITY_DAY_3).first():
         grant_award(report, report.creation_time, report.user, granter, c)
 
 def grant_special_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_expert, special_award_label, special_award_xp):
