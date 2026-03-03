@@ -34,6 +34,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          # Same as docker-compose
+          build-args: |
+            BUILD_ENVIRONMENT=local
           # Same as Dockerfile service image name.
           tags: mosquito_alert_v1_local
           push: false

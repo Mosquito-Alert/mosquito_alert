@@ -5,12 +5,12 @@ import pandas as pd
 import os, sys
 
 proj_path = "/home/webuser/webapps/tigaserver/"
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.prod")
 sys.path.append(proj_path)
 
 django.setup()
 
-from tigaserver_app.models import Fix
+from mosquito_alert.tigaserver_app.models import Fix
 
 
 FILE = os.path.join(settings.STATIC_ROOT, "geo_user_fixes.csv")

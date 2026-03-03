@@ -3,7 +3,7 @@
 import os, sys
 
 proj_path = "/home/webuser/webapps/tigaserver/"
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.prod")
 sys.path.append(proj_path)
 
 os.chdir(proj_path)
@@ -16,8 +16,8 @@ from django.utils import timezone
 
 application = get_wsgi_application()
 
-from tigascoring.xp_scoring import get_user_class
-from tigaserver_app.models import RankingData, TigaUser
+from mosquito_alert.tigascoring.xp_scoring import get_user_class
+from mosquito_alert.tigaserver_app.models import RankingData, TigaUser
 
 @transaction.atomic
 def init_ranking_data():

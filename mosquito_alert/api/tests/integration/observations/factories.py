@@ -1,0 +1,18 @@
+from mosquito_alert.tigaserver_app.models import Report, TigaUser
+
+from mosquito_alert.api.tests.factories import create_report_object
+
+
+def create_observation_object(user: TigaUser, is_published: bool = False) -> Report:
+    report = create_report_object(user)
+    report.type = Report.TYPE_ADULT
+    report.save()
+
+    if is_published:
+        report.published_at = report.server_upload_time
+    else:
+        report.published_at = None
+
+    report.save()
+
+    return report

@@ -1,0 +1,54 @@
+beautifulsoup4==4.12.3
+celery==5.4.0
+langcodes==3.4.1
+minify_html==0.18.1
+numpyencoder==0.3.0
+pandas==1.1.5
+pillow_heif==0.18.0
+pillow==11.1.0 # See: https://github.com/python-pillow/Pillow/issues/8605
+psycopg2==2.8.5
+pydenticon==0.3.1
+pyproj==3.3.1 # Needed for django geo?
+rawpy==0.17.1
+semantic-version==2.10.0
+scipy==1.13.1
+timezonefinder==6.2.0
+tqdm==4.66.1
+tzdata==2025.3 # Needed for zoneinfo to work.
+Unidecode==1.3.8
+
+# Django
+# ------------------------------------------------------------------------------
+Django==4.2.27
+django-cors-headers==3.14.0
+django-environ==0.13.0
+django-filter==25.1
+django-hosts==7.0.0
+django-imagekit==5.0.0
+django-leaflet==0.29.0
+django-timezone-field==5.1
+django-lifecycle==1.2.4
+django-simple-history==3.4.0
+django-taggit==4.0.0
+django-treebeard==4.7.1
+django-modeltranslation==0.18.12
+fcm-django==2.3.1
+
+# Django Admin
+django-admin-numeric-filter==0.1.9
+
+# Django REST Framework
+# NOTE: See https://github.com/encode/django-rest-framework/pull/9764/changes
+# Which is merged after 3.16.1
+# djangorestframework==3.16.1
+git+https://github.com/encode/django-rest-framework.git@513ddb4
+djangorestframework-csv==3.0.2
+djangorestframework-dataclasses==1.4.0
+djangorestframework-gis==1.2.0
+djangorestframework-simplejwt==5.3.1
+drf-extra-fields==3.7.0
+drf-nested-routers==0.95.0
+drf-standardized-errors==0.14.1
+
+# DRF-spectacular for api documentation
+drf-spectacular==0.29.0

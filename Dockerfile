@@ -4,6 +4,8 @@ FROM ubuntu:20.04
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
+ARG BUILD_ENVIRONMENT
+
 # Install prerequisites
 RUN apt-get update && apt-get install -y software-properties-common curl git
 
@@ -34,6 +36,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 WORKDIR /app
 COPY . /app
 
-RUN pip install -r requirements/dev.pip
+RUN pip install -r requirements/${BUILD_ENVIRONMENT}.txt
 
 ENTRYPOINT ["/usr/bin/bash", "/app/docker-entrypoint.sh"]

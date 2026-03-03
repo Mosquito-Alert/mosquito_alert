@@ -9,12 +9,12 @@ import os, sys
 from tqdm import tqdm
 
 proj_path = "/home/webuser/webapps/tigaserver/"
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.prod")
 sys.path.append(proj_path)
 
 django.setup()
 
-from tigaserver_app.models import TigaUser
+from mosquito_alert.tigaserver_app.models import TigaUser
 
 one_week_ago = timezone.now() - timedelta(days=7)
 

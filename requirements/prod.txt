@@ -1,0 +1,6 @@
+# PRECAUTION: avoid production dependencies that aren't in development
+
+-r base.txt
+
+gunicorn==18.0
+sentry-sdk==2.52.0
