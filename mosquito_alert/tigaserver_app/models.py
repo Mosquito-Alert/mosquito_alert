@@ -21,7 +21,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
-from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
+from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon, Point
 from django.contrib.gis.measure import Distance as DistanceMeasure
 from django.core.cache import cache
 from django.core.validators import RegexValidator
@@ -1912,6 +1912,11 @@ class Fix(TimeZoneModelMixin, models.Model):
         if self.user_coverage_uuid is not None:
             result = self.user_coverage_uuid
         return result
+
+    # TODO: replace masked_lon/masked_lat to Point (snaptogrid)
+    @property
+    def point(self):
+        return Point(x=self.masked_lon, y=self.masked_lat, srid=4326)
 
     # See TimeZoneModelMixin
     def _get_latitude_for_timezone(self):

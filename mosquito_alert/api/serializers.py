@@ -97,6 +97,20 @@ class FixSerializer(serializers.ModelSerializer):
     coverage_uuid = serializers.UUIDField(source="user_coverage_uuid")
     point = FixLocationSerializer(source="*", required=True)
 
+    def save(self, *args, **kwargs):
+        instance = super().save(*args, **kwargs)
+
+        request = self.context.get("request")
+        user = request.user
+        if request and user and user.is_authenticated:
+            if isinstance(user, TigaUser):
+                if user.last_location_update is None or instance.fix_time >= user.last_location_update:
+                    user.last_location = instance.point
+                    user.last_location_update = instance.fix_time
+                    user.save()
+
+        return instance
+
     class Meta:
         model = Fix
         fields = (
