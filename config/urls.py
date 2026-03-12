@@ -8,8 +8,6 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from mosquito_alert.stats.views import show_usage, workload_stats, \
-    stats_user_score, stats_user_ranking, global_assignments, global_assignments_list
 from mosquito_alert.tigacrafting.views import expert_report_annotation, expert_status, notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, expert_report_pending, expert_report_complete, report_expiration, aimalog_datatable, aimalog, coarse_filter
 from django.views.i18n import JavaScriptCatalog
 from django.urls import include,path
@@ -67,16 +65,7 @@ urlpatterns += i18n_patterns(
     path('bcn/', RedirectView.as_view(url='https://map.mosquitoalert.com', permanent=True)),
     path('single_report_map/<uuid:version_uuid>/', RedirectView.as_view(url='https://map.mosquitoalert.com/%(version_uuid)s/', permanent=True)),
     path('single_simple/<uuid:version_uuid>/', RedirectView.as_view(url='https://map.mosquitoalert.com/%(version_uuid)s/', permanent=True)),
-    path('stats/', show_usage, name='show_usage'),
-    path('stats/workload/', workload_stats, name='workload_stats'),
-    path('stats/workload/<country_id>/', workload_stats, name='workload_stats'),
-    path('stats/global_assignments/', global_assignments, name='global_assignments'),
-    path('stats/global_assignments_list/<country_code>/<status>/', global_assignments_list, name='global_assignments_list'),
-
-    path('stats/user_score/<user_uuid>', stats_user_score, name='stats_user_score'),
-    path('stats/user_ranking/<page>', stats_user_ranking, name='stats_user_ranking'),
-    path('stats/user_ranking/<page>/<user_uuid>', stats_user_ranking, name='stats_user_ranking'),
-
+    path('stats/', include('mosquito_alert.stats.urls')),
     path('experts/', expert_report_annotation, name='expert_report_annotation'),
     path('experts/report_expiration/', report_expiration, name='report_expiration'),
     path('experts/report_expiration/<int:country_id>/', report_expiration, name='report_expiration'),
