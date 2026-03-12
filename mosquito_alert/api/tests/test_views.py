@@ -905,6 +905,61 @@ class TestDeviceAPI:
         assert device.os_name == 'test_os_name'
         assert device.os_version == 'test_os_version'
 
+    def test_create_device_using_existing_mobile_app(self, app_api_client, app_user):
+        mobile_app = MobileApp.objects.create(
+            package_name='com.test.app',
+            package_version='1.0.0'
+        )
+
+        response = app_api_client.post(
+            self.endpoint,
+            data={
+                'device_id': 'unique_id',
+                'fcm_token': 'fcm_unique_token',
+                'type': DeviceType.ANDROID,
+                'manufacturer': 'test_make',
+                'model': 'new_model',
+                'os': {
+                    'name': 'test_os_name',
+                    'version': 'test_os_version'
+                },
+                'mobile_app': {
+                    'package_name': mobile_app.package_name,
+                    'package_version': mobile_app.package_version
+                }
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        device = Device.objects.get(user=app_user, device_id='unique_id')
+        assert device.mobile_app == mobile_app
+
+    def test_update_device_using_existing_mobile_app(self, app_api_client, app_user):
+        mobile_app = MobileApp.objects.create(
+            package_name='com.test.app',
+            package_version='1.0.0'
+        )
+        device = Device.objects.create(
+            user=app_user,
+            device_id='unique_id',
+            registration_id='fcm_unique_token',
+            type=DeviceType.ANDROID,
+            model='test_model',
+        )
+
+        response = app_api_client.patch(
+            self.endpoint + f"{device.device_id}/",
+            data={
+                'mobile_app': {
+                    'package_name': mobile_app.package_name,
+                    'package_version': mobile_app.package_version
+                }
+            },
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        device.refresh_from_db()
+        assert device.mobile_app == mobile_app
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("taxa")

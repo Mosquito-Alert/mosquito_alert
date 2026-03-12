@@ -1648,12 +1648,13 @@ class PhotoSerializer(serializers.ModelSerializer):
             "image_url": {"source": "photo"},
         }
 
-class MobileAppSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MobileApp
-        fields = ("package_name", "package_version")
-
 class DeviceSerializer(serializers.ModelSerializer):
+    class MobileAppSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = MobileApp
+            fields = ("package_name", "package_version")
+            validators = [] # disable auto UniqueTogetherValidator (will manage get_or_create in the parent serializer)
+
     class DeviceOsSerializer(serializers.ModelSerializer):
         class Meta:
             model = Device
@@ -1675,22 +1676,17 @@ class DeviceSerializer(serializers.ModelSerializer):
     )
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
-    def validate(self, data):
-        mobile_app_data = data.pop("mobile_app", None)
-        # Create or retrieve the MobileApp instance
-        mobile_app_instance = None
-        if mobile_app_data:
-            mobile_app_instance, _ = MobileApp.objects.get_or_create(**mobile_app_data)
-        data["mobile_app"] = mobile_app_instance
-
-        return data
-
     @transaction.atomic
     def create(self, validated_data):
         # Extract the user and model from the data
         user = validated_data.get('user')
         model = validated_data.get('model')
         device_id = validated_data.get('device_id')
+
+        # Extract mobile app data.
+        mobile_app_data = validated_data.pop("mobile_app", None)
+        if mobile_app_data:
+            validated_data["mobile_app"], _ = MobileApp.objects.get_or_create(**mobile_app_data)
 
         # Check if there is a device with the same user, model, and device_id=None
         # That is for the users that are migrating from the legacy API to this.
@@ -1708,6 +1704,15 @@ class DeviceSerializer(serializers.ModelSerializer):
 
         # If no matching device was found, create a new device
         return super().create(validated_data)
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        # Extract mobile app data.
+        mobile_app_data = validated_data.pop("mobile_app", None)
+        if mobile_app_data:
+            validated_data["mobile_app"], _ = MobileApp.objects.get_or_create(**mobile_app_data)
+
+        return super().update(instance, validated_data)
 
     class Meta:
         model = Device
