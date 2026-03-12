@@ -277,7 +277,7 @@ MODELTRANSLATION_LANGUAGES = ('en', 'es', 'ca')
 # -------------------------------------------------------------------------------
 # django-rest-framework - https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
-    "DEFAULT_SCHEMA_CLASS": "mosquito_alert.api.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "mosquito_alert.api.v1.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "drf_standardized_errors.handler.exception_handler",
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
@@ -300,7 +300,7 @@ REST_FRAMEWORK = {
 DRF_STANDARDIZED_ERRORS = {
     "ALLOWED_ERROR_STATUS_CODES": ["400", "401", "403", "404", "429"],
     "ERROR_SCHEMAS": {
-        "401": "mosquito_alert.api.error_serializers.ErrorResponse401Serializer"
+        "401": "mosquito_alert.api.v1.error_serializers.ErrorResponse401Serializer"
     }
 }
 
@@ -340,7 +340,7 @@ SPECTACULAR_SETTINGS = {
         "AnnotationTypeEnum": ['short', 'long'],
         "ClientErrorEnum": "drf_standardized_errors.openapi_serializers.ClientErrorEnum.choices",
         "ServerErrorEnum": "drf_standardized_errors.openapi_serializers.ServerErrorEnum.choices",
-        "ErrorCode401Enum": "mosquito_alert.api.error_serializers.ErrorCode401Enum.choices",
+        "ErrorCode401Enum": "mosquito_alert.api.v1.error_serializers.ErrorCode401Enum.choices",
         "ErrorCode403Enum": "drf_standardized_errors.openapi_serializers.ErrorCode403Enum.choices",
         "ErrorCode404Enum": "drf_standardized_errors.openapi_serializers.ErrorCode404Enum.choices",
         "ErrorCode405Enum": "drf_standardized_errors.openapi_serializers.ErrorCode405Enum.choices",
@@ -381,7 +381,7 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
     "USER_ID_FIELD": "pk",
     "USER_ID_CLAIM": "user_pk",
-    "TOKEN_OBTAIN_SERIALIZER": "mosquito_alert.api.auth.serializers.AppUserTokenObtainPairSerializer",
+    "TOKEN_OBTAIN_SERIALIZER": "mosquito_alert.api.v1.auth.serializers.AppUserTokenObtainPairSerializer",
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup

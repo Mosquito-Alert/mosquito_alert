@@ -2,7 +2,7 @@ import pytest
 
 from mosquito_alert.tigacrafting.models import PhotoPrediction
 
-from mosquito_alert.api.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
+from mosquito_alert.api.v1.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
 
 # NOTE: needed for token with perms fixture
 @pytest.fixture

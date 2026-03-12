@@ -21,7 +21,7 @@ class PointFieldExtension(OpenApiSerializerFieldExtension):
         )
 
 class FieldPolymorphicSerializerExtension(PolymorphicSerializerExtension):
-    target_class = "mosquito_alert.api.base_serializers.FieldPolymorphicSerializer"
+    target_class = "mosquito_alert.api.v1.base_serializers.FieldPolymorphicSerializer"
 
     # NOTE: even if the implementation in PolymorphicSerializerExtension works pretty well,
     # it causes errors on openapi-generator.
@@ -75,7 +75,7 @@ class FieldPolymorphicSerializerExtension(PolymorphicSerializerExtension):
 
 
 class WritableSerializerMethodField(OpenApiSerializerFieldExtension):
-    target_class = "mosquito_alert.api.fields.WritableSerializerMethodField"
+    target_class = "mosquito_alert.api.v1.fields.WritableSerializerMethodField"
 
     def map_serializer_field(self, auto_schema, direction):
         return auto_schema._map_serializer_field(

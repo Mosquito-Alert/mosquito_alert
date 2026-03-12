@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 
 from mosquito_alert.tigaserver_app.models import TigaUser, Device
 
-from mosquito_alert.api.auth.serializers import AppUserTokenObtainPairSerializer
+from mosquito_alert.api.v1.auth.serializers import AppUserTokenObtainPairSerializer
 
 User = get_user_model()
 

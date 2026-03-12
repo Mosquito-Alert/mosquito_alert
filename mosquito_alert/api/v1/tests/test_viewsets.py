@@ -12,9 +12,9 @@ from rest_framework.viewsets import GenericViewSet as DRFGenericViewSet
 
 from rest_framework_simplejwt.settings import api_settings
 
-from mosquito_alert.api.auth.authentication import JWTAuthentication
-from mosquito_alert.api.viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet
-from mosquito_alert.api.tests.clients import AppAPIClient
+from mosquito_alert.api.v1.auth.authentication import JWTAuthentication
+from mosquito_alert.api.v1.viewsets import GenericViewSet, GenericMobileOnlyViewSet, GenericNoMobileViewSet
+from mosquito_alert.api.v1.tests.clients import AppAPIClient
 
 
 factory = APIRequestFactory()

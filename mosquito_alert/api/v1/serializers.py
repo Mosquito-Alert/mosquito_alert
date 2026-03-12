@@ -928,7 +928,7 @@ class TaxonSerializer(SimpleTaxonSerializer):
 class TaxonTreeNodeSerializer(TaxonSerializer):
     children = serializers.SerializerMethodField()
 
-    @extend_schema_field(lazy_serializer("mosquito_alert.api.serializers.TaxonTreeNodeSerializer")(many=True))
+    @extend_schema_field(lazy_serializer("mosquito_alert.api.v1.serializers.TaxonTreeNodeSerializer")(many=True))
     def get_children(self, obj: Taxon):
         if obj.get_children_count():
             # TODO: get_children() -> can be improved to reduce the number of queries.

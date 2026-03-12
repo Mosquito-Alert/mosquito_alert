@@ -25,14 +25,14 @@ from rest_framework_simplejwt.settings import api_settings
 from mosquito_alert.tigacrafting.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction
 from mosquito_alert.tigaserver_app.models import TigaUser, Report, Device, MobileApp, Photo, TemporaryBoundary
 
-from mosquito_alert.api.tests.clients import AppAPIClient
-from mosquito_alert.api.tests.integration.observations.factories import create_observation_object
-from mosquito_alert.api.tests.integration.breeding_sites.factories import create_breeding_site_object
-from mosquito_alert.api.tests.integration.bites.factories import create_bite_object
-from mosquito_alert.api.tests.integration.identification_tasks.factories import create_annotation, create_review
-from mosquito_alert.api.tests.factories import create_report_object, create_boundary_contains_point
-from mosquito_alert.api.tests.utils import grant_permission_to_user
-from mosquito_alert.api.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
+from mosquito_alert.api.v1.tests.clients import AppAPIClient
+from mosquito_alert.api.v1.tests.integration.observations.factories import create_observation_object
+from mosquito_alert.api.v1.tests.integration.breeding_sites.factories import create_breeding_site_object
+from mosquito_alert.api.v1.tests.integration.bites.factories import create_bite_object
+from mosquito_alert.api.v1.tests.integration.identification_tasks.factories import create_annotation, create_review
+from mosquito_alert.api.v1.tests.factories import create_report_object, create_boundary_contains_point
+from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
+from mosquito_alert.api.v1.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
 
 from .utils import grant_permission_to_user
 

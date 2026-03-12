@@ -23,10 +23,10 @@ class TokenViewBase(OpenApiViewExtension):
         )(self.target)
 
 class AppUserJWTAuthentication(SimpleJWTScheme):
-    target_class = "mosquito_alert.api.auth.authentication.AppUserJWTAuthentication"
+    target_class = "mosquito_alert.api.v1.auth.authentication.AppUserJWTAuthentication"
 
 class AppUserTokenObtainPairSerializer(TokenObtainPairSerializerExtension):
-    target_class = "mosquito_alert.api.auth.serializers.AppUserTokenObtainPairSerializer"
+    target_class = "mosquito_alert.api.v1.auth.serializers.AppUserTokenObtainPairSerializer"
 
     def map_serializer(self, auto_schema, direction):
         Fixed = inline_serializer('Fixed', fields={
@@ -39,4 +39,4 @@ class AppUserTokenObtainPairSerializer(TokenObtainPairSerializerExtension):
         return auto_schema._map_serializer(Fixed, direction)
 
 class NonAppUserSessionAuthentication(SessionScheme):
-    target_class = "mosquito_alert.api.auth.authentication.NonAppUserSessionAuthentication"
+    target_class = "mosquito_alert.api.v1.auth.authentication.NonAppUserSessionAuthentication"
