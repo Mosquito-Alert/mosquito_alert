@@ -5,13 +5,13 @@ import csv
 import os, sys
 
 proj_path = "/home/webuser/webapps/tigaserver/"
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tigaserver_project.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.prod")
 sys.path.append(proj_path)
 
 django.setup()
 
-from tigacrafting.models import IdentificationTask
-from tigaserver_app.models import Report
+from mosquito_alert.tigacrafting.models import IdentificationTask
+from mosquito_alert.tigaserver_app.models import Report
 
 ALL_REPORTS_FILENAME = "geo_all_complete_reports.csv"
 SPECIES_ONLY_FILENAME = "geo_all_species_reports.csv"

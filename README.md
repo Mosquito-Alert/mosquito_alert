@@ -98,9 +98,9 @@ Mosquito Alert harnesses the power of citizen scientists and modern technology t
 ### Configuration
 
 The project uses Django settings modules:
-- `tigaserver_project.settings` - Production settings
-- `tigaserver_project.settings_dev` - Development settings
-- `tigaserver_project.settings_dev_ssl` - Development with SSL
+- `config.settings.prod` - Production settings
+- `config.settings.local` - Development settings
+- `config.settings.local_ssl` - Development with SSL
 
 Environment variables can be set for:
 - Database connection
@@ -202,7 +202,7 @@ pytest api/tests/test_views.py::TestReportViewSet::test_create_report
 ### Test Configuration
 
 Tests are configured in `pytest.ini`:
-- Uses `tigaserver_project.settings_dev` for testing
+- Uses `config.settings.local` for testing
 - Database reuse enabled (`--reuse-db`)
 - Integration tests with Tavern
 

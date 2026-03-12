@@ -7,16 +7,20 @@ services:
   django:
     build:
       context: .
+      args:
+        BUILD_ENVIRONMENT: local
     image: mosquito_alert_v1_local
     container_name: mosquito_alert_v1_local_django
     depends_on:
       - postgres
+      - redis
     volumes:
       - .:/app:z
     ports:
       - "8000:8000"
-    environment:
-      - DJANGO_SETTINGS_MODULE=tigaserver_project.settings_dev
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
     command: bash -c "python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"
 
   postgres:
@@ -24,7 +28,11 @@ services:
     container_name: mosquito_alert_v1_local_postgres
     volumes:
       - mosquito_alert_v1_local_postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=postgres
+    env_file:
+      - ./.envs/.local/.postgres
     # NOTE: uncomment if want to see all queries in docker logs.
     #command: "-c log_statement=all"
+
+  redis:
+    image: redis:6
+    container_name: mosquito_alert_local_redis

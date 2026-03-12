@@ -35,7 +35,7 @@ services:
       - traefik
       - postgres
     environment:
-      - DJANGO_SETTINGS_MODULE=tigaserver_project.settings_dev_ssl
+      - DJANGO_SETTINGS_MODULE=config.settings.local_ssl
     networks:
       - traefik-network
       - postgres-network
