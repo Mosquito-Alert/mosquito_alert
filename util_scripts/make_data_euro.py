@@ -13,12 +13,24 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 from django.conf import settings
+from rest_framework import serializers
 from rest_framework.renderers import JSONRenderer
+from mosquito_alert.tigaserver_app.models import CoverageAreaMonth
 import json
-from mosquito_alert.tigaserver_app.views import coverage_month_internal
+
+class CoverageMonthMapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CoverageAreaMonth
+        fields = ('lat', 'lon', 'year', 'month', 'n_fixes')
+
+def coverage_month_internal():
+    queryset = CoverageAreaMonth.objects.all()
+    serializer = CoverageMonthMapSerializer(queryset, many=True)
+    return serializer.data
 
 print('Starting coverage month request')
 d = coverage_month_internal()
+
 json_string = JSONRenderer().render(d)
 data = json.loads(json_string)
 accumulated_results = json.dumps(data)

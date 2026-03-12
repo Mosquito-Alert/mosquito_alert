@@ -3,21 +3,11 @@ from PIL import Image, ImageOps
 
 from django.db.models.fields.files import ImageFieldFile
 
-from rest_framework import serializers
-
 from imagekit.models import ProcessedImageField as OriginalProcessedImageField
 from imagekit.utils import generate, open_image, suggest_extension
 
 from .utils import scrub_sensitive_exif
 
-class NullableTimeZoneDatetimeField(serializers.DateTimeField):
-    def enforce_timezone(self, value):
-        return value
-
-
-class AutoTimeZoneDatetimeField(NullableTimeZoneDatetimeField):
-    # NOTE: to be used when inheriting AutoTimeZoneSerializerMixin
-    pass
 
 class ProcessedImageExifFieldFile(ImageFieldFile):
     def save(self, name, content, save=True):

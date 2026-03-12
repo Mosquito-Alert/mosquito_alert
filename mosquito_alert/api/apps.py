@@ -6,5 +6,5 @@ class ApiConfig(AppConfig):
     label = "api"
 
     def ready(self) -> None:
-        import mosquito_alert.api.schema
-        import mosquito_alert.api.auth.schema
+        import mosquito_alert.api.v1.schema
+        import mosquito_alert.api.v1.auth.schema

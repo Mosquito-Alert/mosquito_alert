@@ -1541,7 +1541,7 @@ class Report(TimeZoneModelMixin, models.Model):
             )
         ]
         indexes = [
-            # NOTE: Improve performance of .views.ReportViewSet
+            # NOTE: Improve performance of api.v0.views.ReportViewSet
             models.Index(fields=["user", "type", "report_id"]),
             # NOTE: Improve performance of /api/observations when 
             # filtering by non_deleted() and published() endpoint.
