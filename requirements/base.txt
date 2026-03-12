@@ -41,7 +41,7 @@ django-admin-numeric-filter==0.1.9
 # NOTE: See https://github.com/encode/django-rest-framework/pull/9764/changes
 # Which is merged after 3.16.1
 # djangorestframework==3.16.1
-git+https://github.com/encode/django-rest-framework.git@513ddb4
+git+https://github.com/encode/django-rest-framework.git@513ddb4ffbfaef9d0117b281121ffc7319106f2f
 djangorestframework-csv==3.0.2
 djangorestframework-dataclasses==1.4.0
 djangorestframework-gis==1.2.0
