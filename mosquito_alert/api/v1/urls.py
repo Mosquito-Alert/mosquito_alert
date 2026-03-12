@@ -105,8 +105,8 @@ api_urlpatterns += router.urls
 api_urlpatterns += identification_task_router.urls
 
 urlpatterns = [
+    path("", CustomRedocView.as_view(url_name="schema"), name="redoc"),
     path("", include(api_urlpatterns)),
     path("openapi.yml", SpectacularAPIView.as_view(api_version='v1'), name="schema"),
     path("openapi.json", SpectacularJSONAPIView.as_view(api_version='v1'), name="schema-json"),
-    re_path("$^", CustomRedocView.as_view(url_name="schema"), name="redoc"),
 ]

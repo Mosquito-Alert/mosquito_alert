@@ -20,8 +20,7 @@ from django.views.generic import TemplateView
 # Additionally, we include login URLs for the browseable API.
 
 urlpatterns = [
-    path('api/', include('config.api_urls')),
-    path('api/', include(('mosquito_alert.api.v0.urls', 'mosquito_alert.api'), namespace='legacy')),
+    path('api/', include('mosquito_alert.api.urls')),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api-docs/', TemplateView.as_view(template_name='api/v0/swagger.html',extra_context={'schema_url':'openapi-schema'}), name='swagger-ui'),
 ]
