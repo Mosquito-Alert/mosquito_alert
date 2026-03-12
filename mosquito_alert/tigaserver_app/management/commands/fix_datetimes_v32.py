@@ -11,7 +11,7 @@ from django.db.models import F, fields, ExpressionWrapper, Q, OuterRef, Subquery
 from django.utils import timezone
 
 from mosquito_alert.tigaserver_app.models import Award, Report, Fix
-from mosquito_alert.tigaserver_app.utils import is_instant_upload_candidate, apply_tz_to_datetime
+from mosquito_alert.api.v0.utils import is_instant_upload_candidate, apply_tz_to_datetime
 
 
 class AutoTzDateTimeProcess(ABC):

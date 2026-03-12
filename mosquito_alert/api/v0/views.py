@@ -8,8 +8,7 @@ from django.db.models import Q
 from django.conf import settings
 from django_filters import rest_framework as filters
 import json
-from mosquito_alert.tigaserver_app.serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, CoverageMonthMapSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
-from mosquito_alert.tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, CoverageAreaMonth, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, ReportResponse, Device
+from mosquito_alert.tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, ReportResponse, Device
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
@@ -23,6 +22,7 @@ from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.template.loader import get_template
 
+from .serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 
 def score_label(score):
     if score > 66:
@@ -338,11 +338,6 @@ def topics_subscribed(request):
     subs = UserSubscription.objects.filter(user=user).select_related("topic")
     serializer = UserSubscriptionSerializer(subs,many=True)
     return Response(data=serializer.data, status=status.HTTP_200_OK)
-
-def coverage_month_internal():
-    queryset = CoverageAreaMonth.objects.all()
-    serializer = CoverageMonthMapSerializer(queryset, many=True)
-    return serializer.data
 
 
 @api_view(['POST'])

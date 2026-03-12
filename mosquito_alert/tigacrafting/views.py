@@ -15,7 +15,6 @@ from django.http import HttpResponse
 from mosquito_alert.tigaserver_app.models import Notification, EuropeCountry, SentNotification, NotificationTopic, TOPIC_GROUPS, AcknowledgedNotification, UserSubscription
 from django.db.models import Q
 from django.contrib.auth.models import User, Group
-from mosquito_alert.tigaserver_app.serializers import DataTableNotificationSerializer, DataTableAimalertSerializer
 from django.db import transaction
 import logging
 from django.utils.translation import gettext as _
@@ -27,6 +26,7 @@ from decimal import *
 from rest_framework.response import Response
 from django.utils import timezone
 
+from .serializers import DataTableNotificationSerializer, DataTableAimalertSerializer
 #-----------------------------------#
 
 logger_notification = logging.getLogger('mosquitoalert.notification')

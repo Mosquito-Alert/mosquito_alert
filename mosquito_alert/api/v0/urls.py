@@ -1,7 +1,7 @@
 from django.conf.urls import include
 from django.urls import path, re_path
 from rest_framework import routers
-from mosquito_alert.tigaserver_app import views
+from mosquito_alert.api.v0 import views
 from mosquito_alert.stats.views import workload_stats_per_user,workload_daily_report_input,workload_pending_per_user,workload_available_reports, get_user_xp_data
 
 router = routers.DefaultRouter()
