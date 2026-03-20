@@ -1,7 +1,8 @@
 from django.shortcuts import render
 
 from mosquito_alert.tigaserver_app.models import *
-from mosquito_alert.tigacrafting.models import UserStat, ExpertReportAnnotation
+from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
+from mosquito_alert.users.models import UserStat
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest

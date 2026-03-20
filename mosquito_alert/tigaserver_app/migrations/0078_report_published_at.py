@@ -11,7 +11,7 @@ def mark_hidden_reports_not_published_from_identification_task(apps, schema_edit
     Report = apps.get_model('tigaserver_app', 'Report')
     ExpertReportAnnotation = apps.get_model('tigacrafting', 'ExpertReportAnnotation')
 
-    from mosquito_alert.tigacrafting.models import ExpertReportAnnotation as ExpertReportAnnotationModel
+    from mosquito_alert.identification_tasks.models import ExpertReportAnnotation as ExpertReportAnnotationModel
 
     Report.objects.filter(
         identification_task__isnull=True,
@@ -35,7 +35,7 @@ def populate_report_published_at(apps, schema_editor):
     IdentificationTask = apps.get_model('tigacrafting', 'IdentificationTask')
 
     from mosquito_alert.tigaserver_app.models import Report as ReportModel
-    from mosquito_alert.tigacrafting.models import IdentificationTask as IdentificationTaskModel
+    from mosquito_alert.identification_tasks.models import IdentificationTask as IdentificationTaskModel
 
     ReportContentType = ContentType.objects.get_for_model(Report)
 

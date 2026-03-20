@@ -1,6 +1,6 @@
 import pytest
 
-from mosquito_alert.tigacrafting.models import ExpertReportAnnotation
+from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
 
 # NOTE: needed for token with perms fixture
 @pytest.fixture

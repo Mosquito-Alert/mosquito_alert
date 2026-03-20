@@ -7,7 +7,7 @@ def remove_autoflagged_reports(apps, schema_editor):
     Report = apps.get_model('tigaserver_app', 'Report')
     ExpertReportAnnotation = apps.get_model('tigacrafting', 'ExpertReportAnnotation')
 
-    from mosquito_alert.tigacrafting.models import ExpertReportAnnotation as ExpertReportAnnotationModel
+    from mosquito_alert.identification_tasks.models import ExpertReportAnnotation as ExpertReportAnnotationModel
 
     reports_to_update = Report.objects.annotate(
         unique_classifications=models.Count(

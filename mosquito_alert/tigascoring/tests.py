@@ -4,7 +4,8 @@ from django.utils.translation import activate, deactivate, gettext as _
 from mosquito_alert.tigaserver_app.models import TigaUser, Report, Photo, Award, \
     Notification, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, \
     ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
-from mosquito_alert.tigacrafting.models import Taxon, ExpertReportAnnotation
+from mosquito_alert.taxa.models import Taxon
+from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
 from mosquito_alert.tigascoring.xp_scoring import compute_user_score_in_xp_v2
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -59,7 +60,7 @@ class ScoringTestCase(TestCase):
         report_in_season = self.create_single_report(settings.SEASON_START_DAY, settings.SEASON_START_MONTH, 2020, user,
                                                      '00000000-0000-0000-0000-000000000002')
         report_in_season.save()
-        _ = Photo.objects.create(report=report_in_season, photo='mosquito_alert/tigacrafting/tests/testdata/splash.png')
+        _ = Photo.objects.create(report=report_in_season, photo='mosquito_alert/identification_tasks/tests/testdata/splash.png')
         report_in_season.refresh_from_db()
         retval = compute_user_score_in_xp_v2(user_id)
         # 6 points first of season
@@ -73,7 +74,7 @@ class ScoringTestCase(TestCase):
         report_in_season = self.create_single_report(settings.SEASON_START_DAY, settings.SEASON_START_MONTH, 2020, user,
                                                      '00000000-0000-0000-0000-000000000002')
         report_in_season.save()
-        _ = Photo.objects.create(report=report_in_season, photo='mosquito_alert/tigacrafting/tests/testdata/splash.png')
+        _ = Photo.objects.create(report=report_in_season, photo='mosquito_alert/identification_tasks/tests/testdata/splash.png')
         identification_task = report_in_season.identification_task
         report_in_season.refresh_from_db()
         reritja_user = User.objects.get(pk=25)

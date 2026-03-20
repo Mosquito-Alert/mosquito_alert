@@ -44,8 +44,8 @@ from timezone_field import TimeZoneField
 from taggit.managers import TaggableManager
 from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
-from mosquito_alert.tigacrafting.models import IdentificationTask
-from mosquito_alert.tigacrafting.permissions import UserRolePermissionMixin, Role
+from mosquito_alert.identification_tasks.models import IdentificationTask
+from mosquito_alert.users.permissions import UserRolePermissionMixin, Role
 
 from .fields import ProcessedImageField
 from .managers import ReportManager, PhotoManager, NotificationManager, DeviceManager

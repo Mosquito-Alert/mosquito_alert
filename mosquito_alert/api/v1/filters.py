@@ -12,7 +12,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_gis.filters import DistanceToPointFilter
 from rest_framework_gis.filterset import GeoFilterSet
 
-from mosquito_alert.tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon
+from mosquito_alert.identification_tasks.models import IdentificationTask, ExpertReportAnnotation
+from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry, Photo, TemporaryBoundary
 
 User = get_user_model()

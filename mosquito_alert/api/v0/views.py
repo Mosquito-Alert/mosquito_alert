@@ -13,8 +13,6 @@ from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.views.decorators.cache import cache_page
-from mosquito_alert.tigacrafting.criteria import users_with_pictures,users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
-from mosquito_alert.tigacrafting.models import ExpertReportAnnotation, Taxon, IdentificationTask
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -22,6 +20,10 @@ from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.template.loader import get_template
 
+from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
+from mosquito_alert.taxa.models import Taxon
+
+from .criteria import users_with_pictures, users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
 from .serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
 
 def score_label(score):

@@ -1,6 +1,6 @@
 import pytest
 
-from mosquito_alert.tigacrafting.models import PhotoPrediction
+from mosquito_alert.identification_tasks.models import PhotoPrediction
 
 from .factories import create_photo_prediction
 

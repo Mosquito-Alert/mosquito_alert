@@ -21,14 +21,14 @@ from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from taggit.serializers import TaggitSerializer, TagListSerializerField
 
-from mosquito_alert.tigacrafting.models import (
+from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
-    Taxon,
     ExpertReportAnnotation,
-    UserStat,
     PhotoPrediction
 )
-from mosquito_alert.tigacrafting.permissions import Permissions, Role
+from mosquito_alert.taxa.models import Taxon
+from mosquito_alert.users.models import UserStat
+from mosquito_alert.users.permissions import Permissions, Role
 from mosquito_alert.tigaserver_app.models import (
     NotificationContent,
     Notification,
