@@ -117,11 +117,11 @@ THIRD_PARTY_APPS = [
 ]
 LOCAL_APPS = [
     'mosquito_alert.api',
+    'mosquito_alert.awards',
     'mosquito_alert.identification_tasks',
     'mosquito_alert.stats',
     'mosquito_alert.taxa',
     'mosquito_alert.tigacrafting',
-    'mosquito_alert.tigascoring',
     'mosquito_alert.tigaserver_app',
     'mosquito_alert.users',
 ]
