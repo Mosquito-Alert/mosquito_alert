@@ -1,6 +1,6 @@
 [
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 1,
         "fields":
         {
@@ -18,7 +18,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 2,
         "fields":
         {
@@ -36,7 +36,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 3,
         "fields":
         {
@@ -54,7 +54,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 4,
         "fields":
         {
@@ -72,7 +72,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 5,
         "fields":
         {
@@ -90,7 +90,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 6,
         "fields":
         {
@@ -108,7 +108,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 7,
         "fields":
         {
@@ -126,7 +126,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 8,
         "fields":
         {
@@ -144,7 +144,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 9,
         "fields":
         {
@@ -162,7 +162,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 10,
         "fields":
         {
@@ -180,7 +180,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 11,
         "fields":
         {
@@ -198,7 +198,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 12,
         "fields":
         {
@@ -216,7 +216,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 13,
         "fields":
         {
@@ -234,7 +234,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 14,
         "fields":
         {
@@ -252,7 +252,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 15,
         "fields":
         {
@@ -270,7 +270,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 16,
         "fields":
         {
@@ -288,7 +288,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 17,
         "fields":
         {
@@ -306,7 +306,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 18,
         "fields":
         {
@@ -324,7 +324,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 19,
         "fields":
         {
@@ -342,7 +342,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 20,
         "fields":
         {
@@ -360,7 +360,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 21,
         "fields":
         {
@@ -378,7 +378,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 22,
         "fields":
         {
@@ -396,7 +396,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 23,
         "fields":
         {
@@ -414,7 +414,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 24,
         "fields":
         {
@@ -432,7 +432,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 25,
         "fields":
         {
@@ -450,7 +450,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 26,
         "fields":
         {
@@ -468,7 +468,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 27,
         "fields":
         {
@@ -486,7 +486,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 28,
         "fields":
         {
@@ -504,7 +504,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 29,
         "fields":
         {
@@ -522,7 +522,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 30,
         "fields":
         {
@@ -540,7 +540,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 31,
         "fields":
         {
@@ -558,7 +558,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 32,
         "fields":
         {
@@ -576,7 +576,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 33,
         "fields":
         {
@@ -594,7 +594,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 34,
         "fields":
         {
@@ -612,7 +612,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 35,
         "fields":
         {
@@ -630,7 +630,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 36,
         "fields":
         {
@@ -648,7 +648,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 37,
         "fields":
         {
@@ -666,7 +666,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 38,
         "fields":
         {
@@ -684,7 +684,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 39,
         "fields":
         {
@@ -702,7 +702,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 40,
         "fields":
         {
@@ -720,7 +720,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 41,
         "fields":
         {
@@ -738,7 +738,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 42,
         "fields":
         {
@@ -756,7 +756,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 43,
         "fields":
         {
@@ -774,7 +774,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 44,
         "fields":
         {
@@ -792,7 +792,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 45,
         "fields":
         {
@@ -810,7 +810,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 46,
         "fields":
         {
@@ -828,7 +828,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 47,
         "fields":
         {
@@ -846,7 +846,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 48,
         "fields":
         {
@@ -864,7 +864,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 49,
         "fields":
         {
@@ -882,7 +882,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 50,
         "fields":
         {
@@ -900,7 +900,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 51,
         "fields":
         {
@@ -918,7 +918,7 @@
         }
     },
     {
-        "model": "tigaserver_app.europecountry",
+        "model": "geo.europecountry",
         "pk": 53,
         "fields":
         {

@@ -12,7 +12,8 @@ from datetime import timedelta
 from django.conf import settings
 from django.test import TransactionTestCase
 from django.utils.translation import activate, deactivate, gettext as _
-from mosquito_alert.tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, Photo, NotificationContent
+from mosquito_alert.geo.models import EuropeCountry, NutsEurope
+from mosquito_alert.tigaserver_app.models import TigaUser, Report, Photo, NotificationContent
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
 from django.contrib.auth.models import User, Group

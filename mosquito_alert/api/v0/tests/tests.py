@@ -3,7 +3,8 @@ import uuid
 
 # Create your tests here.
 from django.test import override_settings
-from mosquito_alert.tigaserver_app.models import Report, EuropeCountry, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp, UserSubscription
+from mosquito_alert.tigaserver_app.models import Report, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp, UserSubscription
+from mosquito_alert.geo.models import EuropeCountry
 from django.utils import timezone
 from mosquito_alert.tigaserver_app.models import TigaUser, Report, Photo, Fix
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask

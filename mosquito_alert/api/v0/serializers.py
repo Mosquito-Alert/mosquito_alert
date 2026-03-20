@@ -2,7 +2,8 @@ from collections import OrderedDict
 from typing import Union
 from rest_framework import serializers
 from mosquito_alert.tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, ReportResponse,  Photo, \
-    Fix, Session, EuropeCountry, OWCampaigns, OrganizationPin, UserSubscription
+    Fix, Session, OWCampaigns, OrganizationPin, UserSubscription
+from mosquito_alert.geo.models import EuropeCountry
 from django.db import models
 from django.utils import timezone
 

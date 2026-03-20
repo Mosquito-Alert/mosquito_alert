@@ -5,7 +5,8 @@ from django.contrib.gis.geos import Point
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
-from mosquito_alert.tigaserver_app.models import Report, TigaUser, TemporaryBoundary
+from mosquito_alert.geo.models import TemporaryBoundary
+from mosquito_alert.tigaserver_app.models import Report, TigaUser
 
 User = get_user_model()
 

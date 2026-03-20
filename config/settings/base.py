@@ -118,6 +118,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'mosquito_alert.api',
     'mosquito_alert.awards',
+    'mosquito_alert.geo',
     'mosquito_alert.identification_tasks',
     'mosquito_alert.stats',
     'mosquito_alert.taxa',

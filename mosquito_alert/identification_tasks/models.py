@@ -19,6 +19,7 @@ from taggit.managers import TaggableManager
 from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, AFTER_CREATE
 from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged
 
+from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import UserStat
 
@@ -287,7 +288,7 @@ class IdentificationTask(LifecycleModel):
         return get_confidence_label(value=self.confidence)
 
     @cached_property
-    def country(self) -> Optional['tigaserver_app.EuropeCountry']:
+    def country(self) -> Optional[EuropeCountry]:
         return self.report.country
 
     # LEGACY

@@ -4,8 +4,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.utils import timezone
 
+from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.identification_tasks.models import IdentificationTask
-from mosquito_alert.tigaserver_app.models import Report, TigaUser, Photo, EuropeCountry
+from mosquito_alert.tigaserver_app.models import Report, TigaUser, Photo
 
 User = get_user_model()
 
