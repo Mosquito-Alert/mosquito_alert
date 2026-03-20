@@ -56,12 +56,6 @@ logger_notification = logging.getLogger('mosquitoalert.notification')
 
 User = get_user_model()
 
-class RankingData(models.Model):
-    user_uuid = models.CharField(max_length=36, primary_key=True, help_text='User identifier uuid')
-    class_value = models.CharField(max_length=60)
-    rank = models.IntegerField()
-    score_v2 = models.IntegerField()
-    last_update = models.DateTimeField(help_text="Last time ranking data was updated", null=True, blank=True)
 
 def get_default_password_hash():
     return make_password(settings.DEFAULT_TIGAUSER_PASSWORD)

@@ -23,6 +23,7 @@ from django.urls import reverse
 from django.db.models import Count
 from django.db.models.functions import Extract, Trunc
 
+from .models import RankingData
 
 @xframe_options_exempt
 # @cache_page(60 * 15)
