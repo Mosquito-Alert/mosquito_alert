@@ -10,7 +10,7 @@ sys.path.append(proj_path)
 
 django.setup()
 
-from mosquito_alert.tigacrafting.models import IdentificationTask
+from mosquito_alert.identification_tasks.models import IdentificationTask
 from mosquito_alert.tigaserver_app.models import Report
 
 ALL_REPORTS_FILENAME = "geo_all_complete_reports.csv"

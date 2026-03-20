@@ -6,12 +6,13 @@ from django.test import override_settings
 from mosquito_alert.tigaserver_app.models import Report, EuropeCountry, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp, UserSubscription
 from django.utils import timezone
 from mosquito_alert.tigaserver_app.models import TigaUser, Report, Photo, Fix
-from mosquito_alert.tigacrafting.models import ExpertReportAnnotation, IdentificationTask, Taxon
+from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
+from mosquito_alert.taxa.models import Taxon
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APITransactionTestCase
 import io
-from mosquito_alert.tigacrafting.messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict
+from mosquito_alert.identification_tasks.messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict
 from django.db import transaction
 from django.db.utils import IntegrityError
 import time_machine

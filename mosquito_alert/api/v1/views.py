@@ -40,7 +40,8 @@ from rest_framework_csv.renderers import CSVStreamingRenderer
 from rest_framework_gis.filters import DistanceToPointFilter
 from rest_framework_simplejwt.tokens import Token
 
-from mosquito_alert.tigacrafting.models import IdentificationTask, ExpertReportAnnotation, Taxon, PhotoPrediction, UserStat
+from mosquito_alert.identification_tasks.models import IdentificationTask, ExpertReportAnnotation, PhotoPrediction
+from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.tigaserver_app.models import (
     TigaUser,
     EuropeCountry,

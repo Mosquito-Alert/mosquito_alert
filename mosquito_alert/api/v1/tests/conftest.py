@@ -20,7 +20,9 @@ from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
 from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
 
-from mosquito_alert.tigacrafting.models import IdentificationTask, Taxon, UserStat
+from mosquito_alert.identification_tasks.models import IdentificationTask
+from mosquito_alert.taxa.models import Taxon
+from mosquito_alert.users.models import UserStat
 from mosquito_alert.tigaserver_app.models import EuropeCountry, Report, Photo
 
 from .factories import create_mobile_user, create_regular_user
@@ -31,7 +33,7 @@ TEST_DATA_PATH = Path(Path(__file__).parent.absolute(), "test_data/")
 
 @pytest.fixture
 def taxa(db):
-    call_command('loaddata', '/app/mosquito_alert/tigacrafting/fixtures/taxon.json')
+    call_command('loaddata', '/app/mosquito_alert/taxa/fixtures/taxon.json')
 
 @pytest.fixture
 def user_password():

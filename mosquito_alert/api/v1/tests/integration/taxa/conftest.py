@@ -1,6 +1,6 @@
 import pytest
 
-from mosquito_alert.tigacrafting.models import Taxon
+from mosquito_alert.taxa.models import Taxon
 
 # NOTE: needed for token with perms fixture
 @pytest.fixture

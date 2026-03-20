@@ -3,7 +3,7 @@ from typing import Optional
 
 from django.contrib.auth.models import User, Group
 
-from mosquito_alert.tigacrafting.models import IdentificationTask, ExpertReportAnnotation
+from mosquito_alert.identification_tasks.models import IdentificationTask, ExpertReportAnnotation
 
 from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
 

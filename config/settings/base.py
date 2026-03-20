@@ -117,10 +117,13 @@ THIRD_PARTY_APPS = [
 ]
 LOCAL_APPS = [
     'mosquito_alert.api',
-    'mosquito_alert.tigaserver_app',
-    'mosquito_alert.tigacrafting',
+    'mosquito_alert.identification_tasks',
     'mosquito_alert.stats',
+    'mosquito_alert.taxa',
+    'mosquito_alert.tigacrafting',
     'mosquito_alert.tigascoring',
+    'mosquito_alert.tigaserver_app',
+    'mosquito_alert.users',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -430,7 +433,7 @@ DEFAULT_TIGAUSER_PASSWORD = env("DEFAULT_TIGAUSER_PASSWORD", default="TEST_PASSW
 SEASON_START_MONTH = 4
 SEASON_START_DAY = 23
 
-# mosquito_alert.tigacrafting
+# mosquito_alert.users & mosquito_alert.identification_tasks
 # -------------------------------------------------------------------------------
 # Entolab
 MAX_N_OF_PENDING_REPORTS = 5

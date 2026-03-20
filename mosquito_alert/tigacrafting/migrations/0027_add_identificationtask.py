@@ -13,7 +13,7 @@ def set_expertreportannotation_confidence(apps, schema_editor):
     ExpertReportAnnotation.objects.filter(validation_value=2).update(confidence=1.0)
     ExpertReportAnnotation.objects.filter(validation_value=1).update(confidence=0.75)
 
-    from mosquito_alert.tigacrafting.models import Taxon
+    from mosquito_alert.taxa.models import Taxon
 
     # Fetch annotations where validation_value is not 1 or 2 and taxon exists
     annotations_with_taxon = ExpertReportAnnotation.objects.exclude(validation_value__in=[1, 2]).filter(taxon__isnull=False)

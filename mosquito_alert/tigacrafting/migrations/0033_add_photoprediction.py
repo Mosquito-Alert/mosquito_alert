@@ -10,7 +10,7 @@ import django.db.models.expressions
 def populate_result_source(apps, schema_editor):
     IdentificationTask = apps.get_model('tigacrafting', 'IdentificationTask')
 
-    from mosquito_alert.tigacrafting.models import IdentificationTask as OriginalIdentificationTask
+    from mosquito_alert.identification_tasks.models import IdentificationTask as OriginalIdentificationTask
 
     IdentificationTask.objects.filter(
         ~models.Q(

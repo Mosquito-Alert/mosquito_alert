@@ -4,7 +4,7 @@ from rest_framework.exceptions import APIException
 from rest_framework import serializers
 from rest_framework_gis.fields import GeometryField
 
-from mosquito_alert.tigacrafting.models import IdentificationTask
+from mosquito_alert.identification_tasks.models import IdentificationTask
 
 class IdentificationTaskNestedAttribute():
     def get_parent_lookup_url_kwarg(self) -> str:

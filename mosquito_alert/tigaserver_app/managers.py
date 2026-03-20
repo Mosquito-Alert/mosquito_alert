@@ -41,7 +41,7 @@ class ReportQuerySet(models.QuerySet):
         )
 
     def with_finished_validation(self, state: bool = True) -> QuerySet:
-        from mosquito_alert.tigacrafting.models import IdentificationTask
+        from mosquito_alert.identification_tasks.models import IdentificationTask
         return self.filter(
             models.Q(
                 identification_task__status=IdentificationTask.Status.DONE,
@@ -50,7 +50,7 @@ class ReportQuerySet(models.QuerySet):
         )
 
     def in_supervised_country(self, state: bool = True) -> QuerySet:
-        from mosquito_alert.tigacrafting.models import UserStat
+        from mosquito_alert.users.models import UserStat
 
         return self.annotate(
             _in_supervised_country=models.Exists(
@@ -71,7 +71,7 @@ class ReportQuerySet(models.QuerySet):
 
     def in_coarse_filter(self) -> QuerySet:
         from mosquito_alert.tigaserver_app.models import Report
-        from mosquito_alert.tigacrafting.models import IdentificationTask
+        from mosquito_alert.identification_tasks.models import IdentificationTask
 
         return self.published(state=False).filter(
             models.Q(

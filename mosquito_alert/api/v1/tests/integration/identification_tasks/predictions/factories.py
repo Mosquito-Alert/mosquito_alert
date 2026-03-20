@@ -1,4 +1,5 @@
-from mosquito_alert.tigacrafting.models import PhotoPrediction, Taxon
+from mosquito_alert.identification_tasks.models import PhotoPrediction
+from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.tigaserver_app.models import Photo
 
 
