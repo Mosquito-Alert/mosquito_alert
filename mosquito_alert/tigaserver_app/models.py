@@ -49,96 +49,12 @@ from mosquito_alert.users.permissions import UserRolePermissionMixin, Role
 
 from .fields import ProcessedImageField
 from .managers import ReportManager, PhotoManager, NotificationManager, DeviceManager
-from .messaging import send_new_award_notification
 from .mixins import TimeZoneModelMixin
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 logger_notification = logging.getLogger('mosquitoalert.notification')
 
 User = get_user_model()
-
-ACHIEVEMENT_10_REPORTS = 'achievement_10_reports'
-ACHIEVEMENT_20_REPORTS = 'achievement_20_reports'
-ACHIEVEMENT_50_REPORTS = 'achievement_50_reports'
-DAILY_PARTICIPATION = 'daily_participation'
-START_OF_SEASON = 'start_of_season'
-FIDELITY_DAY_2 = 'fidelity_day_2'
-FIDELITY_DAY_3 = 'fidelity_day_3'
-ACHIEVEMENT_10_REPORTS_XP = 10
-ACHIEVEMENT_20_REPORTS_XP = 20
-ACHIEVEMENT_50_REPORTS_XP = 50
-
-
-def grant_10_reports_achievement( report, granter ):
-    grant_special_award(None, report.creation_time, report.user, granter, ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP )
-
-
-def grant_20_reports_achievement( report, granter ):
-    grant_special_award(None, report.creation_time, report.user, granter, ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP)
-
-
-def grant_50_reports_achievement( report, granter ):
-    grant_special_award(None, report.creation_time, report.user, granter, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP)
-
-
-def grant_first_of_season( report, granter ):
-    if c := AwardCategory.objects.filter(category_label=START_OF_SEASON).first():
-        grant_award( report, report.creation_time, report.user, granter, c )
-
-
-def grant_first_of_day( report, granter ):
-    if c := AwardCategory.objects.filter(category_label=DAILY_PARTICIPATION).first():
-        grant_award( report, report.creation_time, report.user, granter, c )
-
-
-def grant_two_consecutive_days_sending( report, granter ):
-    if c := AwardCategory.objects.filter(category_label=FIDELITY_DAY_2).first():
-        grant_award( report, report.creation_time, report.user, granter, c )
-
-
-def grant_three_consecutive_days_sending(report, granter):
-    if c := AwardCategory.objects.filter(category_label=FIDELITY_DAY_3).first():
-        grant_award(report, report.creation_time, report.user, granter, c)
-
-def grant_special_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_expert, special_award_label, special_award_xp):
-    '''
-    :param for_report: Optional
-    :param awarded_on_date: Mandatory
-    :param awarded_to_tigauser: Mandatory
-    :param awarded_by_expert: Mandatory
-    :param special_award_label: Mandatory
-    :param special_award_xp: Mandatory
-    :return:
-    '''
-    a = Award()
-    a.report = for_report
-    a.date_given = awarded_on_date
-    a.given_to = awarded_to_tigauser
-    if awarded_by_expert is not None:
-        a.expert = awarded_by_expert
-    a.special_award_text = special_award_label
-    a.special_award_xp = special_award_xp
-    a.save()
-
-def grant_award(for_report, awarded_on_date, awarded_to_tigauser, awarded_by_expert, award_category):
-    '''
-
-    :param for_report: Report for which the award is given
-    :param awarded_on_date: Date on which the award was granted (usually same as report_creation)
-    :param awarded_to_tigauser: User to which it was awarded (usually report owner)
-    :param awarded_by_expert: Expert which awarded the report
-    :param award_category: Category of the award
-    :return:
-    '''
-    a = Award()
-    a.report = for_report
-    a.date_given = awarded_on_date
-    a.given_to = awarded_to_tigauser
-    if awarded_by_expert is not None:
-        a.expert = awarded_by_expert
-    if award_category is not None:
-        a.category = award_category
-    a.save()
 
 class RankingData(models.Model):
     user_uuid = models.CharField(max_length=36, primary_key=True, help_text='User identifier uuid')
@@ -260,7 +176,7 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
 
     def update_score(self, commit: bool = True) -> None:
         # NOTE: placing import here due to circular import
-        from mosquito_alert.tigascoring.xp_scoring import compute_user_score_in_xp_v2
+        from mosquito_alert.awards.xp_scoring import compute_user_score_in_xp_v2
 
         score_dict = compute_user_score_in_xp_v2(user_uuid=self.pk)
         self.score_v2_struct = score_dict
@@ -1578,16 +1494,6 @@ class Report(TimeZoneModelMixin, models.Model):
         identification_task = getattr(self, "identification_task", None)
         return identification_task.photo if identification_task else None
 
-def one_day_between_and_same_week(r1_date_less_recent, r2_date_most_recent):
-    day_before = r2_date_most_recent - timedelta(days=1)
-    week_less_recent = r1_date_less_recent.isocalendar()[1]
-    week_most_recent = r2_date_most_recent.isocalendar()[1]
-    return day_before.year == r1_date_less_recent.year and day_before.month == r1_date_less_recent.month and day_before.day == r1_date_less_recent.day and week_less_recent == week_most_recent
-
-
-def get_user_reports_count(user):
-    return Report.objects.filter(user=user).exclude(type=Report.TYPE_BITE).non_deleted().count()
-
 
 @receiver(post_save, sender=Report)
 def subscribe_user_to_country_topic(sender, instance, created, **kwargs):
@@ -1605,54 +1511,6 @@ def subscribe_user_to_country_topic(sender, instance, created, **kwargs):
                 user=instance.user,
                 topic=topic
             )
-
-@receiver(post_save, sender=Report)
-def maybe_give_awards(sender, instance, created, **kwargs):
-    #only for adults and sites
-    if created:
-        try:
-            super_movelab = User.objects.get(pk=24)
-            n_reports = get_user_reports_count(instance.user)
-            if n_reports == 10:
-                grant_10_reports_achievement(instance, super_movelab)
-            if n_reports == 20:
-                grant_20_reports_achievement(instance, super_movelab)
-            if n_reports == 50:
-                grant_50_reports_achievement(instance, super_movelab)
-            if instance.type == Report.TYPE_ADULT or instance.type == Report.TYPE_SITE:
-                # check award for first of season
-                current_year = instance.creation_time.year
-                awards = Award.objects.filter(given_to=instance.user).filter(report__creation_time__year=current_year).filter(category__category_label='start_of_season')
-                if awards.count() == 0:  # not yet awarded
-                    # can be first of season?
-                    if instance.creation_time.month >= settings.SEASON_START_MONTH and instance.creation_time.day >= settings.SEASON_START_DAY:
-                        grant_first_of_season(instance, super_movelab)
-
-                report_day = instance.creation_time.day
-                report_month = instance.creation_time.month
-                report_year = instance.creation_time.year
-                awards = Award.objects \
-                    .filter(report__creation_time__year=report_year) \
-                    .filter(report__creation_time__month=report_month) \
-                    .filter(report__creation_time__day=report_day) \
-                    .filter(report__user=instance.user) \
-                    .filter(category__category_label='daily_participation').order_by(
-                    'report__creation_time')  # first is oldest
-                if awards.count() == 0: # not yet awarded
-                    grant_first_of_day(instance, super_movelab)
-
-                date_1_day_before_report = instance.creation_time - timedelta(days=1)
-                date_1_day_before_report_adjusted = date_1_day_before_report.replace(hour=23, minute=59, second=59)
-                report_before_this_one = Report.objects.filter(user=instance.user).filter(creation_time__lte=date_1_day_before_report_adjusted).order_by('-creation_time').first()  # first is most recent
-                if report_before_this_one is not None and one_day_between_and_same_week(report_before_this_one.creation_time, instance.creation_time):
-                    #report before this one has not been awarded neither 2nd nor 3rd day streak
-                    if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count()==0 and Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_3').count()==0:
-                        grant_two_consecutive_days_sending(instance, super_movelab)
-                    else:
-                        if Award.objects.filter(report=report_before_this_one).filter(category__category_label='fidelity_day_2').count() == 1:
-                            grant_three_consecutive_days_sending(instance, super_movelab)
-        except User.DoesNotExist:
-            pass
 
 
 class ReportResponse(models.Model):
@@ -2161,45 +2019,6 @@ class SentNotification(models.Model):
             logger_notification.exception(str(e))
         except Exception as e:
             logger_notification.exception(str(e))
-
-
-class AwardCategory(models.Model):
-    category_label = models.TextField(help_text='Coded label for the translated version of the award. For instance award_good_picture. This code refers to strings in several languages')
-    xp_points = models.IntegerField(help_text='Number of xp points associated to this kind of award')
-    category_long_description = models.TextField(default=None, blank=True, null=True, help_text='Long description specifying conditions in which the award should be conceded')
-
-
-class Award(models.Model):
-    report = models.ForeignKey('tigaserver_app.Report', default=None, blank=True, null=True, related_name='report_award', help_text='Report which the award refers to. Can be blank for arbitrary awards', on_delete=models.CASCADE, )
-    date_given = models.DateTimeField(default=datetime.now, help_text='Date in which the award was given')
-    given_to = models.ForeignKey(TigaUser, related_name="user_awards", help_text='User to which the notification was awarded. Usually this is the user that uploaded the report, but the report can be blank for special awards', on_delete=models.CASCADE, )
-    expert = models.ForeignKey(User, null=True, blank=True, related_name="expert_awards", help_text='Expert that gave the award', on_delete=models.SET_NULL, )
-    category = models.ForeignKey(AwardCategory, blank=True, null=True, related_name="category_awards", help_text='Category to which the award belongs. Can be blank for arbitrary awards', on_delete=models.CASCADE, )
-    special_award_text = models.TextField(default=None, blank=True, null=True, help_text='Custom text for custom award')
-    special_award_xp = models.IntegerField(default=0, blank=True, null=True, help_text='Custom xp awarded')
-
-    def save(self, *args, **kwargs) -> None:
-        is_adding = self._state.adding
-
-        super().save(*args, **kwargs)
-
-        if is_adding:
-            send_new_award_notification(award=self)
-
-        if self.given_to is not None:
-            self.given_to.update_score()
-
-    def delete(self, *args, **kwargs):
-        if self.given_to is not None:
-            self.given_to.update_score()
-
-        return super().delete(*args, **kwargs)
-
-    def __str__(self):
-        if self.category:
-            return str(self.category.category_label)
-        else:
-            return self.special_award_text
 
 
 class OWCampaigns(models.Model):

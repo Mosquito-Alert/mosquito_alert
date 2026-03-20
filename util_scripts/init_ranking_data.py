@@ -16,7 +16,7 @@ from django.utils import timezone
 
 application = get_wsgi_application()
 
-from mosquito_alert.tigascoring.xp_scoring import get_user_class
+from mosquito_alert.awards.xp_scoring import get_user_class
 from mosquito_alert.tigaserver_app.models import RankingData, TigaUser
 
 @transaction.atomic
