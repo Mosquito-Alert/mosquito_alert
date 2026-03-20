@@ -46,7 +46,7 @@ def create_report(version_number, version_uuid, user, country):
 
 @pytest.mark.django_db(transaction=True)
 class NewReportAssignment(TransactionTestCase):
-    fixtures = ['auth_group.json','europe_countries_new.json', 'reritja_like.json', 'granter_user.json', 'awardcategory.json', 'nutseurope.json']
+    fixtures = ['auth_group.json','europe_countries_new.json', 'reritja_like.json', 'granter_user.json', 'awardcategory.json', 'nuts_europe.json']
 
     # just regular european users
     def create_regular_team(self):
