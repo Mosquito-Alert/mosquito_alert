@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.tokens import Token as OriginalToken, SlidingToken as OriginalSlidingToken, RefreshToken as OriginalRefreshToken
 
-from mosquito_alert.tigaserver_app.models import TigaUser
+from mosquito_alert.users.models import TigaUser
 
 
 class Token(OriginalToken):

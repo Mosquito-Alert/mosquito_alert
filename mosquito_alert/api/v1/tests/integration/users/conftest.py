@@ -3,7 +3,7 @@ import uuid
 
 from django.contrib.auth import get_user_model
 
-from mosquito_alert.tigaserver_app.models import TigaUser
+from mosquito_alert.users.models import TigaUser
 
 from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
 

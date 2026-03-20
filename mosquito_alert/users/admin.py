@@ -2,7 +2,9 @@ from django.contrib import admin
 from mosquito_alert.geo.models import NutsEurope
 from django.utils.translation import gettext_lazy as _
 
-from .models import UserStat
+from mosquito_alert.tigaserver_app.admin import ReportInline, DeviceInline
+
+from .models import UserStat, TigaUser
 
 @admin.register(UserStat)
 class UserStatAdmin(admin.ModelAdmin):
@@ -12,3 +14,18 @@ class UserStatAdmin(admin.ModelAdmin):
         if db_field.name == "nuts2_assignation":
             kwargs["queryset"] = NutsEurope.objects.all().order_by('europecountry__name_engl','name_latn')
         return super(UserStatAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+@admin.register(TigaUser)
+class TigaUserAdmin(admin.ModelAdmin):
+    list_display = ('user_UUID', 'registration_time', 'score_v2')
+    fields = ('user_UUID', 'registration_time', 'locale', ('score_v2', 'last_score_update'), ('last_location', 'last_location_update'))
+    readonly_fields = ('user_UUID', 'registration_time', 'score_v2', 'last_score_update', 'last_location', 'last_location_update')
+    search_fields = ('user_UUID',)
+    ordering = ('registration_time',)
+    inlines = [ReportInline, DeviceInline]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

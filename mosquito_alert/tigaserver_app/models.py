@@ -1,14 +1,11 @@
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import json
 import re
 from firebase_admin.exceptions import FirebaseError
 from firebase_admin.messaging import Message, Notification as FirebaseNotification, AndroidConfig, AndroidNotification, SendResponse, BatchResponse
 import logging
 from math import floor
-from numpyencoder import NumpyEncoder
 from PIL import Image
-import pydenticon
 import os
 import random
 import string
@@ -17,8 +14,7 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
+
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance as DistanceFunction
 from django.contrib.gis.geos import GEOSGeometry, Point
@@ -35,7 +31,7 @@ from django.utils.translation import gettext_lazy as _
 
 from fcm_django.models import AbstractFCMDevice, DeviceType
 from imagekit.processors import ResizeToFit
-from langcodes import Language, closest_supported_match, standardize_tag as standarize_language_tag, tag_is_valid as language_tag_is_valid
+from langcodes import standardize_tag as standarize_language_tag, tag_is_valid as language_tag_is_valid
 from semantic_version import Version
 from semantic_version.django_fields import VersionField
 from simple_history.models import HistoricalRecords
@@ -45,7 +41,7 @@ from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
 from mosquito_alert.geo.models import EuropeCountry, NutsEurope, LauEurope
 from mosquito_alert.identification_tasks.models import IdentificationTask
-from mosquito_alert.users.permissions import UserRolePermissionMixin, Role
+from mosquito_alert.users.models import TigaUser
 
 from .fields import ProcessedImageField
 from .managers import ReportManager, PhotoManager, NotificationManager, DeviceManager
@@ -56,183 +52,6 @@ logger_notification = logging.getLogger('mosquitoalert.notification')
 
 User = get_user_model()
 
-
-def get_default_password_hash():
-    return make_password(settings.DEFAULT_TIGAUSER_PASSWORD)
-
-class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
-    AVAILABLE_LANGUAGES = [
-        (standarize_language_tag(code), Language.get(code).autonym().title()) for code, _ in settings.LANGUAGES
-    ]
-
-    USERNAME_FIELD = 'pk'
-
-    password = models.CharField(_('password'), max_length=128, default=get_default_password_hash)
-
-    user_UUID = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False, help_text='UUID randomly generated on '
-                                                                            'phone to identify each unique user. Must be exactly 36 '
-                                                                            'characters (32 hex digits plus 4 hyphens).')
-    registration_time = models.DateTimeField(auto_now_add=True, help_text='The date and time when user '
-                                                                      'registered and consented to sharing '
-                                                                 'data. Automatically set by '
-                                                                 'server when user uploads registration.')
-
-    score = models.IntegerField(help_text='Score associated with user. This field is used only if the user does not have a profile', default=0)
-
-    score_v2 = models.IntegerField(help_text='Global XP Score. This field is updated whenever the user asks for the score, and is only stored here. The content must equal score_v2_adult + score_v2_bite + score_v2_site', default=0)
-
-    score_v2_adult = models.IntegerField(help_text='Adult reports XP Score.', default=0)
-
-    score_v2_bite = models.IntegerField(help_text='Bite reports XP Score.', default=0)
-
-    score_v2_site = models.IntegerField(help_text='Site reports XP Score.',default=0)
-
-    # NOTE using NumpyEncoder since compute_user_score_in_xp_v2 function get result from pandas dataframe
-    # and some integer are np.int64, which can not be encoded with the regular json library setup.
-    score_v2_struct = models.JSONField(encoder=NumpyEncoder, help_text="Full cached score data", null=True, blank=True)
-
-    last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
-
-    last_location = models.PointField(null=True, blank=True, srid=4326)
-    last_location_update = models.DateTimeField(help_text="Last time location was updated", null=True, blank=True)
-
-    locale = models.CharField(
-        choices=AVAILABLE_LANGUAGES,
-        max_length=16,
-        default='en',
-        validators=[language_tag_is_valid],
-        help_text="The locale code representing the language preference selected by the user for displaying the interface text. Enter the locale following the BCP 47 standard in 'language' or 'language-region' format (e.g., 'en' for English, 'en-US' for English (United States), 'fr' for French). The language is a two-letter ISO 639-1 code, and the region is an optional two-letter ISO 3166-1 alpha-2 code."
-    )
-
-    @property
-    def language_iso2(self):
-        return Language.get(self.locale).language.lower()
-
-    @property
-    def last_device(self) -> Optional['Device']:
-        try:
-            return self.devices.latest('date_created')
-        except Device.DoesNotExist:
-            return
-
-    @property
-    def username(self):
-        # NOTE: needed for tavern tests
-        return self.get_username()
-
-    @property
-    def device_token(self) -> Optional[str]:
-        last_device = self.last_device
-        if last_device:
-            return last_device.registration_id
-
-    def __unicode__(self):
-        return str(self.user_UUID)
-
-    def __str__(self):
-        return str(self.user_UUID)
-
-    def get_user_permissions(self, obj=None):
-        return set()
-
-    def get_all_permissions(self, obj=None):
-        return set()
-
-    def has_perm(self, perm, obj=None):
-        return False
-
-    def has_module_perms(self, module):
-        return False
-
-    def get_identicon(self):
-        file_path = settings.MEDIA_ROOT + "/identicons/" + str(self.user_UUID) + ".png"
-        if not os.path.exists(file_path):
-            generator = pydenticon.Generator(5, 5, foreground=[
-                "rgb(45,79,255)",
-                "rgb(254,180,44)",
-                "rgb(226,121,234)",
-                "rgb(30,179,253)",
-                "rgb(232,77,65)",
-                "rgb(49,203,115)",
-                "rgb(141,69,170)"
-            ])
-            identicon_png = generator.generate(str(self.user_UUID), 200, 200, output_format="png")
-            f = open(file_path, "wb")
-            f.write(identicon_png)
-            f.close()
-        return settings.MEDIA_URL + "identicons/" + str(self.user_UUID) + ".png"
-
-    def get_role(self, country: Optional[EuropeCountry] = None) -> Role:
-        return Role.BASE
-
-    def get_countries_with_roles(self) -> List[EuropeCountry]:
-        return []
-
-    def update_score(self, commit: bool = True) -> None:
-        # NOTE: placing import here due to circular import
-        from mosquito_alert.awards.xp_scoring import compute_user_score_in_xp_v2
-
-        score_dict = compute_user_score_in_xp_v2(user_uuid=self.pk)
-        self.score_v2_struct = score_dict
-
-        try:
-            self.score_v2_adult = score_dict['score_detail']['adult']['score']
-        except (KeyError, TypeError):
-            self.score_v2_adult = 0
-
-        try:
-            self.score_v2_bite = score_dict['score_detail']['bite']['score']
-        except (KeyError, TypeError):
-            self.score_v2_bite = 0
-
-        try:
-            self.score_v2_site = score_dict['score_detail']['site']['score']
-        except (KeyError, TypeError):
-            self.score_v2_site = 0
-
-        self.score_v2 = sum([self.score_v2_adult, self.score_v2_bite, self.score_v2_site])
-        self.last_score_update = timezone.now()
-
-        if commit:
-            self.save()
-
-    def save(self, *args, **kwargs):
-
-        if self.locale:
-            self.locale = closest_supported_match(
-                self.locale,
-                [code for code, _ in self.AVAILABLE_LANGUAGES]
-            ) or 'en'
-
-        result = super().save(*args, **kwargs)
-
-        # Make sure user is subscribed to global topic
-        try:
-            global_topic = NotificationTopic.objects.get(topic_code='global')
-        except NotificationTopic.DoesNotExist:
-            pass
-        else:
-            UserSubscription.objects.get_or_create(
-                user=self,
-                topic=global_topic
-            )
-
-        # Subscribe user to the language selected.
-        try:
-            language_topic = NotificationTopic.objects.get(topic_code=self.locale)
-        except NotificationTopic.DoesNotExist:
-            pass
-        else:
-            UserSubscription.objects.get_or_create(
-                user=self,
-                topic=language_topic
-            )
-
-        return result
-
-    class Meta:
-        verbose_name = "user"
-        verbose_name_plural = "users"
 
 
 class MobileApp(models.Model):

@@ -14,7 +14,7 @@ from rest_framework.test import APITestCase, APIClient
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from mosquito_alert.tigaserver_app.models import TigaUser
+from mosquito_alert.users.models import TigaUser
 
 User = get_user_model()
 

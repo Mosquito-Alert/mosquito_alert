@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.conf import settings
 from django_filters import rest_framework as filters
 import json
-from mosquito_alert.tigaserver_app.models import Notification, NotificationContent, TigaUser, Report, Photo, Fix, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, ReportResponse, Device
+from mosquito_alert.tigaserver_app.models import Notification, NotificationContent, Report, Photo, Fix, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, ReportResponse, Device
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
@@ -22,6 +22,7 @@ from django.template.loader import get_template
 
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
 from mosquito_alert.taxa.models import Taxon
+from mosquito_alert.users.models import TigaUser
 
 from .criteria import users_with_pictures, users_with_storm_drain_pictures, users_with_score, users_with_score_range, users_with_topic
 from .serializers import NotificationSerializer, NotificationContentSerializer, UserSerializer, ReportSerializer, PhotoSerializer, FixSerializer, SessionSerializer, OWCampaignsSerializer, OrganizationPinsSerializer, UserSubscriptionSerializer, CoarseReportSerializer
