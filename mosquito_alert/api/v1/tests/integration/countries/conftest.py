@@ -1,6 +1,6 @@
 import pytest
 
-from mosquito_alert.tigaserver_app.models import EuropeCountry
+from mosquito_alert.geo.models import EuropeCountry
 
 # NOTE: needed for token with perms fixture
 @pytest.fixture

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.tigaserver_app.models import *
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
 from mosquito_alert.users.models import UserStat

@@ -4,6 +4,8 @@ from typing import List, Optional
 
 from django.db import models
 
+from mosquito_alert.geo.models import EuropeCountry
+
 class Role(models.TextChoices):
     BASE = 'base'
     ANNOTATOR = 'annotator'
@@ -39,10 +41,10 @@ class Permissions:
 
 class UserRolePermissionMixin:
     @abstractmethod
-    def get_countries_with_roles(self) -> List['tigaserver_app.EuropeCountry']:
+    def get_countries_with_roles(self) -> List[EuropeCountry]:
         raise NotImplementedError
 
-    def get_countries_with_permissions(self, action, model) -> List['tigaserver_app.EuropeCountry']:
+    def get_countries_with_permissions(self, action, model) -> List[EuropeCountry]:
         countries = []
         for country in self.get_countries_with_roles():
             if self.has_role_permission_by_model(action=action, model=model, country=country):
@@ -50,7 +52,7 @@ class UserRolePermissionMixin:
         return countries
 
     @abstractmethod
-    def get_role(self, country: Optional['tigaserver_app.EuropeCountry'] = None) -> Role:
+    def get_role(self, country: Optional[EuropeCountry] = None) -> Role:
         raise NotImplementedError
 
     def get_role_permissions(self, role: Role) -> Permissions:
@@ -85,7 +87,7 @@ class UserRolePermissionMixin:
             delete=role in [Role.ADMIN],
         )
 
-    def _get_role_permission_by_model(self, model, country: Optional['tigaserver_app.EuropeCountry'] = None) -> BasePermission:
+    def _get_role_permission_by_model(self, model, country: Optional[EuropeCountry] = None) -> BasePermission:
         from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
         if model == IdentificationTask:
             return self.get_role_identification_task_permission(role=self.get_role(country=country))
@@ -101,7 +103,7 @@ class UserRolePermissionMixin:
             delete=False
         )
 
-    def has_role_permission_by_model(self, action, model, country: Optional['tigaserver_app.EuropeCountry'] = None) -> BasePermission:
+    def has_role_permission_by_model(self, action, model, country: Optional[EuropeCountry] = None) -> BasePermission:
         countries = set([None, country])
         for country in countries:
             permission = self._get_role_permission_by_model(model=model, country=country)

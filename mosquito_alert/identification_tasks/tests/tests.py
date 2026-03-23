@@ -12,7 +12,8 @@ from datetime import timedelta
 from django.conf import settings
 from django.test import TransactionTestCase
 from django.utils.translation import activate, deactivate, gettext as _
-from mosquito_alert.tigaserver_app.models import NutsEurope, EuropeCountry, TigaUser, Report, Photo, NotificationContent
+from mosquito_alert.geo.models import EuropeCountry, NutsEurope
+from mosquito_alert.tigaserver_app.models import TigaUser, Report, Photo, NotificationContent
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
 from django.contrib.auth.models import User, Group
@@ -45,7 +46,7 @@ def create_report(version_number, version_uuid, user, country):
 
 @pytest.mark.django_db(transaction=True)
 class NewReportAssignment(TransactionTestCase):
-    fixtures = ['auth_group.json','europe_countries_new.json', 'reritja_like.json', 'granter_user.json', 'awardcategory.json', 'nutseurope.json']
+    fixtures = ['auth_group.json','europe_countries_new.json', 'reritja_like.json', 'granter_user.json', 'awardcategory.json', 'nuts_europe.json']
 
     # just regular european users
     def create_regular_team(self):

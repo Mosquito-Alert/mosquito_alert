@@ -8,6 +8,7 @@ from django.db.models.functions import Coalesce
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
+from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.users.permissions import ReviewPermission
 
 class IdentificationTaskQuerySet(models.QuerySet):
@@ -43,7 +44,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
     def backlog(self, user: Optional[User] = None) -> QuerySet:
         """Awaiting assignment but part of the annotation cycle."""
-        from mosquito_alert.tigaserver_app.models import EuropeCountry, Report
+        from mosquito_alert.tigaserver_app.models import Report
 
         qs = self._assignable()
 

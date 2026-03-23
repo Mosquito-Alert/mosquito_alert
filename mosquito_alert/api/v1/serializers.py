@@ -21,6 +21,12 @@ from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from taggit.serializers import TaggitSerializer, TagListSerializerField
 
+from mosquito_alert.geo.models import (
+    EuropeCountry,
+    LauEurope,
+    NutsEurope,
+    TemporaryBoundary
+)
 from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
     ExpertReportAnnotation,
@@ -34,9 +40,6 @@ from mosquito_alert.tigaserver_app.models import (
     Notification,
     OrganizationPin,
     OWCampaigns,
-    EuropeCountry,
-    LauEurope,
-    NutsEurope,
     TigaUser,
     Report,
     Photo,
@@ -44,7 +47,6 @@ from mosquito_alert.tigaserver_app.models import (
     NotificationTopic,
     Device,
     MobileApp,
-    TemporaryBoundary
 )
 
 from .base_serializers import LocalizedSerializerMixin

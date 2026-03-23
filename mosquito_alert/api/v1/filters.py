@@ -14,7 +14,9 @@ from rest_framework_gis.filterset import GeoFilterSet
 
 from mosquito_alert.identification_tasks.models import IdentificationTask, ExpertReportAnnotation
 from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.tigaserver_app.models import Report, Notification, OWCampaigns, EuropeCountry, Photo, TemporaryBoundary
+from mosquito_alert.tigaserver_app.models import Report, Notification, OWCampaigns, Photo
+from mosquito_alert.geo.models import EuropeCountry, TemporaryBoundary
+
 
 User = get_user_model()
 

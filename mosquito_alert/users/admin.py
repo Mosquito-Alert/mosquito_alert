@@ -1,5 +1,5 @@
 from django.contrib import admin
-from mosquito_alert.tigaserver_app.models import NutsEurope
+from mosquito_alert.geo.models import NutsEurope
 from django.utils.translation import gettext_lazy as _
 
 from .models import UserStat

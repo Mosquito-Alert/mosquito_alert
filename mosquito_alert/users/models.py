@@ -7,6 +7,8 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from mosquito_alert.geo.models import EuropeCountry, NutsEurope
+
 from .permissions import UserRolePermissionMixin, Role, AnnotationPermission, IdentificationTaskPermission, BasePermission
 
 User = get_user_model()
@@ -14,11 +16,11 @@ User = get_user_model()
 class UserStat(UserRolePermissionMixin, models.Model):
     user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE, )
     grabbed_reports = models.IntegerField('Grabbed reports', default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified')
-    national_supervisor_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', on_delete=models.PROTECT, )
-    native_of = models.ForeignKey('tigaserver_app.EuropeCountry', blank=True, null=True, related_name="natives", help_text='Country in which the user operates. Used mainly for filtering purposes', on_delete=models.SET_NULL, )
+    national_supervisor_of = models.ForeignKey(EuropeCountry, blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', on_delete=models.PROTECT, )
+    native_of = models.ForeignKey(EuropeCountry, blank=True, null=True, related_name="natives", help_text='Country in which the user operates. Used mainly for filtering purposes', on_delete=models.SET_NULL, )
     license_accepted = models.BooleanField('Value is true if user has accepted the license terms of EntoLab', default=False)
 
-    nuts2_assignation = models.ForeignKey('tigaserver_app.NutsEurope', blank=True, null=True, related_name="nuts2_assigned", help_text='Nuts2 division in which the user operates. Influences the priority of report assignation', on_delete=models.SET_NULL, )
+    nuts2_assignation = models.ForeignKey(NutsEurope, blank=True, null=True, related_name="nuts2_assigned", help_text='Nuts2 division in which the user operates. Influences the priority of report assignation', on_delete=models.SET_NULL, )
 
     def __str__(self):
         geo_label = ''
@@ -46,7 +48,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
 
     # TODO: delete this, no longer used
     @transaction.atomic
-    def assign_reports(self, country: Optional['EuropeCountry'] = None) -> List[Optional['identification_tasks.IdentificationTask']]:
+    def assign_reports(self, country: Optional[EuropeCountry] = None) -> List[Optional['identification_tasks.IdentificationTask']]:
         from mosquito_alert.identification_tasks.models import IdentificationTask
 
         task_queue = IdentificationTask.objects.exclude(assignees=self.user).select_related('report')
@@ -73,7 +75,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
         return result
 
     # NOTE: override UserRolePermissionMixin
-    def get_countries_with_roles(self) -> List['tigaserver_app.EuropeCountry']:
+    def get_countries_with_roles(self) -> List[EuropeCountry]:
         countries = []
         if country := self.native_of:
             countries.append(country)
@@ -82,7 +84,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
         return list(set(countries))
 
     # NOTE: override UserRolePermissionMixin
-    def get_role(self, country: Optional['tigaserver_app.EuropeCountry'] = None) -> Role:
+    def get_role(self, country: Optional[EuropeCountry] = None) -> Role:
         from mosquito_alert.identification_tasks.models import IdentificationTask
 
         if self.user.is_superuser:
