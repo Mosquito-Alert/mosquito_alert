@@ -23,7 +23,8 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.settings import api_settings
 
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction
-from mosquito_alert.tigaserver_app.models import TigaUser, Report, Device, MobileApp, Photo
+from mosquito_alert.tigaserver_app.models import Report, Device, MobileApp, Photo
+from mosquito_alert.users.models import TigaUser
 
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
 from mosquito_alert.api.v1.tests.integration.observations.factories import create_observation_object

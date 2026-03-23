@@ -1,5 +1,5 @@
-from mosquito_alert.tigaserver_app.models import Photo,Report,TigaUser, UserSubscription
-
+from mosquito_alert.tigaserver_app.models import Photo,Report, UserSubscription
+from mosquito_alert.users.models import TigaUser
 
 def filter_users_by_score(score):
     if score == 'score_bronze':

@@ -6,7 +6,7 @@ from rest_framework.authentication import SessionAuthentication
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from mosquito_alert.tigaserver_app.models import TigaUser
+from mosquito_alert.users.models import TigaUser
 
 from .tokens import Token
 

@@ -14,7 +14,7 @@ sys.path.append(proj_path)
 
 django.setup()
 
-from mosquito_alert.tigaserver_app.models import TigaUser
+from mosquito_alert.users.models import TigaUser
 
 one_week_ago = timezone.now() - timedelta(days=7)
 

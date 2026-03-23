@@ -4,9 +4,9 @@ from django.core.exceptions import MultipleObjectsReturned
 from rest_framework import permissions
 
 from mosquito_alert.identification_tasks.models import IdentificationTask, ExpertReportAnnotation
-from mosquito_alert.users.models import UserStat
+from mosquito_alert.users.models import UserStat, TigaUser
 from mosquito_alert.users.permissions import ReviewPermission
-from mosquito_alert.tigaserver_app.models import TigaUser, Notification
+from mosquito_alert.tigaserver_app.models import Notification
 
 from .utils import get_fk_fieldnames
 

@@ -9,6 +9,7 @@ from django.db.models.query import QuerySet
 from django.utils import timezone
 
 from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.users.models import TigaUser
 from mosquito_alert.users.permissions import ReviewPermission
 
 class IdentificationTaskQuerySet(models.QuerySet):
@@ -311,7 +312,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
         )
 
     # OTHER QUERYSETS
-    def browsable(self, user: Union[User, 'tigaserver_app.TigaUser']) -> QuerySet:
+    def browsable(self, user: Union[User, TigaUser]) -> QuerySet:
         from .models import IdentificationTask
         from mosquito_alert.users.models import UserStat
 

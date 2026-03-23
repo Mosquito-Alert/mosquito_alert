@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import empty
 
-from mosquito_alert.tigaserver_app.models import TigaUser
+from mosquito_alert.users.models import TigaUser
 
 from .fields import HTMLCharField
 

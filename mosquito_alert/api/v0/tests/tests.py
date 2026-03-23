@@ -6,9 +6,10 @@ from django.test import override_settings
 from mosquito_alert.tigaserver_app.models import Report, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp, UserSubscription
 from mosquito_alert.geo.models import EuropeCountry
 from django.utils import timezone
-from mosquito_alert.tigaserver_app.models import TigaUser, Report, Photo, Fix
+from mosquito_alert.tigaserver_app.models import Report, Photo, Fix
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
 from mosquito_alert.taxa.models import Taxon
+from mosquito_alert.users.models import TigaUser
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APITransactionTestCase

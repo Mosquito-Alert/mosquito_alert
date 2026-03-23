@@ -1,4 +1,5 @@
-from mosquito_alert.tigaserver_app.models import Report, TigaUser
+from mosquito_alert.tigaserver_app.models import Report
+from mosquito_alert.users.models import TigaUser
 
 from mosquito_alert.api.v1.tests.factories import create_report_object
 

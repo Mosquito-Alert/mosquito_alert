@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
-from mosquito_alert.tigaserver_app.models import Notification, TigaUser, Report, ReportResponse,  Photo, \
+from mosquito_alert.tigaserver_app.models import Notification, Report, ReportResponse,  Photo, \
     Fix, OWCampaigns, OrganizationPin, NotificationTopic, MobileApp, Device
 from django.utils.translation import gettext_lazy as _
 
@@ -42,20 +42,6 @@ class DeviceInline(admin.StackedInline):
         'last_login'
     )
     extra = 0
-
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('user_UUID', 'registration_time', 'score_v2')
-    fields = ('user_UUID', 'registration_time', 'locale', ('score_v2', 'last_score_update'), ('last_location', 'last_location_update'))
-    readonly_fields = ('user_UUID', 'registration_time', 'score_v2', 'last_score_update', 'last_location', 'last_location_update')
-    search_fields = ('user_UUID',)
-    ordering = ('registration_time',)
-    inlines = [ReportInline, DeviceInline]
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
 
 
 class ReportResponseInline(admin.StackedInline):
@@ -263,7 +249,6 @@ class OrganizationPinAdmin(GISModelAdmin):
     search_fields = ['textual_description', 'page_url']
 
 
-admin.site.register(TigaUser, UserAdmin)
 admin.site.register(MobileApp, MobileAppAdmin)
 admin.site.register(Report, ReportAdmin)
 admin.site.register(Fix, FixAdmin)

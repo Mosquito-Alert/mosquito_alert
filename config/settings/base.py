@@ -134,7 +134,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'mosquito_alert.tigaserver_app.backends.AppUserBackend'
+    'mosquito_alert.users.backends.AppUserBackend'
 ]
 
 # MIDDLEWARE

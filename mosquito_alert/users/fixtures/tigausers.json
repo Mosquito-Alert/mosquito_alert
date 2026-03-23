@@ -1,7 +1,7 @@
 [
   {
     "pk": "00000000-0000-0000-0000-000000000000",
-    "model": "tigaserver_app.tigauser",
+    "model": "users.tigauser",
     "fields": {
       "score_v2_bite": 0,
       "registration_time": "2017-06-26T01:38:41.782Z",
@@ -14,7 +14,7 @@
   },
   {
     "pk": "00000000-0000-0000-0000-000000000001",
-    "model": "tigaserver_app.tigauser",
+    "model": "users.tigauser",
     "fields": {
       "score_v2_bite": 0,
       "registration_time": "2017-06-26T01:38:41.782Z",
@@ -27,7 +27,7 @@
   },
   {
     "pk": "00000000-0000-0000-0000-000000000002",
-    "model": "tigaserver_app.tigauser",
+    "model": "users.tigauser",
     "fields": {
       "score_v2_bite": 0,
       "registration_time": "2017-06-26T01:38:41.782Z",
@@ -40,7 +40,7 @@
   },
   {
     "pk": "00000000-0000-0000-0000-000000000003",
-    "model": "tigaserver_app.tigauser",
+    "model": "users.tigauser",
     "fields": {
       "score_v2_bite": 0,
       "registration_time": "2017-06-26T01:38:41.782Z",
@@ -49,6 +49,15 @@
       "score_v2_site": 0,
       "score_v2": 0,
       "locale": "en"
+    }
+  },
+  {
+    "pk": "4fdfba79-99be-4d6e-a719-b97e8be8df94",
+    "model": "users.tigauser",
+    "fields": {
+      "registration_time": "2017-06-26T01:38:41.782Z",
+      "score": 1,
+      "locale": "es"
     }
   }
 ]

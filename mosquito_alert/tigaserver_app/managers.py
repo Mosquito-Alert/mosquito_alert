@@ -4,6 +4,8 @@ from django.utils import timezone
 
 from fcm_django.models import FCMDeviceQuerySet, FCMDeviceManager
 
+from mosquito_alert.users.models import TigaUser
+
 class ReportQuerySet(models.QuerySet):
     def has_photos(self, state: bool = True):
         from .models import Photo
@@ -97,7 +99,7 @@ class PhotoQuerySet(models.QuerySet):
 PhotoManager = models.Manager.from_queryset(PhotoQuerySet)
 
 class NotificationQuerySet(models.QuerySet):
-    def for_user(self, user: 'TigaUser'):
+    def for_user(self, user: TigaUser):
         from .models import NotificationTopic
 
         topics = NotificationTopic.objects.filter(
@@ -111,7 +113,7 @@ class NotificationQuerySet(models.QuerySet):
             models.Q(notification_sendings__sent_to_topic__in=topics)
         )
 
-    def seen_by_user(self, user: 'TigaUser', state: bool = True):
+    def seen_by_user(self, user: TigaUser, state: bool = True):
         return self.filter(
             models.Q(
                 models.Q(

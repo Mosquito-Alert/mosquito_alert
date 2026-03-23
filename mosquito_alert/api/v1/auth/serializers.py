@@ -13,7 +13,8 @@ from rest_framework_simplejwt.serializers import (
     PasswordField
 )
 
-from mosquito_alert.tigaserver_app.models import TigaUser, Device
+from mosquito_alert.tigaserver_app.models import Device
+from mosquito_alert.users.models import TigaUser
 
 from .tokens import RefreshToken
 
