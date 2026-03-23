@@ -40,10 +40,10 @@ from mosquito_alert.devices.models import Device, MobileApp
 from mosquito_alert.geo.models import EuropeCountry, NutsEurope, LauEurope
 from mosquito_alert.identification_tasks.models import IdentificationTask
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.utils.mixins import TimeZoneModelMixin
 
 from .fields import ProcessedImageField
 from .managers import ReportManager, PhotoManager, NotificationManager
-from .mixins import TimeZoneModelMixin
 
 logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
 logger_notification = logging.getLogger('mosquitoalert.notification')
