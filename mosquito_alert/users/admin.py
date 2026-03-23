@@ -2,7 +2,8 @@ from django.contrib import admin
 from mosquito_alert.geo.models import NutsEurope
 from django.utils.translation import gettext_lazy as _
 
-from mosquito_alert.tigaserver_app.admin import ReportInline, DeviceInline
+from mosquito_alert.tigaserver_app.admin import ReportInline
+from mosquito_alert.devices.admin import DeviceInline
 
 from .models import UserStat, TigaUser
 

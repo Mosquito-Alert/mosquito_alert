@@ -3,7 +3,8 @@ import uuid
 
 # Create your tests here.
 from django.test import override_settings
-from mosquito_alert.tigaserver_app.models import Report, Notification, NotificationContent, NotificationTopic, ReportResponse, Device, MobileApp, UserSubscription
+from mosquito_alert.devices.models import Device, MobileApp
+from mosquito_alert.tigaserver_app.models import Report, Notification, NotificationContent, NotificationTopic, ReportResponse, UserSubscription
 from mosquito_alert.geo.models import EuropeCountry
 from django.utils import timezone
 from mosquito_alert.tigaserver_app.models import Report, Photo, Fix
@@ -13,7 +14,6 @@ from mosquito_alert.users.models import TigaUser
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APITransactionTestCase
-import io
 from mosquito_alert.identification_tasks.messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict
 from django.db import transaction
 from django.db.utils import IntegrityError
