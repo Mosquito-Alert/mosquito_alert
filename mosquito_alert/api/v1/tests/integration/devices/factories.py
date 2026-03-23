@@ -1,4 +1,4 @@
-from mosquito_alert.tigaserver_app.models import Device
+from mosquito_alert.devices.models import Device
 from mosquito_alert.users.models import TigaUser
 
 def create_device(user: TigaUser) -> Device:

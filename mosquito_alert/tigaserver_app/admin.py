@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
-from mosquito_alert.tigaserver_app.models import Notification, Report, ReportResponse,  Photo, \
-    Fix, OWCampaigns, OrganizationPin, NotificationTopic, MobileApp, Device
 from django.utils.translation import gettext_lazy as _
+
+from mosquito_alert.tigaserver_app.models import Notification, Report, ReportResponse,  Photo, \
+    Fix, OWCampaigns, OrganizationPin, NotificationTopic
 
 from simple_history.admin import SimpleHistoryAdmin
 from simple_history.utils import get_history_model_for_model
@@ -13,34 +14,6 @@ class ReportInline(admin.TabularInline):
     fields = ('version_UUID', 'report_id', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'os')
     readonly_fields = ('version_UUID', 'report_id', 'user', 'version_number', 'creation_time', 'version_time', 'type', 'os')
     show_change_link = True
-    extra = 0
-
-class MobileAppAdmin(admin.ModelAdmin):
-    list_display = ('package_name', 'package_version', 'created_at')
-    fields = (
-        'package_name', 'package_version',
-        ('created_at', 'updated_at')
-    )
-    readonly_fields = ('created_at', 'updated_at')
-
-class DeviceInline(admin.StackedInline):
-    model = Device
-    fields = (
-        ('device_id', 'active_session', 'last_login'),
-        ('registration_id', 'active'),
-        'type',
-        'mobile_app',
-        ('manufacturer', 'model'),
-        ('os_name', 'os_version'),
-        'os_locale',
-        ('date_created', 'updated_at'),
-    )
-    readonly_fields = (
-        'date_created',
-        'updated_at',
-        'active_session',
-        'last_login'
-    )
     extra = 0
 
 
@@ -249,7 +222,6 @@ class OrganizationPinAdmin(GISModelAdmin):
     search_fields = ['textual_description', 'page_url']
 
 
-admin.site.register(MobileApp, MobileAppAdmin)
 admin.site.register(Report, ReportAdmin)
 admin.site.register(Fix, FixAdmin)
 admin.site.register(Notification, NotificationAdmin)

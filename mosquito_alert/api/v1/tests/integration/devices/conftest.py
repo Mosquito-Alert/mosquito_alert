@@ -1,6 +1,6 @@
 import pytest
 
-from mosquito_alert.tigaserver_app.models import Device
+from mosquito_alert.devices.models import Device
 
 from .factories import create_device
 

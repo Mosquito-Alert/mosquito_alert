@@ -118,6 +118,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'mosquito_alert.api',
     'mosquito_alert.awards',
+    'mosquito_alert.devices',
     'mosquito_alert.geo',
     'mosquito_alert.identification_tasks',
     'mosquito_alert.stats',
@@ -414,7 +415,7 @@ FCM_DJANGO_SETTINGS = {
     "ONE_DEVICE_PER_USER": False,
     "DELETE_INACTIVE_DEVICES": False,
 }
-FCM_DJANGO_FCMDEVICE_MODEL = "mosquito_alert.tigaserver_app.Device"
+FCM_DJANGO_FCMDEVICE_MODEL = "mosquito_alert.devices.Device"
 DISABLE_PUSH = env.bool("DISABLE_PUSH", default=True) # NOTE: This completely disables sending push notifications, independently of the FCM_DJANGO_SETTINGS. Used in dev and staging.
 
 # tigaserver_app

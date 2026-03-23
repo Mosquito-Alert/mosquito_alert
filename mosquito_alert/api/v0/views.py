@@ -8,7 +8,8 @@ from django.db.models import Q
 from django.conf import settings
 from django_filters import rest_framework as filters
 import json
-from mosquito_alert.tigaserver_app.models import Notification, NotificationContent, Report, Photo, Fix, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, ReportResponse, Device
+from mosquito_alert.devices.models import Device
+from mosquito_alert.tigaserver_app.models import Notification, NotificationContent, Report, Photo, Fix, Session, OWCampaigns, OrganizationPin, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription, ReportResponse
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User

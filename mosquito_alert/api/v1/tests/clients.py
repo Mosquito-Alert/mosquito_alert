@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework.test import APIClient
 
-from mosquito_alert.tigaserver_app.models import Device
+from mosquito_alert.devices.models import Device
 from mosquito_alert.users.models import TigaUser
 
 from mosquito_alert.api.v1.auth.serializers import AppUserTokenObtainPairSerializer

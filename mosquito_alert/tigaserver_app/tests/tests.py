@@ -2,8 +2,8 @@ from datetime import timedelta
 
 # Create your tests here.
 from django.test import TestCase, override_settings
+from mosquito_alert.devices.models import Device, MobileApp
 from mosquito_alert.geo.models import EuropeCountry, LauEurope
-from mosquito_alert.tigaserver_app.models import Report, Device, MobileApp
 from PIL import Image, ExifTags
 import os
 from django.contrib.gis.geos import Polygon, MultiPolygon, Point
