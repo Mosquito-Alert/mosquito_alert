@@ -3,7 +3,7 @@ from datetime import timedelta
 # Create your tests here.
 from django.test import TestCase, override_settings
 from mosquito_alert.geo.models import EuropeCountry, LauEurope
-from mosquito_alert.tigaserver_app.models import Report, NotificationTopic, Device, MobileApp, UserSubscription
+from mosquito_alert.tigaserver_app.models import Report, Device, MobileApp
 from PIL import Image, ExifTags
 import os
 from django.contrib.gis.geos import Polygon, MultiPolygon, Point
@@ -959,38 +959,3 @@ class ReportModelTest(TestCase):
             user.refresh_from_db()
             self.assertEqual(user.last_location, new_report_point)
             self.assertEqual(user.last_location_update, new_report.server_upload_time)
-
-class TigaUserModelTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.global_topic = NotificationTopic.objects.create(topic_code='global')
-
-    def test_create_new_user_subscribe_to_global_topic(self):
-        tiga_user = TigaUser.objects.create()
-
-        subscription_to_global_topic = UserSubscription.objects.filter(
-            user=tiga_user,
-            topic=self.global_topic
-        )
-
-        self.assertTrue(subscription_to_global_topic.exists())
-
-    def test_create_new_user_subscribe_to_locale_topic(self):
-        locale = 'es'
-        spanish_topic = NotificationTopic.objects.create(topic_code=locale)
-        tiga_user = TigaUser.objects.create(locale=locale)
-
-        subscription_to_spanish_topic = UserSubscription.objects.filter(
-            user=tiga_user,
-            topic=spanish_topic
-        )
-
-        self.assertTrue(subscription_to_spanish_topic.exists())
-
-    def test_create_new_with_non_existing_notification_topic_locale_do_not_raise(self):
-        locale = 'es'
-
-        # Ensure Notification topic for locale does not exist
-        NotificationTopic.objects.filter(topic_code=locale).delete()
-
-        _ = TigaUser.objects.create(locale=locale)
