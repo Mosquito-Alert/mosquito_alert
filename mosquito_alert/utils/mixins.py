@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from django.apps import apps
 from django.db import models
 
-from .apps import TigaserverApp
+from .apps import UtilsApp
 
 
 class TimeZoneModelMixin(models.Model):
@@ -23,7 +23,7 @@ class TimeZoneModelMixin(models.Model):
 
         timezone_from_coordinates = None
         if latitude is not None and longitude is not None:
-            tf = apps.get_app_config(app_label=TigaserverApp.label).timezone_finder
+            tf = apps.get_app_config(app_label=UtilsApp.label).timezone_finder
 
             # Get the timezone based on latitude and longitude
             try:

@@ -126,6 +126,7 @@ LOCAL_APPS = [
     'mosquito_alert.tigacrafting',
     'mosquito_alert.tigaserver_app',
     'mosquito_alert.users',
+    'mosquito_alert.utils',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
