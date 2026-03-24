@@ -2,7 +2,7 @@ import pytest
 
 from django.contrib.gis.geos import Point
 
-from mosquito_alert.tigaserver_app.models import OrganizationPin
+from mosquito_alert.partners.models import OrganizationPin
 
 
 @pytest.fixture
