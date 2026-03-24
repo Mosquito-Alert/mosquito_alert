@@ -34,12 +34,12 @@ from semantic_version import Version
 from simple_history.models import HistoricalRecords
 from timezone_field import TimeZoneField
 from taggit.managers import TaggableManager
-from taggit.models import GenericUUIDTaggedItemBase, TaggedItemBase
 
 from mosquito_alert.devices.models import Device, MobileApp
 from mosquito_alert.geo.models import EuropeCountry, NutsEurope, LauEurope
 from mosquito_alert.identification_tasks.models import IdentificationTask
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.utils.models import UUIDTaggedItem
 from mosquito_alert.utils.mixins import TimeZoneModelMixin
 
 from .fields import ProcessedImageField
@@ -61,13 +61,6 @@ class Session(models.Model):
     class Meta:
         unique_together = ('session_ID', 'user',)
 
-class UUIDTaggedItem(GenericUUIDTaggedItemBase, TaggedItemBase):
-    # NOTE: legacy since Report.version_UUID is still a charfield.
-    object_id = models.CharField(max_length=36, verbose_name=_("object ID"), db_index=True)
-
-    # See: https://django-taggit.readthedocs.io/en/stable/custom_tagging.html
-    class Meta(GenericUUIDTaggedItemBase.Meta, TaggedItemBase.Meta):
-        abstract = False
 
 def generate_report_id():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=4))
