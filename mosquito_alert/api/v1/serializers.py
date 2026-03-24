@@ -36,11 +36,11 @@ from mosquito_alert.identification_tasks.models import (
     PhotoPrediction
 )
 from mosquito_alert.notifications.models import Notification, NotificationContent, NotificationTopic
+from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import UserStat, TigaUser
 from mosquito_alert.users.permissions import Permissions, Role
 from mosquito_alert.tigaserver_app.models import (
-    OrganizationPin,
     Report,
     Photo
 )

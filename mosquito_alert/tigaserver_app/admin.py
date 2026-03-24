@@ -1,8 +1,7 @@
 from django.contrib import admin
-from django.contrib.gis.admin import GISModelAdmin
 from django.utils.translation import gettext_lazy as _
 
-from mosquito_alert.tigaserver_app.models import Report, ReportResponse,  Photo, OrganizationPin
+from mosquito_alert.tigaserver_app.models import Report, ReportResponse,  Photo
 
 from simple_history.admin import SimpleHistoryAdmin
 from simple_history.utils import get_history_model_for_model
@@ -187,11 +186,4 @@ class ReportAdmin(SimpleHistoryAdmin):
         return False
 
 
-class OrganizationPinAdmin(GISModelAdmin):
-    list_display = ('id', 'point', 'textual_description', 'page_url')
-    list_filter = ['textual_description', 'page_url']
-    search_fields = ['textual_description', 'page_url']
-
-
 admin.site.register(Report, ReportAdmin)
-admin.site.register(OrganizationPin, OrganizationPinAdmin)
