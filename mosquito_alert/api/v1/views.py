@@ -40,6 +40,7 @@ from rest_framework_csv.renderers import CSVStreamingRenderer
 from rest_framework_gis.filters import DistanceToPointFilter
 from rest_framework_simplejwt.tokens import Token
 
+from mosquito_alert.campaigns.models import OWCampaigns
 from mosquito_alert.devices.models import Device
 from mosquito_alert.fixes.models import Fix
 from mosquito_alert.geo.models import EuropeCountry
@@ -48,7 +49,6 @@ from mosquito_alert.notifications.models import Notification
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.tigaserver_app.models import (
     OrganizationPin,
-    OWCampaigns,
     Report,
     Photo
 )

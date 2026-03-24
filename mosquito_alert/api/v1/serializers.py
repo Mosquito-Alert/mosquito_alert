@@ -21,6 +21,7 @@ from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from taggit.serializers import TaggitSerializer, TagListSerializerField
 
+from mosquito_alert.campaigns.models import OWCampaigns
 from mosquito_alert.devices.models import Device, MobileApp
 from mosquito_alert.fixes.models import Fix
 from mosquito_alert.geo.models import (
@@ -40,7 +41,6 @@ from mosquito_alert.users.models import UserStat, TigaUser
 from mosquito_alert.users.permissions import Permissions, Role
 from mosquito_alert.tigaserver_app.models import (
     OrganizationPin,
-    OWCampaigns,
     Report,
     Photo
 )

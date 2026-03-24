@@ -2,8 +2,7 @@ from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
 from django.utils.translation import gettext_lazy as _
 
-from mosquito_alert.tigaserver_app.models import Report, ReportResponse,  Photo, \
-    OWCampaigns, OrganizationPin
+from mosquito_alert.tigaserver_app.models import Report, ReportResponse,  Photo, OrganizationPin
 
 from simple_history.admin import SimpleHistoryAdmin
 from simple_history.utils import get_history_model_for_model
@@ -188,12 +187,6 @@ class ReportAdmin(SimpleHistoryAdmin):
         return False
 
 
-class OWCampaignsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'country', 'posting_address', 'campaign_start_date', 'campaign_end_date')
-    list_filter = ['country__name_engl', 'posting_address']
-    ordering = ['country', 'campaign_start_date', 'campaign_end_date']
-
-
 class OrganizationPinAdmin(GISModelAdmin):
     list_display = ('id', 'point', 'textual_description', 'page_url')
     list_filter = ['textual_description', 'page_url']
@@ -201,5 +194,4 @@ class OrganizationPinAdmin(GISModelAdmin):
 
 
 admin.site.register(Report, ReportAdmin)
-admin.site.register(OWCampaigns, OWCampaignsAdmin)
 admin.site.register(OrganizationPin, OrganizationPinAdmin)
