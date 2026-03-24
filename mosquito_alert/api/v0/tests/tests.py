@@ -7,7 +7,8 @@ from mosquito_alert.devices.models import Device, MobileApp
 from mosquito_alert.tigaserver_app.models import Report, ReportResponse
 from mosquito_alert.geo.models import EuropeCountry
 from django.utils import timezone
-from mosquito_alert.tigaserver_app.models import Report, Photo, Fix
+from mosquito_alert.tigaserver_app.models import Report, Photo
+from mosquito_alert.fixes.models import Fix
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
 from mosquito_alert.notifications.models import Notification, NotificationContent, NotificationTopic, UserSubscription
 from mosquito_alert.taxa.models import Taxon

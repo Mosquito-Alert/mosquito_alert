@@ -15,7 +15,7 @@ application = get_wsgi_application()
 from django.conf import settings
 from rest_framework import serializers
 from rest_framework.renderers import JSONRenderer
-from mosquito_alert.tigaserver_app.models import CoverageAreaMonth
+from mosquito_alert.fixes.models import CoverageAreaMonth
 import json
 
 class CoverageMonthMapSerializer(serializers.ModelSerializer):

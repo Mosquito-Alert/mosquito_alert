@@ -3,7 +3,7 @@ from django.contrib.gis.admin import GISModelAdmin
 from django.utils.translation import gettext_lazy as _
 
 from mosquito_alert.tigaserver_app.models import Report, ReportResponse,  Photo, \
-    Fix, OWCampaigns, OrganizationPin
+    OWCampaigns, OrganizationPin
 
 from simple_history.admin import SimpleHistoryAdmin
 from simple_history.utils import get_history_model_for_model
@@ -188,19 +188,6 @@ class ReportAdmin(SimpleHistoryAdmin):
         return False
 
 
-class FixAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user_coverage_uuid', 'fix_time', 'server_upload_time')
-    ordering = ('fix_time',)
-    readonly_fields = ('id', 'user_coverage_uuid', 'fix_time', 'server_upload_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power')
-    fields = ('id', 'user_coverage_uuid', 'fix_time', 'server_upload_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power')
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-
 class OWCampaignsAdmin(admin.ModelAdmin):
     list_display = ('id', 'country', 'posting_address', 'campaign_start_date', 'campaign_end_date')
     list_filter = ['country__name_engl', 'posting_address']
@@ -214,6 +201,5 @@ class OrganizationPinAdmin(GISModelAdmin):
 
 
 admin.site.register(Report, ReportAdmin)
-admin.site.register(Fix, FixAdmin)
 admin.site.register(OWCampaigns, OWCampaignsAdmin)
 admin.site.register(OrganizationPin, OrganizationPinAdmin)

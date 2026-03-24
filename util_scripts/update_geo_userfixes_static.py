@@ -10,7 +10,7 @@ sys.path.append(proj_path)
 
 django.setup()
 
-from mosquito_alert.tigaserver_app.models import Fix
+from mosquito_alert.fixes.models import Fix
 
 
 FILE = os.path.join(settings.STATIC_ROOT, "geo_user_fixes.csv")

@@ -119,6 +119,7 @@ LOCAL_APPS = [
     'mosquito_alert.api',
     'mosquito_alert.awards',
     'mosquito_alert.devices',
+    'mosquito_alert.fixes',
     'mosquito_alert.geo',
     'mosquito_alert.identification_tasks',
     'mosquito_alert.notifications',
