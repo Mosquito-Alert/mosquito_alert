@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 from django.template.exceptions import TemplateDoesNotExist
 from django.utils.translation import activate, deactivate, gettext as _
 
-from mosquito_alert.tigaserver_app.models import Notification, NotificationContent
+from mosquito_alert.notifications.models import Notification, NotificationContent
 
 from .models import IdentificationTask
 

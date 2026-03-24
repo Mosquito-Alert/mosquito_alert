@@ -121,6 +121,7 @@ LOCAL_APPS = [
     'mosquito_alert.devices',
     'mosquito_alert.geo',
     'mosquito_alert.identification_tasks',
+    'mosquito_alert.notifications',
     'mosquito_alert.stats',
     'mosquito_alert.taxa',
     'mosquito_alert.tigacrafting',
