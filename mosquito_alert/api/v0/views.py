@@ -9,7 +9,7 @@ from django.conf import settings
 from django_filters import rest_framework as filters
 import json
 from mosquito_alert.devices.models import Device
-from mosquito_alert.tigaserver_app.models import Report, Photo, Fix, Session, OWCampaigns, OrganizationPin, ReportResponse
+from mosquito_alert.tigaserver_app.models import Report, Photo, Session, OWCampaigns, OrganizationPin, ReportResponse
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
@@ -21,6 +21,7 @@ from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.template.loader import get_template
 
+from mosquito_alert.fixes.models import Fix
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
 from mosquito_alert.notifications.models import Notification, NotificationContent, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription
 from mosquito_alert.taxa.models import Taxon

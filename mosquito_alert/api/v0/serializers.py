@@ -2,7 +2,8 @@ from collections import OrderedDict
 from typing import Union
 from rest_framework import serializers
 from mosquito_alert.tigaserver_app.models import Report, ReportResponse,  Photo, \
-    Fix, Session, OWCampaigns, OrganizationPin
+    Session, OWCampaigns, OrganizationPin
+from mosquito_alert.fixes.models import Fix
 from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.notifications.models import Notification, NotificationContent, UserSubscription
 from mosquito_alert.users.models import TigaUser

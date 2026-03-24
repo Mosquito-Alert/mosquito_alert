@@ -22,6 +22,7 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from taggit.serializers import TaggitSerializer, TagListSerializerField
 
 from mosquito_alert.devices.models import Device, MobileApp
+from mosquito_alert.fixes.models import Fix
 from mosquito_alert.geo.models import (
     EuropeCountry,
     LauEurope,
@@ -41,8 +42,7 @@ from mosquito_alert.tigaserver_app.models import (
     OrganizationPin,
     OWCampaigns,
     Report,
-    Photo,
-    Fix
+    Photo
 )
 
 from .base_serializers import LocalizedSerializerMixin
