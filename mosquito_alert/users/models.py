@@ -248,7 +248,7 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
 
     @property
     def last_device(self) -> Optional['Device']:
-        from mosquito_alert.tigaserver_app.models import Device
+        from mosquito_alert.devices.models import Device
         try:
             return self.devices.latest('date_created')
         except Device.DoesNotExist:
