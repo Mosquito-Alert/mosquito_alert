@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('tigaserver_app', '0103_delete_coverageareamonth_delete_fix'),
     ]
 
     operations = [

@@ -2,7 +2,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from mosquito_alert.tigaserver_app.models import Report
+from mosquito_alert.reports.models import Report
 
 from .models import NotificationTopic, UserSubscription
 

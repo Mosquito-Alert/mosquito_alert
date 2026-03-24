@@ -1,6 +1,6 @@
 import pytest
 
-from mosquito_alert.tigaserver_app.models import Report
+from mosquito_alert.reports.models import Report
 
 from .factories import create_breeding_site_object
 

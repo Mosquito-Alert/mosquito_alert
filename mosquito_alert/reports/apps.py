@@ -18,7 +18,7 @@ if TiffImagePlugin.TiffImageFile.format in Image.ID:
     Image.ID.remove(TiffImagePlugin.TiffImageFile.format)
     Image.ID.append(TiffImagePlugin.TiffImageFile.format)
 
-class TigaserverApp(AppConfig):
-    name = "mosquito_alert.tigaserver_app"
-    label = "tigaserver_app"
-    verbose_name = "Tigaserver_App"
+class ReportsApp(AppConfig):
+    name = "mosquito_alert.reports"
+    label = "reports"
+    verbose_name = "Reports"

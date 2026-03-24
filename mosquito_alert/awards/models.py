@@ -3,7 +3,7 @@ from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 
-from mosquito_alert.tigaserver_app.models import Report
+from mosquito_alert.reports.models import Report
 from mosquito_alert.users.models import TigaUser
 
 from .messaging import send_new_award_notification

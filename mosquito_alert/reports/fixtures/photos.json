@@ -1,6 +1,6 @@
 [
     {
-        "model": "tigaserver_app.photo",
+        "model": "reports.photo",
         "pk": 58,
         "fields":
         {
@@ -11,7 +11,7 @@
         }
     },
     {
-        "model": "tigaserver_app.photo",
+        "model": "reports.photo",
         "pk": 59,
         "fields":
         {
@@ -22,7 +22,7 @@
         }
     },
     {
-        "model": "tigaserver_app.photo",
+        "model": "reports.photo",
         "pk": 60,
         "fields":
         {
@@ -33,7 +33,7 @@
         }
     },
     {
-        "model": "tigaserver_app.photo",
+        "model": "reports.photo",
         "pk": 61,
         "fields":
         {

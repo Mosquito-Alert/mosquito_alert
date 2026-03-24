@@ -1,6 +1,6 @@
 import pytest
 
-from mosquito_alert.tigaserver_app.models import Photo
+from mosquito_alert.reports.models import Photo
 
 
 # NOTE: needed for token with perms fixture

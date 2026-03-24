@@ -34,7 +34,7 @@ def populate_report_published_at(apps, schema_editor):
     ExpertReportAnnotation = apps.get_model('tigacrafting', 'ExpertReportAnnotation')
     IdentificationTask = apps.get_model('tigacrafting', 'IdentificationTask')
 
-    from mosquito_alert.tigaserver_app.models import Report as ReportModel
+    from mosquito_alert.reports.models import Report as ReportModel
     from mosquito_alert.identification_tasks.models import IdentificationTask as IdentificationTaskModel
 
     ReportContentType = ContentType.objects.get_for_model(Report)

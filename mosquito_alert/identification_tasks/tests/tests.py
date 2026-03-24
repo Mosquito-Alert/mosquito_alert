@@ -13,10 +13,10 @@ from django.conf import settings
 from django.test import TransactionTestCase
 from django.utils.translation import activate, deactivate, gettext as _
 from mosquito_alert.geo.models import EuropeCountry, NutsEurope
-from mosquito_alert.tigaserver_app.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
 from mosquito_alert.notifications.models import NotificationContent
+from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser
 from django.contrib.auth.models import User, Group
 from django.utils import timezone

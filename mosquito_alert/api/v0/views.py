@@ -9,7 +9,7 @@ from django.conf import settings
 from django_filters import rest_framework as filters
 import json
 from mosquito_alert.devices.models import Device
-from mosquito_alert.tigaserver_app.models import Report, Photo, Session, ReportResponse
+from mosquito_alert.tigaserver_app.models import Session
 from taggit.models import Tag
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
@@ -26,6 +26,7 @@ from mosquito_alert.fixes.models import Fix
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
 from mosquito_alert.notifications.models import Notification, NotificationContent, SentNotification, AcknowledgedNotification, NotificationTopic, UserSubscription
 from mosquito_alert.partners.models import OrganizationPin
+from mosquito_alert.reports.models import Report, ReportResponse, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import TigaUser
 

@@ -1,10 +1,10 @@
 import pytest
 
 from mosquito_alert.identification_tasks.models import IdentificationTask, ExpertReportAnnotation
+from mosquito_alert.reports.models import Photo, Report
 from mosquito_alert.users.models import UserStat
 
 from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
-from mosquito_alert.tigaserver_app.models import Photo, Report
 
 from ..observations.factories import create_observation_object
 from .predictions.factories import create_photo_prediction

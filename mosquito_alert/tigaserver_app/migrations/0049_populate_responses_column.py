@@ -176,7 +176,7 @@ def populate_breeding_site_in_public_area(apps, schema_editor):
 
 def populate_breeding_site_type(apps, schema_editor):
 
-    from mosquito_alert.tigaserver_app.models import Report
+    from mosquito_alert.reports.models import Report
 
     # Basin
     basin_responses = [
@@ -256,7 +256,7 @@ def populate_breeding_site_type(apps, schema_editor):
     update_field_based_on_responses(apps=apps, fieldname='breeding_site_type', responses=well_responses, value=Report.BreedingSiteType.WELL)
 
 def populate_event_environment(apps, schema_editor):
-    from mosquito_alert.tigaserver_app.models import Report
+    from mosquito_alert.reports.models import Report
 
     # indoors
     indoors_responses = [
@@ -280,7 +280,7 @@ def populate_event_environment(apps, schema_editor):
     update_field_based_on_responses(apps=apps, fieldname='event_environment', responses=vehicle_responses, value=Report.EVENT_ENVIRONMENT_VEHICLE)
 
 def populate_event_moment(apps, schema_editor):
-    from mosquito_alert.tigaserver_app.models import Report
+    from mosquito_alert.reports.models import Report
 
     # now
     now_responses = [
@@ -314,7 +314,7 @@ def populate_event_moment(apps, schema_editor):
 
 
 def populate_user_perceived_mosquito_abdomen(apps, schema_editor):
-    from mosquito_alert.tigaserver_app.models import Report
+    from mosquito_alert.reports.models import Report
 
     # albopictus responses
     albopictus_responses = [
@@ -381,7 +381,7 @@ def populate_user_perceived_mosquito_abdomen(apps, schema_editor):
     update_field_based_on_responses(apps=apps, fieldname='user_perceived_mosquito_abdomen', responses=other_species_responses, value=Report.SPECIE_OTHER)
 
 def populate_user_perceived_mosquito_legs(apps, schema_editor):
-    from mosquito_alert.tigaserver_app.models import Report
+    from mosquito_alert.reports.models import Report
 
     # albopictus responses
     albopictus_responses = [
@@ -419,7 +419,7 @@ def populate_user_perceived_mosquito_legs(apps, schema_editor):
     update_field_based_on_responses(apps=apps, fieldname='user_perceived_mosquito_legs', responses=koreicus_responses, value=Report.SPECIE_KOREICUS)
 
 def populate_user_perceived_mosquito_thorax(apps, schema_editor):
-    from mosquito_alert.tigaserver_app.models import Report
+    from mosquito_alert.reports.models import Report
 
     # albopictus responses
     albopictus_responses = [
@@ -488,7 +488,7 @@ def populate_user_perceived_mosquito_thorax(apps, schema_editor):
     update_field_based_on_responses(apps=apps, fieldname='user_perceived_mosquito_thorax', responses=other_species_responses, value=Report.SPECIE_OTHER)
 
 def populate_user_perceived_mosquito_specie(apps, schema_editor):
-    from mosquito_alert.tigaserver_app.models import Report
+    from mosquito_alert.reports.models import Report
 
     # albopictus responses
     albopictus_responses = [
@@ -566,7 +566,7 @@ def populate_bite_count(apps, schema_editor):
             )}
         )
 
-        from mosquito_alert.tigaserver_app.models import Report as ModelReport
+        from mosquito_alert.reports.models import Report as ModelReport
 
         # Ensure bite report field are set to 0 as default.
         Report.objects.filter(

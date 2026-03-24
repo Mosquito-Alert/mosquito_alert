@@ -47,11 +47,8 @@ from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.identification_tasks.models import IdentificationTask, ExpertReportAnnotation, PhotoPrediction
 from mosquito_alert.notifications.models import Notification
 from mosquito_alert.partners.models import OrganizationPin
+from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.tigaserver_app.models import (
-    Report,
-    Photo
-)
 from mosquito_alert.users.models import TigaUser
 
 from .filters import (

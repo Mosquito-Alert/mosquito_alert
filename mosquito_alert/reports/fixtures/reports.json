@@ -1,7 +1,7 @@
 [  
   {
     "pk": "00042354-ffd6-431e-af1e-cecf55e55364",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 37.241657,
       "package_name": "ceab.movelab.tigatrapp",
@@ -33,7 +33,7 @@
   },
   {
     "pk": "00042fb1-408f-4da4-898d-4331a9ec3129",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 41.423824,
       "package_name": "ceab.movelab.tigatrapp",
@@ -65,7 +65,7 @@
   },
   {
     "pk": "0005c9ea-e450-4698-b433-c6fb31c91979",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 0.0,
       "package_name": "ceab.movelab.tigatrapp",
@@ -97,7 +97,7 @@
   },
   {
     "pk": "00069ba6-9fc4-4aab-866d-6c48be46d6b5",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 38.7894,
       "package_name": "ceab.movelab.tigatrapp",
@@ -129,7 +129,7 @@
   },
   {
     "pk": "0006ef72-caa3-479a-9ac8-7ac27fc8de22",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 39.579914,
       "package_name": "ceab.movelab.tigatrapp",
@@ -161,7 +161,7 @@
   },
   {
     "pk": "000A7B86-1C55-4BFD-980B-70AB8AC3BF4A",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 41.52497,
       "package_name": "Tigatrapp",
@@ -193,7 +193,7 @@
   },
   {
     "pk": "000CBF08-DB41-4104-B674-8DE3020B24F3",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 39.7319030761719,
       "package_name": "Mosquito Alert",
@@ -225,7 +225,7 @@
   },
   {
     "pk": "000FD3DA-DC28-4713-85F4-B17E4D191D20",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 38.86337,
       "package_name": "Tigatrapp",
@@ -257,7 +257,7 @@
   },
   {
     "pk": "0016ff5e-f028-4a46-8b76-370cd8fa5b79",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": null,
       "package_name": "ceab.movelab.tigatrapp",
@@ -289,7 +289,7 @@
   },
   {
     "pk": "001ba252-9f90-4387-b2e9-18ebc01a7807",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 37.98551,
       "package_name": "ceab.movelab.tigatrapp",
@@ -321,7 +321,7 @@
   },
   {
     "pk": "001d3868-7586-4314-91b8-b1e985d35b8a",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 41.484966,
       "package_name": "ceab.movelab.tigatrapp",
@@ -353,7 +353,7 @@
   },
   {
     "pk": "001f9ec0-666e-4a1a-97e9-9b4bf375e431",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 36.591927,
       "package_name": "ceab.movelab.tigatrapp",
@@ -385,7 +385,7 @@
   },
   {
     "pk": "00200f57-4da8-485b-a74e-d33f3f72a3f9",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 39.720345,
       "package_name": "ceab.movelab.tigatrapp",
@@ -417,7 +417,7 @@
   },
   {
     "pk": "002a7794-587d-4b16-960d-16e2cabf9375",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 42.83172,
       "package_name": "ceab.movelab.tigatrapp",
@@ -449,7 +449,7 @@
   },
   {
     "pk": "002ba4e5-8e8b-435d-820a-0dcefbfeb6e1",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 41.695057,
       "package_name": "ceab.movelab.tigatrapp",
@@ -481,7 +481,7 @@
   },
   {
     "pk": "0030E493-3D91-4A1D-87FD-F2898408442F",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 41.57251,
       "package_name": "Tigatrapp",
@@ -513,7 +513,7 @@
   },  
   {
     "pk": "00386998-cbaf-4c48-9c55-cc9614197467",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 41.001125,
       "package_name": "ceab.movelab.tigatrapp",
@@ -545,7 +545,7 @@
   },
   {
     "pk": "003bcef0-ae85-42fc-913e-9733e69a6bee",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 19.405575,
       "package_name": "ceab.movelab.tigatrapp",
@@ -577,7 +577,7 @@
   },
   {
     "pk": "003bfe06-aeb3-4368-b430-e1ecd3fdc306",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 41.647396,
       "package_name": "ceab.movelab.tigatrapp",
@@ -609,7 +609,7 @@
   },
   {
     "pk": "003c1df2-7b12-418c-b313-0d354dd6308f",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 41.4029,
       "package_name": "ceab.movelab.tigatrapp",
@@ -641,7 +641,7 @@
   },
   {
     "pk": "003D269B-C91C-4A70-ADB7-D051002D73D6",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 0.0,
       "package_name": "Mosquito Alert",
@@ -673,7 +673,7 @@
   },
   {
     "pk": "004050E8-6F35-4B0E-B450-6D1B45AEDE52",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 38.01105,
       "package_name": "Tigatrapp",
@@ -705,7 +705,7 @@
   },  
   {
     "pk": "00462387-b5a5-4e07-b62b-cf241ddf8681",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 41.369976,
       "package_name": "ceab.movelab.tigatrapp",
@@ -737,7 +737,7 @@
   },  
   {
     "pk": "004D5A85-1D88-4170-A253-DABF30669EBE",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 0.0,
       "package_name": "Tigatrapp",
@@ -769,7 +769,7 @@
   },
   {
     "pk": "004EF38D-B58A-4143-8C63-45D3B6D0DCC4",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 41.51072,
       "package_name": "Tigatrapp",
@@ -801,7 +801,7 @@
   },
   {
     "pk": "0050a13a-1be0-4b10-8f50-d1893ee048ba",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 39.890247,
       "package_name": "ceab.movelab.tigatrapp",
@@ -833,7 +833,7 @@
   },  
   {
     "pk": "0056b965-ae13-4af8-b494-3234cc23e50a",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 21.335032,
       "package_name": "ceab.movelab.tigatrapp",
@@ -865,7 +865,7 @@
   },  
   {
     "pk": "005EE071-D149-40D4-9551-43DF006BE5C6",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 39.63955,
       "package_name": "Mosquito Alert",
@@ -897,7 +897,7 @@
   },  
   {
     "pk": "00629bb1-83ab-4b48-a358-08fc29824007",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 38.382973,
       "package_name": "ceab.movelab.tigatrapp",
@@ -929,7 +929,7 @@
   },
   {
     "pk": "006c56d9-98ac-4658-b9da-902d77f1fdf3",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 36.546482,
       "package_name": "ceab.movelab.tigatrapp",
@@ -961,7 +961,7 @@
   },
   {
     "pk": "006d1a33-0079-4b62-b762-1b96ecc7aa99",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 39.945923,
       "package_name": "ceab.movelab.tigatrapp",
@@ -993,7 +993,7 @@
   },
   {
     "pk": "006ede16-38b4-40e8-bd0f-6533ae36fa5c",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 39.97349,
       "package_name": "ceab.movelab.tigatrapp",
@@ -1025,7 +1025,7 @@
   },
   {
     "pk": "007106f1-6003-4cf5-b049-8f6533a90813",
-    "model": "tigaserver_app.report",
+    "model": "reports.report",
     "fields": {
       "current_location_lat": 41.633064,
       "package_name": "ceab.movelab.tigatrapp",

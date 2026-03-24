@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from mosquito_alert.fixes.models import Fix, CoverageAreaMonth
-from mosquito_alert.tigaserver_app.models import Report
+from mosquito_alert.reports.models import Report
 from datetime import datetime
 from django.conf import settings
 from django.db.models import Q

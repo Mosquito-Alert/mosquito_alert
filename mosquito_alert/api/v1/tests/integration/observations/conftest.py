@@ -1,6 +1,6 @@
 import pytest
 
-from mosquito_alert.tigaserver_app.models import Report, Photo
+from mosquito_alert.reports.models import Report, Photo
 
 from .factories import create_observation_object
 

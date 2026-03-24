@@ -2,7 +2,7 @@ from django.utils.translation import gettext as _
 
 import pandas as pd
 
-from mosquito_alert.tigaserver_app.models import Report
+from mosquito_alert.reports.models import Report
 from mosquito_alert.users.models import TigaUser
 from .models import Award
 

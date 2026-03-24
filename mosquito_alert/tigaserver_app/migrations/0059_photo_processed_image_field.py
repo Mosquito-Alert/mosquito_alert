@@ -2,7 +2,7 @@
 
 from django.db import migrations
 import imagekit.models.fields
-import mosquito_alert.tigaserver_app.models
+import mosquito_alert.reports.models
 
 
 class Migration(migrations.Migration):
@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='photo',
             name='photo',
-            field=mosquito_alert.tigaserver_app.fields.ProcessedImageField(help_text='Photo uploaded by user.', upload_to=mosquito_alert.tigaserver_app.models.MakeImageUUID('tigapics')),
+            field=mosquito_alert.reports.fields.ProcessedImageField(help_text='Photo uploaded by user.', upload_to=mosquito_alert.reports.models.MakeImageUUID('tigapics')),
         ),
     ]

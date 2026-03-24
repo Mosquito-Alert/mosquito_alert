@@ -1,8 +1,9 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
 
 from mosquito_alert.geo.models import EuropeCountry
-from mosquito_alert.tigaserver_app.models import *
-from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
+from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
+from mosquito_alert.reports.models import Report
 from mosquito_alert.users.models import UserStat, TigaUser
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.contrib.auth.decorators import login_required
@@ -21,10 +22,14 @@ from rest_framework.exceptions import ParseError
 from django.core.paginator import Paginator
 import math
 from django.urls import reverse
+from django.db import models
 from django.db.models import Count
 from django.db.models.functions import Extract, Trunc
 
 from .models import RankingData
+
+User = get_user_model()
+
 
 @xframe_options_exempt
 # @cache_page(60 * 15)
