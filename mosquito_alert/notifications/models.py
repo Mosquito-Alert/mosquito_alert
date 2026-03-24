@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 from mosquito_alert.devices.models import Device
+from mosquito_alert.reports.models import Report
 from mosquito_alert.users.models import TigaUser
 
 from .managers import NotificationManager
@@ -84,7 +85,7 @@ class NotificationContent(models.Model):
 
 
 class Notification(models.Model):
-    report = models.ForeignKey('tigaserver_app.Report', null=True, blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.CASCADE, )
+    report = models.ForeignKey(Report, null=True, blank=True, related_name='report_notifications', help_text='Report regarding the current notification', on_delete=models.CASCADE, )
     # The field 'user' is kept for backwards compatibility with the map notifications. It only has meaningful content on MAP NOTIFICATIONS
     # and in all other cases is given a default value (null user 00000000-0000-0000-0000-000000000000)
     user = models.ForeignKey(TigaUser, null=True, blank=True, on_delete=models.CASCADE)

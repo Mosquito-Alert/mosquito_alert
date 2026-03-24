@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('geo', '0001_initial'),
+        ('tigaserver_app', '0104_delete_owcampaigns'),
     ]
 
     operations = [

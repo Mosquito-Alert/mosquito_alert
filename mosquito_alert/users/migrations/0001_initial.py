@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('auth', '0012_alter_user_first_name_max_length'),
         ('tigaserver_app', '0094_alter_tigauser_locale'),
+        ('tigacrafting', '0058_remove_identificationtask_assignees_and_more'),
     ]
 
     operations = [

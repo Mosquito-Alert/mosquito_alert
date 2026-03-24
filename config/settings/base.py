@@ -125,6 +125,7 @@ LOCAL_APPS = [
     'mosquito_alert.identification_tasks',
     'mosquito_alert.notifications',
     'mosquito_alert.partners',
+    'mosquito_alert.reports',
     'mosquito_alert.stats',
     'mosquito_alert.taxa',
     'mosquito_alert.tigacrafting',
@@ -343,8 +344,8 @@ SPECTACULAR_SETTINGS = {
     'SCHEMA_PATH_PREFIX_TRIM': True,
     'SERVE_INCLUDE_SCHEMA': False,
     'ENUM_NAME_OVERRIDES': {
-        'MosquitoTypeEnum': 'mosquito_alert.tigaserver_app.models.Report.MOSQUITO_SPECIE_CHOICES',
-        'ReportTypeEnum': 'mosquito_alert.tigaserver_app.models.Report.TYPE_CHOICES',
+        'MosquitoTypeEnum': 'mosquito_alert.reports.models.Report.MOSQUITO_SPECIE_CHOICES',
+        'ReportTypeEnum': 'mosquito_alert.reports.models.Report.TYPE_CHOICES',
         "DeviceTypeEnum": 'fcm_django.models.DeviceType',
         "ValidationErrorEnum": "drf_standardized_errors.openapi_serializers.ValidationErrorEnum.choices",
         "AnnotationTypeEnum": ['short', 'long'],
@@ -423,7 +424,7 @@ FCM_DJANGO_SETTINGS = {
 FCM_DJANGO_FCMDEVICE_MODEL = "mosquito_alert.devices.Device"
 DISABLE_PUSH = env.bool("DISABLE_PUSH", default=True) # NOTE: This completely disables sending push notifications, independently of the FCM_DJANGO_SETTINGS. Used in dev and staging.
 
-# tigaserver_app
+# mosquito_alert.reports
 # -------------------------------------------------------------------------------
 OCEAN_GEOM = GEOSGeometry.from_ewkt(
     DataSource(BASE_DIR  / 'config' / 'ne_10m_ocean_b8km.gpkg')[0][1].geom.ewkt

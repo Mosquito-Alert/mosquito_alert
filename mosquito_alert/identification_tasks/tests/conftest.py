@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.identification_tasks.models import IdentificationTask
-from mosquito_alert.tigaserver_app.models import Report, Photo
+from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser
 
 User = get_user_model()

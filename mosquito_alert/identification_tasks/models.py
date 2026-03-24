@@ -20,6 +20,7 @@ from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, AFTER_CREATE
 from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged
 
 from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import UserStat
 
@@ -45,7 +46,6 @@ def get_is_high_confidence(value: numbers.Number) -> bool:
 class IdentificationTask(LifecycleModel):
     @classmethod
     def get_or_create_for_report(self, report) -> Tuple[Optional['IdentificationTask'], bool]:
-        from mosquito_alert.tigaserver_app.models import Report
         if not report.photos.exists() or not report.type==Report.TYPE_ADULT:
             return None, False
 
@@ -226,8 +226,8 @@ class IdentificationTask(LifecycleModel):
 
     CLOSED_STATUS = [Status.DONE, Status.ARCHIVED]
 
-    report = models.OneToOneField('tigaserver_app.Report', primary_key=True, related_name='identification_task', on_delete=models.CASCADE, limit_choices_to={'type': 'adult'})
-    photo = models.ForeignKey('tigaserver_app.Photo', related_name='identification_tasks', on_delete=models.CASCADE, editable=False)
+    report = models.OneToOneField(Report, primary_key=True, related_name='identification_task', on_delete=models.CASCADE, limit_choices_to={'type': 'adult'})
+    photo = models.ForeignKey(Photo, related_name='identification_tasks', on_delete=models.CASCADE, editable=False)
 
     assignees = models.ManyToManyField(
         User,
@@ -659,7 +659,7 @@ class ExpertReportAnnotation(models.Model):
     # Relations
     user = models.ForeignKey(User, related_name="expert_report_annotations", on_delete=models.PROTECT, )
     identification_task = models.ForeignKey(IdentificationTask, editable=False, related_name='expert_report_annotations', on_delete=models.CASCADE)
-    best_photo = models.ForeignKey('tigaserver_app.Photo', related_name='expert_report_annotations', null=True, blank=True, on_delete=models.SET_NULL, )
+    best_photo = models.ForeignKey(Photo, related_name='expert_report_annotations', null=True, blank=True, on_delete=models.SET_NULL, )
     tags = TaggableManager(blank=True)
     taxon = models.ForeignKey(Taxon, null=True, blank=True, on_delete=models.PROTECT)
 
@@ -849,7 +849,7 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
     def get_score_fieldnames(cls) -> List[str]:
         return [fname + cls.CLASS_FIELD_SUFFIX for fname, _ in cls.CLASS_FIELDNAMES_CHOICES]
 
-    photo = models.OneToOneField('tigaserver_app.Photo', primary_key=True, related_name='prediction', help_text='Photo to which the score refers to', on_delete=models.CASCADE)
+    photo = models.OneToOneField(Photo, primary_key=True, related_name='prediction', help_text='Photo to which the score refers to', on_delete=models.CASCADE)
     identification_task = models.ForeignKey(IdentificationTask, related_name='photo_predictions', help_text='Identification task to which the photo belongs', on_delete=models.CASCADE)
     taxon = models.ForeignKey(Taxon, null=True, blank=True, editable=True, on_delete=models.PROTECT)
 

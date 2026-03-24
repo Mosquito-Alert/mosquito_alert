@@ -8,8 +8,8 @@ from PIL import Image, ExifTags
 import os
 from django.contrib.gis.geos import Polygon, MultiPolygon, Point
 from django.utils import timezone
-from mosquito_alert.tigaserver_app.models import Report, Photo
-from mosquito_alert.tigaserver_app.utils import scrub_sensitive_exif
+from mosquito_alert.reports.models import Report, Photo
+from mosquito_alert.reports.utils import scrub_sensitive_exif
 from mosquito_alert.users.models import TigaUser
 import io
 from django.db.utils import IntegrityError

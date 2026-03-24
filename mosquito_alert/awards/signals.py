@@ -6,7 +6,7 @@ from django.dispatch import receiver
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
-from mosquito_alert.tigaserver_app.models import Report
+from mosquito_alert.reports.models import Report
 
 from .models import Award
 from .utils import (

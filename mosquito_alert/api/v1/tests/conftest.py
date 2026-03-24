@@ -22,9 +22,9 @@ from mosquito_alert.api.v1.tests.clients import AppAPIClient
 
 from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.identification_tasks.models import IdentificationTask
+from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import UserStat
-from mosquito_alert.tigaserver_app.models import Report, Photo
 
 from .factories import create_mobile_user, create_regular_user
 

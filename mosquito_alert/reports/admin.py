@@ -1,11 +1,10 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-from mosquito_alert.tigaserver_app.models import Report, ReportResponse,  Photo
-
 from simple_history.admin import SimpleHistoryAdmin
 from simple_history.utils import get_history_model_for_model
 
+from .models import Report, ReportResponse,  Photo
 
 class ReportInline(admin.TabularInline):
     model = Report
@@ -28,7 +27,7 @@ class PhotoInline(admin.StackedInline):
     max_num = 0
     readonly_fields = ('photo', 'report')
 
-
+@admin.register(Report)
 class ReportAdmin(SimpleHistoryAdmin):
     list_display = (
         'version_UUID', 'report_id', 'deleted', 'user', 'version_number', 'creation_time', 'version_time', 'type',
@@ -185,5 +184,3 @@ class ReportAdmin(SimpleHistoryAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-
-admin.site.register(Report, ReportAdmin)

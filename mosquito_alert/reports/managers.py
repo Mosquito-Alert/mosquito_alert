@@ -69,7 +69,7 @@ class ReportQuerySet(models.QuerySet):
         )
 
     def in_coarse_filter(self) -> QuerySet:
-        from mosquito_alert.tigaserver_app.models import Report
+        from .models import Report
         from mosquito_alert.identification_tasks.models import IdentificationTask
 
         return self.published(state=False).filter(

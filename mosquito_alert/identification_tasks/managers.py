@@ -9,6 +9,7 @@ from django.db.models.query import QuerySet
 from django.utils import timezone
 
 from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.reports.models import Report
 from mosquito_alert.users.models import TigaUser
 from mosquito_alert.users.permissions import ReviewPermission
 
@@ -45,8 +46,6 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
     def backlog(self, user: Optional[User] = None) -> QuerySet:
         """Awaiting assignment but part of the annotation cycle."""
-        from mosquito_alert.tigaserver_app.models import Report
-
         qs = self._assignable()
 
         if not user:
@@ -224,7 +223,6 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
     # SUPPORTING QUERYSETS
     def in_exclusivity_period(self, state: bool = True) -> QuerySet:
-        from mosquito_alert.tigaserver_app.models import Report
         from .models import IdentificationTask
 
         qs = self.filter(
@@ -257,7 +255,6 @@ class IdentificationTaskQuerySet(models.QuerySet):
         )
 
     def supervisor_has_annotated(self, state: bool = True) -> QuerySet:
-        from mosquito_alert.tigaserver_app.models import Report
         from .models import ExpertReportAnnotation
 
         return self.filter(

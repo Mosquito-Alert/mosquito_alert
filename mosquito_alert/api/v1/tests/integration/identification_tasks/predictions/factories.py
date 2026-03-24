@@ -1,6 +1,6 @@
 from mosquito_alert.identification_tasks.models import PhotoPrediction
 from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.tigaserver_app.models import Photo
+from mosquito_alert.reports.models import Photo
 
 
 def create_photo_prediction(photo: Photo) -> PhotoPrediction:
