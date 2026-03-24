@@ -3,7 +3,7 @@ import pytest
 
 from django.utils import timezone
 
-from mosquito_alert.tigaserver_app.models import OWCampaigns
+from mosquito_alert.campaigns.models import OWCampaigns
 
 
 @pytest.fixture
