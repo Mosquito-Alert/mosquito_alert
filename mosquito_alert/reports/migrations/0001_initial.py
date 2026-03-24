@@ -177,7 +177,7 @@ class Migration(migrations.Migration):
                         ('nuts_3_fk', models.ForeignKey(blank=True, db_constraint=False, limit_choices_to={'levl_code': 3}, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='geo.nutseurope')),
                     ],
                     options={
-                        'db_table': 'tigaserver_app_historicaldevice',
+                        'db_table': 'tigaserver_app_historicalreport',
                         'verbose_name': 'historical report',
                         'verbose_name_plural': 'historical reports',
                         'ordering': ('-history_date', '-history_id'),
