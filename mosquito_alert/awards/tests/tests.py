@@ -1,11 +1,12 @@
 from django.conf import settings
 from django.test import TestCase
 from django.utils.translation import activate, deactivate, gettext as _
-from mosquito_alert.tigaserver_app.models import Report, Photo, Notification
+from mosquito_alert.tigaserver_app.models import Report, Photo
 from mosquito_alert.awards.models import Award
 from mosquito_alert.awards.utils import ACHIEVEMENT_10_REPORTS, ACHIEVEMENT_10_REPORTS_XP, ACHIEVEMENT_20_REPORTS, ACHIEVEMENT_20_REPORTS_XP, ACHIEVEMENT_50_REPORTS, ACHIEVEMENT_50_REPORTS_XP
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
+from mosquito_alert.notifications.models import Notification
 from mosquito_alert.awards.xp_scoring import compute_user_score_in_xp_v2
 from mosquito_alert.users.models import TigaUser
 from datetime import datetime

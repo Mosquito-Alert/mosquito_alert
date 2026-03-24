@@ -1,4 +1,4 @@
-{%extends 'tigacrafting/base.html'%}
+{%extends 'notifications/base.html'%}
 {% load static %}
 <!DOCTYPE html>
 <html lang={% block language %}"en"{% endblock %}>
@@ -29,7 +29,7 @@
         {% endif %}
         var topics_info = JSON.parse('{{ topics_info | safe }}');
     </script>
-    <script src={% static "tigacrafting/notifications/notifications_version_two.js" %}></script>
+    <script src={% static "notifications/notifications_version_two.js" %}></script>
     <h1 class="text-center">New notification</h1>
     <div class="">
         <div class="">

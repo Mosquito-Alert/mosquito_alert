@@ -2,7 +2,7 @@
 
 from django.test import TestCase
 
-from mosquito_alert.tigaserver_app.models import NotificationTopic, UserSubscription
+from mosquito_alert.notifications.models import NotificationTopic, UserSubscription
 from mosquito_alert.users.models import TigaUser
 
 

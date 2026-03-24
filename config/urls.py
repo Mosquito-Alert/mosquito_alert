@@ -8,13 +8,14 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from mosquito_alert.tigacrafting.views import notifications_version_two, notification_detail, notifications_table, user_notifications_datatable, aimalog_datatable, aimalog
+from mosquito_alert.tigacrafting.views import aimalog_datatable, aimalog
 from django.views.i18n import JavaScriptCatalog
 from django.urls import include,path
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 
 from mosquito_alert.identification_tasks.views import expert_report_annotation, expert_status, report_expiration, expert_report_pending, expert_report_complete, coarse_filter
+from mosquito_alert.notifications.views import notifications_version_two, notification_detail, notifications_table, user_notifications_datatable
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browseable API.

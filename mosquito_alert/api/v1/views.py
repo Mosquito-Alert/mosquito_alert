@@ -43,14 +43,13 @@ from rest_framework_simplejwt.tokens import Token
 from mosquito_alert.devices.models import Device
 from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.identification_tasks.models import IdentificationTask, ExpertReportAnnotation, PhotoPrediction
+from mosquito_alert.notifications.models import Notification
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.tigaserver_app.models import (
-    Notification,
     OrganizationPin,
     OWCampaigns,
     Report,
     Fix,
-    Notification,
     Photo
 )
 from mosquito_alert.users.models import TigaUser

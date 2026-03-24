@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.contrib.gis.admin import GISModelAdmin
 from django.utils.translation import gettext_lazy as _
 
-from mosquito_alert.tigaserver_app.models import Notification, Report, ReportResponse,  Photo, \
-    Fix, OWCampaigns, OrganizationPin, NotificationTopic
+from mosquito_alert.tigaserver_app.models import Report, ReportResponse,  Photo, \
+    Fix, OWCampaigns, OrganizationPin
 
 from simple_history.admin import SimpleHistoryAdmin
 from simple_history.utils import get_history_model_for_model
@@ -200,20 +200,11 @@ class FixAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
-class NotificationAdmin(admin.ModelAdmin):
-    list_display = ('report', 'expert', 'date_comment', 'expert_comment', 'expert_html', 'photo_url')
-    search_fields = ['report__version_UUID','user__user_UUID']
-
 
 class OWCampaignsAdmin(admin.ModelAdmin):
     list_display = ('id', 'country', 'posting_address', 'campaign_start_date', 'campaign_end_date')
     list_filter = ['country__name_engl', 'posting_address']
     ordering = ['country', 'campaign_start_date', 'campaign_end_date']
-
-class NotificationTopicAdmin(admin.ModelAdmin):
-    list_display = ('id', 'topic_code', 'topic_description', 'topic_group')
-    list_filter = ['topic_code', 'topic_description']
-    ordering = ['id', 'topic_code', 'topic_description']
 
 
 class OrganizationPinAdmin(GISModelAdmin):
@@ -224,7 +215,5 @@ class OrganizationPinAdmin(GISModelAdmin):
 
 admin.site.register(Report, ReportAdmin)
 admin.site.register(Fix, FixAdmin)
-admin.site.register(Notification, NotificationAdmin)
 admin.site.register(OWCampaigns, OWCampaignsAdmin)
 admin.site.register(OrganizationPin, OrganizationPinAdmin)
-admin.site.register(NotificationTopic, NotificationTopicAdmin)

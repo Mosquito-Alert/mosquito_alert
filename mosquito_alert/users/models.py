@@ -346,7 +346,7 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
         result = super().save(*args, **kwargs)
 
         # Make sure user is subscribed to global topic
-        from mosquito_alert.tigaserver_app.models import NotificationTopic, UserSubscription
+        from mosquito_alert.notifications.models import NotificationTopic, UserSubscription
         try:
             global_topic = NotificationTopic.objects.get(topic_code='global')
         except NotificationTopic.DoesNotExist:

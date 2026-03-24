@@ -33,18 +33,16 @@ from mosquito_alert.identification_tasks.models import (
     ExpertReportAnnotation,
     PhotoPrediction
 )
+from mosquito_alert.notifications.models import Notification, NotificationContent, NotificationTopic
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import UserStat, TigaUser
 from mosquito_alert.users.permissions import Permissions, Role
 from mosquito_alert.tigaserver_app.models import (
-    NotificationContent,
-    Notification,
     OrganizationPin,
     OWCampaigns,
     Report,
     Photo,
-    Fix,
-    NotificationTopic,
+    Fix
 )
 
 from .base_serializers import LocalizedSerializerMixin

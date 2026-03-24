@@ -1,6 +1,6 @@
 import pytest
 
-from mosquito_alert.tigaserver_app.models import (
+from mosquito_alert.notifications.models import (
     Notification,
     NotificationTopic,
     NotificationContent,
