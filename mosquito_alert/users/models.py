@@ -19,7 +19,7 @@ import pydenticon
 
 from mosquito_alert.geo.models import EuropeCountry, NutsEurope
 
-from .permissions import UserRolePermissionMixin, Role, AnnotationPermission, IdentificationTaskPermission, BasePermission
+from .permissions import UserRolePermissionMixin, Role, AnnotationPermission, IdentificationTaskPermission, BasePermission, NotificationPermission
 
 User = get_user_model()
 
@@ -132,6 +132,13 @@ class UserStat(UserRolePermissionMixin, models.Model):
 
         perm = super().get_role_identification_task_permission(role=role)
         return self._update_permissions_from_django_perms(perm, IdentificationTask)
+
+    # NOTE: override UserRolePermissionMixin
+    def get_role_notification_permission(self, role: Role) -> NotificationPermission:
+        from mosquito_alert.notifications.models import Notification
+        
+        perm = super().get_role_notification_permission(role=role)
+        return self._update_permissions_from_django_perms(perm, Notification)
 
     def is_expert(self):
         return self.user.groups.filter(name="expert").exists()

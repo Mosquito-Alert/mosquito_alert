@@ -24,6 +24,7 @@ from rest_framework_simplejwt.settings import api_settings
 
 from mosquito_alert.devices.models import Device, MobileApp
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask, PhotoPrediction
+from mosquito_alert.notifications.models import Notification
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser
 
@@ -33,7 +34,6 @@ from mosquito_alert.api.v1.tests.integration.breeding_sites.factories import cre
 from mosquito_alert.api.v1.tests.integration.bites.factories import create_bite_object
 from mosquito_alert.api.v1.tests.integration.identification_tasks.factories import create_annotation, create_review
 from mosquito_alert.api.v1.tests.factories import create_report_object, create_boundary_contains_point
-from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
 from mosquito_alert.api.v1.tests.integration.identification_tasks.predictions.factories import create_photo_prediction
 
 from .utils import grant_permission_to_user
@@ -1458,6 +1458,8 @@ class TestPermissionsApi:
         assert response.data['general']['role'] == 'annotator'
         assert not response.data['general']['permissions']['review']['add']
         assert not response.data['general']['permissions']['review']['view']
+        assert not response.data['general']['permissions']['notification']['add']
+        assert not response.data['general']['permissions']['notification']['view']
 
     def test_general_role_reviewer(self, api_client, user, me_endpoint):
         grant_permission_to_user(
@@ -1472,6 +1474,8 @@ class TestPermissionsApi:
         assert response.data['general']['role'] == 'reviewer'
         assert response.data['general']['permissions']['review']['add']
         assert response.data['general']['permissions']['review']['view']
+        assert response.data['general']['permissions']['notification']['add']
+        assert response.data['general']['permissions']['notification']['view']
 
     def test_general_role_admin(self, api_client, user, me_endpoint):
         user.is_superuser = True
@@ -1539,6 +1543,38 @@ class TestPermissionsApi:
         assert not response.data['countries'][0]['permissions']['review']['add']
         assert not response.data['countries'][0]['permissions']['review']['view']
 
+    def test_notification_permissions_enabled_on_user_has_add_permission(self, api_client, user, me_endpoint):
+        response = api_client.get(
+            me_endpoint,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert not response.data['general']['permissions']['notification']['add']
+        assert not response.data['general']['permissions']['notification']['view']
+
+        grant_permission_to_user(
+            codename="add_notification", model_class=Notification, user=user
+        )
+
+        response = api_client.get(
+            me_endpoint,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['general']['permissions']['notification']['add']
+        assert not response.data['general']['permissions']['notification']['view']
+
+        grant_permission_to_user(
+            codename="view_notification", model_class=Notification, user=user
+        )
+
+        response = api_client.get(
+            me_endpoint,
+            format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data['general']['permissions']['notification']['add']
+        assert response.data['general']['permissions']['notification']['view']
 
 @pytest.mark.django_db
 class TestFixesApi:

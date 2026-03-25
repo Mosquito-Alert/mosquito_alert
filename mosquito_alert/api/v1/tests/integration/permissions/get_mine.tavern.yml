@@ -59,6 +59,11 @@ stages:
               change: false
               view: false
               delete: false
+            notification:
+              add: false
+              change: false
+              view: false
+              delete: false
           is_staff: false
         countries: []
 
@@ -100,6 +105,11 @@ stages:
               view: false
               delete: false
             review:
+              add: false
+              change: false
+              view: false
+              delete: false
+            notification:
               add: false
               change: false
               view: false

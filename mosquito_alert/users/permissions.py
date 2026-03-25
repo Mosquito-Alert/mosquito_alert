@@ -34,10 +34,15 @@ class ReviewPermission(BasePermission):
     pass
 
 @dataclass
+class NotificationPermission(BasePermission):
+    pass
+
+@dataclass
 class Permissions:
     annotation: AnnotationPermission
     identification_task: IdentificationTaskPermission
     review: ReviewPermission
+    notification: NotificationPermission
 
 class UserRolePermissionMixin:
     @abstractmethod
@@ -59,7 +64,8 @@ class UserRolePermissionMixin:
         return Permissions(
             annotation=self.get_role_annotation_permission(role),
             identification_task=self.get_role_identification_task_permission(role),
-            review=self.get_role_review_permission(role)
+            review=self.get_role_review_permission(role),
+            notification=self.get_role_notification_permission(role),
         )
 
     def get_role_annotation_permission(self, role: Role) -> AnnotationPermission:
@@ -87,14 +93,25 @@ class UserRolePermissionMixin:
             delete=role in [Role.ADMIN],
         )
 
+    def get_role_notification_permission(self, role: Role) -> NotificationPermission:
+        return NotificationPermission(
+            add=role in [Role.REVIEWER, Role.ADMIN],
+            change=role in [Role.ADMIN],
+            view=role in [Role.REVIEWER, Role.ADMIN],
+            delete=role in [Role.ADMIN],
+        )
+
     def _get_role_permission_by_model(self, model, country: Optional[EuropeCountry] = None) -> BasePermission:
         from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
+        from mosquito_alert.notifications.models import Notification
         if model == IdentificationTask:
             return self.get_role_identification_task_permission(role=self.get_role(country=country))
         elif model == ExpertReportAnnotation:
             return self.get_role_annotation_permission(role=self.get_role(country=country))
         elif model == ReviewPermission:
             return self.get_role_review_permission(role=self.get_role(country=country))
+        elif model == Notification:
+            return self.get_role_notification_permission(role=self.get_role(country=country))
 
         return BasePermission(
             add=False,
