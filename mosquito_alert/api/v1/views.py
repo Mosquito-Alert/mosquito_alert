@@ -574,10 +574,12 @@ USER_UUID_PATH_PARAM = OpenApiParameter(
     partial_update=extend_schema(parameters=[USER_UUID_PATH_PARAM]),
 )
 class UserViewSet(
-    UpdateModelMixin, RetrieveModelMixin, GenericViewSet
+    UpdateModelMixin, RetrieveModelMixin, ListModelMixin, GenericViewSet
 ):
     queryset = TigaUser.objects.all()
     serializer_class = UserSerializer
+    filter_backends = (DjangoFilterBackend, SearchFilter,)
+    search_fields = ("user_UUID", )
 
     permission_classes = (UserPermissions,)
 

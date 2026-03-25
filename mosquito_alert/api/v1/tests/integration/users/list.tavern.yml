@@ -7,7 +7,7 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user_token
-    - jwt_token_user_can_view
+    - jwt_token_user
 
 stages:
   - name: Anonymous users can not list
@@ -15,15 +15,15 @@ stages:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
     response:
-      status_code: 404
-  - name: Auth users can not list even with view perms
+      status_code: 401
+  - name: Auth users can not list without view perms
     request:
       url: "{api_live_url}/{endpoint}/"
       method: "GET"
       headers:
-        Authorization: "Bearer {jwt_token_user_can_view}"
+        Authorization: "Bearer {jwt_token_user:s}"
     response:
-      status_code: 404
+      status_code: 403
   - name: List users must fail for mobile auth users
     request:
       url: "{api_live_url}/{endpoint}/"
@@ -31,4 +31,68 @@ stages:
         Authorization: "Bearer {app_user_token}"
       method: "GET"
     response:
-      status_code: 404
+      status_code: 403
+
+---
+
+test_name: Only users with perms can list
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - jwt_token_user_can_view
+
+stages:
+  - name: Auth users can not list without view perms
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view}"
+    response:
+      status_code: 200
+
+---
+
+test_name: Search users by uuid
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - jwt_token_user_can_view
+
+stages:
+  - name: Filter by non existing uuid should return empty list
+    request:
+      url: "{api_live_url}/{endpoint}/?search=random-uuid"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view}"
+    response:
+      status_code: 200
+      json:
+        count: 0
+        next: null
+        previous: null
+        results: []
+  - name: Filter by excerpt of an existing uuid should return
+    request:
+      url: "{api_live_url}/{endpoint}/?search={app_user.user_UUID}"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - uuid: "{app_user.pk}"
