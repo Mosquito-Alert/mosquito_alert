@@ -1,0 +1,11 @@
+---
+
+name: Common test information
+description: Login information for test server
+
+
+variables:
+  endpoint: "notifications/topics"
+  response_data_validation: &response_data_validation
+    id: !anyint
+    created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z

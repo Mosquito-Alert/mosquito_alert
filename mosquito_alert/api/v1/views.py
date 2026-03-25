@@ -45,7 +45,7 @@ from mosquito_alert.devices.models import Device
 from mosquito_alert.fixes.models import Fix
 from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.identification_tasks.models import IdentificationTask, ExpertReportAnnotation, PhotoPrediction
-from mosquito_alert.notifications.models import Notification
+from mosquito_alert.notifications.models import Notification, NotificationTopic
 from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
@@ -155,14 +155,7 @@ class FixViewSet(CreateModelMixin, GenericViewSet):
 
 @extend_schema_view(
     create=extend_schema(
-        request=PolymorphicProxySerializer(
-            component_name="MetaNotification",
-            serializers={
-                UserNotificationCreateSerializer().fields['receiver_type'].get_default(): UserNotificationCreateSerializer,
-                TopicNotificationCreateSerializer().fields['receiver_type'].get_default(): TopicNotificationCreateSerializer,
-            },
-            resource_type_field_name="receiver_type",
-        ),
+        request=UserNotificationCreateSerializer,
         responses={
             201: OpenApiResponse(
                 response=CreateNotificationSerializer(many=True)
@@ -205,15 +198,7 @@ class NotificationViewSet(
 
     def get_serializer_class(self):
         if self.request.method == "POST":
-            notification_type = self.request.data.get("receiver_type")
-            if notification_type == "user":
-                return UserNotificationCreateSerializer
-            elif notification_type == "topic":
-                return TopicNotificationCreateSerializer
-            else:
-                raise ValidationError(
-                    "Invalid 'receiver_type'. Must be 'user' or 'topic'"
-                )
+            return UserNotificationCreateSerializer
         return NotificationSerializer
 
     def get_queryset(self):
@@ -224,6 +209,31 @@ class NotificationViewSet(
             qs = qs.for_user(user=user)
 
         return qs
+
+    @extend_schema(
+        tags=['notifications'],
+        operation_id='notifications_send_to_topic',
+        description="Send a notification to a specific topic"
+    )
+    @action(
+        detail=False,
+        methods=['POST'],
+        url_path=r'topics/(?P<topic_code>[^/.]+)/send',
+        queryset=NotificationTopic.objects.all(),
+        serializer_class=TopicNotificationCreateSerializer,
+        permission_classes=(AllowAny,), # TODO
+        filterset_class=(),
+        lookup_field='topic_code',
+    )
+    def send_to_topic(self, request, topic_code=None):
+        topic = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.context['topic'] = topic
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 @extend_schema_view(
     list=extend_schema(

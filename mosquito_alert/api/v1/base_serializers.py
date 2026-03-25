@@ -126,27 +126,57 @@ class LocalizedSerializerMixin:
     """
     def __init__(self, *args, **kwargs):
         # From CharField
-        allow_blank = kwargs.pop('allow_blank', False)
-        trim_whitespace = kwargs.pop('trim_whitespace', True)
-        max_length = kwargs.pop('max_length', None)
-        min_length = kwargs.pop('min_length', None)
+        self.add_default_language = kwargs.pop('add_default_language', False)
+        self.allow_blank = kwargs.pop('allow_blank', False)
+        self.trim_whitespace = kwargs.pop('trim_whitespace', True)
+        self.max_length = kwargs.pop('max_length', None)
+        self.min_length = kwargs.pop('min_length', None)
 
-        is_html = kwargs.pop('is_html', False)
+        self.is_html = kwargs.pop('is_html', False)
 
         super().__init__(*args, **kwargs)
 
-        required_languages = kwargs.get('required_languages', ['en'])
+        # required_languages = kwargs.get('required_languages', ['default'] if add_default_language else ['en'])
 
-        # Sort the languages alphabetically based on the language code
-        for code, name in sorted(TigaUser.AVAILABLE_LANGUAGES, key=lambda x: x[0]):
-            # Use max_length if provided and if the field is for 'title'
-            field_params = {
-                'required': code in required_languages,
-                'allow_blank': allow_blank,
-                'trim_whitespace': trim_whitespace,
-                'max_length': max_length,
-                'min_length': min_length,
-                'help_text': name
-            }
-            field_klass = HTMLCharField if is_html else serializers.CharField
-            self.fields[code] = field_klass(**field_params)
+        # field_klass = HTMLCharField if is_html else serializers.CharField
+        # # Sort the languages alphabetically based on the language code
+        # languages = sorted(TigaUser.AVAILABLE_LANGUAGES, key=lambda x: x[0])
+        # if add_default_language:
+        #     languages.insert(0, ('default', "User's default (no translation)"))
+        # for code, name in languages:
+        #     # Use max_length if provided and if the field is for 'title'
+        #     field_params = {
+        #         'required': code in required_languages,
+        #         'allow_blank': allow_blank,
+        #         'trim_whitespace': trim_whitespace,
+        #         'max_length': max_length,
+        #         'min_length': min_length,
+        #         'help_text': name
+        #     }
+        #     self.fields[code] = field_klass(**field_params)
+
+    def get_fields(self):
+        fields = super().get_fields()
+
+        required_languages = (
+            ['default'] if self.add_default_language else ['en']
+        )
+
+        field_klass = HTMLCharField if self.is_html else serializers.CharField
+
+        languages = sorted(TigaUser.AVAILABLE_LANGUAGES, key=lambda x: x[0])
+
+        if self.add_default_language:
+            languages = [('default', "User's default (no translation)")] + languages
+
+        for code, name in languages:
+            fields[code] = field_klass(
+                required=code in required_languages,
+                allow_blank=self.allow_blank,
+                trim_whitespace=self.trim_whitespace,
+                max_length=self.max_length,
+                min_length=self.min_length,
+                help_text=name
+            )
+
+        return fields

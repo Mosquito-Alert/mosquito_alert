@@ -9,18 +9,19 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user_token
+    - topic
     - jwt_token_user
 
 stages:
   - name: Anonymous user can not create
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{topic.topic_code}/send/"
       method: "POST"
     response:
       status_code: 401
   - name: Auth users without perms can not create
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{topic.topic_code}/send/"
       method: "POST"
       headers:
         Authorization: "Bearer {jwt_token_user}"
@@ -28,16 +29,16 @@ stages:
       status_code: 403
   - name: Mobile app users can not create
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{topic.topic_code}/send/"
       method: "POST"
       headers:
         Authorization: "Bearer {app_user_token}"
     response:
       status_code: 403
 
---- 
+---
 
-test_name: Create user notification
+test_name: Create topic notification
 
 includes:
   - !include schema.yml
@@ -46,20 +47,19 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
+    - topic
     - jwt_token_user_can_add
 
 stages:
-  - name: Create user notification using auth user with permissions
+  - name: Create topic notification using auth user with permissions
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/{topic.topic_code}/send/"
       json:
-        user_uuids:
-          - "{app_user.pk}"
         message:
           title:
-            default: "user language title"
+            en: "english title"
           body:
-            default: "user language body"
+            en: "english body"
       headers:
         Authorization: "Bearer {jwt_token_user_can_add:s}"
       method: "POST"
@@ -71,7 +71,8 @@ stages:
 
 ---
 
-test_name: User receives the notification in their language
+test_name: Send notification to topic that does not exist should return 404
+
 
 includes:
   - !include schema.yml
@@ -79,43 +80,21 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - italian_user
-    - app_user_token
+    - app_user
     - jwt_token_user_can_add
 
 stages:
-  - name: Create user notification
+  - name: Create topic notification using auth user with permissions
     request:
-      url: "{api_live_url}/{endpoint}/"
+      url: "{api_live_url}/{endpoint}/random_topic/send/"
       json:
-        user_uuids:
-          - "{italian_user.pk}"
         message:
           title:
-            default: "english title"
-            it: "italian title"
+            en: "english title"
           body:
-            default: "english body"
-            it: "italian body"
+            en: "english body"
       headers:
-        Authorization: "Bearer {jwt_token_user_can_add}"
+        Authorization: "Bearer {jwt_token_user_can_add:s}"
       method: "POST"
     response:
-      status_code: 201
-      save:
-        json:
-          notification_id: "[0].id"
-  - name: Check notification message is in italian
-    request:
-      url: "{api_live_url}/{endpoint}/{notification_id}/"
-      method: "GET"
-      headers:
-        Authorization: "Bearer {app_user_token}"
-    response:
-      status_code: 200
-      strict:
-        - json:off
-      json:
-        message:
-          title: 'italian title'
-          body: 'italian body'
+      status_code: 404
