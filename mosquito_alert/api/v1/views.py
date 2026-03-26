@@ -809,8 +809,7 @@ class DeviceViewSet(
     def get_serializer_class(self):
         if self.request.method in ["PUT", "PATCH"]:
             return DeviceUpdateSerializer
-        else:
-            return DeviceSerializer
+        return super().get_serializer_class()
 
 
 # NOTE: this can be removed if Report.version_UUID is ever changed to UUIDField (from CharField)
@@ -1018,6 +1017,7 @@ class IdentificationTaskViewSet(
     ):
         queryset = PhotoPrediction.objects.all().select_related("taxon")
         permission_classes = (PhotoPredictionPermissions,)
+        serializer_class = PhotoPredictionSerializer
 
         parent_lookup_kwargs = {"observation_uuid": "identification_task__pk"}
 
@@ -1027,7 +1027,7 @@ class IdentificationTaskViewSet(
         def get_serializer_class(self):
             if self.request.method == "POST":
                 return CreatePhotoPredictionSerializer
-            return PhotoPredictionSerializer
+            return super().get_serializer_class()
 
         def get_serializer_context(self):
             result = super().get_serializer_context()
