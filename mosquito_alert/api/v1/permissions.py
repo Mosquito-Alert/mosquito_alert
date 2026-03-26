@@ -1,3 +1,5 @@
+from typing import Union
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import MultipleObjectsReturned
 
@@ -110,7 +112,7 @@ class NotificationObjectPermissions(UserObjectPermissions):
             if not isinstance(request.user, User):
                 return False
 
-            role_perm = UserRolePermission().check_permissions(
+            role_perm = UserRolePermission.check_permissions(
                 user=request.user,
                 action='add',
                 obj_or_klass=Notification
@@ -153,7 +155,8 @@ class UserRolePermission(permissions.BasePermission):
         'destroy': 'delete'
     }
 
-    def check_permissions(self, user, action, obj_or_klass) -> bool:
+    @staticmethod
+    def check_permissions(user: Union[TigaUser, 'User'], action, obj_or_klass):
         if isinstance(user, User):
             user = UserStat.objects.filter(user=user).first()
             if not user:
@@ -236,7 +239,7 @@ class IdentificationTaskPermissions(BaseIdentificationTaskPermissions):
 
         role_perm = False
         if view.action == 'list':
-            role_perm = UserRolePermission().check_permissions(
+            role_perm = UserRolePermission.check_permissions(
                 user=request.user,
                 action='add',
                 obj_or_klass=ExpertReportAnnotation
@@ -255,7 +258,7 @@ class IdentificationTaskAssignmentPermissions(IsRegularUser):
         return request.user.has_perm('%(app_label)s.add_%(model_name)s' % {
             'app_label': ExpertReportAnnotation._meta.app_label,
             'model_name': ExpertReportAnnotation._meta.model_name
-        }) or UserRolePermission().check_permissions(
+        }) or UserRolePermission.check_permissions(
             user=request.user,
             action='add',
             obj_or_klass=ExpertReportAnnotation
@@ -266,7 +269,7 @@ class IdentificationTaskReviewPermissions(IsRegularUser):
         if not super().has_permission(request, view):
             return False
 
-        return UserRolePermission().check_permissions(
+        return UserRolePermission.check_permissions(
             user=request.user,
             action='add',
             obj_or_klass=ReviewPermission
