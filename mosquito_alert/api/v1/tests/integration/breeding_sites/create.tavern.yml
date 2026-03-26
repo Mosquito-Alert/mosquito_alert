@@ -117,7 +117,7 @@ stages:
   - name: Uploading non-images should return 400
     request:
       <<: *request_breeding_site
-      files: 
+      files:
         photos[0]: "{test_non_image_path}"
     response:
       status_code: 400

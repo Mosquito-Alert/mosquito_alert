@@ -2,7 +2,8 @@ import django
 from django.conf import settings
 
 import pandas as pd
-import os, sys
+import os
+import sys
 
 proj_path = "/home/webuser/webapps/tigaserver/"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.prod")
@@ -10,7 +11,7 @@ sys.path.append(proj_path)
 
 django.setup()
 
-from mosquito_alert.fixes.models import Fix
+from mosquito_alert.fixes.models import Fix  # noqa: E402
 
 
 FILE = os.path.join(settings.STATIC_ROOT, "geo_user_fixes.csv")
@@ -18,20 +19,17 @@ FILE = os.path.join(settings.STATIC_ROOT, "geo_user_fixes.csv")
 # Getting all fixes and create a new DataFrame.
 # Selecting only the desired fields for speed reasons.
 df = pd.DataFrame.from_records(
-    Fix.objects.all().values('server_upload_time', 'masked_lon', 'masked_lat')
+    Fix.objects.all().values("server_upload_time", "masked_lon", "masked_lat")
 )
 
 # Remove any NaN value
 df.dropna(inplace=True)
 
 # Rename the datetime colume to a more readable name
-df.rename(
-    columns={"server_upload_time": "datetime"}, 
-    inplace=True
-)
+df.rename(columns={"server_upload_time": "datetime"}, inplace=True)
 
 # Convert datetime column to just date
-df['datetime'] = pd.to_datetime(df['datetime']).dt.normalize()
+df["datetime"] = pd.to_datetime(df["datetime"]).dt.normalize()
 # Round float to 2 decimals (lat and lon)
 df = df.round(decimals=2)
 
@@ -50,9 +48,8 @@ df = df.round(decimals=2)
 # See: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html
 df.groupby(
     [
-        pd.Grouper(key='datetime', freq='3W-MON'), # Every 3 weeks.
-        df['masked_lon'],
-        df['masked_lat']
-    ]).size()\
-    .reset_index(name='count')\
-    .to_csv(FILE, index=False)
+        pd.Grouper(key="datetime", freq="3W-MON"),  # Every 3 weeks.
+        df["masked_lon"],
+        df["masked_lat"],
+    ]
+).size().reset_index(name="count").to_csv(FILE, index=False)

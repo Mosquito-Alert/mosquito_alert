@@ -13,6 +13,7 @@ middleware here, or combine a Django application with an application of another
 framework.
 
 """
+
 import os
 import sys
 from pathlib import Path
@@ -27,8 +28,8 @@ sys.path.append(str(BASE_DIR / "mosquito_alert"))
 # if running multiple sites in the same mod_wsgi process. To fix this, use
 # mod_wsgi daemon mode with each site in its own daemon process, or use
 os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings.prod"
-#os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.prod")
-os.environ['DJANGO_READ_DOT_ENV_FILE'] = '1'
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.prod")
+os.environ["DJANGO_READ_DOT_ENV_FILE"] = "1"
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION

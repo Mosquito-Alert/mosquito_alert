@@ -7,21 +7,32 @@ from mosquito_alert.devices.models import Device, MobileApp
 from mosquito_alert.geo.models import EuropeCountry
 from django.utils import timezone
 from mosquito_alert.fixes.models import Fix
-from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
-from mosquito_alert.notifications.models import Notification, NotificationContent, NotificationTopic, UserSubscription
+from mosquito_alert.identification_tasks.models import (
+    ExpertReportAnnotation,
+    IdentificationTask,
+)
+from mosquito_alert.notifications.models import (
+    Notification,
+    NotificationContent,
+    NotificationTopic,
+    UserSubscription,
+)
 from mosquito_alert.reports.models import Report, ReportResponse, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import TigaUser
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APITransactionTestCase
-from mosquito_alert.identification_tasks.messages import other_insect_msg_dict, albopictus_msg_dict, albopictus_probably_msg_dict, culex_msg_dict
+from mosquito_alert.identification_tasks.messages import (
+    other_insect_msg_dict,
+    albopictus_msg_dict,
+    albopictus_probably_msg_dict,
+    culex_msg_dict,
+)
 from django.db import transaction
 from django.db.utils import IntegrityError
 import time_machine
 import semantic_version
-
-import io
 
 
 class ReportEndpointTestCase(APITestCase):
@@ -31,7 +42,7 @@ class ReportEndpointTestCase(APITestCase):
             user=t,
             active=True,
             active_session=True,
-            registration_id="caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT"
+            registration_id="caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT",
         )
 
         user = User.objects.create_user("dummy", "dummy@test.com", "dummypassword")
@@ -341,12 +352,9 @@ class ReportEndpointTestCase(APITestCase):
             "/api/reports/",
             {
                 **self.simple_payload,
-                **{
-                    fieldname: "2024-01-01T01:00:00",
-                    "version_number": -1
-                }
+                **{fieldname: "2024-01-01T01:00:00", "version_number": -1},
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
@@ -354,7 +362,7 @@ class ReportEndpointTestCase(APITestCase):
 
         self.assertEqual(
             getattr(report, fieldname),
-            datetime.fromisoformat(self.simple_payload.get(fieldname))
+            datetime.fromisoformat(self.simple_payload.get(fieldname)),
         )
 
     def test_version_time_is_corrected_if_not_POST_with_timezone(self):
@@ -420,16 +428,16 @@ class ReportEndpointTestCase(APITestCase):
                 **{
                     "version_time": "2024-01-05T01:00:00Z",
                     "phone_upload_time": "2024-01-01T00:00:00Z",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
         report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
 
         self.assertEqual(
-            getattr(report, 'version_time'),
+            getattr(report, "version_time"),
             datetime(
                 year=2024,
                 month=1,
@@ -437,12 +445,12 @@ class ReportEndpointTestCase(APITestCase):
                 hour=1,
                 minute=0,
                 second=0,
-                tzinfo=dt_timezone.utc
-            )
+                tzinfo=dt_timezone.utc,
+            ),
         )
 
     def test_user_locale_is_updated_according_to_app_language(self):
-        user = TigaUser.objects.create(locale='en')
+        user = TigaUser.objects.create(locale="en")
         response = self.client.post(
             "/api/reports/",
             {
@@ -450,19 +458,21 @@ class ReportEndpointTestCase(APITestCase):
                 **{
                     "user": str(user.pk),
                     "app_language": "es",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
         user.refresh_from_db()
 
-        self.assertEqual(user.locale, 'es')
+        self.assertEqual(user.locale, "es")
 
     def test_mobile_app_fk_is_created_if_not_exist(self):
         self.assertEqual(
-            MobileApp.objects.filter(package_name='testapp', package_version='0.100.0+legacy').count(),
-            0
+            MobileApp.objects.filter(
+                package_name="testapp", package_version="0.100.0+legacy"
+            ).count(),
+            0,
         )
         response = self.client.post(
             "/api/reports/",
@@ -471,24 +481,33 @@ class ReportEndpointTestCase(APITestCase):
                 **{
                     "package_name": "testapp",
                     "package_version": "100",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
         self.assertEqual(
-            MobileApp.objects.filter(package_name='testapp', package_version='0.100.0+legacy').count(),
-            1
+            MobileApp.objects.filter(
+                package_name="testapp", package_version="0.100.0+legacy"
+            ).count(),
+            1,
         )
-        mobile_app = MobileApp.objects.get(package_name='testapp', package_version='0.100.0+legacy')
-        self.assertEqual(mobile_app.package_name, 'testapp')
-        self.assertEqual(mobile_app.package_version, semantic_version.Version(major=0, minor=100, patch=0, build=('legacy',)))
+        mobile_app = MobileApp.objects.get(
+            package_name="testapp", package_version="0.100.0+legacy"
+        )
+        self.assertEqual(mobile_app.package_name, "testapp")
+        self.assertEqual(
+            mobile_app.package_version,
+            semantic_version.Version(major=0, minor=100, patch=0, build=("legacy",)),
+        )
 
         report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
         self.assertEqual(report.mobile_app, mobile_app)
 
     def test_mobile_app_fk_is_set_correctly_if_exist(self):
-        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='0.100.0+legacy')
+        mobile_app = MobileApp.objects.create(
+            package_name="testapp", package_version="0.100.0+legacy"
+        )
         response = self.client.post(
             "/api/reports/",
             {
@@ -496,9 +515,9 @@ class ReportEndpointTestCase(APITestCase):
                 **{
                     "package_name": "testapp",
                     "package_version": "100",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
@@ -507,7 +526,7 @@ class ReportEndpointTestCase(APITestCase):
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_device_is_created_if_not_exist_on_new_report(self):
-        user = TigaUser.objects.create(locale='en')
+        user = TigaUser.objects.create(locale="en")
 
         self.assertEqual(Device.objects.filter(user=user).count(), 0)
         response = self.client.post(
@@ -523,9 +542,9 @@ class ReportEndpointTestCase(APITestCase):
                     "os_language": "es-ES",
                     "package_name": "testapp",
                     "package_version": "100",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
@@ -546,8 +565,8 @@ class ReportEndpointTestCase(APITestCase):
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_device_with_model_null_is_updated_on_new_report(self):
-        user = TigaUser.objects.create(locale='en')
-        fcm_token = 'fcm_random_token'
+        user = TigaUser.objects.create(locale="en")
+        fcm_token = "fcm_random_token"
         # This is a device that was created using /api/token/ endpoint
         device = Device.objects.create(
             registration_id=fcm_token,
@@ -555,10 +574,12 @@ class ReportEndpointTestCase(APITestCase):
             model=None,
             active=True,
             active_session=True,
-            last_login=timezone.now()-timedelta(days=1)
+            last_login=timezone.now() - timedelta(days=1),
         )
         self.assertIsNone(device.model)
-        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='0.100.0+legacy')
+        mobile_app = MobileApp.objects.create(
+            package_name="testapp", package_version="0.100.0+legacy"
+        )
 
         response = self.client.post(
             "/api/reports/",
@@ -573,9 +594,9 @@ class ReportEndpointTestCase(APITestCase):
                     "os_language": "es-ES",
                     "package_name": "testapp",
                     "package_version": "100",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
         device.refresh_from_db()
@@ -593,17 +614,19 @@ class ReportEndpointTestCase(APITestCase):
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_device_with_model_is_updated_on_new_report(self):
-        user = TigaUser.objects.create(locale='en')
+        user = TigaUser.objects.create(locale="en")
         device = Device.objects.create(
-            registration_id='fcm_random_token',
+            registration_id="fcm_random_token",
             user=user,
             model="test_model",
             active=True,
             active_session=True,
-            last_login=timezone.now()-timedelta(days=1)
+            last_login=timezone.now() - timedelta(days=1),
         )
         self.assertIsNone(device.type)
-        mobile_app = MobileApp.objects.create(package_name='testapp', package_version='0.100.0+legacy')
+        mobile_app = MobileApp.objects.create(
+            package_name="testapp", package_version="0.100.0+legacy"
+        )
 
         response = self.client.post(
             "/api/reports/",
@@ -618,9 +641,9 @@ class ReportEndpointTestCase(APITestCase):
                     "os_language": "es-ES",
                     "package_name": "testapp",
                     "package_version": "100",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
         device.refresh_from_db()
@@ -641,9 +664,9 @@ class ReportEndpointTestCase(APITestCase):
                 **self.simple_payload,
                 **{
                     "version_number": -2,
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 400)
 
@@ -654,9 +677,9 @@ class ReportEndpointTestCase(APITestCase):
                 **self.simple_payload,
                 **{
                     "version_number": None,
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 400)
 
@@ -667,9 +690,9 @@ class ReportEndpointTestCase(APITestCase):
                 **self.simple_payload,
                 **{
                     "version_UUID": None,
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 400)
 
@@ -679,20 +702,22 @@ class ReportEndpointTestCase(APITestCase):
             {
                 **self.simple_payload,
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
         report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
         self.assertEqual(report.version_number, 0)
 
-    def test_POST_with_version_number_0_raise_409_if_report_with_same_version_UUID_exists(self):
+    def test_POST_with_version_number_0_raise_409_if_report_with_same_version_UUID_exists(
+        self,
+    ):
         response = self.client.post(
             "/api/reports/",
             {
                 **self.simple_payload,
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
@@ -701,7 +726,7 @@ class ReportEndpointTestCase(APITestCase):
             {
                 **self.simple_payload,
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 409)
 
@@ -713,9 +738,9 @@ class ReportEndpointTestCase(APITestCase):
                 **{
                     "version_number": 0,
                     "location_choice": "current",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
@@ -726,9 +751,9 @@ class ReportEndpointTestCase(APITestCase):
                 **{
                     "version_number": 1,
                     "location_choice": "selected",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
         report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
@@ -741,7 +766,7 @@ class ReportEndpointTestCase(APITestCase):
             {
                 **self.simple_payload,
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
@@ -754,9 +779,9 @@ class ReportEndpointTestCase(APITestCase):
                 **self.simple_payload,
                 **{
                     "version_number": -1,
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
@@ -770,9 +795,9 @@ class ReportEndpointTestCase(APITestCase):
                 **self.simple_payload,
                 **{
                     "report_id": "test",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
@@ -783,9 +808,9 @@ class ReportEndpointTestCase(APITestCase):
                 **{
                     "version_number": 1,
                     "report_id": "test2",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 404)
 
@@ -796,13 +821,16 @@ class ReportEndpointTestCase(APITestCase):
                 **self.simple_payload,
                 **{
                     "note": "test #tag1 note #tag1 #tag2",
-                }
+                },
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
         report = Report.objects.get(version_UUID=self.simple_payload["version_UUID"])
-        self.assertEqual(list(report.tags.values_list('name', flat=True)), ["tag1", "tag2"])
+        self.assertEqual(
+            list(report.tags.values_list("name", flat=True)), ["tag1", "tag2"]
+        )
+
 
 class FixEndpointTestCase(APITestCase):
     def setUp(self):
@@ -908,16 +936,22 @@ class FixEndpointTestCase(APITestCase):
 
 
 class NotificationTestCase(APITestCase):
-
-    fixtures = ['auth_group.json', 'reritja_like.json', 'awardcategory.json', 'europe_countries.json', 'nuts_europe.json', 'taxon.json']
+    fixtures = [
+        "auth_group.json",
+        "reritja_like.json",
+        "awardcategory.json",
+        "europe_countries.json",
+        "nuts_europe.json",
+        "taxon.json",
+    ]
 
     def setUp(self):
-        t = TigaUser.objects.create(user_UUID='00000000-0000-0000-0000-000000000000')
+        t = TigaUser.objects.create(user_UUID="00000000-0000-0000-0000-000000000000")
         Device.objects.create(
             user=t,
             active=True,
             active_session=True,
-            registration_id='caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT'
+            registration_id="caM8sSvLQKmX4Iai1xGb9w:APA91bGhzu3DYeYLTh-M9elzrhK492V0J3wDrsFsUDaw13v3Wxzb_9YbemsnMTb3N7_GilKwtS73NtbywSloNRo2alfpIMu29FKszZYr6WxoNdGao6PGNRf4kS1tKCiEAZgFvMkdLkgT",
         )
 
         self.regular_user = t
@@ -928,7 +962,7 @@ class NotificationTestCase(APITestCase):
             r = Report(
                 version_UUID=str(a),
                 version_number=0,
-                user_id='00000000-0000-0000-0000-000000000000',
+                user_id="00000000-0000-0000-0000-000000000000",
                 phone_upload_time=non_naive_time,
                 server_upload_time=non_naive_time,
                 creation_time=non_naive_time,
@@ -936,31 +970,40 @@ class NotificationTestCase(APITestCase):
                 location_choice="current",
                 current_location_lon=point_on_surface.x,
                 current_location_lat=point_on_surface.y,
-                type='adult',
+                type="adult",
             )
             r.save()
-            p = Photo.objects.create(report=r, photo='./testdata/splash.png')
+            p = Photo.objects.create(report=r, photo="./testdata/splash.png")
             p.save()
             a = a + 1
         self.reritja_user = User.objects.get(pk=25)
 
-        t1 = NotificationTopic(topic_code="global", topic_description="This is the global topic")
+        t1 = NotificationTopic(
+            topic_code="global", topic_description="This is the global topic"
+        )
         t1.save()
         self.global_topic = t1
 
-        t2 = NotificationTopic(topic_code="some_topic", topic_description="This is a topic, not the global")
+        t2 = NotificationTopic(
+            topic_code="some_topic", topic_description="This is a topic, not the global"
+        )
         t2.save()
         self.some_topic = t2
 
-
     def test_auto_notification_report_is_issued_and_readable_via_api(self):
-        r = Report.objects.get(pk='1')
-        _ = Photo.objects.create(report=r, photo='./testdata/splash.png')
+        r = Report.objects.get(pk="1")
+        _ = Photo.objects.create(report=r, photo="./testdata/splash.png")
         identification_task = r.identification_task
 
         # this should cause send_finished_identification_task_notification to be called
         aedes_albopictus = Taxon.objects.get(pk=112)
-        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task, taxon=aedes_albopictus, decision_level=ExpertReportAnnotation.DecisionLevel.FINAL, confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY)
+        anno_reritja = ExpertReportAnnotation.objects.create(
+            user=self.reritja_user,
+            identification_task=identification_task,
+            taxon=aedes_albopictus,
+            decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
+            confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
+        )
         anno_reritja.save()
 
         # there should be a new Notification
@@ -969,7 +1012,9 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(NotificationContent.objects.all().count(), 1)
 
         self.client.force_authenticate(user=self.reritja_user)
-        response = self.client.get('/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000')
+        response = self.client.get(
+            "/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000"
+        )
         self.client.logout()
         # response should be ok
         self.assertEqual(response.status_code, 200)
@@ -977,42 +1022,54 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
 
     def test_ack_notification(self):
-        r = Report.objects.get(pk='1')
-        _ = Photo.objects.create(report=r, photo='./testdata/splash.png')
+        r = Report.objects.get(pk="1")
+        _ = Photo.objects.create(report=r, photo="./testdata/splash.png")
         identification_task = r.identification_task
 
         # this should cause send_finished_identification_task_notification to be called
         aedes_albopictus = Taxon.objects.get(pk=112)
-        anno_reritja = ExpertReportAnnotation.objects.create(user=self.reritja_user, identification_task=identification_task,
-                                                             taxon=aedes_albopictus,
-                                                             decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
-                                                             confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY)
+        anno_reritja = ExpertReportAnnotation.objects.create(
+            user=self.reritja_user,
+            identification_task=identification_task,
+            taxon=aedes_albopictus,
+            decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
+            confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
+        )
         anno_reritja.save()
 
         self.client.force_authenticate(user=self.reritja_user)
-        response = self.client.get('/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000')
+        response = self.client.get(
+            "/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000"
+        )
         # response should be ok
-        self.assertEqual( response.status_code, 200 )
+        self.assertEqual(response.status_code, 200)
         # and the notification should be unread
-        self.assertEqual(response.data[0]['acknowledged'], False)
+        self.assertEqual(response.data[0]["acknowledged"], False)
         # mark it as read
-        notification_id = response.data[0]['id']
-        response = self.client.delete('/api/mark_notif_as_ack/?user=00000000-0000-0000-0000-000000000000&notif=' + str(notification_id))
+        notification_id = response.data[0]["id"]
+        response = self.client.delete(
+            "/api/mark_notif_as_ack/?user=00000000-0000-0000-0000-000000000000&notif="
+            + str(notification_id)
+        )
         # should respond no content
         self.assertEqual(response.status_code, 204)
         # try again
-        response = self.client.get('/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000')
+        response = self.client.get(
+            "/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000"
+        )
         # response should be ok
         self.assertEqual(response.status_code, 200)
         # and the notification should be read
-        self.assertEqual(response.data[0]['acknowledged'], True)
+        self.assertEqual(response.data[0]["acknowledged"], True)
         self.client.logout()
 
     def test_subscribe_user_to_topic(self):
         self.client.force_authenticate(user=self.reritja_user)
         code = self.some_topic.topic_code
         user = self.regular_user.user_UUID
-        response = self.client.post('/api/subscribe_to_topic/?code=' + code + '&user=' + user)
+        response = self.client.post(
+            "/api/subscribe_to_topic/?code=" + code + "&user=" + user
+        )
         # should respond created
         self.assertEqual(response.status_code, 201)
         # try resubscribing
@@ -1022,10 +1079,12 @@ class NotificationTestCase(APITestCase):
         # in case of exception
         try:
             with transaction.atomic():
-                response = self.client.post('/api/subscribe_to_topic/?code=' + code + '&user=' + user)
+                response = self.client.post(
+                    "/api/subscribe_to_topic/?code=" + code + "&user=" + user
+                )
         except IntegrityError:
             pass
-        #should fail
+        # should fail
         self.assertEqual(response.status_code, 400)
         self.client.logout()
 
@@ -1033,19 +1092,27 @@ class NotificationTestCase(APITestCase):
         self.client.force_authenticate(user=self.reritja_user)
         user = self.regular_user.user_UUID
         # we make up some topics
-        n1 = NotificationTopic(topic_code="ru", topic_description="This is a test topic")
+        n1 = NotificationTopic(
+            topic_code="ru", topic_description="This is a test topic"
+        )
         n1.save()
-        n2 = NotificationTopic(topic_code="es", topic_description="This is a test topic")
+        n2 = NotificationTopic(
+            topic_code="es", topic_description="This is a test topic"
+        )
         n2.save()
-        n3 = NotificationTopic(topic_code="en", topic_description="This is a test topic")
+        n3 = NotificationTopic(
+            topic_code="en", topic_description="This is a test topic"
+        )
         n3.save()
         topics = [n1, n2, n3]
         for t in topics:
-            response = self.client.post('/api/subscribe_to_topic/?code=' + t.topic_code + '&user=' + user)
+            response = self.client.post(
+                "/api/subscribe_to_topic/?code=" + t.topic_code + "&user=" + user
+            )
             # should respond created
             self.assertEqual(response.status_code, 201)
 
-        response = self.client.get('/api/topics_subscribed/?user=' + user)
+        response = self.client.get("/api/topics_subscribed/?user=" + user)
         # response should be ok
         self.assertEqual(response.status_code, 200)
         # should be subscribed to t, n1, n2 and n3
@@ -1058,7 +1125,7 @@ class NotificationTestCase(APITestCase):
             body_html_native="<p>Native Notification Body</p>",
             title_en="Notification title",
             title_native="Títol notificació",
-            native_locale="ca"
+            native_locale="ca",
         )
         nc.save()
         n = Notification(expert=self.reritja_user, notification_content=nc)
@@ -1069,23 +1136,30 @@ class NotificationTestCase(APITestCase):
         # the regular user should see this notification
         some_user = self.regular_user
         self.client.force_authenticate(user=self.reritja_user)
-        response = self.client.get('/api/user_notifications/?user_id=' + some_user.user_UUID)
+        response = self.client.get(
+            "/api/user_notifications/?user_id=" + some_user.user_UUID
+        )
         # response should be ok
         self.assertEqual(response.status_code, 200)
         # should only receive the notification from the global topic
         self.assertEqual(len(response.data), 1)
         # acknowledge the notification
-        response = self.client.delete('/api/mark_notif_as_ack/?user=00000000-0000-0000-0000-000000000000&notif=' + str(n.id))
+        response = self.client.delete(
+            "/api/mark_notif_as_ack/?user=00000000-0000-0000-0000-000000000000&notif="
+            + str(n.id)
+        )
         # should respond no content
         self.assertEqual(response.status_code, 204)
         # now the notification should be acknowledged
-        response = self.client.get('/api/user_notifications/?user_id=' + some_user.user_UUID)
+        response = self.client.get(
+            "/api/user_notifications/?user_id=" + some_user.user_UUID
+        )
         # response should be ok
         self.assertEqual(response.status_code, 200)
         # should only receive the notification from the global topic
         self.assertEqual(len(response.data), 1)
         # AND it should be ack=True
-        self.assertEqual(response.data[0]['acknowledged'], True)
+        self.assertEqual(response.data[0]["acknowledged"], True)
         self.client.logout()
 
     def test_subscription_and_unsubscription(self):
@@ -1094,7 +1168,7 @@ class NotificationTestCase(APITestCase):
             body_html_native="<p>Native Notification Body</p>",
             title_en="Notification title",
             title_native="Títol notificació",
-            native_locale="ca"
+            native_locale="ca",
         )
         nc.save()
         n = Notification(expert=self.reritja_user, notification_content=nc)
@@ -1105,41 +1179,54 @@ class NotificationTestCase(APITestCase):
 
         self.client.force_authenticate(user=self.reritja_user)
         # list notifications for regular user
-        response = self.client.get('/api/user_notifications/?user_id=' + self.regular_user.user_UUID)
+        response = self.client.get(
+            "/api/user_notifications/?user_id=" + self.regular_user.user_UUID
+        )
         # response should be ok
         self.assertEqual(response.status_code, 200)
         # no notifications should be available
         self.assertEqual(len(response.data), 0)
 
         # subscribe user to regular topic
-        response = self.client.post('/api/subscribe_to_topic/?code=' + self.some_topic.topic_code + '&user=' + self.regular_user.user_UUID)
+        response = self.client.post(
+            "/api/subscribe_to_topic/?code="
+            + self.some_topic.topic_code
+            + "&user="
+            + self.regular_user.user_UUID
+        )
         # should respond created
         self.assertEqual(response.status_code, 201)
 
         # list notifications for regular user again
-        response = self.client.get('/api/user_notifications/?user_id=' + self.regular_user.user_UUID)
+        response = self.client.get(
+            "/api/user_notifications/?user_id=" + self.regular_user.user_UUID
+        )
         # response should be ok
         self.assertEqual(response.status_code, 200)
         # only the topic notification should be available
         self.assertEqual(len(response.data), 1)
         # the only notification should be about the topic
-        self.assertEqual(response.data[0]['topic'], 'some_topic')
+        self.assertEqual(response.data[0]["topic"], "some_topic")
 
         # now, unsubscribe!
-        response = self.client.post('/api/unsub_from_topic/?code=' + self.some_topic.topic_code + '&user=' + self.regular_user.user_UUID)
+        response = self.client.post(
+            "/api/unsub_from_topic/?code="
+            + self.some_topic.topic_code
+            + "&user="
+            + self.regular_user.user_UUID
+        )
         # response should be no content
         self.assertEqual(response.status_code, 204)
 
         # list notifications for regular user again!
-        response = self.client.get('/api/user_notifications/?user_id=' + self.regular_user.user_UUID)
+        response = self.client.get(
+            "/api/user_notifications/?user_id=" + self.regular_user.user_UUID
+        )
         # response should be ok
         self.assertEqual(response.status_code, 200)
         # no notifications available
         self.assertEqual(len(response.data), 0)
         self.client.logout()
-
-
-
 
     def test_direct_notifs_and_topic_sort_okay(self):
         some_user = self.regular_user
@@ -1148,7 +1235,7 @@ class NotificationTestCase(APITestCase):
             body_html_native="<p>Native Notification Body 1</p>",
             title_en="Notification title 1",
             title_native="Títol notificació 1",
-            native_locale="ca"
+            native_locale="ca",
         )
         nc1.save()
 
@@ -1157,7 +1244,7 @@ class NotificationTestCase(APITestCase):
             body_html_native="<p>Native Notification Body 2</p>",
             title_en="Notification title 2",
             title_native="Títol notificació 2",
-            native_locale="ca"
+            native_locale="ca",
         )
         nc2.save()
 
@@ -1182,284 +1269,436 @@ class NotificationTestCase(APITestCase):
         n2.send_to_user(user=some_user, push=False)
 
         self.client.force_authenticate(user=self.reritja_user)
-        response = self.client.get('/api/user_notifications/?user_id=' + some_user.user_UUID)
+        response = self.client.get(
+            "/api/user_notifications/?user_id=" + some_user.user_UUID
+        )
         # response should be ok
         self.assertEqual(response.status_code, 200)
         # should receive both direct notifications and global
         self.assertEqual(len(response.data), 3)
         # global should be in the middle
-        self.assertEqual(response.data[1]['topic'], 'global')
+        self.assertEqual(response.data[1]["topic"], "global")
         # most recent should be 2
-        self.assertEqual(response.data[0]['expert_comment'], nc2.title_en)
+        self.assertEqual(response.data[0]["expert_comment"], nc2.title_en)
         # 0 should be more recent than 1
-        self.assertTrue( response.data[0]['date_comment'] > response.data[1]['date_comment'] )
+        self.assertTrue(
+            response.data[0]["date_comment"] > response.data[1]["date_comment"]
+        )
         # 1 should be more recent than 2
-        self.assertTrue(response.data[1]['date_comment'] > response.data[2]['date_comment'])
+        self.assertTrue(
+            response.data[1]["date_comment"] > response.data[2]["date_comment"]
+        )
         self.client.logout()
 
     def test_post_notification_content_via_api(self):
         notif_content = {
-            'body_html_en': '<p>Hello world body</p>',
-            'title_en': 'Hello world title',
-            'body_html_native': '<p>Hola món cos</p>',
-            'title_native': 'Hola món títol',
-            'native_locale': 'ca'
+            "body_html_en": "<p>Hello world body</p>",
+            "title_en": "Hello world title",
+            "body_html_native": "<p>Hola món cos</p>",
+            "title_native": "Hola món títol",
+            "native_locale": "ca",
         }
         self.client.force_authenticate(user=self.reritja_user)
-        response = self.client.put('/api/notification_content/',notif_content)
+        response = self.client.put("/api/notification_content/", notif_content)
         # response should be ok
         self.assertEqual(response.status_code, 200)
-        notif_id = response.data['id']
+        notif_id = response.data["id"]
         # retrieve notification written to db
         nc = NotificationContent.objects.get(pk=notif_id)
         # sould be the same as written to database
-        self.assertEqual(response.data['body_html_en'], nc.body_html_en)
+        self.assertEqual(response.data["body_html_en"], nc.body_html_en)
         # sould be the same as params
-        self.assertEqual(response.data['body_html_en'], notif_content['body_html_en'])
+        self.assertEqual(response.data["body_html_en"], notif_content["body_html_en"])
         self.client.logout()
 
 
 class AnnotateCoarseTestCase(APITestCase):
-    fixtures = ['photos.json', 'users.json','europe_countries.json','tigausers.json','reports.json','auth_group.json', 'movelab_like.json', 'taxon.json']
+    fixtures = [
+        "photos.json",
+        "users.json",
+        "europe_countries.json",
+        "tigausers.json",
+        "reports.json",
+        "auth_group.json",
+        "movelab_like.json",
+        "taxon.json",
+    ]
+
     @classmethod
     def setUpTestData(cls):
-        cls.random_user = User.objects.create(username='random_user', password='random_password')
+        cls.random_user = User.objects.create(
+            username="random_user", password="random_password"
+        )
 
     def test_annotate_taken(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
-        r = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        r = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
         _ = Photo.objects.create(report=r)  # Needed to create an identification task
-        annos = ExpertReportAnnotation.objects.filter(identification_task=r.identification_task)
+        annos = ExpertReportAnnotation.objects.filter(
+            identification_task=r.identification_task
+        )
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Give report to one expert
-        anno = ExpertReportAnnotation.objects.create(user=self.random_user, identification_task=r.identification_task)
+        _ = ExpertReportAnnotation.objects.create(
+            user=self.random_user, identification_task=r.identification_task
+        )
         # try to annotate
         data = {
-            'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
-            'taxon_id': str(112), # aedes albopictus
+            "report_id": "00042354-ffd6-431e-af1e-cecf55e55364",
+            "taxon_id": str(112),  # aedes albopictus
         }
-        response = self.client.post('/api/annotate_coarse/', data=data)
-        self.assertEqual(response.status_code, 400, "Response should be 400, is {0}".format(response.status_code))
+        response = self.client.post("/api/annotate_coarse/", data=data)
+        self.assertEqual(
+            response.status_code,
+            400,
+            "Response should be 400, is {0}".format(response.status_code),
+        )
         # opcode should be -1
-        self.assertEqual(response.data['opcode'], -1, "Opcode should be -1, is {0}".format(response.data['opcode']))
+        self.assertEqual(
+            response.data["opcode"],
+            -1,
+            "Opcode should be -1, is {0}".format(response.data["opcode"]),
+        )
 
     def test_flip_taken(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
-        r_adult = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
-        _ = Photo.objects.create(report=r_adult)  # Needed to create an identification task
-        annos = ExpertReportAnnotation.objects.filter(identification_task=r_adult.identification_task)
+        r_adult = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
+        _ = Photo.objects.create(
+            report=r_adult
+        )  # Needed to create an identification task
+        annos = ExpertReportAnnotation.objects.filter(
+            identification_task=r_adult.identification_task
+        )
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Give report to one expert
         r_adult.identification_task.assign_to_user(self.random_user)
         # try to annotate
         data = {
-            'report_id': r_adult.version_UUID,
-            'flip_to_type': 'site',
-            'flip_to_subtype': 'storm_drain_water'
+            "report_id": r_adult.version_UUID,
+            "flip_to_type": "site",
+            "flip_to_subtype": "storm_drain_water",
         }
-        response = self.client.patch('/api/flip_report/', data=data)
-        self.assertEqual(response.status_code, 400, "Response should be 400, is {0}".format(response.status_code))
+        response = self.client.patch("/api/flip_report/", data=data)
+        self.assertEqual(
+            response.status_code,
+            400,
+            "Response should be 400, is {0}".format(response.status_code),
+        )
         # opcode should be -1
-        self.assertEqual(response.data['opcode'], -1, "Opcode should be -1, is {0}".format(response.data['opcode']))
+        self.assertEqual(
+            response.data["opcode"],
+            -1,
+            "Opcode should be -1, is {0}".format(response.data["opcode"]),
+        )
 
     def test_annotate_coarse(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
-        r = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        r = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
         _ = Photo.objects.create(report=r)  # Needed to create an identification task
         r.refresh_from_db()
-        annos = ExpertReportAnnotation.objects.filter(identification_task=r.identification_task)
+        annos = ExpertReportAnnotation.objects.filter(
+            identification_task=r.identification_task
+        )
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Let's change that
         for t_id in [1, 10, 112]:
             data = {
-                'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
-                'taxon_id': str(t_id),
-                'confidence': ExpertReportAnnotation.ConfidenceCategory.PROBABLY
+                "report_id": "00042354-ffd6-431e-af1e-cecf55e55364",
+                "taxon_id": str(t_id),
+                "confidence": ExpertReportAnnotation.ConfidenceCategory.PROBABLY,
             }
-            response = self.client.post('/api/annotate_coarse/', data=data)
-            self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+            response = self.client.post("/api/annotate_coarse/", data=data)
+            self.assertEqual(
+                response.status_code,
+                200,
+                "Response should be 200, is {0}".format(response.status_code),
+            )
             r.refresh_from_db()
             self.assertEqual(r.identification_task.taxon_id, t_id)
-            self.assertEqual(r.identification_task.confidence, float(data['confidence']))
+            self.assertEqual(
+                r.identification_task.confidence, float(data["confidence"])
+            )
             notif = Notification.objects.get(report=r)
             notif_content = notif.notification_content
-            if t_id == 1: #other species
-                self.assertTrue( other_insect_msg_dict['es'] in notif_content.body_html_native, "Report classified as other species associated notification should contain other insect message, it does not" )
+            if t_id == 1:  # other species
+                self.assertTrue(
+                    other_insect_msg_dict["es"] in notif_content.body_html_native,
+                    "Report classified as other species associated notification should contain other insect message, it does not",
+                )
                 #'no pertenece a la familia de los Culícidos'
-            elif t_id == 10: #culex sp.
-                self.assertTrue(culex_msg_dict['es'] in notif_content.body_html_native, "Report classified as culex associated notification should contain culex message, it does not")
+            elif t_id == 10:  # culex sp.
+                self.assertTrue(
+                    culex_msg_dict["es"] in notif_content.body_html_native,
+                    "Report classified as culex associated notification should contain culex message, it does not",
+                )
                 #'no podemos asegurar totalmente que sea un Culex'
-            elif t_id == 112: #aedes albopictus
-                self.assertTrue(albopictus_probably_msg_dict['es'] in notif_content.body_html_native, "Report classified as albopictus associated notification should contain probably albopictus message, it does not")
+            elif t_id == 112:  # aedes albopictus
+                self.assertTrue(
+                    albopictus_probably_msg_dict["es"]
+                    in notif_content.body_html_native,
+                    "Report classified as albopictus associated notification should contain probably albopictus message, it does not",
+                )
                 #'Has conseguido que se pueda identificar perfectamente el mosquito tigre'
             Notification.objects.filter(report=r).delete()
-            for annotation in ExpertReportAnnotation.objects.filter(identification_task=r.identification_task):
+            for annotation in ExpertReportAnnotation.objects.filter(
+                identification_task=r.identification_task
+            ):
                 annotation.delete()
         # test also definitely albopictus
         data = {
-            'report_id': '00042354-ffd6-431e-af1e-cecf55e55364',
-            'taxon_id': "112",
+            "report_id": "00042354-ffd6-431e-af1e-cecf55e55364",
+            "taxon_id": "112",
         }
-        data['confidence'] = ExpertReportAnnotation.ConfidenceCategory.DEFINITELY # Definitely
-        response = self.client.post('/api/annotate_coarse/', data=data)
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        data["confidence"] = (
+            ExpertReportAnnotation.ConfidenceCategory.DEFINITELY
+        )  # Definitely
+        response = self.client.post("/api/annotate_coarse/", data=data)
+        self.assertEqual(
+            response.status_code,
+            200,
+            "Response should be 200, is {0}".format(response.status_code),
+        )
         r.refresh_from_db()
         self.assertEqual(r.identification_task.taxon_id, 112)
-        self.assertEqual(r.identification_task.confidence, float(data['confidence']))
+        self.assertEqual(r.identification_task.confidence, float(data["confidence"]))
         notif = Notification.objects.get(report=r)
         notif_content = notif.notification_content
-        self.assertTrue(albopictus_msg_dict['es'] in notif_content.body_html_native,"Report classified as albopictus associated notification should contain definitely albopictus message, it does not")
+        self.assertTrue(
+            albopictus_msg_dict["es"] in notif_content.body_html_native,
+            "Report classified as albopictus associated notification should contain definitely albopictus message, it does not",
+        )
         Notification.objects.filter(report=r).delete()
-        ExpertReportAnnotation.objects.filter(identification_task=r.identification_task).delete()
+        ExpertReportAnnotation.objects.filter(
+            identification_task=r.identification_task
+        ).delete()
 
     def test_flip_adult_to_adult(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
         r_adult = Report.objects.get(pk="004D5A85-1D88-4170-A253-DABF30669EBE")
-        self.assertEqual(r_adult.type, 'adult', "Report type should be adult, is {0}".format(r_adult.type))
-        data = {
-            'report_id': r_adult.version_UUID,
-            'flip_to_type': 'adult'
-        }
-        response = self.client.patch('/api/flip_report/', data=data)
-        self.assertEqual(response.status_code, 400, "Response should be 400, is {0}".format(response.status_code))
-        self.assertEqual(response.data['opcode'], -2, "Opcode should be -2, is {0}".format(response.data['opcode']))
+        self.assertEqual(
+            r_adult.type,
+            "adult",
+            "Report type should be adult, is {0}".format(r_adult.type),
+        )
+        data = {"report_id": r_adult.version_UUID, "flip_to_type": "adult"}
+        response = self.client.patch("/api/flip_report/", data=data)
+        self.assertEqual(
+            response.status_code,
+            400,
+            "Response should be 400, is {0}".format(response.status_code),
+        )
+        self.assertEqual(
+            response.data["opcode"],
+            -2,
+            "Opcode should be -2, is {0}".format(response.data["opcode"]),
+        )
 
     def test_flip_site_to_site(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
-        r_site = Report.objects.get(pk='007106f1-6003-4cf5-b049-8f6533a90813')
-        self.assertEqual(r_site.type, 'site', "Report type should be site, is {0}".format(r_site.type))
+        r_site = Report.objects.get(pk="007106f1-6003-4cf5-b049-8f6533a90813")
+        self.assertEqual(
+            r_site.type,
+            "site",
+            "Report type should be site, is {0}".format(r_site.type),
+        )
         data = {
-            'report_id': r_site.version_UUID,
-            'flip_to_type': 'site',
-            'flip_to_subtype': 'storm_drain_water'
+            "report_id": r_site.version_UUID,
+            "flip_to_type": "site",
+            "flip_to_subtype": "storm_drain_water",
         }
-        response = self.client.patch('/api/flip_report/', data=data)
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
-        r_site_reloaded = Report.objects.get(pk='007106f1-6003-4cf5-b049-8f6533a90813')
+        response = self.client.patch("/api/flip_report/", data=data)
+        self.assertEqual(
+            response.status_code,
+            200,
+            "Response should be 200, is {0}".format(response.status_code),
+        )
+        r_site_reloaded = Report.objects.get(pk="007106f1-6003-4cf5-b049-8f6533a90813")
         n_responses = ReportResponse.objects.filter(report=r_site_reloaded).count()
-        self.assertTrue(n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses))
+        self.assertTrue(
+            n_responses == 2,
+            "Number of responses should be 2, is {0}".format(n_responses),
+        )
         self.assertEqual(r_site_reloaded.type, Report.TYPE_SITE)
         self.assertTrue(r_site_reloaded.flipped, "Report should be marked as flipped")
-        self.assertTrue(r_site_reloaded.flipped_to == 'site#site',"Report should be marked as flipped from site to site, field has value of {0}".format(r_site_reloaded.flipped_to))
-        self.assertEqual(r_site_reloaded.breeding_site_type, Report.BreedingSiteType.STORM_DRAIN)
+        self.assertTrue(
+            r_site_reloaded.flipped_to == "site#site",
+            "Report should be marked as flipped from site to site, field has value of {0}".format(
+                r_site_reloaded.flipped_to
+            ),
+        )
+        self.assertEqual(
+            r_site_reloaded.breeding_site_type, Report.BreedingSiteType.STORM_DRAIN
+        )
         self.assertTrue(r_site_reloaded.breeding_site_has_water)
 
     def test_flip(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
-        r_adult = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        r_adult = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
         _ = Photo.objects.create(report=r_adult)
 
         self.assertEqual(IdentificationTask.objects.filter(report=r_adult).count(), 1)
 
         # Check report types
-        self.assertEqual(r_adult.type, 'adult', "Report type should be adult, is {0}".format(r_adult.type))
-        r_site = Report.objects.get(pk='00042fb1-408f-4da4-898d-4331a9ec3129')
+        self.assertEqual(
+            r_adult.type,
+            "adult",
+            "Report type should be adult, is {0}".format(r_adult.type),
+        )
+        r_site = Report.objects.get(pk="00042fb1-408f-4da4-898d-4331a9ec3129")
         _ = Photo.objects.create(report=r_site)
 
         self.assertEqual(IdentificationTask.objects.filter(report=r_site).count(), 0)
-        self.assertEqual(r_site.type, 'site', "Report type should be site, is {0}".format(r_site.type))
+        self.assertEqual(
+            r_site.type,
+            "site",
+            "Report type should be site, is {0}".format(r_site.type),
+        )
         # flip adult to storm drain water
         data = {
-            'report_id': r_adult.version_UUID,
-            'flip_to_type': 'site',
-            'flip_to_subtype': 'storm_drain_water'
+            "report_id": r_adult.version_UUID,
+            "flip_to_type": "site",
+            "flip_to_subtype": "storm_drain_water",
         }
-        response = self.client.patch('/api/flip_report/', data=data)
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        response = self.client.patch("/api/flip_report/", data=data)
+        self.assertEqual(
+            response.status_code,
+            200,
+            "Response should be 200, is {0}".format(response.status_code),
+        )
         adult_reloaded = Report.objects.get(pk=r_adult.version_UUID)
-        self.assertTrue(adult_reloaded.type==Report.TYPE_SITE,"Report type should have changed to site, is {0}".format(adult_reloaded.type))
-        self.assertEqual(adult_reloaded.breeding_site_type, Report.BreedingSiteType.STORM_DRAIN)
+        self.assertTrue(
+            adult_reloaded.type == Report.TYPE_SITE,
+            "Report type should have changed to site, is {0}".format(
+                adult_reloaded.type
+            ),
+        )
+        self.assertEqual(
+            adult_reloaded.breeding_site_type, Report.BreedingSiteType.STORM_DRAIN
+        )
         self.assertTrue(adult_reloaded.breeding_site_has_water)
         self.assertEqual(IdentificationTask.objects.filter(report=r_adult).count(), 0)
 
         n_responses = ReportResponse.objects.filter(report=adult_reloaded).count()
-        self.assertTrue( n_responses == 2, "Number of responses should be 2, is {0}".format(n_responses) )
+        self.assertTrue(
+            n_responses == 2,
+            "Number of responses should be 2, is {0}".format(n_responses),
+        )
         self.assertEqual(adult_reloaded.type, Report.TYPE_SITE)
-        self.assertTrue( adult_reloaded.flipped, "Report should be marked as flipped" )
-        self.assertTrue( adult_reloaded.flipped_to == 'adult#site', "Report should be marked as flipped from adult to site, field has value of {0}".format(adult_reloaded.flipped_to))
+        self.assertTrue(adult_reloaded.flipped, "Report should be marked as flipped")
+        self.assertTrue(
+            adult_reloaded.flipped_to == "adult#site",
+            "Report should be marked as flipped from adult to site, field has value of {0}".format(
+                adult_reloaded.flipped_to
+            ),
+        )
         try:
-            response_type = ReportResponse.objects.get(report=adult_reloaded,question_id='12',answer_id='121')
-        except:
-            self.assertTrue(False,"Report does not have the storm drain response")
+            _ = ReportResponse.objects.get(
+                report=adult_reloaded, question_id="12", answer_id="121"
+            )
+        except Exception:
+            self.assertTrue(False, "Report does not have the storm drain response")
         try:
-            response_type = ReportResponse.objects.get(report=adult_reloaded,question_id='10',answer_id='101')
-        except:
-            self.assertTrue(False,"Report does not have the water response")
+            _ = ReportResponse.objects.get(
+                report=adult_reloaded, question_id="10", answer_id="101"
+            )
+        except Exception:
+            self.assertTrue(False, "Report does not have the water response")
         # flip site to adult
-        data = {
-            'report_id': r_site.version_UUID,
-            'flip_to_type': 'adult'
-        }
-        response = self.client.patch('/api/flip_report/', data=data)
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
+        data = {"report_id": r_site.version_UUID, "flip_to_type": "adult"}
+        response = self.client.patch("/api/flip_report/", data=data)
+        self.assertEqual(
+            response.status_code,
+            200,
+            "Response should be 200, is {0}".format(response.status_code),
+        )
         site_reloaded = Report.objects.get(pk=r_site.version_UUID)
-        self.assertTrue(site_reloaded.type == Report.TYPE_ADULT, "Report type should have changed to adult, is {0}".format(site_reloaded.type))
+        self.assertTrue(
+            site_reloaded.type == Report.TYPE_ADULT,
+            "Report type should have changed to adult, is {0}".format(
+                site_reloaded.type
+            ),
+        )
 
         n_responses = ReportResponse.objects.filter(report=site_reloaded).count()
-        self.assertTrue(n_responses == 0, "Number of responses should be 0, is {0}".format(n_responses))
+        self.assertTrue(
+            n_responses == 0,
+            "Number of responses should be 0, is {0}".format(n_responses),
+        )
         self.assertEqual(site_reloaded.type, Report.TYPE_ADULT)
         self.assertTrue(site_reloaded.flipped, "Report should be marked as flipped")
-        self.assertTrue(site_reloaded.flipped_to == 'site#adult',"Report should be marked as flipped from site to adult, field has value of {0}".format(adult_reloaded.flipped_to))
-        #print(site_reloaded.flipped_on)
+        self.assertTrue(
+            site_reloaded.flipped_to == "site#adult",
+            "Report should be marked as flipped from site to adult, field has value of {0}".format(
+                adult_reloaded.flipped_to
+            ),
+        )
+        # print(site_reloaded.flipped_on)
         self.assertEqual(IdentificationTask.objects.filter(report=r_site).count(), 1)
 
     def test_hide(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
-        r_adult = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        r_adult = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
         self.assertTrue(not r_adult.hide, "Report should be visible, is not")
-        data = {
-            'report_id': r_adult.version_UUID,
-            'hide': 'true'
-        }
-        response = self.client.patch('/api/hide_report/', data=data)
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
-        r_adult_reloaded = Report.objects.get(pk='00042354-ffd6-431e-af1e-cecf55e55364')
+        data = {"report_id": r_adult.version_UUID, "hide": "true"}
+        response = self.client.patch("/api/hide_report/", data=data)
+        self.assertEqual(
+            response.status_code,
+            200,
+            "Response should be 200, is {0}".format(response.status_code),
+        )
+        r_adult_reloaded = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
         self.assertTrue(r_adult_reloaded.hide, "Report should be hidden, is not")
 
     def test_quick_upload(self):
         u = User.objects.get(pk=25)
         self.client.force_authenticate(user=u)
-        r_site = Report.objects.get(pk='00042fb1-408f-4da4-898d-4331a9ec3129')
+        r_site = Report.objects.get(pk="00042fb1-408f-4da4-898d-4331a9ec3129")
         self.assertFalse(r_site.published)
 
-        data = {
-            'report_id': r_site.version_UUID
-        }
-        response = self.client.post('/api/quick_upload_report/', data=data)
-        self.assertEqual(response.status_code, 200, "Response should be 200, is {0}".format(response.status_code))
-        
+        data = {"report_id": r_site.version_UUID}
+        response = self.client.post("/api/quick_upload_report/", data=data)
+        self.assertEqual(
+            response.status_code,
+            200,
+            "Response should be 200, is {0}".format(response.status_code),
+        )
+
         r_site.refresh_from_db()
         self.assertTrue(r_site.published)
 
 
 class ApiTokenViewTest(APITestCase):
-    ENDPOINT = '/api/token/'
+    ENDPOINT = "/api/token/"
 
     @classmethod
     def setUpTestData(cls):
-        cls.mobile_user = User.objects.create_user(username='mobile_test')
+        cls.mobile_user = User.objects.create_user(username="mobile_test")
         cls.tiga_user = TigaUser.objects.create()
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_post_fcm_token_creates_new_device_if_no_device_exist(self):
         self.client.force_authenticate(user=self.mobile_user)
 
-        fcm_token = 'randomFCMtoken_test'
+        fcm_token = "randomFCMtoken_test"
 
         # Define the query parameters
-        query_params = {'user_id': self.tiga_user.pk, 'token': fcm_token}
+        query_params = {"user_id": self.tiga_user.pk, "token": fcm_token}
         # Construct the URL with query parameters
-        url = self.ENDPOINT + '?' + '&'.join(f'{key}={value}' for key, value in query_params.items())
+        url = (
+            self.ENDPOINT
+            + "?"
+            + "&".join(f"{key}={value}" for key, value in query_params.items())
+        )
 
         # Make the POST request
-        response = self.client.post(url, format='json')
+        response = self.client.post(url, format="json")
 
         # Assert response status code or other checks
         self.assertEqual(response.status_code, 200)
@@ -1469,10 +1708,7 @@ class ApiTokenViewTest(APITestCase):
         self.assertJSONEqual(response.content, expected_response)
 
         # Check that exist an active Device for the user with the registartion_id
-        device = Device.objects.get(
-            user=self.tiga_user,
-            registration_id=fcm_token
-        )
+        device = Device.objects.get(user=self.tiga_user, registration_id=fcm_token)
         self.assertTrue(device.active)
         self.assertTrue(device.active_session)
         self.assertEqual(device.last_login, timezone.now())
@@ -1482,26 +1718,29 @@ class ApiTokenViewTest(APITestCase):
     def test_post_fcm_token_updates_device_with_same_registration_id(self):
         self.client.force_authenticate(user=self.mobile_user)
 
-        fcm_token = 'randomFCMtoken_test'
+        fcm_token = "randomFCMtoken_test"
 
         device = Device.objects.create(
             user=self.tiga_user,
             registration_id=fcm_token,
             active=True,
             active_session=True,
-            last_login=timezone.now() - timedelta(days=1)
+            last_login=timezone.now() - timedelta(days=1),
         )
 
         # Define the query parameters
-        query_params = {'user_id': self.tiga_user.pk, 'token': fcm_token}
+        query_params = {"user_id": self.tiga_user.pk, "token": fcm_token}
         # Construct the URL with query parameters
-        url = self.ENDPOINT + '?' + '&'.join(f'{key}={value}' for key, value in query_params.items())
+        url = (
+            self.ENDPOINT
+            + "?"
+            + "&".join(f"{key}={value}" for key, value in query_params.items())
+        )
 
         # Make the POST request
-        response = self.client.post(url, format='json')
+        response = self.client.post(url, format="json")
         # Assert response status code or other checks
         self.assertEqual(response.status_code, 200)
-
 
         self.assertEqual(Device.objects.filter(user=self.tiga_user).count(), 1)
         # Check that exist an active Device for the user with the registartion_id
@@ -1514,23 +1753,21 @@ class ApiTokenViewTest(APITestCase):
 
 
 class ApiUsersViewTest(APITransactionTestCase):
-    ENDPOINT = '/api/users/'
+    ENDPOINT = "/api/users/"
 
     def setUp(self):
-        self.mobile_user = User.objects.create_user(username='mobile_test')
+        self.mobile_user = User.objects.create_user(username="mobile_test")
         # Needed to test user subscription does not raise.
-        self.global_topic = NotificationTopic.objects.create(topic_code='global')
-        self.language_topic = NotificationTopic.objects.create(topic_code='en')
+        self.global_topic = NotificationTopic.objects.create(topic_code="global")
+        self.language_topic = NotificationTopic.objects.create(topic_code="en")
 
-    @override_settings(
-        DEFAULT_TIGAUSER_PASSWORD='DEFAULT_PASSWORD_FOR_TESTS'
-    )
+    @override_settings(DEFAULT_TIGAUSER_PASSWORD="DEFAULT_PASSWORD_FOR_TESTS")
     def test_POST_new_user(self):
         self.client.force_authenticate(user=self.mobile_user)
         new_user_uuid = uuid.uuid4()
 
         request_payload = {
-            'user_UUID': str(new_user_uuid)  # The mobile is setting the user uuid.
+            "user_UUID": str(new_user_uuid)  # The mobile is setting the user uuid.
         }
         response = self.client.post(
             self.ENDPOINT,
@@ -1547,13 +1784,19 @@ class ApiUsersViewTest(APITransactionTestCase):
 
         user = TigaUser.objects.get(pk=str(new_user_uuid))
 
-        self.assertTrue(user.check_password('DEFAULT_PASSWORD_FOR_TESTS'))
+        self.assertTrue(user.check_password("DEFAULT_PASSWORD_FOR_TESTS"))
 
         # Check if the user is subscribed to the global topic
-        self.assertTrue(UserSubscription.objects.filter(user=user, topic=self.global_topic).exists())
+        self.assertTrue(
+            UserSubscription.objects.filter(user=user, topic=self.global_topic).exists()
+        )
 
         # Check if the user is subscribed to the language topic ('en')
-        self.assertTrue(UserSubscription.objects.filter(user=user, topic=self.language_topic).exists())
+        self.assertTrue(
+            UserSubscription.objects.filter(
+                user=user, topic=self.language_topic
+            ).exists()
+        )
 
     def test_POST_new_user_without_providing_uuid_should_return_400(self):
         self.client.force_authenticate(user=self.mobile_user)
@@ -1566,9 +1809,7 @@ class ApiUsersViewTest(APITransactionTestCase):
 
     def test_POST_new_user_providing_non_uuid_should_return_400(self):
         self.client.force_authenticate(user=self.mobile_user)
-        request_payload = {
-            'user_UUID': 'random_text'
-        }
+        request_payload = {"user_UUID": "random_text"}
         response = self.client.post(
             self.ENDPOINT,
             request_payload,
@@ -1581,9 +1822,7 @@ class ApiUsersViewTest(APITransactionTestCase):
         self.client.force_authenticate(user=self.mobile_user)
 
         tigauser = TigaUser.objects.create()
-        filter_params = {
-            'user_UUID': str(tigauser.pk)[:10]
-        }
+        filter_params = {"user_UUID": str(tigauser.pk)[:10]}
         response = self.client.get(
             self.ENDPOINT,
             filter_params,

@@ -40,4 +40,3 @@ class TimeZoneModelMixin(models.Model):
 
     class Meta:
         abstract = True
-

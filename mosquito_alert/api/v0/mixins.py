@@ -55,14 +55,18 @@ class AutoTimeZoneSerializerMixin(object):
             }
         ).get_timezone_from_coordinates()
 
-        data = OrderedDict({
-            **data,
-            **self._get_dict_applied_tz(data=data, tz=timezone_from_coordinates),
-        })
+        data = OrderedDict(
+            {
+                **data,
+                **self._get_dict_applied_tz(data=data, tz=timezone_from_coordinates),
+            }
+        )
         # Ensure all AutoTimeZoneDatetimeField are aware
         for fname in self._get_auto_tz_datetime_fields():
             if not timezone.is_aware(data[fname]):
-                data[fname] = apply_tz_to_datetime(data[fname], tz=timezone.get_default_timezone())
+                data[fname] = apply_tz_to_datetime(
+                    data[fname], tz=timezone.get_default_timezone()
+                )
 
         return data
 
@@ -88,7 +92,8 @@ class AutoTimeZoneOrInstantUploadSerializerMixin(AutoTimeZoneSerializerMixin):
         _client_creation_time_fix_coordiantes = tmp_data[self.CLIENT_CREATION_FIELD]
         if not timezone.is_aware(_client_creation_time_fix_coordiantes):
             _client_creation_time_fix_coordiantes = apply_tz_to_datetime(
-                _client_creation_time_fix_coordiantes, tz=timezone.get_default_timezone()
+                _client_creation_time_fix_coordiantes,
+                tz=timezone.get_default_timezone(),
             )
 
         # Original creation field
@@ -115,10 +120,11 @@ class AutoTimeZoneOrInstantUploadSerializerMixin(AutoTimeZoneSerializerMixin):
                 try:
                     timedelta_factor = timedelta(
                         minutes=round(
-                            (
-                                _client_creation_field - now
-                            ).total_seconds() / 60 / interval_minutes
-                        ) * interval_minutes
+                            (_client_creation_field - now).total_seconds()
+                            / 60
+                            / interval_minutes
+                        )
+                        * interval_minutes
                     )
                 except ValueError:
                     # case offset greater than 1day.
@@ -129,11 +135,13 @@ class AutoTimeZoneOrInstantUploadSerializerMixin(AutoTimeZoneSerializerMixin):
                 ) in self._get_fields_to_apply_tz_from_instant_upload(data=data):
                     _primitive_datetime_fieldname = data[datetime_fieldname]
                     if not timezone.is_naive(_primitive_datetime_fieldname):
-                        _primitive_datetime_fieldname = timezone.make_naive(_primitive_datetime_fieldname)
+                        _primitive_datetime_fieldname = timezone.make_naive(
+                            _primitive_datetime_fieldname
+                        )
 
                     data_result[datetime_fieldname] = apply_tz_to_datetime(
-                            value=_primitive_datetime_fieldname,
-                            tz=dt_timezone(offset=timedelta_factor)
-                        )
+                        value=_primitive_datetime_fieldname,
+                        tz=dt_timezone(offset=timedelta_factor),
+                    )
 
         return data_result

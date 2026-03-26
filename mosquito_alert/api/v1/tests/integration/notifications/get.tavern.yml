@@ -93,4 +93,3 @@ stages:
         Authorization: "Bearer {token}"
     response:
       status_code: 404
-

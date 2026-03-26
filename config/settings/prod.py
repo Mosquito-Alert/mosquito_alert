@@ -37,13 +37,13 @@ if env("SENTRY_DSN", default=None):
         traces_sample_rate=1.0,
         integrations=[
             DjangoIntegration(cache_spans=True),
-        ]
+        ],
     )
 
     # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
     # -------------------------------------------------------------------------------
     CORS_ALLOW_HEADERS = (
         *default_headers,
-        'sentry-trace',
-        'baggage',
+        "sentry-trace",
+        "baggage",
     )

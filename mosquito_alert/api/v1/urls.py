@@ -1,10 +1,18 @@
-from django.urls import path, re_path, include
+from django.urls import path, include
 
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 from drf_spectacular.settings import spectacular_settings
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from drf_spectacular.views import SpectacularRedocView, SpectacularAPIView, SpectacularJSONAPIView
+from drf_spectacular.views import (
+    SpectacularRedocView,
+    SpectacularAPIView,
+    SpectacularJSONAPIView,
+)
 
 from .auth.views import GuestRegisterView, PasswordChangeView
 from .routers import NestedSimpleRouter, SimpleRouter
@@ -49,52 +57,88 @@ class CustomRedocView(SpectacularRedocView):
 
 
 router = SimpleRouter()
-router.register(r"bites", BiteViewSet, basename='bites')
-router.register(r"breeding-sites", BreedingSiteViewSet, basename='breeding-sites')
-router.register(r"boundaries", BoundaryViewSet, basename='boundaries')
+router.register(r"bites", BiteViewSet, basename="bites")
+router.register(r"breeding-sites", BreedingSiteViewSet, basename="breeding-sites")
+router.register(r"boundaries", BoundaryViewSet, basename="boundaries")
 router.register(r"devices", DeviceViewSet)
 router.register(r"campaigns", CampaignsViewSet)
 router.register(r"countries", CountriesViewSet)
 router.register(r"fixes", FixViewSet)
 
 router.register(r"identification-tasks", IdentificationTaskViewSet)
-identification_task_router = NestedSimpleRouter(router, r'identification-tasks', lookup='')
-identification_task_router.register(r"annotations", IdentificationTaskViewSet.AnnotationViewSet)
-identification_task_router.register(r"predictions", IdentificationTaskViewSet.PhotoPredictionViewSet)
+identification_task_router = NestedSimpleRouter(
+    router, r"identification-tasks", lookup=""
+)
+identification_task_router.register(
+    r"annotations", IdentificationTaskViewSet.AnnotationViewSet
+)
+identification_task_router.register(
+    r"predictions", IdentificationTaskViewSet.PhotoPredictionViewSet
+)
 
 router.register(r"notifications", NotificationViewSet)
-router.register(r"observations", ObservationViewSest, basename='observations')
+router.register(r"observations", ObservationViewSest, basename="observations")
 router.register(r"partners", PartnersViewSet)
 router.register(r"photos", PhotoViewSet)
 router.register(r"taxa", TaxaViewSet)
 router.register(r"users", UserViewSet)
 
 token_obtain_view = TokenObtainPairView.as_view()
-token_obtain_view = extend_schema_view(post=extend_schema(operation_id="auth_obtain_token"))(token_obtain_view)
+token_obtain_view = extend_schema_view(
+    post=extend_schema(operation_id="auth_obtain_token")
+)(token_obtain_view)
 
 token_refresh_view = TokenRefreshView.as_view()
-token_refresh_view = extend_schema_view(post=extend_schema(operation_id="auth_refresh_token"))(token_refresh_view)
+token_refresh_view = extend_schema_view(
+    post=extend_schema(operation_id="auth_refresh_token")
+)(token_refresh_view)
 
 token_verify_view = TokenVerifyView.as_view()
-token_verify_view = extend_schema_view(post=extend_schema(operation_id="auth_verify_token"))(token_verify_view)
+token_verify_view = extend_schema_view(
+    post=extend_schema(operation_id="auth_verify_token")
+)(token_verify_view)
 
 api_urlpatterns = [
-    path("auth/signup/guest/", GuestRegisterView.as_view(), name='guest-register'),
+    path("auth/signup/guest/", GuestRegisterView.as_view(), name="guest-register"),
     path("auth/token/", token_obtain_view, name="token_obtain_pair"),
     path("auth/token/refresh/", token_refresh_view, name="token_refresh"),
     path("auth/token/verify/", token_verify_view, name="token_verify"),
-    path("auth/password/change/", PasswordChangeView.as_view(), name='password-change'),
+    path("auth/password/change/", PasswordChangeView.as_view(), name="password-change"),
 ]
 
 api_urlpatterns += [
-    path("me/", MyUserViewSet.as_view({'get': 'retrieve'}), name='my-user'),
-    path("me/permissions/", MyPermissionViewSet.as_view({'get': 'retrieve'}), name='my-permissions'),
-    path("me/notifications/", MyNotificationViewSet.as_view({'get': 'list'}), name='my-notifications'),
-    path("me/observations/", MyObservationViewSest.as_view({'get': 'list'}), name='my-observations'),
-    path("me/bites/", MyBiteViewSet.as_view({'get': 'list'}), name='my-bites'),
-    path("me/breeding-sites/", MyBreedingSiteViewSet.as_view({'get': 'list'}), name='my-breeding-sites'),
-    path("me/identification-tasks/annotations/", MyAnnotationViewSet.as_view({'get': 'list'}), name='my-annotations'),
-    path("me/identification-tasks/", MyIdentificationTaskViewSet.as_view({'get': 'list'}), name='my-identification-tasks'),
+    path("me/", MyUserViewSet.as_view({"get": "retrieve"}), name="my-user"),
+    path(
+        "me/permissions/",
+        MyPermissionViewSet.as_view({"get": "retrieve"}),
+        name="my-permissions",
+    ),
+    path(
+        "me/notifications/",
+        MyNotificationViewSet.as_view({"get": "list"}),
+        name="my-notifications",
+    ),
+    path(
+        "me/observations/",
+        MyObservationViewSest.as_view({"get": "list"}),
+        name="my-observations",
+    ),
+    path("me/bites/", MyBiteViewSet.as_view({"get": "list"}), name="my-bites"),
+    path(
+        "me/breeding-sites/",
+        MyBreedingSiteViewSet.as_view({"get": "list"}),
+        name="my-breeding-sites",
+    ),
+    path(
+        "me/identification-tasks/annotations/",
+        MyAnnotationViewSet.as_view({"get": "list"}),
+        name="my-annotations",
+    ),
+    path(
+        "me/identification-tasks/",
+        MyIdentificationTaskViewSet.as_view({"get": "list"}),
+        name="my-identification-tasks",
+    ),
 ]
 
 api_urlpatterns += [
@@ -107,6 +151,10 @@ api_urlpatterns += identification_task_router.urls
 urlpatterns = [
     path("", CustomRedocView.as_view(url_name="schema"), name="redoc"),
     path("", include(api_urlpatterns)),
-    path("openapi.yml", SpectacularAPIView.as_view(api_version='v1'), name="schema"),
-    path("openapi.json", SpectacularJSONAPIView.as_view(api_version='v1'), name="schema-json"),
+    path("openapi.yml", SpectacularAPIView.as_view(api_version="v1"), name="schema"),
+    path(
+        "openapi.json",
+        SpectacularJSONAPIView.as_view(api_version="v1"),
+        name="schema-json",
+    ),
 ]

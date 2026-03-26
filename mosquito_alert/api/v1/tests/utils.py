@@ -23,10 +23,12 @@ def authenticate_with_token(client, type, token):
     client.credentials(HTTP_AUTHORIZATION=f"{type} {str(token)}")
 
 
-def grant_permission_to_user(model_class, user, type: Optional[str] = None, codename: Optional[str] = None):
+def grant_permission_to_user(
+    model_class, user, type: Optional[str] = None, codename: Optional[str] = None
+):
     if type:
         assert type in ["add", "change", "delete", "view"], "type is not a valid option"
-        codename=f"{type}_" + model_class._meta.model_name
+        codename = f"{type}_" + model_class._meta.model_name
     elif codename:
         pass
     else:
@@ -136,7 +138,7 @@ class UserAuthenticableGenericViewMixin(
     @classmethod
     def create_user(cls):
         return User.objects.create_user(
-            username=f"user_{random.randint(1,1000)}",
+            username=f"user_{random.randint(1, 1000)}",
             password=get_random_string(length=10),
         )
 

@@ -1,10 +1,12 @@
-
 from django.db import models
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
 from fcm_django.models import AbstractFCMDevice, DeviceType
-from langcodes import standardize_tag as standarize_language_tag, tag_is_valid as language_tag_is_valid
+from langcodes import (
+    standardize_tag as standarize_language_tag,
+    tag_is_valid as language_tag_is_valid,
+)
 from semantic_version import Version
 from semantic_version.django_fields import VersionField
 from simple_history.models import HistoricalRecords
@@ -19,27 +21,25 @@ class MobileApp(models.Model):
     #       since this version were creating from Report.package_version (which is an IntegerField)
     #       and it's a number which is not related with the Mobile App pubspeck.yaml package version.
     package_name = models.CharField(max_length=128)
-    package_version = VersionField(max_length=32, validators=[
-        RegexValidator(
-            regex=Version.version_re,
-            code='invalid_version'
-        )
-    ])
+    package_version = VersionField(
+        max_length=32,
+        validators=[RegexValidator(regex=Version.version_re, code="invalid_version")],
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'tigaserver_app_mobileapp' # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_mobileapp"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
         constraints = [
             models.UniqueConstraint(
-                fields=['package_name', 'package_version'],
-                name='unique_name_version',
+                fields=["package_name", "package_version"],
+                name="unique_name_version",
             )
         ]
 
     def __str__(self):
-        return f'{self.package_name} ({self.package_version})'
+        return f"{self.package_name} ({self.package_version})"
 
 
 class Device(AbstractFCMDevice):
@@ -58,19 +58,21 @@ class Device(AbstractFCMDevice):
     mobile_app = models.ForeignKey(MobileApp, null=True, on_delete=models.PROTECT)
     active_session = models.BooleanField(default=False)
 
-    registration_id = models.TextField(null=True, db_index=True, verbose_name='Registration token')
+    registration_id = models.TextField(
+        null=True, db_index=True, verbose_name="Registration token"
+    )
 
     manufacturer = models.CharField(
         max_length=128,
         null=True,
         blank=True,
-        help_text="The manufacturer of the device."
+        help_text="The manufacturer of the device.",
     )
     model = models.CharField(
         max_length=128,
         null=True,
         blank=True,
-        help_text="The end-user-visible name for the end product."
+        help_text="The end-user-visible name for the end product.",
     )
     type = models.CharField(choices=DeviceType.choices, max_length=10, null=True)
     os_name = models.CharField(
@@ -90,30 +92,31 @@ class Device(AbstractFCMDevice):
         validators=[language_tag_is_valid],
         null=True,
         blank=True,
-        help_text="The locale configured in the device following the BCP 47 standard in 'language' or 'language-region' format (e.g., 'en' for English, 'en-US' for English (United States), 'fr' for French). The language is a two-letter ISO 639-1 code, and the region is an optional two-letter ISO 3166-1 alpha-2 code."
+        help_text="The locale configured in the device following the BCP 47 standard in 'language' or 'language-region' format (e.g., 'en' for English, 'en-US' for English (United States), 'fr' for French). The language is a two-letter ISO 639-1 code, and the region is an optional two-letter ISO 3166-1 alpha-2 code.",
     )
 
     updated_at = models.DateTimeField(auto_now=True)
     last_login = models.DateTimeField(null=True)
 
     history = HistoricalRecords(
-        table_name = 'tigaserver_app_historicaldevice', # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        table_name="tigaserver_app_historicaldevice",  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
         # Exclude field the user can not modify or that are not relevant.
         excluded_fields=[
-            'name',
-            'date_created',
-            'updated_at',
-            'active_session',
-            'last_login',
-            'user'
+            "name",
+            "date_created",
+            "updated_at",
+            "active_session",
+            "last_login",
+            "user",
         ],
         cascade_delete_history=True,
-        user_model=TigaUser
+        user_model=TigaUser,
     )
 
     objects = DeviceManager()
 
     __history_user = None
+
     @property
     def _history_user(self):
         return self.__history_user or self.user
@@ -146,30 +149,40 @@ class Device(AbstractFCMDevice):
         self.active = bool(self.registration_id and self.active_session)
 
         if self.active and self.registration_id:
-            update_device_qs = Device.objects.filter(active=True, registration_id=self.registration_id)
+            update_device_qs = Device.objects.filter(
+                active=True, registration_id=self.registration_id
+            )
             if self.pk:
                 update_device_qs = update_device_qs.exclude(pk=self.pk)
 
             for device in update_device_qs.iterator():
                 device.active = False
                 # For simple history
-                device._change_reason = 'Another user has created/update a device with the same registration_id'
+                device._change_reason = "Another user has created/update a device with the same registration_id"
                 device.save()
 
         if self.active_session and self.device_id:
-            update_device_qs = Device.objects.filter(active_session=True, device_id=self.device_id)
+            update_device_qs = Device.objects.filter(
+                active_session=True, device_id=self.device_id
+            )
             if self.pk:
                 update_device_qs = update_device_qs.exclude(pk=self.pk)
 
             for device in update_device_qs.iterator():
                 device.active_session = False
                 # For simple history
-                device._change_reason = 'Another user has created/update a device with the same device_id'
+                device._change_reason = (
+                    "Another user has created/update a device with the same device_id"
+                )
                 device.save()
 
         if self.pk:
-            _tracked_fields = [field.name for field in self.__class__.history.model._meta.get_fields()]
-            _fields_with_changes = self.__get_changed_fields(update_fields=kwargs.get('update_fields'))
+            _tracked_fields = [
+                field.name for field in self.__class__.history.model._meta.get_fields()
+            ]
+            _fields_with_changes = self.__get_changed_fields(
+                update_fields=kwargs.get("update_fields")
+            )
             if not any(element in _tracked_fields for element in _fields_with_changes):
                 # Only will create history if at least one tracked field has changed.
                 self.skip_history_when_saving = True
@@ -177,7 +190,7 @@ class Device(AbstractFCMDevice):
         try:
             ret = super().save(*args, **kwargs)
         finally:
-            if hasattr(self, 'skip_history_when_saving'):
+            if hasattr(self, "skip_history_when_saving"):
                 del self.skip_history_when_saving
 
         return ret
@@ -189,31 +202,35 @@ class Device(AbstractFCMDevice):
 
     class Meta(AbstractFCMDevice.Meta):
         abstract = False
-        db_table = 'tigaserver_app_device' # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_device"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
         verbose_name = _("Device")
         verbose_name_plural = _("Devices")
         indexes = [
-            models.Index(fields=['device_id', 'user']),
+            models.Index(fields=["device_id", "user"]),
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=['active', 'registration_id'],
-                name='unique_active_registration_id',
-                condition=models.Q(active=True, registration_id__isnull=False) & ~models.Q(registration_id__exact=''),
+                fields=["active", "registration_id"],
+                name="unique_active_registration_id",
+                condition=models.Q(active=True, registration_id__isnull=False)
+                & ~models.Q(registration_id__exact=""),
             ),
             models.UniqueConstraint(
-                fields=['active_session', 'device_id'],
-                name='unique_active_session_device_id',
-                condition=models.Q(active_session=True, device_id__isnull=False) & ~models.Q(device_id__exact=''),
+                fields=["active_session", "device_id"],
+                name="unique_active_session_device_id",
+                condition=models.Q(active_session=True, device_id__isnull=False)
+                & ~models.Q(device_id__exact=""),
             ),
             models.UniqueConstraint(
-                fields=['user', 'device_id'],
-                name='unique_user_device_id',
-                condition=models.Q(user__isnull=False, device_id__isnull=False) & ~models.Q(device_id__exact='')
+                fields=["user", "device_id"],
+                name="unique_user_device_id",
+                condition=models.Q(user__isnull=False, device_id__isnull=False)
+                & ~models.Q(device_id__exact=""),
             ),
             models.UniqueConstraint(
-                fields=['user', 'registration_id'],
-                name='unique_user_registration_id',
-                condition=models.Q(user__isnull=False, registration_id__isnull=False) & ~models.Q(registration_id__exact='')
-            )
+                fields=["user", "registration_id"],
+                name="unique_user_registration_id",
+                condition=models.Q(user__isnull=False, registration_id__isnull=False)
+                & ~models.Q(registration_id__exact=""),
+            ),
         ]

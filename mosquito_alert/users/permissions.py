@@ -6,12 +6,14 @@ from django.db import models
 
 from mosquito_alert.geo.models import EuropeCountry
 
+
 class Role(models.TextChoices):
-    BASE = 'base'
-    ANNOTATOR = 'annotator'
-    SUPERVISOR = 'supervisor'
-    REVIEWER = 'reviewer'
-    ADMIN = 'admin'
+    BASE = "base"
+    ANNOTATOR = "annotator"
+    SUPERVISOR = "supervisor"
+    REVIEWER = "reviewer"
+    ADMIN = "admin"
+
 
 @dataclass
 class BasePermission:
@@ -20,22 +22,27 @@ class BasePermission:
     view: bool
     delete: bool
 
+
 @dataclass
 class IdentificationTaskPermission(BasePermission):
     pass
+
 
 @dataclass
 class AnnotationPermission(BasePermission):
     mark_as_executive: bool
     pass
 
+
 @dataclass
 class ReviewPermission(BasePermission):
     pass
 
+
 @dataclass
 class NotificationPermission(BasePermission):
     pass
+
 
 @dataclass
 class Permissions:
@@ -43,6 +50,7 @@ class Permissions:
     identification_task: IdentificationTaskPermission
     review: ReviewPermission
     notification: NotificationPermission
+
 
 class UserRolePermissionMixin:
     @abstractmethod
@@ -52,7 +60,9 @@ class UserRolePermissionMixin:
     def get_countries_with_permissions(self, action, model) -> List[EuropeCountry]:
         countries = []
         for country in self.get_countries_with_roles():
-            if self.has_role_permission_by_model(action=action, model=model, country=country):
+            if self.has_role_permission_by_model(
+                action=action, model=model, country=country
+            ):
                 countries.append(country)
         return countries
 
@@ -77,7 +87,9 @@ class UserRolePermissionMixin:
             delete=role in [Role.ADMIN],
         )
 
-    def get_role_identification_task_permission(self, role: Role) -> IdentificationTaskPermission:
+    def get_role_identification_task_permission(
+        self, role: Role
+    ) -> IdentificationTaskPermission:
         return IdentificationTaskPermission(
             add=False,
             change=role in [Role.ADMIN],
@@ -101,29 +113,40 @@ class UserRolePermissionMixin:
             delete=role in [Role.ADMIN],
         )
 
-    def _get_role_permission_by_model(self, model, country: Optional[EuropeCountry] = None) -> BasePermission:
-        from mosquito_alert.identification_tasks.models import ExpertReportAnnotation, IdentificationTask
+    def _get_role_permission_by_model(
+        self, model, country: Optional[EuropeCountry] = None
+    ) -> BasePermission:
+        from mosquito_alert.identification_tasks.models import (
+            ExpertReportAnnotation,
+            IdentificationTask,
+        )
         from mosquito_alert.notifications.models import Notification
+
         if model == IdentificationTask:
-            return self.get_role_identification_task_permission(role=self.get_role(country=country))
+            return self.get_role_identification_task_permission(
+                role=self.get_role(country=country)
+            )
         elif model == ExpertReportAnnotation:
-            return self.get_role_annotation_permission(role=self.get_role(country=country))
+            return self.get_role_annotation_permission(
+                role=self.get_role(country=country)
+            )
         elif model == ReviewPermission:
             return self.get_role_review_permission(role=self.get_role(country=country))
         elif model == Notification:
-            return self.get_role_notification_permission(role=self.get_role(country=country))
+            return self.get_role_notification_permission(
+                role=self.get_role(country=country)
+            )
 
-        return BasePermission(
-            add=False,
-            view=False,
-            change=False,
-            delete=False
-        )
+        return BasePermission(add=False, view=False, change=False, delete=False)
 
-    def has_role_permission_by_model(self, action, model, country: Optional[EuropeCountry] = None) -> BasePermission:
+    def has_role_permission_by_model(
+        self, action, model, country: Optional[EuropeCountry] = None
+    ) -> BasePermission:
         countries = set([None, country])
         for country in countries:
-            permission = self._get_role_permission_by_model(model=model, country=country)
+            permission = self._get_role_permission_by_model(
+                model=model, country=country
+            )
             if getattr(permission, action, False):
                 return True
         return False
@@ -138,6 +161,8 @@ class UserRolePermissionMixin:
             countries += [obj_or_klass.country]
 
         for country in countries:
-            if self.has_role_permission_by_model(action=action, model=model, country=country):
+            if self.has_role_permission_by_model(
+                action=action, model=model, country=country
+            ):
                 return True
         return False

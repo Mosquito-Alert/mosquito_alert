@@ -1,4 +1,5 @@
 import inspect
+
 try:
     import zoneinfo
 except ImportError:
@@ -41,13 +42,15 @@ class TimeZoneSerializerChoiceField(TimeZoneSerializerField, serializers.ChoiceF
             for tz in zoneinfo.available_timezones()
             if not tz.startswith(EXCLUDED_PREFIXES)
         }
-        super().__init__(choices=sorted(_tzstrs), use_pytz=False, html_cutoff=5, **kwargs)
+        super().__init__(
+            choices=sorted(_tzstrs), use_pytz=False, html_cutoff=5, **kwargs
+        )
 
 
 class WritableSerializerMethodField(serializers.Field):
     # Reference: https://stackoverflow.com/a/64274128/8450576
     def __init__(self, field_class, method_name=None, **kwargs):
-        self._deserializer_source = kwargs.pop('source', None)
+        self._deserializer_source = kwargs.pop("source", None)
         self.deserializer_field = field_class(**kwargs)
 
         self.serializer_field = serializers.SerializerMethodField(
@@ -55,12 +58,14 @@ class WritableSerializerMethodField(serializers.Field):
         )
 
         allowed_keys = [
-            param for param in inspect.signature(serializers.Field.__init__).parameters if param != 'self'
+            param
+            for param in inspect.signature(serializers.Field.__init__).parameters
+            if param != "self"
         ]
         kwargs = {key: value for key, value in kwargs.items() if key in allowed_keys}
 
-        kwargs['source'] = '*'
-        kwargs['read_only'] = False
+        kwargs["source"] = "*"
+        kwargs["read_only"] = False
 
         super().__init__(**kwargs)
 
@@ -72,25 +77,32 @@ class WritableSerializerMethodField(serializers.Field):
 
     def run_validation(self, *args, **kwargs):
         return {
-            self.deserializer_field.field_name: self.deserializer_field.run_validation(*args, **kwargs)
+            self.deserializer_field.field_name: self.deserializer_field.run_validation(
+                *args, **kwargs
+            )
         }
 
     def to_internal_value(self, data):
         return {
-            self.deserializer_field.field_name: self.deserializer_field.to_internal_value(data=data)
+            self.deserializer_field.field_name: self.deserializer_field.to_internal_value(
+                data=data
+            )
         }
 
     def to_representation(self, value):
         return self.serializer_field.to_representation(value=value)
 
 
-@extend_schema_field({
-    "type": "string",
-    "format": "html",
-    "example": "<body><p><strong>Welcome!</strong>this is a text in html.</p></body>"
-})
+@extend_schema_field(
+    {
+        "type": "string",
+        "format": "html",
+        "example": "<body><p><strong>Welcome!</strong>this is a text in html.</p></body>",
+    }
+)
 class HTMLCharField(serializers.CharField):
     """
     A CharField that represents HTML content.
     """
+
     pass

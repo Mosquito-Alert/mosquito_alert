@@ -470,12 +470,12 @@ paths:
     get:
       operationId: listOWCampaigns
       summary: Returns a list of all the overwintering campaigns
-      description: Each overwintering campaigns takes place in a given european country between a start and end dates. 
+      description: Each overwintering campaigns takes place in a given european country between a start and end dates.
         There can be multiple campaigns for each country, but the start and end dates should never overlap.
       tags:
       - overwintering
       - apps
-      parameters:      
+      parameters:
       - name: country_id
         required: false
         in: query
@@ -523,7 +523,7 @@ paths:
                   - country
                   - posting_address
                   - campaign_start_date
-                  - campaign_end_date          
+                  - campaign_end_date
   /api/user_count/:
     get:
       operationId: listuser_counts

@@ -6,9 +6,10 @@ from rest_framework_gis.fields import GeometryField
 
 from mosquito_alert.identification_tasks.models import IdentificationTask
 
-class IdentificationTaskNestedAttribute():
+
+class IdentificationTaskNestedAttribute:
     def get_parent_lookup_url_kwarg(self) -> str:
-        return 'observation_uuid'
+        return "observation_uuid"
 
     def get_identification_task_obj(self) -> Optional[IdentificationTask]:
         if task_id := self.kwargs.get(self.get_parent_lookup_url_kwarg(), None):
@@ -16,9 +17,10 @@ class IdentificationTaskNestedAttribute():
 
     def check_parent_permissions(self, request) -> bool:
         from .views import IdentificationTaskViewSet
-        if self.action in ['list', 'retrieve']:
+
+        if self.action in ["list", "retrieve"]:
             parent_view = IdentificationTaskViewSet()
-            parent_view.action = 'retrieve'
+            parent_view.action = "retrieve"
             parent_view.request = request
             parent_view.kwargs = self.kwargs
 
@@ -43,12 +45,13 @@ class IdentificationTaskNestedAttribute():
             return
         super().check_object_permissions(request, obj)
 
+
 class ReportGeoJsonModelSerializerMixin(serializers.Serializer):
     point = GeometryField()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        request = self.context.get('request')
-        geo_precision = request.query_params.get('geo_precision') if request else None
+        request = self.context.get("request")
+        geo_precision = request.query_params.get("geo_precision") if request else None
         if geo_precision is not None:
-            self.fields['point'] = GeometryField(precision=int(geo_precision))
+            self.fields["point"] = GeometryField(precision=int(geo_precision))

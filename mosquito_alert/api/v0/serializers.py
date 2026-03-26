@@ -5,7 +5,11 @@ from mosquito_alert.tigaserver_app.models import Session
 from mosquito_alert.campaigns.models import OWCampaigns
 from mosquito_alert.fixes.models import Fix
 from mosquito_alert.geo.models import EuropeCountry
-from mosquito_alert.notifications.models import Notification, NotificationContent, UserSubscription
+from mosquito_alert.notifications.models import (
+    Notification,
+    NotificationContent,
+    UserSubscription,
+)
 from mosquito_alert.reports.models import Report, ReportResponse, Photo
 from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.users.models import TigaUser
@@ -15,13 +19,15 @@ from django.utils import timezone
 from .fields import AutoTimeZoneDatetimeField
 from .mixins import AutoTimeZoneOrInstantUploadSerializerMixin
 
-class UserSerializer(serializers.ModelSerializer):
 
+class UserSerializer(serializers.ModelSerializer):
     user_UUID = serializers.UUIDField(required=True)
 
     class Meta:
         model = TigaUser
-        fields = ['user_UUID', ]
+        fields = [
+            "user_UUID",
+        ]
 
 
 class SessionListingField(serializers.RelatedField):
@@ -30,7 +36,6 @@ class SessionListingField(serializers.RelatedField):
 
 
 class UserListingField(serializers.RelatedField):
-
     def to_native(self, value):
         return value.user_UUID
 
@@ -43,16 +48,20 @@ class ReportListingField(serializers.RelatedField):
 class ReportResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReportResponse
-        fields = ['question', 'answer', 'question_id', 'answer_id', 'answer_value']
+        fields = ["question", "answer", "question_id", "answer_id", "answer_value"]
+
 
 class DetailedPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
-        fields = ['id', 'photo', 'uuid']
-class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.ModelSerializer):
+        fields = ["id", "photo", "uuid"]
 
+
+class ReportSerializer(
+    AutoTimeZoneOrInstantUploadSerializerMixin, serializers.ModelSerializer
+):
     # For AutoTimeZoneOrInstantUploadSerializerMixin
-    CLIENT_CREATION_FIELD = 'version_time'
+    CLIENT_CREATION_FIELD = "version_time"
 
     user = UserListingField
     version_UUID = serializers.CharField()
@@ -85,12 +94,13 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
 
         # If version_time is in data_result, that means that TZ has been applied.
         if "version_time" in data_result:
-            version_time_field = self.fields['version_time']
+            version_time_field = self.fields["version_time"]
             _original_version_time = version_time_field.run_validation(
                 data=version_time_field.get_value(data)
             )
             data_result["datetime_fix_offset"] = (
-                data_result["version_time"] - timezone.make_aware(_original_version_time)
+                data_result["version_time"]
+                - timezone.make_aware(_original_version_time)
             ).total_seconds()
 
         return data_result
@@ -101,10 +111,10 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
 
         # If version_number is not 0
         # and version_time when not aware on the POST request.
-        if data['version_number'] != 0 and not timezone.is_aware(data['version_time']):
+        if data["version_number"] != 0 and not timezone.is_aware(data["version_time"]):
             # Apply version_time after getting tz from the instant upload approach.
             if "version_time" not in field_names:
-                field_names.append('version_time')
+                field_names.append("version_time")
 
         return field_names
 
@@ -112,20 +122,35 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
         # This are fields to apply only if using the TZ from location.
         field_names = super()._get_fields_to_apply_tz(data=data)
 
-        if data['version_number'] != 0:
+        if data["version_number"] != 0:
             # Removing creation_time and phone_upload_time
             # since they must be the same than the original version
-            field_names = list(set(field_names) - set(['phone_upload_time', 'creation_time']))
+            field_names = list(
+                set(field_names) - set(["phone_upload_time", "creation_time"])
+            )
 
             # If it's been more than 1 day between the original
             # version of the report and this report version, we consider
             # we can not waranty the user have moved and possibly
             # changed its timezone. So, remove version_time too
             # from the candidate list.
-            original_version_upload_time = timezone.make_aware(data['phone_upload_time']) if not timezone.is_aware(data['phone_upload_time']) else data['phone_upload_time']
-            current_version_upload_time = timezone.make_aware(data['version_time']) if not timezone.is_aware(data['version_time']) else data['version_time']
-            if abs(original_version_upload_time - current_version_upload_time).total_seconds() > 24 * 3600:
-                field_names = list(set(field_names) - set(['version_time']))
+            original_version_upload_time = (
+                timezone.make_aware(data["phone_upload_time"])
+                if not timezone.is_aware(data["phone_upload_time"])
+                else data["phone_upload_time"]
+            )
+            current_version_upload_time = (
+                timezone.make_aware(data["version_time"])
+                if not timezone.is_aware(data["version_time"])
+                else data["version_time"]
+            )
+            if (
+                abs(
+                    original_version_upload_time - current_version_upload_time
+                ).total_seconds()
+                > 24 * 3600
+            ):
+                field_names = list(set(field_names) - set(["version_time"]))
 
         return field_names
 
@@ -135,7 +160,9 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
         """
         value = attrs
         if len(str(value)) != 36:
-            raise serializers.ValidationError("Make sure report_UUID is EXACTLY 36 characters.")
+            raise serializers.ValidationError(
+                "Make sure report_UUID is EXACTLY 36 characters."
+            )
         return attrs
 
     def validate_type(self, attrs):
@@ -143,27 +170,25 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
         Check that the report type is either 'adult', 'site', or 'mission'.
         """
         value = attrs
-        if value not in ['adult', 'site', 'mission', 'bite']:
-            raise serializers.ValidationError("Make sure type is 'adult', 'site', 'mission' or 'bite'.")
+        if value not in ["adult", "site", "mission", "bite"]:
+            raise serializers.ValidationError(
+                "Make sure type is 'adult', 'site', 'mission' or 'bite'."
+            )
         return attrs
 
     def create(self, validated_data):
         # Adding _history_user
-        validated_data['_history_user'] = validated_data.get('user')
+        validated_data["_history_user"] = validated_data.get("user")
 
-        responses_data = validated_data.pop('responses')
+        responses_data = validated_data.pop("responses")
         report = Report(**validated_data)
 
         # Create the report response and updating report fields
         # without saving. We want to save all changes at once.
         responses = []
         for response in responses_data:
-            report_responses = ReportResponse(
-                report=report, **response
-            )
-            report_responses._update_report_value(
-                commit=False
-            )
+            report_responses = ReportResponse(report=report, **response)
+            report_responses._update_report_value(commit=False)
             responses.append(report_responses)
 
         # Saving reports (already updated) + responses.
@@ -175,7 +200,7 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
 
     def update(self, instance, validated_data):
         # Adding _history_user
-        validated_data['_history_user'] = validated_data.get('user')
+        validated_data["_history_user"] = validated_data.get("user")
 
         # Do not updates on the following fields:
         #   - fields marked as non editable
@@ -183,7 +208,9 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
         #   - FKs
         #   - PKs
         non_editable_fields = [
-            field.name for field in Report._meta.get_fields() if (
+            field.name
+            for field in Report._meta.get_fields()
+            if (
                 not field.editable
                 or isinstance(field, models.AutoField)
                 or isinstance(field, models.ForeignKey)
@@ -191,7 +218,7 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
             )
         ]
 
-        responses_data = validated_data.pop('responses')
+        responses_data = validated_data.pop("responses")
         for field in non_editable_fields:
             if field in validated_data:
                 del validated_data[field]
@@ -202,7 +229,7 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
         for response in responses_data:
             try:
                 report_response = ReportResponse.objects.get(
-                    report=instance, question=response['question']
+                    report=instance, question=response["question"]
                 )
                 # Perform update
                 for k, v in response.items():
@@ -210,9 +237,7 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
             except ReportResponse.DoesNotExist:
                 report_response = ReportResponse(report=instance, **response)
 
-            report_response._update_report_value(
-                commit=False
-            )
+            report_response._update_report_value(commit=False)
             responses.append(report_response)
 
         # Saving reports (already updated) + responses.
@@ -259,7 +284,7 @@ class ReportSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.M
             "nuts_3",
             "user",
             "country",
-            "session"
+            "session",
         )
 
 
@@ -269,24 +294,35 @@ class PhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
         depth = 0
-        fields = ['photo', 'report']
+        fields = ["photo", "report"]
+
 
 class SessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Session
-        fields = ['id', 'session_ID', 'user', 'session_start_time', 'session_end_time']
+        fields = ["id", "session_ID", "user", "session_start_time", "session_end_time"]
 
-class FixSerializer(AutoTimeZoneOrInstantUploadSerializerMixin, serializers.ModelSerializer):
 
+class FixSerializer(
+    AutoTimeZoneOrInstantUploadSerializerMixin, serializers.ModelSerializer
+):
     # For AutoTimeZoneOrInstantUploadSerializerMixin
-    CLIENT_CREATION_FIELD = 'phone_upload_time'
+    CLIENT_CREATION_FIELD = "phone_upload_time"
 
     fix_time = AutoTimeZoneDatetimeField()
     phone_upload_time = AutoTimeZoneDatetimeField()
 
     class Meta:
         model = Fix
-        fields = ['user_coverage_uuid', 'fix_time', 'phone_upload_time', 'masked_lon', 'masked_lat', 'power', 'mask_size']
+        fields = [
+            "user_coverage_uuid",
+            "fix_time",
+            "phone_upload_time",
+            "masked_lon",
+            "masked_lat",
+            "power",
+            "mask_size",
+        ]
 
 
 class NotificationContentSerializer(serializers.ModelSerializer):
@@ -300,7 +336,15 @@ class NotificationContentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NotificationContent
-        fields = ('id', 'body_html_en', 'body_html_native', 'title_en', 'title_native', 'native_locale', 'notification_label')
+        fields = (
+            "id",
+            "body_html_en",
+            "body_html_native",
+            "title_en",
+            "title_native",
+            "native_locale",
+            "notification_label",
+        )
 
 
 class NotificationSerializer(serializers.ModelSerializer):
@@ -317,24 +361,32 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ('id', 'report_id', 'expert_id', 'date_comment', 'notification_content', 'public', 'map_notification')
+        fields = (
+            "id",
+            "report_id",
+            "expert_id",
+            "date_comment",
+            "notification_content",
+            "public",
+            "map_notification",
+        )
 
 
 class UserSubscriptionSerializer(serializers.ModelSerializer):
     topic_code = serializers.SerializerMethodField()
 
-    def get_topic_code(self,obj):
+    def get_topic_code(self, obj):
         return obj.topic.topic_code
 
     class Meta:
         model = UserSubscription
-        fields = ('id','user','topic','topic_code')
+        fields = ("id", "user", "topic", "topic_code")
 
 
 class EuropeCountrySimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = EuropeCountry
-        fields = ('gid', 'name_engl')
+        fields = ("gid", "name_engl")
 
 
 class OWCampaignsSerializer(serializers.ModelSerializer):
@@ -342,59 +394,83 @@ class OWCampaignsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OWCampaigns
-        fields = ('id', 'country', 'posting_address', 'campaign_start_date', 'campaign_end_date')
+        fields = (
+            "id",
+            "country",
+            "posting_address",
+            "campaign_start_date",
+            "campaign_end_date",
+        )
 
 
 class OrganizationPinsSerializer(serializers.ModelSerializer):
-    point = serializers.SerializerMethodField(method_name='get_point')
+    point = serializers.SerializerMethodField(method_name="get_point")
 
     class Meta:
         model = OrganizationPin
-        fields = ('id', 'point', 'textual_description', 'page_url')
+        fields = ("id", "point", "textual_description", "page_url")
 
-    def get_point(self,obj):
+    def get_point(self, obj):
         if obj.point is not None:
-            return { "lat": obj.point.y, "long": obj.point.x}
+            return {"lat": obj.point.y, "long": obj.point.x}
         else:
             return None
 
-class CoarsePhotoSerializer(serializers.ModelSerializer):
-    small_url = serializers.SerializerMethodField(method_name='get_small_url')
 
-    def get_small_url(self,obj):
+class CoarsePhotoSerializer(serializers.ModelSerializer):
+    small_url = serializers.SerializerMethodField(method_name="get_small_url")
+
+    def get_small_url(self, obj):
         return obj.get_small_url()
+
     class Meta:
         model = Photo
-        fields = ['id', 'photo', 'uuid', 'small_url']
+        fields = ["id", "photo", "uuid", "small_url"]
+
 
 class CoarseReportSerializer(serializers.ModelSerializer):
     photos = CoarsePhotoSerializer(many=True)
     version_UUID = serializers.ReadOnlyField()
     report_id = serializers.ReadOnlyField()
     creation_time = serializers.ReadOnlyField()
-    user_id = serializers.SerializerMethodField(method_name='get_user_id')
+    user_id = serializers.SerializerMethodField(method_name="get_user_id")
     type = serializers.ReadOnlyField()
     note = serializers.ReadOnlyField()
     country = EuropeCountrySimpleSerializer(many=False)
-    site_cat = serializers.SerializerMethodField(method_name='get_site_cat')
+    site_cat = serializers.SerializerMethodField(method_name="get_site_cat")
     insect_confidence = serializers.SerializerMethodField()
     hide = serializers.ReadOnlyField()
     lat = serializers.ReadOnlyField()
     lon = serializers.ReadOnlyField()
 
     def get_insect_confidence(self, obj) -> Union[float, None]:
-        identification_task = getattr(obj, 'identification_task', None)
+        identification_task = getattr(obj, "identification_task", None)
         if not identification_task:
             return None
 
         return identification_task.pred_insect_confidence
 
-    def get_site_cat(self,obj):
+    def get_site_cat(self, obj):
         return obj.site_cat
 
-    def get_user_id(self,obj):
+    def get_user_id(self, obj):
         return obj.user.user_UUID
 
     class Meta:
         model = Report
-        fields = ('photos', 'version_UUID', 'report_id', 'creation_time', 'type', 'note', 'point', 'country', 'site_cat', 'insect_confidence', 'hide', 'user_id', 'lat', 'lon')
+        fields = (
+            "photos",
+            "version_UUID",
+            "report_id",
+            "creation_time",
+            "type",
+            "note",
+            "point",
+            "country",
+            "site_cat",
+            "insect_confidence",
+            "hide",
+            "user_id",
+            "lat",
+            "lon",
+        )

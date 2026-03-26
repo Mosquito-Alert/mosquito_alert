@@ -40,7 +40,7 @@ class NonAppUserSessionAuthentication(SessionAuthentication):
     # Only for User (not TigaUser)
     def authenticate(self, request):
         # Get the session-based user from the underlying HttpRequest object
-        user = getattr(request._request, 'user', None)
+        user = getattr(request._request, "user", None)
 
         if user and isinstance(user, TigaUser):
             return None

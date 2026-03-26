@@ -9,42 +9,36 @@ class ReportQuerySet(models.QuerySet):
 
         return self.annotate(
             photo_exist=models.Exists(
-                Photo.objects.filter(
-                    report=models.OuterRef('pk')
-                ).visible()
+                Photo.objects.filter(report=models.OuterRef("pk")).visible()
             )
-        ).filter(
-            photo_exist=state
-        )
+        ).filter(photo_exist=state)
 
     def deleted(self, state: bool = True):
         return self.filter(deleted_at__isnull=not state)
 
     def non_deleted(self):
         return self.deleted(state=False)
-    
+
     def published(self, state: bool = True):
         return self.browsable().filter(
             models.Q(
                 published_at__isnull=False,
                 published_at__lte=timezone.now(),
-                _negated=not state
+                _negated=not state,
             )
         )
 
     def browsable(self):
         # Should be the same as in is_browsable property.
-        return self.non_deleted().filter(
-            hide=False,
-            location_is_masked=False
-        )
+        return self.non_deleted().filter(hide=False, location_is_masked=False)
 
     def with_finished_validation(self, state: bool = True) -> QuerySet:
         from mosquito_alert.identification_tasks.models import IdentificationTask
+
         return self.filter(
             models.Q(
                 identification_task__status=IdentificationTask.Status.DONE,
-                _negated=not state
+                _negated=not state,
             )
         )
 
@@ -55,16 +49,13 @@ class ReportQuerySet(models.QuerySet):
             _in_supervised_country=models.Exists(
                 UserStat.objects.filter(
                     national_supervisor_of__isnull=False,
-                    national_supervisor_of=models.OuterRef('country')
+                    national_supervisor_of=models.OuterRef("country"),
                 )
             ),
         ).filter(
             models.Q(
-                models.Q(
-                    country__isnull=False,
-                    _in_supervised_country=True
-                ),
-                _negated=not state
+                models.Q(country__isnull=False, _in_supervised_country=True),
+                _negated=not state,
             )
         )
 
@@ -72,25 +63,32 @@ class ReportQuerySet(models.QuerySet):
         from .models import Report
         from mosquito_alert.identification_tasks.models import IdentificationTask
 
-        return self.published(state=False).filter(
-            models.Q(
-                models.Q(type=Report.TYPE_ADULT)
-                & models.Exists(
-                    IdentificationTask.objects.filter(report_id=models.OuterRef('pk')).new()
+        return (
+            self.published(state=False)
+            .filter(
+                models.Q(
+                    models.Q(type=Report.TYPE_ADULT)
+                    & models.Exists(
+                        IdentificationTask.objects.filter(
+                            report_id=models.OuterRef("pk")
+                        ).new()
+                    )
                 )
-            ) |
-            models.Q(
-                models.Q(type=Report.TYPE_SITE)
-                & models.Exists(
-                    self.has_photos().filter(pk=models.OuterRef('pk'))
+                | models.Q(
+                    models.Q(type=Report.TYPE_SITE)
+                    & models.Exists(self.has_photos().filter(pk=models.OuterRef("pk")))
                 )
             )
-        ).order_by('-server_upload_time')
+            .order_by("-server_upload_time")
+        )
+
 
 ReportManager = models.Manager.from_queryset(ReportQuerySet)
+
 
 class PhotoQuerySet(models.QuerySet):
     def visible(self):
         return self.filter(hide=False)
+
 
 PhotoManager = models.Manager.from_queryset(PhotoQuerySet)

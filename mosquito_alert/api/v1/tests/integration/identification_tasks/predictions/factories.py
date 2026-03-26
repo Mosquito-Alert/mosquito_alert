@@ -11,15 +11,13 @@ def create_photo_prediction(photo: Photo) -> PhotoPrediction:
         Taxon.objects.get(pk=PhotoPrediction.PREDICTED_CLASS_TO_TAXON[predicted_class])
     except Taxon.DoesNotExist:
         taxon_root = Taxon.get_root() or Taxon.add_root(
-            rank=Taxon.TaxonomicRank.CLASS,
-            name="Insecta",
-            common_name=""
+            rank=Taxon.TaxonomicRank.CLASS, name="Insecta", common_name=""
         )
         taxon_root.add_child(
             pk=PhotoPrediction.PREDICTED_CLASS_TO_TAXON[predicted_class],
             rank=Taxon.TaxonomicRank.SPECIES,
             name=PhotoPrediction.CLASS_FIELDNAMES_CHOICES[0][1],
-            is_relevant=True
+            is_relevant=True,
         )
 
     return PhotoPrediction.objects.create(
@@ -41,5 +39,5 @@ def create_photo_prediction(photo: Photo) -> PhotoPrediction:
         x_tl=0,
         x_br=0.5,
         y_tl=0,
-        y_br=0.5
+        y_br=0.5,
     )

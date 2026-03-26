@@ -5,6 +5,7 @@ from django.http import HttpRequest
 
 from .models import TigaUser
 
+
 class AppUserBackend:
     def get_user(self, user_id: str) -> Optional[AbstractBaseUser]:
         try:
@@ -12,7 +13,13 @@ class AppUserBackend:
         except TigaUser.DoesNotExist:
             return None
 
-    def authenticate(self, request: HttpRequest, uuid: str = None, password: str = None, **kwargs: Any) -> Optional[AbstractBaseUser]:
+    def authenticate(
+        self,
+        request: HttpRequest,
+        uuid: str = None,
+        password: str = None,
+        **kwargs: Any,
+    ) -> Optional[AbstractBaseUser]:
         if uuid is None or password is None:
             return
 

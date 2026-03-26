@@ -14,9 +14,10 @@ register_heif_opener()
 register_raw_opener()
 
 if TiffImagePlugin.TiffImageFile.format in Image.ID:
-    #NOTE: Tiff is accepting magic numbers from RAW photos. Should be the last in the chain.
+    # NOTE: Tiff is accepting magic numbers from RAW photos. Should be the last in the chain.
     Image.ID.remove(TiffImagePlugin.TiffImageFile.format)
     Image.ID.append(TiffImagePlugin.TiffImageFile.format)
+
 
 class ReportsApp(AppConfig):
     name = "mosquito_alert.reports"

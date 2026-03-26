@@ -9,6 +9,7 @@ from mosquito_alert.users.models import TigaUser
 
 from .fields import HTMLCharField
 
+
 class FieldPolymorphicSerializer(serializers.Serializer):
     field_value_serializer_mapping = None
     resource_type_field_name = "type"
@@ -51,7 +52,9 @@ class FieldPolymorphicSerializer(serializers.Serializer):
     def to_representation(self, instance):
         serializer = self._get_serializer_for_instance(instance=instance)
         ret = serializer.to_representation(instance)
-        ret[self.resource_type_field_name] = getattr(instance, self.resource_type_field_name)
+        ret[self.resource_type_field_name] = getattr(
+            instance, self.resource_type_field_name
+        )
         return ret
 
     def to_internal_value(self, data):
@@ -93,7 +96,9 @@ class FieldPolymorphicSerializer(serializers.Serializer):
         else:
             serializer = self._get_serializer_for_data(data=data)
         validated_data = serializer.run_validation(data)
-        validated_data[self.resource_type_field_name] = data[self.resource_type_field_name]
+        validated_data[self.resource_type_field_name] = data[
+            self.resource_type_field_name
+        ]
         return validated_data
 
     def _get_serializer_for_type(self, type_value):
@@ -119,34 +124,36 @@ class FieldPolymorphicSerializer(serializers.Serializer):
                 f"{self.resource_type_field_name} is a required field."
             )
 
+
 class LocalizedSerializerMixin:
     """
     A custom serializer field that supports localization for a dynamic field name.
     Allows calling with arguments such as 'title', 'message', max_length, help_text, etc.
     """
+
     def __init__(self, *args, **kwargs):
         # From CharField
-        allow_blank = kwargs.pop('allow_blank', False)
-        trim_whitespace = kwargs.pop('trim_whitespace', True)
-        max_length = kwargs.pop('max_length', None)
-        min_length = kwargs.pop('min_length', None)
+        allow_blank = kwargs.pop("allow_blank", False)
+        trim_whitespace = kwargs.pop("trim_whitespace", True)
+        max_length = kwargs.pop("max_length", None)
+        min_length = kwargs.pop("min_length", None)
 
-        is_html = kwargs.pop('is_html', False)
+        is_html = kwargs.pop("is_html", False)
 
         super().__init__(*args, **kwargs)
 
-        required_languages = kwargs.get('required_languages', ['en'])
+        required_languages = kwargs.get("required_languages", ["en"])
 
         # Sort the languages alphabetically based on the language code
         for code, name in sorted(TigaUser.AVAILABLE_LANGUAGES, key=lambda x: x[0]):
             # Use max_length if provided and if the field is for 'title'
             field_params = {
-                'required': code in required_languages,
-                'allow_blank': allow_blank,
-                'trim_whitespace': trim_whitespace,
-                'max_length': max_length,
-                'min_length': min_length,
-                'help_text': name
+                "required": code in required_languages,
+                "allow_blank": allow_blank,
+                "trim_whitespace": trim_whitespace,
+                "max_length": max_length,
+                "min_length": min_length,
+                "help_text": name,
             }
             field_klass = HTMLCharField if is_html else serializers.CharField
             self.fields[code] = field_klass(**field_params)
