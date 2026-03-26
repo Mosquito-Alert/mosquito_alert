@@ -139,13 +139,17 @@ class LocalizedSerializerMixin:
         min_length = kwargs.pop("min_length", None)
 
         is_html = kwargs.pop("is_html", False)
+        required_languages = kwargs.pop("required_languages", [])
+        languages = kwargs.pop(
+            "languages", [lang[0] for lang in TigaUser.AVAILABLE_LANGUAGES]
+        )
 
         super().__init__(*args, **kwargs)
 
-        required_languages = kwargs.get("required_languages", ["en"])
-
         # Sort the languages alphabetically based on the language code
         for code, name in sorted(TigaUser.AVAILABLE_LANGUAGES, key=lambda x: x[0]):
+            if code not in languages:
+                continue
             # Use max_length if provided and if the field is for 'title'
             field_params = {
                 "required": code in required_languages,
