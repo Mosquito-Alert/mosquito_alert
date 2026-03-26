@@ -18,15 +18,27 @@ class TestTaxonModel:
         assert Taxon.get_root() is None
 
     def test_get_leaves_in_rank_group(self, taxon_root):
-        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
-        species = genus.add_child(name='species', rank=Taxon.TaxonomicRank.SPECIES)
-        species_complex = genus.add_child(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
-        species_1 = species_complex.add_child(name='species 1', rank=Taxon.TaxonomicRank.SPECIES)
-        species_2 = species_complex.add_child(name='species 2', rank=Taxon.TaxonomicRank.SPECIES)
+        genus = taxon_root.add_child(name="genus", rank=Taxon.TaxonomicRank.GENUS)
+        species = genus.add_child(name="species", rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = genus.add_child(
+            name="species complex", rank=Taxon.TaxonomicRank.SPECIES_COMPLEX
+        )
+        species_1 = species_complex.add_child(
+            name="species 1", rank=Taxon.TaxonomicRank.SPECIES
+        )
+        species_2 = species_complex.add_child(
+            name="species 2", rank=Taxon.TaxonomicRank.SPECIES
+        )
 
-        assert frozenset(Taxon.get_leaves_in_rank_group(Taxon.TaxonomicRank.SPECIES_COMPLEX)) == frozenset([species, species_1, species_2])
-        assert frozenset(Taxon.get_leaves_in_rank_group(Taxon.TaxonomicRank.SPECIES)) == frozenset([species, species_1, species_2])
-        assert frozenset(Taxon.get_leaves_in_rank_group(Taxon.TaxonomicRank.GENUS)) == frozenset([genus])
+        assert frozenset(
+            Taxon.get_leaves_in_rank_group(Taxon.TaxonomicRank.SPECIES_COMPLEX)
+        ) == frozenset([species, species_1, species_2])
+        assert frozenset(
+            Taxon.get_leaves_in_rank_group(Taxon.TaxonomicRank.SPECIES)
+        ) == frozenset([species, species_1, species_2])
+        assert frozenset(
+            Taxon.get_leaves_in_rank_group(Taxon.TaxonomicRank.GENUS)
+        ) == frozenset([genus])
 
     # fields
     def test_rank_can_not_be_null(self):
@@ -58,9 +70,7 @@ class TestTaxonModel:
         assert Taxon.node_order_by == ["name"]
 
     def test_is_specie_must_be_true_for_taxon_with_rank_species_complex_or_higher(self):
-        obj = Taxon(
-            rank=Taxon.TaxonomicRank.SPECIES_COMPLEX
-        )
+        obj = Taxon(rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
 
         assert obj.is_specie
 
@@ -69,42 +79,62 @@ class TestTaxonModel:
         assert not obj.is_specie
 
     def test_prev_rank_group(self):
-        genus = Taxon(name='genus', rank=Taxon.TaxonomicRank.GENUS)
-        species = Taxon(name='species', rank=Taxon.TaxonomicRank.SPECIES)
-        species_complex = Taxon(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
+        genus = Taxon(name="genus", rank=Taxon.TaxonomicRank.GENUS)
+        species = Taxon(name="species", rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = Taxon(
+            name="species complex", rank=Taxon.TaxonomicRank.SPECIES_COMPLEX
+        )
 
         assert genus.prev_rank_group == Taxon.TaxonomicRank.FAMILY
         assert species.prev_rank_group == Taxon.TaxonomicRank.GENUS
         assert species_complex.prev_rank_group == Taxon.TaxonomicRank.GENUS
 
     def test_next_rank_group(self):
-        genus = Taxon(name='genus', rank=Taxon.TaxonomicRank.GENUS)
+        genus = Taxon(name="genus", rank=Taxon.TaxonomicRank.GENUS)
         assert genus.next_rank_group == Taxon.TaxonomicRank.SPECIES_COMPLEX
 
     def test_rank_group(self):
-        species = Taxon(name='species', rank=Taxon.TaxonomicRank.SPECIES)
-        species_complex = Taxon(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
+        species = Taxon(name="species", rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = Taxon(
+            name="species complex", rank=Taxon.TaxonomicRank.SPECIES_COMPLEX
+        )
 
         assert species.rank_group == Taxon.TaxonomicRank.SPECIES_COMPLEX
         assert species_complex.rank_group == Taxon.TaxonomicRank.SPECIES_COMPLEX
 
     # methods
     def test_get_leaves(self, taxon_root):
-        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
-        species = genus.add_child(name='species', rank=Taxon.TaxonomicRank.SPECIES)
-        species_complex = genus.add_child(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
-        species_1 = species_complex.add_child(name='species 1', rank=Taxon.TaxonomicRank.SPECIES)
-        species_2 = species_complex.add_child(name='species 2', rank=Taxon.TaxonomicRank.SPECIES)
+        genus = taxon_root.add_child(name="genus", rank=Taxon.TaxonomicRank.GENUS)
+        species = genus.add_child(name="species", rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = genus.add_child(
+            name="species complex", rank=Taxon.TaxonomicRank.SPECIES_COMPLEX
+        )
+        species_1 = species_complex.add_child(
+            name="species 1", rank=Taxon.TaxonomicRank.SPECIES
+        )
+        species_2 = species_complex.add_child(
+            name="species 2", rank=Taxon.TaxonomicRank.SPECIES
+        )
 
-        assert frozenset(genus.get_leaves()) == frozenset([species, species_1, species_2])
-        assert frozenset(species_complex.get_leaves()) == frozenset([species_1, species_2])
+        assert frozenset(genus.get_leaves()) == frozenset(
+            [species, species_1, species_2]
+        )
+        assert frozenset(species_complex.get_leaves()) == frozenset(
+            [species_1, species_2]
+        )
 
     def test_get_parent_in_prev_rank_group(self, taxon_root):
-        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
-        species = genus.add_child(name='species', rank=Taxon.TaxonomicRank.SPECIES)
-        species_complex = genus.add_child(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
-        species_1 = species_complex.add_child(name='species 1', rank=Taxon.TaxonomicRank.SPECIES)
-        species_2 = species_complex.add_child(name='species 2', rank=Taxon.TaxonomicRank.SPECIES)
+        genus = taxon_root.add_child(name="genus", rank=Taxon.TaxonomicRank.GENUS)
+        species = genus.add_child(name="species", rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = genus.add_child(
+            name="species complex", rank=Taxon.TaxonomicRank.SPECIES_COMPLEX
+        )
+        species_1 = species_complex.add_child(
+            name="species 1", rank=Taxon.TaxonomicRank.SPECIES
+        )
+        species_2 = species_complex.add_child(
+            name="species 2", rank=Taxon.TaxonomicRank.SPECIES
+        )
 
         # Regular parent
         assert species.get_parent_in_prev_rank_group() == genus
@@ -115,38 +145,68 @@ class TestTaxonModel:
         assert species_2.get_parent_in_prev_rank_group() == genus
 
     def test_get_children_leaves_in_rank_group(self, taxon_root):
-        genus = taxon_root.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
-        species = genus.add_child(name='species', rank=Taxon.TaxonomicRank.SPECIES)
-        species_complex = genus.add_child(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
-        species_1 = species_complex.add_child(name='species 1', rank=Taxon.TaxonomicRank.SPECIES)
-        species_2 = species_complex.add_child(name='species 2', rank=Taxon.TaxonomicRank.SPECIES)
+        genus = taxon_root.add_child(name="genus", rank=Taxon.TaxonomicRank.GENUS)
+        species = genus.add_child(name="species", rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = genus.add_child(
+            name="species complex", rank=Taxon.TaxonomicRank.SPECIES_COMPLEX
+        )
+        species_1 = species_complex.add_child(
+            name="species 1", rank=Taxon.TaxonomicRank.SPECIES
+        )
+        species_2 = species_complex.add_child(
+            name="species 2", rank=Taxon.TaxonomicRank.SPECIES
+        )
 
-        genus_1 = taxon_root.add_child(name='genus 1', rank=Taxon.TaxonomicRank.GENUS)
-        species_1_1 = genus_1.add_child(name='species 1 1', rank=Taxon.TaxonomicRank.SPECIES)
+        genus_1 = taxon_root.add_child(name="genus 1", rank=Taxon.TaxonomicRank.GENUS)
+        species_1_1 = genus_1.add_child(
+            name="species 1 1", rank=Taxon.TaxonomicRank.SPECIES
+        )
 
-        assert frozenset(genus.get_children_leaves_in_rank_group()) == frozenset([species, species_1, species_2])
-        assert frozenset(genus_1.get_children_leaves_in_rank_group()) == frozenset([species_1_1])
-        assert frozenset(species_complex.get_children_leaves_in_rank_group()) == frozenset([])
+        assert frozenset(genus.get_children_leaves_in_rank_group()) == frozenset(
+            [species, species_1, species_2]
+        )
+        assert frozenset(genus_1.get_children_leaves_in_rank_group()) == frozenset(
+            [species_1_1]
+        )
+        assert frozenset(
+            species_complex.get_children_leaves_in_rank_group()
+        ) == frozenset([])
         assert frozenset(species.get_children_leaves_in_rank_group()) == frozenset([])
 
     def test_get_sibling_leaves_in_rank_group(self, taxon_root):
-        family = taxon_root.add_child(name='family', rank=Taxon.TaxonomicRank.FAMILY)
-        genus = family.add_child(name='genus', rank=Taxon.TaxonomicRank.GENUS)
-        species = genus.add_child(name='species', rank=Taxon.TaxonomicRank.SPECIES)
-        species_complex = genus.add_child(name='species complex', rank=Taxon.TaxonomicRank.SPECIES_COMPLEX)
-        species_1 = species_complex.add_child(name='species 1', rank=Taxon.TaxonomicRank.SPECIES)
-        species_2 = species_complex.add_child(name='species 2', rank=Taxon.TaxonomicRank.SPECIES)
+        family = taxon_root.add_child(name="family", rank=Taxon.TaxonomicRank.FAMILY)
+        genus = family.add_child(name="genus", rank=Taxon.TaxonomicRank.GENUS)
+        species = genus.add_child(name="species", rank=Taxon.TaxonomicRank.SPECIES)
+        species_complex = genus.add_child(
+            name="species complex", rank=Taxon.TaxonomicRank.SPECIES_COMPLEX
+        )
+        species_1 = species_complex.add_child(
+            name="species 1", rank=Taxon.TaxonomicRank.SPECIES
+        )
+        species_2 = species_complex.add_child(
+            name="species 2", rank=Taxon.TaxonomicRank.SPECIES
+        )
 
-        genus_1 = family.add_child(name='genus 1', rank=Taxon.TaxonomicRank.GENUS)
-        species_1_1 = genus_1.add_child(name='species 1 1', rank=Taxon.TaxonomicRank.SPECIES)
+        genus_1 = family.add_child(name="genus 1", rank=Taxon.TaxonomicRank.GENUS)
+        _ = genus_1.add_child(name="species 1 1", rank=Taxon.TaxonomicRank.SPECIES)
 
-        assert frozenset(species_complex.get_sibling_leaves_in_rank_group()) == frozenset([species])
-        assert frozenset(species.get_sibling_leaves_in_rank_group()) == frozenset([species_1, species_2])
+        assert frozenset(
+            species_complex.get_sibling_leaves_in_rank_group()
+        ) == frozenset([species])
+        assert frozenset(species.get_sibling_leaves_in_rank_group()) == frozenset(
+            [species_1, species_2]
+        )
 
-        assert frozenset(species_1.get_sibling_leaves_in_rank_group()) == frozenset([species, species_2])
-        assert frozenset(species_2.get_sibling_leaves_in_rank_group()) == frozenset([species, species_1])
+        assert frozenset(species_1.get_sibling_leaves_in_rank_group()) == frozenset(
+            [species, species_2]
+        )
+        assert frozenset(species_2.get_sibling_leaves_in_rank_group()) == frozenset(
+            [species, species_1]
+        )
 
-        assert frozenset(genus.get_sibling_leaves_in_rank_group()) == frozenset([genus_1])
+        assert frozenset(genus.get_sibling_leaves_in_rank_group()) == frozenset(
+            [genus_1]
+        )
 
     @pytest.mark.parametrize(
         "name, expected_result, is_specie",
@@ -155,7 +215,9 @@ class TestTaxonModel:
             ("dumMy StrangE nAme", "dumMy StrangE nAme", False),
         ],
     )
-    def test_name_is_capitalized_on_save_only_for_species(self, name, expected_result, is_specie, taxon_root):
+    def test_name_is_capitalized_on_save_only_for_species(
+        self, name, expected_result, is_specie, taxon_root
+    ):
         with patch(
             f"{Taxon.__module__}.{Taxon.__name__}.is_specie", new_callable=PropertyMock
         ) as mocked_is_specie:
@@ -172,23 +234,23 @@ class TestTaxonModel:
         # See: https://django-treebeard.readthedocs.io/en/latest/caveats.html#raw-queries
         z_child.refresh_from_db()
 
-        assert frozenset(Taxon.objects.all()) == frozenset([taxon_root, a_child, z_child, b_child])
+        assert frozenset(Taxon.objects.all()) == frozenset(
+            [taxon_root, a_child, z_child, b_child]
+        )
 
         # Change parent
         a_child.move(z_child)
 
-        assert frozenset(Taxon.objects.all()) == frozenset([taxon_root, z_child, a_child, b_child])
+        assert frozenset(Taxon.objects.all()) == frozenset(
+            [taxon_root, z_child, a_child, b_child]
+        )
 
     def test_raise_when_rank_higher_than_parent_rank(self, taxon_root):
         taxon_specie = taxon_root.add_child(
-            name='specie',
-            rank=Taxon.TaxonomicRank.SPECIES
+            name="specie", rank=Taxon.TaxonomicRank.SPECIES
         )
         with pytest.raises(ValidationError):
-            taxon_specie.add_child(
-                rank=Taxon.TaxonomicRank.CLASS,
-                name='class'
-            )
+            taxon_specie.add_child(rank=Taxon.TaxonomicRank.CLASS, name="class")
 
     # meta
     def test_unique_name_rank_constraint(self, taxon_root):
@@ -210,8 +272,7 @@ class TestTaxonModel:
 
     def test__str__(self, taxon_root):
         taxon = taxon_root.add_child(
-            name="Aedes Albopictus",
-            rank=Taxon.TaxonomicRank.SPECIES
+            name="Aedes Albopictus", rank=Taxon.TaxonomicRank.SPECIES
         )
 
         expected_result = "Aedes albopictus [Species]"

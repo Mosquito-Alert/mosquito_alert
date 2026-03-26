@@ -3,6 +3,7 @@ import numbers
 from typing import List
 from scipy.stats import entropy
 
+
 def calculate_norm_entropy(probabilities: List[numbers.Number]) -> float:
     """Computes normalized entropy of the given probability distribution."""
     # Cast the probabilities list to a list of floats

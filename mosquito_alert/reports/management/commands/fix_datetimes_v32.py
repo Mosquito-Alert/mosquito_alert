@@ -13,7 +13,10 @@ from django.utils import timezone
 from mosquito_alert.awards.models import Award
 from mosquito_alert.fixes.models import Fix
 from mosquito_alert.reports.models import Report
-from mosquito_alert.api.v0.utils import is_instant_upload_candidate, apply_tz_to_datetime
+from mosquito_alert.api.v0.utils import (
+    is_instant_upload_candidate,
+    apply_tz_to_datetime,
+)
 
 
 class AutoTzDateTimeProcess(ABC):
@@ -26,7 +29,11 @@ class AutoTzDateTimeProcess(ABC):
 
     @classmethod
     def _get_tracked_fields(cls):
-        return [cls.MODEL._meta.pk.name, "_tz", "_has_changed"] + cls._get_fields_to_update()
+        return [
+            cls.MODEL._meta.pk.name,
+            "_tz",
+            "_has_changed",
+        ] + cls._get_fields_to_update()
 
     def _get_timezone(self, obj):
         return obj.get_timezone_from_coordinates()
@@ -113,7 +120,7 @@ class AutoTzDateTimeProcess(ABC):
         # Only save the columns of interest (old and new value).
         write_csv(
             df=self._joint_df.loc[
-                self._joint_df["_has_changed"] == True,
+                self._joint_df["_has_changed"],
                 self.FIELDS_TO_FIX + [x + "_old" for x in self.FIELDS_TO_FIX],
             ],
             path_preffix="summary",
@@ -180,8 +187,11 @@ class AutoTzOrInstantUploadTimeProcess(AutoTzDateTimeProcess):
                             (
                                 getattr(obj, self.CLIENT_CREATION_FIELD)
                                 - getattr(obj, self.SERVER_CREATION_FIELD)
-                            ).total_seconds() / 60 / interval_minutes
-                        ) * interval_minutes
+                            ).total_seconds()
+                            / 60
+                            / interval_minutes
+                        )
+                        * interval_minutes
                     )
                 )
             except ValueError:
@@ -230,13 +240,15 @@ class ReportAutoTzDateTimeProcess(AutoTzOrInstantUploadTimeProcess):
         # This solution does not apply on other package versions
         # than v32.
         version_subquery = Report.objects.filter(
-            user=OuterRef('user'),
-            report_id=OuterRef('report_id'),
-            type=OuterRef('type')
+            user=OuterRef("user"),
+            report_id=OuterRef("report_id"),
+            type=OuterRef("type"),
         )
-        lowest_version_reports = version_subquery.exclude(
-            version_number=-1
-        ).order_by('version_number', 'server_upload_time').values('pk')[:1]
+        lowest_version_reports = (
+            version_subquery.exclude(version_number=-1)
+            .order_by("version_number", "server_upload_time")
+            .values("pk")[:1]
+        )
 
         for obj in super()._objs_to_update_generator(
             queryset=queryset.filter(pk__in=Subquery(lowest_version_reports))
@@ -298,7 +310,9 @@ class ReportAutoTzDateTimeProcess(AutoTzOrInstantUploadTimeProcess):
             obj.updated_at = timezone.now()
             if obj._tz:
                 # Setting datetime_fix_offset field
-                obj.datetime_fix_offset = int((obj.version_time - obj._version_time_old).total_seconds())
+                obj.datetime_fix_offset = int(
+                    (obj.version_time - obj._version_time_old).total_seconds()
+                )
 
         return super().pre_update(batch, dry_run)
 
@@ -328,7 +342,9 @@ class FixAutoTzDateTimeProcess(AutoTzOrInstantUploadTimeProcess):
     CLIENT_CREATION_FIELD = "phone_upload_time"
     SERVER_CREATION_FIELD = "server_upload_time"
 
-    _AFFECTED_RELEASE_DATE = datetime(year=2021, month=3, day=10, tzinfo=dt_timezone.utc)
+    _AFFECTED_RELEASE_DATE = datetime(
+        year=2021, month=3, day=10, tzinfo=dt_timezone.utc
+    )
 
     def _get_timezone_from_location(self, obj):
         # Only apply to objects after 2021-0310

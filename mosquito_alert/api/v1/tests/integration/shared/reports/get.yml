@@ -11,7 +11,7 @@ stages:
       method: "GET"
     response: &response_published_object
       status_code: 200
-      strict: 
+      strict:
         - json:off
       json:
         published: true

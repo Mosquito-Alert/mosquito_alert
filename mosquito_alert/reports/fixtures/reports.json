@@ -1,4 +1,4 @@
-[  
+[
   {
     "pk": "00042354-ffd6-431e-af1e-cecf55e55364",
     "model": "reports.report",
@@ -510,7 +510,7 @@
       "selected_location_lon": null,
       "os": "iPhone OS"
     }
-  },  
+  },
   {
     "pk": "00386998-cbaf-4c48-9c55-cc9614197467",
     "model": "reports.report",
@@ -702,7 +702,7 @@
       "selected_location_lon": -0.6621963,
       "os": "iPhone OS"
     }
-  },  
+  },
   {
     "pk": "00462387-b5a5-4e07-b62b-cf241ddf8681",
     "model": "reports.report",
@@ -734,7 +734,7 @@
       "selected_location_lon": null,
       "os": "Android"
     }
-  },  
+  },
   {
     "pk": "004D5A85-1D88-4170-A253-DABF30669EBE",
     "model": "reports.report",
@@ -830,7 +830,7 @@
       "selected_location_lon": null,
       "os": "Android"
     }
-  },  
+  },
   {
     "pk": "0056b965-ae13-4af8-b494-3234cc23e50a",
     "model": "reports.report",
@@ -862,7 +862,7 @@
       "selected_location_lon": null,
       "os": "Android"
     }
-  },  
+  },
   {
     "pk": "005EE071-D149-40D4-9551-43DF006BE5C6",
     "model": "reports.report",
@@ -894,7 +894,7 @@
       "selected_location_lon": null,
       "os": "iOS"
     }
-  },  
+  },
   {
     "pk": "00629bb1-83ab-4b48-a358-08fc29824007",
     "model": "reports.report",

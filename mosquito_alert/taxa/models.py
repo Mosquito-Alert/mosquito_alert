@@ -10,22 +10,21 @@ from treebeard.mp_tree import MP_Node
 
 class Taxon(MP_Node):
     @classmethod
-    def get_root(cls) -> Optional['Taxon']:
+    def get_root(cls) -> Optional["Taxon"]:
         return cls.get_root_nodes().first()
 
     @classmethod
-    def get_leaves_in_rank_group(cls, rank: int) -> models.QuerySet['Taxon']:
+    def get_leaves_in_rank_group(cls, rank: int) -> models.QuerySet["Taxon"]:
         rank_group = cls._convert_rank_to_rank_group(rank=rank)
         next_rank_group = rank_group + cls.RANK_GROUP_STEP
         return Taxon.objects.filter(
-            rank__gte=rank_group,
-            rank__lt=next_rank_group
+            rank__gte=rank_group, rank__lt=next_rank_group
         ).exclude(
             models.Exists(
                 Taxon.objects.filter(
-                    path__startswith=models.OuterRef('path'),
-                    depth__gt=models.OuterRef('depth'),
-                    rank__lt=next_rank_group
+                    path__startswith=models.OuterRef("path"),
+                    depth__gt=models.OuterRef("depth"),
+                    rank__lt=next_rank_group,
                 )
             )
         )
@@ -58,7 +57,7 @@ class Taxon(MP_Node):
     is_relevant = models.BooleanField(
         default=False,
         db_index=True,
-        help_text="Indicates if this taxon is relevant for the application. Will be shown first and will set task to conflict if final taxon is not this."
+        help_text="Indicates if this taxon is relevant for the application. Will be shown first and will set task to conflict if final taxon is not this.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -68,7 +67,7 @@ class Taxon(MP_Node):
 
     # Object Manager
     # Custom Properties
-    node_order_by = ['name']
+    node_order_by = ["name"]
 
     @property
     def is_specie(self):
@@ -79,7 +78,7 @@ class Taxon(MP_Node):
         return self.rank >= self.TaxonomicRank.GENUS
 
     @cached_property
-    def parent(self) -> Optional['Taxon']:
+    def parent(self) -> Optional["Taxon"]:
         return self.get_parent()
 
     @property
@@ -94,18 +93,23 @@ class Taxon(MP_Node):
     def rank_group(self) -> int:
         return self._convert_rank_to_rank_group(rank=self.rank)
 
-    def get_leaves(self) -> models.QuerySet['Taxon']:
+    def get_leaves(self) -> models.QuerySet["Taxon"]:
         return self.get_descendants().filter(numchild=0)
 
-    def get_parent_in_prev_rank_group(self) -> Optional['Taxon']:
-        return self.get_ancestors().filter(rank=self.prev_rank_group).order_by('depth').first()
+    def get_parent_in_prev_rank_group(self) -> Optional["Taxon"]:
+        return (
+            self.get_ancestors()
+            .filter(rank=self.prev_rank_group)
+            .order_by("depth")
+            .first()
+        )
 
-    def get_children_leaves_in_rank_group(self) -> models.QuerySet['Taxon']:
+    def get_children_leaves_in_rank_group(self) -> models.QuerySet["Taxon"]:
         return Taxon.get_leaves_in_rank_group(rank=self.next_rank_group).filter(
             path__startswith=self.path
         )
 
-    def get_sibling_leaves_in_rank_group(self) -> models.QuerySet['Taxon']:
+    def get_sibling_leaves_in_rank_group(self) -> models.QuerySet["Taxon"]:
         parent_rank_group = self.get_parent_in_prev_rank_group()
         if not parent_rank_group:
             return Taxon.objects.none()
@@ -123,7 +127,7 @@ class Taxon(MP_Node):
             113: _("species_aegypti"),
             114: _("species_japonicus"),
             115: _("species_koreicus"),
-            10: _("species_culex")
+            10: _("species_culex"),
         }
 
         return translations_table.get(self.pk, _("species_other"))
@@ -134,7 +138,9 @@ class Taxon(MP_Node):
             return
 
         if self.rank <= self.parent.rank:
-            raise ValidationError("Child taxon must have a higher rank than their parent.")
+            raise ValidationError(
+                "Child taxon must have a higher rank than their parent."
+            )
 
     def _clean_custom_fields(self, exclude=None) -> None:
         if exclude is None:
@@ -168,12 +174,14 @@ class Taxon(MP_Node):
 
     # Meta and String
     class Meta:
-        db_table = 'tigacrafting_taxon' # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigacrafting_taxon"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
         verbose_name = _("taxon")
         verbose_name_plural = _("taxa")
         constraints = [
             models.UniqueConstraint(fields=["name", "rank"], name="unique_name_rank"),
-            models.UniqueConstraint(fields=["depth"], condition=models.Q(depth=1), name="unique_root"),
+            models.UniqueConstraint(
+                fields=["depth"], condition=models.Q(depth=1), name="unique_root"
+            ),
         ]
 
     def __str__(self) -> str:

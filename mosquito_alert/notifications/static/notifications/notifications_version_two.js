@@ -124,7 +124,7 @@
             retVal.validation = false;
             retVal.errors.push('<li class="text-danger">Missing english body text</li>')
         }
-        
+
         var body_html_native_editor_content = tinyMCE.get('body_native').getContent();
         var title_native = $("#title_native").val();
         var selected_native_locale = $('#native_lang').val()

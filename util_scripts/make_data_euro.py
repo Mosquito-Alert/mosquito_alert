@@ -1,6 +1,8 @@
 # coding=utf-8
 # !/usr/bin/env python
-import os, sys
+import os
+import sys
+import json
 
 proj_path = "/home/webuser/webapps/tigaserver/"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.prod")
@@ -8,27 +10,29 @@ sys.path.append(proj_path)
 
 os.chdir(proj_path)
 
-from django.core.wsgi import get_wsgi_application
+from django.core.wsgi import get_wsgi_application  # noqa: E402
 
 application = get_wsgi_application()
 
-from django.conf import settings
-from rest_framework import serializers
-from rest_framework.renderers import JSONRenderer
-from mosquito_alert.fixes.models import CoverageAreaMonth
-import json
+from django.conf import settings  # noqa: E402
+from rest_framework import serializers  # noqa: E402
+from rest_framework.renderers import JSONRenderer  # noqa: E402
+from mosquito_alert.fixes.models import CoverageAreaMonth  # noqa: E402
+
 
 class CoverageMonthMapSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoverageAreaMonth
-        fields = ('lat', 'lon', 'year', 'month', 'n_fixes')
+        fields = ("lat", "lon", "year", "month", "n_fixes")
+
 
 def coverage_month_internal():
     queryset = CoverageAreaMonth.objects.all()
     serializer = CoverageMonthMapSerializer(queryset, many=True)
     return serializer.data
 
-print('Starting coverage month request')
+
+print("Starting coverage month request")
 d = coverage_month_internal()
 
 json_string = JSONRenderer().render(d)

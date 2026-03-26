@@ -1,11 +1,11 @@
-<p>Tigaserver is part of the Atrapaeltigre project, which harnesses the power of citizen scientists and new technologies to  
-investigate the spread of Tiger Mosquitoes in Spain. 
+<p>Tigaserver is part of the Atrapaeltigre project, which harnesses the power of citizen scientists and new technologies to
+investigate the spread of Tiger Mosquitoes in Spain.
 
 <p>Copyright &#169; 2014 John R.B. Palmer, Aitana Oltra, Joan Garriga and Frederic Bartumeus</p>
- 
-<p>Tigaserver server is free software: you can redistribute it and/or modify 
- it under the terms of the GNU General Public License as published by 
- the Free Software Foundation, either version 3 of the License, or (at 
+
+<p>Tigaserver server is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or (at
   your option) any later version.</p>
 
 <p>This program is distributed in the hope that it will be useful,

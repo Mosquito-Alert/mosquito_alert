@@ -1,8 +1,9 @@
 import rawpy
 from PIL import Image, ImageFile
 
+
 class RawImageFile(ImageFile.ImageFile):
-    format = 'RAW'
+    format = "RAW"
     format_description = "camera raw image"
 
     def _open(self):
@@ -28,20 +29,31 @@ class RawImageFile(ImageFile.ImageFile):
 
         offset = self.fp.tell()
         self.tile = [
-            ('RAW', (0, 0) + self.size, offset, (array, self.mode,))
+            (
+                "RAW",
+                (0, 0) + self.size,
+                offset,
+                (
+                    array,
+                    self.mode,
+                ),
+            )
         ]
+
 
 class RawDecoder(ImageFile.PyDecoder):
     _pulls_fd = True
 
     def decode(self, buffer):
         (data, mode) = self.args[0], self.args[1]
-        raw_decoder = Image._getdecoder(mode, 'raw', (mode, data.strides[0]))
+        raw_decoder = Image._getdecoder(mode, "raw", (mode, data.strides[0]))
         raw_decoder.setimage(self.im)
         return raw_decoder.decode(data)
 
 
 def register_raw_opener():
-    Image.register_open('RAW', RawImageFile)
-    Image.register_decoder('RAW', RawDecoder)
-    Image.register_extensions(RawImageFile.format, ['.nef', '.cr2', '.dng', '.raw', '.arw'])
+    Image.register_open("RAW", RawImageFile)
+    Image.register_decoder("RAW", RawDecoder)
+    Image.register_extensions(
+        RawImageFile.format, [".nef", ".cr2", ".dng", ".raw", ".arw"]
+    )

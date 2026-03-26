@@ -1,10 +1,14 @@
-from rest_framework_simplejwt.tokens import Token as OriginalToken, SlidingToken as OriginalSlidingToken, RefreshToken as OriginalRefreshToken
+from rest_framework_simplejwt.tokens import (
+    Token as OriginalToken,
+    SlidingToken as OriginalSlidingToken,
+    RefreshToken as OriginalRefreshToken,
+)
 
 from mosquito_alert.users.models import TigaUser
 
 
 class Token(OriginalToken):
-    USER_TYPE_CLAIM = 'user_type'
+    USER_TYPE_CLAIM = "user_type"
 
     USER_TYPE_REGULAR = "regular"
     USER_TYPE_MOBILE_ONLY = "mobile_only"
@@ -19,8 +23,10 @@ class Token(OriginalToken):
 
         return token
 
+
 class SlidingToken(Token, OriginalSlidingToken):
     pass
+
 
 class RefreshToken(Token, OriginalRefreshToken):
     pass

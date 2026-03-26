@@ -1,4 +1,3 @@
-
 from datetime import timedelta
 import time_machine
 import uuid
@@ -11,12 +10,14 @@ from django.utils import timezone
 from mosquito_alert.geo.models import TemporaryBoundary
 
 
-@override_settings(CACHES = {
+@override_settings(
+    CACHES={
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             "LOCATION": "unique-test-cache",
         }
-    })
+    }
+)
 class TemporaryBoundaryTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -48,7 +49,7 @@ class TemporaryBoundaryTestCase(TestCase):
             boundary = TemporaryBoundary(geometry=self.polygon)
             boundary.save()
 
-            traveller.shift(timedelta(seconds=boundary.expires_in-1))
+            traveller.shift(timedelta(seconds=boundary.expires_in - 1))
             self.assertIsNotNone(TemporaryBoundary.get(boundary.uuid))
             traveller.shift(timedelta(seconds=1))
             with self.assertRaises(ValueError):

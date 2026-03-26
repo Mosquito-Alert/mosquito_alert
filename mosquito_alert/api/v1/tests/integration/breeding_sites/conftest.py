@@ -4,14 +4,17 @@ from mosquito_alert.reports.models import Report
 
 from .factories import create_breeding_site_object
 
+
 # NOTE: needed for token with perms fixture
 @pytest.fixture
 def model_class():
     return Report
 
+
 @pytest.fixture()
 def object(app_user):
     return create_breeding_site_object(user=app_user)
+
 
 @pytest.fixture
 def published_object(app_user):
@@ -20,6 +23,7 @@ def published_object(app_user):
     breeding_site_obj.save()
 
     return breeding_site_obj
+
 
 @pytest.fixture
 def published_object_in_10km(app_user):
@@ -30,6 +34,7 @@ def published_object_in_10km(app_user):
 
     return breeding_site_obj
 
+
 @pytest.fixture
 def published_object_in_100km(app_user):
     breeding_site_obj = create_breeding_site_object(user=app_user)
@@ -39,6 +44,7 @@ def published_object_in_100km(app_user):
 
     return breeding_site_obj
 
+
 @pytest.fixture
 def unpublished_object(app_user):
     breeding_site_obj = create_breeding_site_object(user=app_user)
@@ -46,6 +52,7 @@ def unpublished_object(app_user):
     breeding_site_obj.save()
 
     return breeding_site_obj
+
 
 @pytest.fixture
 def soft_deleted_object(app_user):

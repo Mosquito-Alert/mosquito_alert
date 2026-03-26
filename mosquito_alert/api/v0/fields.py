@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+
 class NullableTimeZoneDatetimeField(serializers.DateTimeField):
     def enforce_timezone(self, value):
         return value

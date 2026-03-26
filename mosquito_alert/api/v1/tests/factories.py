@@ -11,17 +11,19 @@ from mosquito_alert.users.models import TigaUser
 
 User = get_user_model()
 
-def create_regular_user(password: str = "testpassword123_tmp") -> 'User':
+
+def create_regular_user(password: str = "testpassword123_tmp") -> "User":
     user = User.objects.create_user(
-        username=f"user_{random.randint(1,1000)}",
+        username=f"user_{random.randint(1, 1000)}",
         password=get_random_string(length=10),
         first_name="Test FirstName",
-        last_name="Test LastName"
+        last_name="Test LastName",
     )
     if password:
         user.set_password(password)
         user.save()
     return user
+
 
 def create_mobile_user(password: str = "testpassword123_tmp") -> TigaUser:
     user = TigaUser.objects.create()
@@ -29,6 +31,7 @@ def create_mobile_user(password: str = "testpassword123_tmp") -> TigaUser:
         user.set_password(password)
         user.save()
     return user
+
 
 def create_report_object(user: TigaUser) -> Report:
     return Report(
@@ -43,8 +46,11 @@ def create_report_object(user: TigaUser) -> Report:
         note="Test report note",
     )
 
+
 def create_boundary_contains_point(point: Point) -> TemporaryBoundary:
-    polygon = point.buffer(0.01)  # Create a small buffer around the point to form a polygon
+    polygon = point.buffer(
+        0.01
+    )  # Create a small buffer around the point to form a polygon
     boundary = TemporaryBoundary(geometry=polygon)
     boundary.save()
     return boundary

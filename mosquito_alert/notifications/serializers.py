@@ -19,15 +19,30 @@ class DataTableNotificationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ('id', 'report_id', 'expert_id', 'date_comment', 'notification_content', 'public', 'sent_to', 'link')
+        fields = (
+            "id",
+            "report_id",
+            "expert_id",
+            "date_comment",
+            "notification_content",
+            "public",
+            "sent_to",
+            "link",
+        )
 
-    def get_sent_to(self,obj):
-        sent_notification = SentNotification.objects.filter(notification_id = obj.id).first()
+    def get_sent_to(self, obj):
+        sent_notification = SentNotification.objects.filter(
+            notification_id=obj.id
+        ).first()
 
-        if(sent_notification.sent_to_topic_id):
-            return NotificationTopic.objects.get(id = sent_notification.sent_to_topic_id).topic_description
+        if sent_notification.sent_to_topic_id:
+            return NotificationTopic.objects.get(
+                id=sent_notification.sent_to_topic_id
+            ).topic_description
         else:
-            return SentNotification.objects.filter(notification_id=obj.id).values_list('sent_to_user_id')
+            return SentNotification.objects.filter(notification_id=obj.id).values_list(
+                "sent_to_user_id"
+            )
 
-    def get_link(self,obj):
-        return reverse('notification_detail', kwargs={'notification_id': obj.id})
+    def get_link(self, obj):
+        return reverse("notification_detail", kwargs={"notification_id": obj.id})

@@ -5,7 +5,8 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from datetime import timedelta
-import os, sys
+import os
+import sys
 from tqdm import tqdm
 
 proj_path = "/home/webuser/webapps/tigaserver/"
@@ -14,18 +15,18 @@ sys.path.append(proj_path)
 
 django.setup()
 
-from mosquito_alert.users.models import TigaUser
+from mosquito_alert.users.models import TigaUser  # noqa: E402
 
 one_week_ago = timezone.now() - timedelta(days=7)
 
 if __name__ == "__main__":
     qs = TigaUser.objects.annotate(
         report_count=Count(
-            'user_reports',
+            "user_reports",
             filter=Q(
                 Q(user_reports__updated_at__gte=one_week_ago)
                 | Q(user_reports__identification_task__updated_at__gte=one_week_ago)
-            )
+            ),
         )
     ).filter(report_count__gt=0)
     for user in tqdm(qs.iterator(), total=qs.count()):

@@ -3,7 +3,10 @@ from django.db import models
 from rest_framework import serializers
 
 from rest_framework_simplejwt.exceptions import InvalidToken, AuthenticationFailed
-from drf_standardized_errors.openapi_serializers import ClientErrorEnum, ErrorCode401Enum as OriginalErrorCode401Enum
+from drf_standardized_errors.openapi_serializers import (
+    ClientErrorEnum,
+    ErrorCode401Enum as OriginalErrorCode401Enum,
+)
 
 
 class ErrorCode401Enum(models.TextChoices):

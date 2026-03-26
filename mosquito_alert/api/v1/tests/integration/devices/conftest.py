@@ -4,10 +4,12 @@ from mosquito_alert.devices.models import Device
 
 from .factories import create_device
 
+
 # NOTE: needed for token with perms fixture
 @pytest.fixture
 def model_class():
     return Device
+
 
 @pytest.fixture
 def device(app_user):

@@ -40,18 +40,19 @@ from mosquito_alert.utils.mixins import TimeZoneModelMixin
 from .fields import ProcessedImageField
 from .managers import ReportManager, PhotoManager
 
-logger_report_geolocation = logging.getLogger('mosquitoalert.location.report_location')
+logger_report_geolocation = logging.getLogger("mosquitoalert.location.report_location")
 
 User = get_user_model()
 
+
 def generate_report_id():
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=4))
+    return "".join(random.choices(string.ascii_letters + string.digits, k=4))
 
 
 class Report(TimeZoneModelMixin, models.Model):
     @staticmethod
     def get_tags_from_note(note: str) -> List[str]:
-        return list(set(re.findall(r'(?<=#)\w+', note)))
+        return list(set(re.findall(r"(?<=#)\w+", note)))
 
     TYPE_BITE = "bite"
     TYPE_ADULT = "adult"
@@ -108,7 +109,7 @@ class Report(TimeZoneModelMixin, models.Model):
         default=0,
         db_index=True,
         editable=False,
-        help_text='-1 if deleted, otherwise 0.'
+        help_text="-1 if deleted, otherwise 0.",
     )
     report_id = models.CharField(
         max_length=4,
@@ -132,11 +133,11 @@ class Report(TimeZoneModelMixin, models.Model):
     )
     phone_upload_time = models.DateTimeField(
         editable=False,
-        help_text="Date and time on phone when it uploaded fix. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
+        help_text="Date and time on phone when it uploaded fix. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'.",
     )
     creation_time = models.DateTimeField(
         editable=False,
-        help_text="Date and time on phone when first version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'."
+        help_text="Date and time on phone when first version of report was created. Format as ECMA 262 date time string (e.g. '2014-05-17T12:34:56.123+01:00'.",
     )
 
     published_at = models.DateTimeField(
@@ -144,7 +145,7 @@ class Report(TimeZoneModelMixin, models.Model):
         null=True,
         blank=True,
         db_index=True,
-        help_text='Datetime when the report was published.'
+        help_text="Datetime when the report was published.",
     )
 
     version_time = models.DateTimeField(
@@ -156,10 +157,10 @@ class Report(TimeZoneModelMixin, models.Model):
         blank=True,
         editable=False,
         help_text="An integer representing the offset (in seconds) applied to the original datetime values for fixing. "
-            "If None, it indicates that no information about the original time zone could be inferred or the timezone "
-            "was already provided when posting the report. To retrieve the original values, "
-            "use: original_value = current_value - datetime_fix_offset."
-            "Fields to apply (if necessary) are: 'phone_upload_time', 'creation_time' and 'version_time'."
+        "If None, it indicates that no information about the original time zone could be inferred or the timezone "
+        "was already provided when posting the report. To retrieve the original values, "
+        "use: original_value = current_value - datetime_fix_offset."
+        "Fields to apply (if necessary) are: 'phone_upload_time', 'creation_time' and 'version_time'.",
     )
 
     type = models.CharField(
@@ -202,20 +203,37 @@ class Report(TimeZoneModelMixin, models.Model):
     )
     point = models.PointField(null=True, blank=True, srid=4326)
     timezone = TimeZoneField(
-        null=True,
-        help_text="The timezone corresponding to the GPS of the report."
+        null=True, help_text="The timezone corresponding to the GPS of the report."
     )
     location_is_masked = models.BooleanField(default=False)
 
-    deleted_at = models.DateTimeField(null=True, blank=True, editable=False, default=None)
+    deleted_at = models.DateTimeField(
+        null=True, blank=True, editable=False, default=None
+    )
 
     note = models.TextField(
         null=True, blank=True, help_text="Note user attached to report."
     )
 
-    lau_fk = models.ForeignKey(LauEurope, null=True, blank=True, on_delete=models.PROTECT, related_name='+')
-    nuts_2_fk = models.ForeignKey(NutsEurope, null=True, blank=True, on_delete=models.PROTECT, related_name='+', limit_choices_to={'levl_code': 2})
-    nuts_3_fk = models.ForeignKey(NutsEurope, null=True, blank=True, on_delete=models.PROTECT, related_name='+', limit_choices_to={'levl_code': 3})
+    lau_fk = models.ForeignKey(
+        LauEurope, null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    nuts_2_fk = models.ForeignKey(
+        NutsEurope,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="+",
+        limit_choices_to={"levl_code": 2},
+    )
+    nuts_3_fk = models.ForeignKey(
+        NutsEurope,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="+",
+        limit_choices_to={"levl_code": 3},
+    )
     # NOTE: do not remove yet for legacy reasons
     nuts_2 = models.CharField(max_length=4, null=True, blank=True, editable=False)
     nuts_3 = models.CharField(max_length=5, null=True, blank=True, editable=False)
@@ -223,15 +241,17 @@ class Report(TimeZoneModelMixin, models.Model):
     tags = TaggableManager(
         through=UUIDTaggedItem,
         blank=True,
-        help_text=_("A comma-separated list of tags you can add to a report to make them easier to find."),
+        help_text=_(
+            "A comma-separated list of tags you can add to a report to make them easier to find."
+        ),
     )
 
     mobile_app = models.ForeignKey(
         MobileApp,
         null=True,
         on_delete=models.PROTECT,
-        related_name='reports',
-        help_text='The mobile app version from where the report was sent.'
+        related_name="reports",
+        help_text="The mobile app version from where the report was sent.",
     )
     package_name = models.CharField(
         max_length=400,
@@ -247,7 +267,13 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text="Version number of tigatrapp package from which this report was submitted.",
     )
 
-    device = models.ForeignKey(Device, null=True, on_delete=models.PROTECT, related_name="created_reports", help_text='The device from where the report was sent.')
+    device = models.ForeignKey(
+        Device,
+        null=True,
+        on_delete=models.PROTECT,
+        related_name="created_reports",
+        help_text="The device from where the report was sent.",
+    )
     device_manufacturer = models.CharField(
         max_length=200,
         null=True,
@@ -301,15 +327,15 @@ class Report(TimeZoneModelMixin, models.Model):
         null=True,
         blank=True,
         help_text="Type it was flipped from, to type it was flipped to, separated by #"
-        '''        
+        """
             For instance, if the report was and adult and flipped to storm_drain_water, this field would have the value adult#storm_drain_water
-        '''
+        """,
     )
 
     # Attributes - user responses - Optional
-    EVENT_ENVIRONMENT_INDOORS = 'indoors'
-    EVENT_ENVIRONMENT_OUTDOORS = 'outdoors'
-    EVENT_ENVIRONMENT_VEHICLE = 'vehicle'
+    EVENT_ENVIRONMENT_INDOORS = "indoors"
+    EVENT_ENVIRONMENT_OUTDOORS = "outdoors"
+    EVENT_ENVIRONMENT_VEHICLE = "vehicle"
 
     EVENT_ENVIRONMENT_CHOICES = (
         (EVENT_ENVIRONMENT_INDOORS, _("Indoors")),
@@ -318,15 +344,18 @@ class Report(TimeZoneModelMixin, models.Model):
     )
 
     event_environment = models.CharField(
-        max_length=16, choices=EVENT_ENVIRONMENT_CHOICES, null=True, blank=True,
-        help_text=_("The environment where the event took place.")
+        max_length=16,
+        choices=EVENT_ENVIRONMENT_CHOICES,
+        null=True,
+        blank=True,
+        help_text=_("The environment where the event took place."),
     )
 
-    EVENT_MOMENT_NOW = 'now'
-    EVENT_MOMENT_LAST_MORNING = 'last_morning'
-    EVENT_MOMENT_LAST_MIDDAY = 'last_midday'
-    EVENT_MOMENT_LAST_AFTERNOON = 'last_afternoon'
-    EVENT_MOMENT_LAST_NIGHT = 'last_night'
+    EVENT_MOMENT_NOW = "now"
+    EVENT_MOMENT_LAST_MORNING = "last_morning"
+    EVENT_MOMENT_LAST_MIDDAY = "last_midday"
+    EVENT_MOMENT_LAST_AFTERNOON = "last_afternoon"
+    EVENT_MOMENT_LAST_NIGHT = "last_night"
     EVENT_MOMENT_CHOICES = (
         (EVENT_MOMENT_NOW, _("Now")),
         (EVENT_MOMENT_LAST_MORNING, _("Last morning")),
@@ -336,38 +365,37 @@ class Report(TimeZoneModelMixin, models.Model):
     )
 
     event_moment = models.CharField(
-        max_length=32, choices=EVENT_MOMENT_CHOICES, null=True, blank=True,
-        help_text=_("The moment of the day when the event took place.")
+        max_length=32,
+        choices=EVENT_MOMENT_CHOICES,
+        null=True,
+        blank=True,
+        help_text=_("The moment of the day when the event took place."),
     )
 
     bite_count = models.PositiveSmallIntegerField(
-        null=True, blank=True, editable=False,
-        help_text=_("Total number of bites reported.")
+        null=True,
+        blank=True,
+        editable=False,
+        help_text=_("Total number of bites reported."),
     )
 
     head_bite_count = models.PositiveSmallIntegerField(
-        null=True, blank=True,
-        help_text=_("Number of bites reported in the head.")
+        null=True, blank=True, help_text=_("Number of bites reported in the head.")
     )
     left_arm_bite_count = models.PositiveSmallIntegerField(
-        null=True, blank=True,
-        help_text=_("Number of bites reported in the left arm.")
+        null=True, blank=True, help_text=_("Number of bites reported in the left arm.")
     )
     right_arm_bite_count = models.PositiveSmallIntegerField(
-        null=True, blank=True,
-        help_text=_("Number of bites reported in the right arm.")
+        null=True, blank=True, help_text=_("Number of bites reported in the right arm.")
     )
     chest_bite_count = models.PositiveSmallIntegerField(
-        null=True, blank=True,
-        help_text=_("Number of bites reported in the chest.")
+        null=True, blank=True, help_text=_("Number of bites reported in the chest.")
     )
     left_leg_bite_count = models.PositiveSmallIntegerField(
-        null=True, blank=True,
-        help_text=_("Number of bites reported in the left leg.")
+        null=True, blank=True, help_text=_("Number of bites reported in the left leg.")
     )
     right_leg_bite_count = models.PositiveSmallIntegerField(
-        null=True, blank=True,
-        help_text=_("Number of bites reported in the right leg.")
+        null=True, blank=True, help_text=_("Number of bites reported in the right leg.")
     )
 
     SPECIE_ALBOPICTUS = "albopictus"
@@ -387,21 +415,39 @@ class Report(TimeZoneModelMixin, models.Model):
     )
 
     user_perceived_mosquito_specie = models.CharField(
-        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True, blank=True,
-        help_text=_("The mosquito specie perceived by the user.")
+        max_length=16,
+        choices=MOSQUITO_SPECIE_CHOICES,
+        null=True,
+        blank=True,
+        help_text=_("The mosquito specie perceived by the user."),
     )
 
     user_perceived_mosquito_thorax = models.CharField(
-        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True, blank=True,
-        help_text=_("The species of mosquito that the thorax resembles, according to the user.")
+        max_length=16,
+        choices=MOSQUITO_SPECIE_CHOICES,
+        null=True,
+        blank=True,
+        help_text=_(
+            "The species of mosquito that the thorax resembles, according to the user."
+        ),
     )
     user_perceived_mosquito_abdomen = models.CharField(
-        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True, blank=True,
-        help_text=_("The species of mosquito that the abdomen resembles, according to the user.")
+        max_length=16,
+        choices=MOSQUITO_SPECIE_CHOICES,
+        null=True,
+        blank=True,
+        help_text=_(
+            "The species of mosquito that the abdomen resembles, according to the user."
+        ),
     )
     user_perceived_mosquito_legs = models.CharField(
-        max_length=16, choices=MOSQUITO_SPECIE_CHOICES, null=True, blank=True,
-        help_text=_("The species of mosquito that the leg resembles, according to the user.")
+        max_length=16,
+        choices=MOSQUITO_SPECIE_CHOICES,
+        null=True,
+        blank=True,
+        help_text=_(
+            "The species of mosquito that the leg resembles, according to the user."
+        ),
     )
 
     class BreedingSiteType(models.TextChoices):
@@ -414,59 +460,69 @@ class Report(TimeZoneModelMixin, models.Model):
         OTHER = "other", _("Other")
 
     breeding_site_type = models.CharField(
-        max_length=32, choices=BreedingSiteType.choices, null=True, blank=True,
-        help_text=_("Breeding site type.")
+        max_length=32,
+        choices=BreedingSiteType.choices,
+        null=True,
+        blank=True,
+        help_text=_("Breeding site type."),
     )
     breeding_site_has_water = models.BooleanField(
-        null=True, blank=True,
-        help_text=_("Either if the user perceived water in the breeding site.")
+        null=True,
+        blank=True,
+        help_text=_("Either if the user perceived water in the breeding site."),
     )
     breeding_site_in_public_area = models.BooleanField(
-        null=True, blank=True,
-        help_text=_("Either if the breeding site is found in a public area.")
+        null=True,
+        blank=True,
+        help_text=_("Either if the breeding site is found in a public area."),
     )
     breeding_site_has_near_mosquitoes = models.BooleanField(
-        null=True, blank=True,
-        help_text=_("Either if the user perceived mosquitoes near the breeding site (less than 10 meters).")
+        null=True,
+        blank=True,
+        help_text=_(
+            "Either if the user perceived mosquitoes near the breeding site (less than 10 meters)."
+        ),
     )
     breeding_site_has_larvae = models.BooleanField(
-        null=True, blank=True,
-        help_text=_("Either if the user perceived larvaes the breeding site.")
+        null=True,
+        blank=True,
+        help_text=_("Either if the user perceived larvaes the breeding site."),
     )
     # Object Manager
     objects = ReportManager()
 
     history = HistoricalRecords(
-        table_name = 'tigaserver_app_historicalreport', # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        table_name="tigaserver_app_historicalreport",  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
         # Exclude field the user can not modify or that are not relevant.
         excluded_fields=[
-            'user',
-            'country',
-            'session',
-            'version_number',
-            'updated_at',
-            'server_upload_time',
-            'phone_upload_time',
-            'version_time',
-            'deleted_at',
-            'hide',
-            'package_name',
-            'device_manufacturer',
-            'device_model',
-            'os',
-            'os_version',
-            'os_language',
-            'app_language',
-            'flipped',
-            'flipped_on',
-            'flipped_to'
+            "user",
+            "country",
+            "session",
+            "version_number",
+            "updated_at",
+            "server_upload_time",
+            "phone_upload_time",
+            "version_time",
+            "deleted_at",
+            "hide",
+            "package_name",
+            "device_manufacturer",
+            "device_model",
+            "os",
+            "os_version",
+            "os_language",
+            "app_language",
+            "flipped",
+            "flipped_on",
+            "flipped_to",
         ],
         history_id_field=models.UUIDField(default=uuid.uuid4),
-        cascade_delete_history=True, # We are managing deletion through soft-deletions.
-        user_model=TigaUser
+        cascade_delete_history=True,  # We are managing deletion through soft-deletions.
+        user_model=TigaUser,
     )
 
     __history_user = None
+
     @property
     def _history_user(self):
         return self.__history_user
@@ -522,15 +578,15 @@ class Report(TimeZoneModelMixin, models.Model):
 
     @property
     def is_browsable(self) -> bool:
-        return not (
-            self.hide or
-            self.deleted or
-            self.location_is_masked
-        )
+        return not (self.hide or self.deleted or self.location_is_masked)
 
     @property
     def published(self) -> bool:
-        return self.is_browsable and bool(self.published_at) and self.published_at <= timezone.now()
+        return (
+            self.is_browsable
+            and bool(self.published_at)
+            and self.published_at <= timezone.now()
+        )
 
     @property
     def location_display_name(self) -> Optional[str]:
@@ -547,7 +603,7 @@ class Report(TimeZoneModelMixin, models.Model):
         if not result:
             return
 
-        return ', '.join(result)
+        return ", ".join(result)
 
     @property
     def public_map_url(self) -> Optional[str]:
@@ -621,7 +677,8 @@ class Report(TimeZoneModelMixin, models.Model):
         #       for the user to edit.
         return (
             self.selected_location_lat
-            if not self.current_location_lat and self.location_choice == self.LOCATION_SELECTED
+            if not self.current_location_lat
+            and self.location_choice == self.LOCATION_SELECTED
             else self.current_location_lat
         )
 
@@ -634,7 +691,8 @@ class Report(TimeZoneModelMixin, models.Model):
         #       for the user to edit.
         return (
             self.selected_location_lon
-            if not self.current_location_lon and self.location_choice == self.LOCATION_SELECTED
+            if not self.current_location_lon
+            and self.location_choice == self.LOCATION_SELECTED
             else self.current_location_lon
         )
 
@@ -727,7 +785,9 @@ class Report(TimeZoneModelMixin, models.Model):
         if _old_point != self.point:
             _last_location_update = self.user.last_location_update
             _report_upload_time = self.server_upload_time or timezone.now()
-            if _last_location_update is None or (_last_location_update and _report_upload_time >= _last_location_update):
+            if _last_location_update is None or (
+                _last_location_update and _report_upload_time >= _last_location_update
+            ):
                 self.user.last_location = self.point
                 self.user.last_location_update = _report_upload_time
                 self.user.save()
@@ -744,10 +804,7 @@ class Report(TimeZoneModelMixin, models.Model):
             if self.note:
                 if _note_tags := self.get_tags_from_note(self.note):
                     self.tags.set(
-                        set(
-                            list(self.tags.values_list('name', flat=True))
-                            + _note_tags
-                        )
+                        set(list(self.tags.values_list("name", flat=True)) + _note_tags)
                     )
 
             # NOTE: setting it here and not setting the field.default
@@ -764,26 +821,36 @@ class Report(TimeZoneModelMixin, models.Model):
                             major=0,
                             minor=int(self.package_version),
                             patch=0,
-                            build=('legacy',)
+                            build=("legacy",),
                         )
-                    )
+                    ),
                 )
             # Update device according to the information provided in the report.
             with transaction.atomic():
                 # Try to find an existing device with model=self.device_model or fallback to the last model=None
-                device = Device.objects.filter(
-                    user=self.user,
-                    model=self.device_model or '',
-                ).select_for_update().order_by('-last_login').first() or Device.objects.filter(
-                    user=self.user,
-                    model__isnull=True,
-                    active_session=True,
-                    pk__in=models.Subquery(
-                        Device.objects.filter(
-                            user=models.OuterRef('user'),
-                        ).order_by('-last_login').values('pk')[:1]
+                device = (
+                    Device.objects.filter(
+                        user=self.user,
+                        model=self.device_model or "",
                     )
-                ).select_for_update().first()
+                    .select_for_update()
+                    .order_by("-last_login")
+                    .first()
+                    or Device.objects.filter(
+                        user=self.user,
+                        model__isnull=True,
+                        active_session=True,
+                        pk__in=models.Subquery(
+                            Device.objects.filter(
+                                user=models.OuterRef("user"),
+                            )
+                            .order_by("-last_login")
+                            .values("pk")[:1]
+                        ),
+                    )
+                    .select_for_update()
+                    .first()
+                )
 
                 if device:
                     # Handle registration_id transfer if an active, newer device exists
@@ -791,13 +858,18 @@ class Report(TimeZoneModelMixin, models.Model):
                         user=self.user,
                         active=True,
                         model__isnull=True,
-                        last_login__gt=device.last_login or timezone.now()
+                        last_login__gt=device.last_login or timezone.now(),
                     ).exclude(pk=device.pk)
-                    if last_loggedin_active_device := loggedin_active_devices_qs.order_by('-last_login').first():
-                        device.registration_id = last_loggedin_active_device.registration_id
-                        Report.objects.filter(device__in=loggedin_active_devices_qs).update(
-                            device=device
+                    if (
+                        last_loggedin_active_device
+                        := loggedin_active_devices_qs.order_by("-last_login").first()
+                    ):
+                        device.registration_id = (
+                            last_loggedin_active_device.registration_id
                         )
+                        Report.objects.filter(
+                            device__in=loggedin_active_devices_qs
+                        ).update(device=device)
                         loggedin_active_devices_qs.delete()
                 else:
                     # If still no device exists, create a new one
@@ -807,12 +879,12 @@ class Report(TimeZoneModelMixin, models.Model):
                 device.manufacturer = self.device_manufacturer
                 device.model = self.device_model
                 device.type = {
-                    'android': 'android',
-                    'ipados': 'ios',
-                    'ios': 'ios',
-                    'iphone os': 'ios',
-                    '': None  # Mapping for empty or None value
-                }.get(self.os.lower() if self.os else '')
+                    "android": "android",
+                    "ipados": "ios",
+                    "ios": "ios",
+                    "iphone os": "ios",
+                    "": None,  # Mapping for empty or None value
+                }.get(self.os.lower() if self.os else "")
                 device.os_name = self.os
                 device.os_version = self.os_version
                 device.os_locale = self.os_language
@@ -825,7 +897,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
             self.device = device
 
-        if self.tags.filter(name='345').exists():
+        if self.tags.filter(name="345").exists():
             self.hide = True
 
         # Fill the country field
@@ -848,21 +920,23 @@ class Report(TimeZoneModelMixin, models.Model):
                 self.nuts_2_fk = self._get_nuts_is_in(levl_code=2)
             else:
                 # Check if masked because of is in the ocean of out of the artic/antartic circle.
-                self.location_is_masked = self.point.y > settings.MAX_ALLOWED_LATITUDE \
-                    or self.point.y < settings.MIN_ALLOWED_LATITUDE \
+                self.location_is_masked = (
+                    self.point.y > settings.MAX_ALLOWED_LATITUDE
+                    or self.point.y < settings.MIN_ALLOWED_LATITUDE
                     or settings.OCEAN_GEOM.contains(self.point)
+                )
             self.lau_fk = LauEurope.objects.filter(geom__contains=self.point).first()
 
         self.nuts_3 = self.nuts_3_fk.nuts_id if self.nuts_3_fk else None
         self.nuts_2 = self.nuts_2_fk.nuts_id if self.nuts_2_fk else None
 
         bite_fieldnames = [
-            'head_bite_count',
-            'left_arm_bite_count',
-            'right_arm_bite_count',
-            'chest_bite_count',
-            'left_leg_bite_count',
-            'right_leg_bite_count'
+            "head_bite_count",
+            "left_arm_bite_count",
+            "right_arm_bite_count",
+            "chest_bite_count",
+            "left_leg_bite_count",
+            "right_leg_bite_count",
         ]
 
         if self.type == self.TYPE_BITE:
@@ -871,11 +945,13 @@ class Report(TimeZoneModelMixin, models.Model):
                 if getattr(self, bite_fieldname) is None:
                     setattr(self, bite_fieldname, 0)
 
-            self.bite_count = sum(
-                getattr(self, fname) for fname in bite_fieldnames
-            )
+            self.bite_count = sum(getattr(self, fname) for fname in bite_fieldnames)
 
-        if (self.type not in self.PUBLISHABLE_TYPES) or (not self.is_browsable) or (self.country and not self.country.reports_can_be_published):
+        if (
+            (self.type not in self.PUBLISHABLE_TYPES)
+            or (not self.is_browsable)
+            or (self.country and not self.country.reports_can_be_published)
+        ):
             self.published_at = None
 
         super(Report, self).save(*args, **kwargs)
@@ -913,32 +989,31 @@ class Report(TimeZoneModelMixin, models.Model):
 
     # Meta and String
     class Meta:
-        db_table = 'tigaserver_app_report' # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_report"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
         # NOTE: this ordering is prone to bugs, do not uncomment.
         # ordering = ['server_upload_time', ]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(
-                    version_number=0,
-                    deleted_at__isnull=True
-                ) | models.Q(
-                    version_number=-1,
-                    deleted_at__isnull=False
-                ),
-                name='version_number_constraint'
+                check=models.Q(version_number=0, deleted_at__isnull=True)
+                | models.Q(version_number=-1, deleted_at__isnull=False),
+                name="version_number_constraint",
             ),
             models.CheckConstraint(
-                name='is_browsable_when_published',
-                check=models.Q(published_at__isnull=True) |  # Allow if published_at is NULL
-                    (
-                        models.Q(hide=False) & models.Q(deleted_at__isnull=True) & models.Q(location_is_masked=False)
-                    )
-            )
+                name="is_browsable_when_published",
+                check=models.Q(
+                    published_at__isnull=True
+                )  # Allow if published_at is NULL
+                | (
+                    models.Q(hide=False)
+                    & models.Q(deleted_at__isnull=True)
+                    & models.Q(location_is_masked=False)
+                ),
+            ),
         ]
         indexes = [
             # NOTE: Improve performance of api.v0.views.ReportViewSet
             models.Index(fields=["user", "type", "report_id"]),
-            # NOTE: Improve performance of /api/observations when 
+            # NOTE: Improve performance of /api/observations when
             # filtering by non_deleted() and published() endpoint.
             models.Index(
                 fields=["published_at"],
@@ -974,14 +1049,29 @@ class Report(TimeZoneModelMixin, models.Model):
         return identification_task.photo if identification_task else None
 
 
-
 class ReportResponse(models.Model):
-    report = models.ForeignKey(Report, related_name='responses', help_text='Report to which this response is associated.', on_delete=models.CASCADE, )
-    question_id = models.IntegerField(blank=True, null=True, help_text='Numeric identifier of the question.')
-    question = models.CharField(max_length=1000, help_text='Question that the user responded to.')
-    answer_id = models.IntegerField(blank=True, null=True, help_text='Numeric identifier of the answer.')
-    answer = models.CharField(max_length=1000, help_text='Answer that user selected.')
-    answer_value = models.CharField(max_length=1000, blank=True, null=True, help_text='The value right now can contain 2 things: an integer representing the number or bites, or either a WKT representation of a point for a location answer. In all other cases, it will be blank')
+    report = models.ForeignKey(
+        Report,
+        related_name="responses",
+        help_text="Report to which this response is associated.",
+        on_delete=models.CASCADE,
+    )
+    question_id = models.IntegerField(
+        blank=True, null=True, help_text="Numeric identifier of the question."
+    )
+    question = models.CharField(
+        max_length=1000, help_text="Question that the user responded to."
+    )
+    answer_id = models.IntegerField(
+        blank=True, null=True, help_text="Numeric identifier of the answer."
+    )
+    answer = models.CharField(max_length=1000, help_text="Answer that user selected.")
+    answer_value = models.CharField(
+        max_length=1000,
+        blank=True,
+        null=True,
+        help_text="The value right now can contain 2 things: an integer representing the number or bites, or either a WKT representation of a point for a location answer. In all other cases, it will be blank",
+    )
 
     def _update_report_value(self, commit: bool = True):
         report_obj = self.report
@@ -1023,7 +1113,7 @@ class ReportResponse(models.Model):
         elif self.question_id == 5:
             if self.answer_id == 51:
                 report_obj.event_moment = Report.EVENT_MOMENT_NOW
-        elif self.question == 'question_6':
+        elif self.question == "question_6":
             # NOTE: using question since question_id '6' not present in DB.
             if self.answer_id == 61:
                 report_obj.user_perceived_mosquito_specie = Report.SPECIE_ALBOPICTUS
@@ -1033,7 +1123,7 @@ class ReportResponse(models.Model):
                 report_obj.user_perceived_mosquito_specie = Report.SPECIE_OTHER
             elif self.answer_id == 64:
                 report_obj.user_perceived_mosquito_specie = None
-        elif self.question_id == 7 or self.question == 'question_7':
+        elif self.question_id == 7 or self.question == "question_7":
             # Thorax
             if self.answer_id == 711:
                 report_obj.user_perceived_mosquito_thorax = Report.SPECIE_ALBOPICTUS
@@ -1087,7 +1177,10 @@ class ReportResponse(models.Model):
                 self.breeding_site_has_water = True
 
         # Check if any field has changed
-        if commit and any(getattr(report_obj, field) != original_report_state[field] for field in original_report_state.keys()):
+        if commit and any(
+            getattr(report_obj, field) != original_report_state[field]
+            for field in original_report_state.keys()
+        ):
             # Save the object only if there are changes, not to trigger auto_now fields.
             report_obj.save()
 
@@ -1109,37 +1202,47 @@ class ReportResponse(models.Model):
         return str(self.id)
 
     class Meta:
-        db_table = 'tigaserver_app_reportresponse' # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_reportresponse"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
 
 
 @deconstructible
 class MakeImageUUID(object):
-    path = ''
+    path = ""
 
     def __init__(self, path):
         self.path = path
 
-    def __call__(self,instance,filename):
-        extension = filename.split('.')[-1]
+    def __call__(self, instance, filename):
+        extension = filename.split(".")[-1]
         filename = "%s.%s" % (uuid.uuid4(), extension)
         return os.path.join(self.path, filename)
 
-make_image_uuid = MakeImageUUID('tigapics')
+
+make_image_uuid = MakeImageUUID("tigapics")
+
 
 class Photo(models.Model):
     """
     Photo uploaded by user.
     """
+
     photo = ProcessedImageField(
         upload_to=make_image_uuid,
         processors=[ResizeToFit(height=2160, upscale=False)],
         format="JPEG",
         options={"quality": 98},
-        help_text='Photo uploaded by user.'
+        help_text="Photo uploaded by user.",
     )
-    report = models.ForeignKey(Report, related_name='photos', help_text='Report and version to which this photo is associated (36-digit '
-                                                 'report_UUID).', on_delete=models.CASCADE, )
-    hide = models.BooleanField(default=False, help_text='Hide this photo from public views?', db_index=True)
+    report = models.ForeignKey(
+        Report,
+        related_name="photos",
+        help_text="Report and version to which this photo is associated (36-digit "
+        "report_UUID).",
+        on_delete=models.CASCADE,
+    )
+    hide = models.BooleanField(
+        default=False, help_text="Hide this photo from public views?", db_index=True
+    )
     uuid = models.UUIDField(default=uuid.uuid4, db_index=True)
 
     objects = PhotoManager()
@@ -1156,7 +1259,7 @@ class Photo(models.Model):
         return self.report.version_time.strftime("%d-%m-%Y %H:%M")
 
     def get_small_path(self):
-        return self.photo.path.replace('tigapics/', 'tigapics_small/')
+        return self.photo.path.replace("tigapics/", "tigapics_small/")
 
     def get_small_url(self):
         if os.path.isfile(self.photo.path):
@@ -1167,11 +1270,11 @@ class Photo(models.Model):
                     im.save(self.get_small_path())
                 except IOError:
                     return ""
-            return self.photo.url.replace('tigapics/', 'tigapics_small/')
+            return self.photo.url.replace("tigapics/", "tigapics_small/")
         return self.photo.url
 
     def get_medium_path(self):
-        return self.photo.path.replace('tigapics/', 'tigapics_medium/')
+        return self.photo.path.replace("tigapics/", "tigapics_medium/")
 
     def get_medium_url(self):
         if os.path.isfile(self.photo.path):
@@ -1182,7 +1285,7 @@ class Photo(models.Model):
                     im.save(self.get_medium_path())
                 except IOError:
                     return ""
-            return self.photo.url.replace('tigapics/', 'tigapics_medium/')
+            return self.photo.url.replace("tigapics/", "tigapics_medium/")
         return self.photo.url
 
     def save(self, *args, **kwargs):
@@ -1198,8 +1301,10 @@ class Photo(models.Model):
         if self.report.type == Report.TYPE_ADULT:
             IdentificationTask.get_or_create_for_report(report=self.report)
         elif self.report.type == Report.TYPE_SITE:
-            self.report.published_at = self.report.server_upload_time + timedelta(days=2)
+            self.report.published_at = self.report.server_upload_time + timedelta(
+                days=2
+            )
             self.report.save()
 
     class Meta:
-        db_table = 'tigaserver_app_photo' # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_photo"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.

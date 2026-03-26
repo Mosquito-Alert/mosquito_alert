@@ -1,4 +1,3 @@
-
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -19,7 +18,4 @@ def subscribe_user_to_country_topic(sender, instance, created, **kwargs):
         except NotificationTopic.DoesNotExist:
             pass
         else:
-            UserSubscription.objects.get_or_create(
-                user=instance.user,
-                topic=topic
-            )
+            UserSubscription.objects.get_or_create(user=instance.user, topic=topic)

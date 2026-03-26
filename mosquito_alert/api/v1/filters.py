@@ -13,7 +13,10 @@ from rest_framework_gis.filters import DistanceToPointFilter
 from rest_framework_gis.filterset import GeoFilterSet
 
 from mosquito_alert.campaigns.models import OWCampaigns
-from mosquito_alert.identification_tasks.models import IdentificationTask, ExpertReportAnnotation
+from mosquito_alert.identification_tasks.models import (
+    IdentificationTask,
+    ExpertReportAnnotation,
+)
 from mosquito_alert.notifications.models import Notification
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
@@ -22,8 +25,11 @@ from mosquito_alert.geo.models import EuropeCountry, TemporaryBoundary
 
 User = get_user_model()
 
+
 class CampaignFilter(filters.FilterSet):
-    country_id = filters.ModelChoiceFilter(field_name="country_id", queryset=EuropeCountry.objects.all())
+    country_id = filters.ModelChoiceFilter(
+        field_name="country_id", queryset=EuropeCountry.objects.all()
+    )
     is_active = filters.BooleanFilter(method="filter_is_active")
 
     order_by = filters.OrderingFilter(
@@ -58,22 +64,30 @@ class DistanceOrderingFilter(filters.OrderingFilter):
     def __init__(self, ordering_filter_field, *args, **kwargs):
         self.ordering_filter_field = ordering_filter_field
         super().__init__(*args, **kwargs)
-        self.extra['choices'] += [
-            ('distance', 'Distance'),
-            ('-distance', 'Distance (descending)'),
+        self.extra["choices"] += [
+            ("distance", "Distance"),
+            ("-distance", "Distance (descending)"),
         ]
 
     def get_ordering_value(self, param):
         descending = param.startswith("-")
         param = param[1:] if descending else param
         if param == "distance":
-            point_string = self.parent.request.query_params.get(DistanceToPointFilter.point_param, None)
-            distance_param = self.parent.request.query_params.get(DistanceToPointFilter.dist_param, None)
+            point_string = self.parent.request.query_params.get(
+                DistanceToPointFilter.point_param, None
+            )
+            distance_param = self.parent.request.query_params.get(
+                DistanceToPointFilter.dist_param, None
+            )
 
             if not point_string:
-                raise ValidationError(f"Ordering by distance not allowed. Missing required parameter: {DistanceToPointFilter.point_param}")
+                raise ValidationError(
+                    f"Ordering by distance not allowed. Missing required parameter: {DistanceToPointFilter.point_param}"
+                )
             if not distance_param:
-                raise ValidationError(f"Ordering by distance not allowed. Missing required parameter: {DistanceToPointFilter.dist_param}")
+                raise ValidationError(
+                    f"Ordering by distance not allowed. Missing required parameter: {DistanceToPointFilter.dist_param}"
+                )
 
             try:
                 (x, y) = (float(n) for n in point_string.split(","))
@@ -85,9 +99,14 @@ class DistanceOrderingFilter(filters.OrderingFilter):
                     )
                 )
 
-            return Distance(self.ordering_filter_field, point) if not descending else -Distance(self.ordering_filter_field, point)
+            return (
+                Distance(self.ordering_filter_field, point)
+                if not descending
+                else -Distance(self.ordering_filter_field, point)
+            )
 
         return super().get_ordering_value(param)
+
 
 class BaseReportFilter(GeoFilterSet):
     user_uuid = filters.UUIDFilter(field_name="user")
@@ -103,17 +122,21 @@ class BaseReportFilter(GeoFilterSet):
     )
 
     order_by = DistanceOrderingFilter(
-        ordering_filter_field='point',
-        fields=(("server_upload_time", "received_at"), ("creation_time", "created_at"))
+        ordering_filter_field="point",
+        fields=(("server_upload_time", "received_at"), ("creation_time", "created_at")),
     )
-    tags = TagFilter(field_name='tags__name')
+    tags = TagFilter(field_name="tags__name")
 
-    geo_precision = filters.NumberFilter(method='filter_precision', min_value=0, label='Latitude/Longitude precision')
+    geo_precision = filters.NumberFilter(
+        method="filter_precision", min_value=0, label="Latitude/Longitude precision"
+    )
+
     def filter_precision(self, queryset, name, value):
         # Do nothing, will be used in the context
         return queryset
 
-    boundary_uuid = filters.UUIDFilter(method='filter_by_boundary_uuid')
+    boundary_uuid = filters.UUIDFilter(method="filter_by_boundary_uuid")
+
     def filter_by_boundary_uuid(self, queryset, name, value):
         try:
             boundary = TemporaryBoundary.get(value)
@@ -124,16 +147,13 @@ class BaseReportFilter(GeoFilterSet):
 
     class Meta:
         model = Report
-        fields = (
-            "short_id",
-            "created_at",
-            "received_at",
-            "updated_at",
-            "country_id"
-        )
+        fields = ("short_id", "created_at", "received_at", "updated_at", "country_id")
+
 
 class BaseReportWithPhotosFilter(BaseReportFilter):
-    has_photos = filters.BooleanFilter(method='filter_has_photos', help_text='Has any photo')
+    has_photos = filters.BooleanFilter(
+        method="filter_has_photos", help_text="Has any photo"
+    )
 
     def filter_has_photos(self, queryset, name, value):
         # Subquery to check for existence of related Photos
@@ -142,13 +162,17 @@ class BaseReportWithPhotosFilter(BaseReportFilter):
     class Meta(BaseReportFilter.Meta):
         fields = BaseReportFilter.Meta.fields + ("has_photos",)
 
+
 class ObservationFilter(BaseReportWithPhotosFilter):
-    identification_taxon_ids = extend_schema_field(str)(filters.ModelMultipleChoiceFilter(
-        method='filter_identification_taxon_ids',
-        queryset=Taxon.objects.all(),
-        null_label="null",
-        distinct=False
-    ))
+    identification_taxon_ids = extend_schema_field(str)(
+        filters.ModelMultipleChoiceFilter(
+            method="filter_identification_taxon_ids",
+            queryset=Taxon.objects.all(),
+            null_label="null",
+            distinct=False,
+        )
+    )
+
     def filter_identification_taxon_ids(self, queryset, name, value):
         if not value:
             return queryset
@@ -158,50 +182,58 @@ class ObservationFilter(BaseReportWithPhotosFilter):
 
         taxon_values = set()
         for taxon in value:
-            if taxon == "null": # Must be the same a null_label
+            if taxon == "null":  # Must be the same a null_label
                 taxon_values.add(None)
                 continue
 
-            if lookup == 'is_descendant_of':
+            if lookup == "is_descendant_of":
                 taxon_values.update(taxon.get_descendants())
-            elif lookup == 'is_child_of':
+            elif lookup == "is_child_of":
                 taxon_values.update(taxon.get_children())
-            elif lookup == 'is_tree_of':
+            elif lookup == "is_tree_of":
                 taxon_values.update(Taxon.get_tree(taxon))
             else:
                 taxon_values.add(taxon)
 
         if None in taxon_values:
-            q = models.Q(identification_task__taxon__isnull=True) | models.Q(identification_task__taxon__in=taxon_values - {None})
+            q = models.Q(identification_task__taxon__isnull=True) | models.Q(
+                identification_task__taxon__in=taxon_values - {None}
+            )
         else:
             q = models.Q(identification_task__taxon__in=taxon_values)
 
         return queryset.exclude(q) if negate else queryset.filter(q)
 
     identification_taxon_ids_lookup = filters.ChoiceFilter(
-        method='filter_do_nothing', 
+        method="filter_do_nothing",
         choices=[
-            ('is_descendant_of', 'Is descendant of'),
-            ('is_child_of', 'Is child of'),
-            ('is_tree_of', 'Is tree of')
-        ]
+            ("is_descendant_of", "Is descendant of"),
+            ("is_child_of", "Is child of"),
+            ("is_tree_of", "Is tree of"),
+        ],
     )
-    negate_identification_taxon_ids = filters.BooleanFilter(method='filter_do_nothing', label="Negate identification_taxon_ids filter")
+    negate_identification_taxon_ids = filters.BooleanFilter(
+        method="filter_do_nothing", label="Negate identification_taxon_ids filter"
+    )
+
     def filter_do_nothing(self, queryset, name, value):
         return queryset
+
 
 class BiteFilter(BaseReportFilter):
     pass
 
+
 class BreedingSiteFilter(BaseReportWithPhotosFilter):
     site_type = filters.MultipleChoiceFilter(
-        choices=Report.BreedingSiteType.choices,
-        field_name='breeding_site_type'
+        choices=Report.BreedingSiteType.choices, field_name="breeding_site_type"
     )
 
-    has_water = filters.BooleanFilter(field_name='breeding_site_has_water')
-    has_larvae = filters.BooleanFilter(field_name='breeding_site_has_larvae')
-    has_near_mosquitoes = filters.BooleanFilter(field_name='breeding_site_has_near_mosquitoes')
+    has_water = filters.BooleanFilter(field_name="breeding_site_has_water")
+    has_larvae = filters.BooleanFilter(field_name="breeding_site_has_larvae")
+    has_near_mosquitoes = filters.BooleanFilter(
+        field_name="breeding_site_has_near_mosquitoes"
+    )
 
 
 class NotificationFilter(filters.FilterSet):
@@ -216,11 +248,12 @@ class NotificationFilter(filters.FilterSet):
         model = Notification
         fields = ("is_read",)
 
+
 class IdentificationTaskFilter(filters.FilterSet):
     annotator_ids = filters.ModelMultipleChoiceFilter(
         field_name="assignees",
         queryset=User.objects.all(),
-        method="filter_by_annotators"
+        method="filter_by_annotators",
     )
 
     def filter_by_annotators(self, queryset, name, value):
@@ -231,7 +264,7 @@ class IdentificationTaskFilter(filters.FilterSet):
     assignee_ids = filters.ModelMultipleChoiceFilter(
         field_name="assignees",
         queryset=User.objects.all(),
-        method="filter_by_assignees"
+        method="filter_by_assignees",
     )
 
     def filter_by_assignees(self, queryset, name, value):
@@ -240,8 +273,8 @@ class IdentificationTaskFilter(filters.FilterSet):
         return queryset.assigned_to(users=value)
 
     fully_predicted = filters.BooleanFilter(
-        method='filter_fully_predicted',
-        help_text='Filters identification task based on whether all associated photos have predictions. Set to True to include identification tasks where every photo has a prediction; set to False to include identification tasks where at least one photo is missing a prediction.'
+        method="filter_fully_predicted",
+        help_text="Filters identification task based on whether all associated photos have predictions. Set to True to include identification tasks where every photo has a prediction; set to False to include identification tasks where at least one photo is missing a prediction.",
     )
 
     def filter_fully_predicted(self, queryset, name, value):
@@ -250,21 +283,14 @@ class IdentificationTaskFilter(filters.FilterSet):
 
         return queryset.annotate(
             has_visible_photos=models.Exists(
-                photos_qs.filter(
-                    report=models.OuterRef('report')
-                )
+                photos_qs.filter(report=models.OuterRef("report"))
             ),
             has_missing_predictions=models.Exists(
-                photos_qs.filter(
-                    report=models.OuterRef('report')
-                ).exclude(
-                    prediction__identification_task=models.OuterRef('pk')
+                photos_qs.filter(report=models.OuterRef("report")).exclude(
+                    prediction__identification_task=models.OuterRef("pk")
                 )
-            )
-        ).filter(
-            has_visible_photos=True,
-            has_missing_predictions=not value
-        )
+            ),
+        ).filter(has_visible_photos=True, has_missing_predictions=not value)
 
     num_annotations = filters.RangeFilter(field_name="total_finished_annotations")
 
@@ -275,13 +301,9 @@ class IdentificationTaskFilter(filters.FilterSet):
         field_name="updated_at", label="Update at"
     )
 
-    order_by = filters.OrderingFilter(
-        fields=("created_at", "updated_at")
-    )
+    order_by = filters.OrderingFilter(fields=("created_at", "updated_at"))
 
-    status = filters.MultipleChoiceFilter(
-        choices=IdentificationTask.Status.choices
-    )
+    status = filters.MultipleChoiceFilter(choices=IdentificationTask.Status.choices)
 
     observation_country_ids = filters.ModelMultipleChoiceFilter(
         field_name="report__country",
@@ -300,18 +322,20 @@ class IdentificationTaskFilter(filters.FilterSet):
     )
 
     result_characteristics_sex = filters.ChoiceFilter(
-        choices=[('male', 'male'), ('female', 'female')],
+        choices=[("male", "male"), ("female", "female")],
         field_name="sex",
         null_label="null",
     )
-    result_characteristics_is_blood_fed = filters.BooleanFilter(field_name="is_blood_fed")
+    result_characteristics_is_blood_fed = filters.BooleanFilter(
+        field_name="is_blood_fed"
+    )
     result_characteristics_is_gravid = filters.BooleanFilter(field_name="is_gravid")
 
     review_action = filters.ChoiceFilter(
         choices=IdentificationTask.Review.choices,
         field_name="review_type",
         null_label="null",
-        empty_label=None
+        empty_label=None,
     )
 
     class Meta:
@@ -320,6 +344,7 @@ class IdentificationTaskFilter(filters.FilterSet):
             "is_flagged": ["exact"],
             "is_safe": ["exact"],
         }
+
 
 class AnnotationFilter(filters.FilterSet):
     user_ids = filters.ModelMultipleChoiceFilter(
@@ -335,17 +360,21 @@ class AnnotationFilter(filters.FilterSet):
     classification_confidence = filters.RangeFilter(field_name="confidence")
     classification_confidence_label = filters.ChoiceFilter(
         choices=[(x, x) for x in ExpertReportAnnotation.ConfidenceCategory.labels],
-        method="filter_by_confidence_label"
+        method="filter_by_confidence_label",
     )
 
     def filter_by_confidence_label(self, queryset, name, value):
         if not value:
             return queryset
-        confidence = next(val for val, lab in ExpertReportAnnotation.ConfidenceCategory.choices if lab == value)
+        confidence = next(
+            val
+            for val, lab in ExpertReportAnnotation.ConfidenceCategory.choices
+            if lab == value
+        )
         return queryset.filter(confidence=confidence)
 
     characteristics_sex = filters.ChoiceFilter(
-        choices=[('male', 'male'), ('female', 'female')],
+        choices=[("male", "male"), ("female", "female")],
         field_name="sex",
         null_label="null",
     )
@@ -359,29 +388,25 @@ class AnnotationFilter(filters.FilterSet):
         field_name="last_modified", label="Updated at"
     )
 
-    is_flagged = filters.BooleanFilter(
-        method="filter_by_is_flagged"
-    )
+    is_flagged = filters.BooleanFilter(method="filter_by_is_flagged")
 
     def filter_by_is_flagged(self, queryset, name, value):
         if not value:
             return queryset
-        return queryset.filter(
-            status=ExpertReportAnnotation.Status.FLAGGED
-        )
+        return queryset.filter(status=ExpertReportAnnotation.Status.FLAGGED)
 
     decision_level = filters.MultipleChoiceFilter(
         choices=ExpertReportAnnotation.DecisionLevel.choices,
     )
 
     type = filters.ChoiceFilter(
-        choices=[('short', 'short'), ('long', 'long')],
-        method="filter_by_type"
+        choices=[("short", "short"), ("long", "long")], method="filter_by_type"
     )
+
     def filter_by_type(self, queryset, name, value):
         if not value:
             return queryset
-        return queryset.filter(is_simplified=(value == 'short'))
+        return queryset.filter(is_simplified=(value == "short"))
 
     order_by = filters.OrderingFilter(
         fields=(("created", "created_at"), ("last_modified", "updated_at"))
@@ -393,15 +418,24 @@ class AnnotationFilter(filters.FilterSet):
             "is_favourite": ["exact"],
         }
 
+
 class TaxonFilter(filters.FilterSet):
     rank = filters.MultipleChoiceFilter(
-        choices=[(name.lower(), value) for name, value in zip(Taxon.TaxonomicRank.names, Taxon.TaxonomicRank.values)],
-        method='filter_by_rank',
+        choices=[
+            (name.lower(), value)
+            for name, value in zip(
+                Taxon.TaxonomicRank.names, Taxon.TaxonomicRank.values
+            )
+        ],
+        method="filter_by_rank",
     )
 
     def filter_by_rank(self, queryset, name, value):
         # Map from name.lower() to actual values
-        name_to_value = {name.lower(): val for name, val in zip(Taxon.TaxonomicRank.names, Taxon.TaxonomicRank.values)}
+        name_to_value = {
+            name.lower(): val
+            for name, val in zip(Taxon.TaxonomicRank.names, Taxon.TaxonomicRank.values)
+        }
         mapped_values = [name_to_value.get(v) for v in value if v in name_to_value]
         return queryset.filter(rank__in=mapped_values)
 

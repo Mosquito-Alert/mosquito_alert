@@ -43,7 +43,7 @@ stages:
         Authorization: "Bearer {app_user_token:s}"
     response:
       status_code: 200
-      strict: 
+      strict:
         - json:off
       json:
         count: 2
@@ -61,7 +61,7 @@ stages:
         Authorization: "Bearer {token:s}"
     response:
       status_code: 200
-      strict: 
+      strict:
         - json:off
       json:
         count: 1

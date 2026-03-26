@@ -7,10 +7,11 @@ from modeltranslation.admin import TranslationAdmin
 
 from .models import Taxon
 
+
 @admin.register(Taxon)
 class TaxonAdmin(TreeAdmin, TranslationAdmin):
     search_fields = ("name",)
-    list_display = ("name", "rank", "common_name", 'is_relevant')
+    list_display = ("name", "rank", "common_name", "is_relevant")
     list_filter = ("rank",)
 
     # For TreeAdmin
@@ -18,5 +19,8 @@ class TaxonAdmin(TreeAdmin, TranslationAdmin):
 
     fieldsets = [
         (_("Node position"), {"fields": ("_position", "_ref_node_id")}),
-        (_("Basic information"), {"fields": ("rank", ("name", "is_relevant"), "common_name")}),
+        (
+            _("Basic information"),
+            {"fields": ("rank", ("name", "is_relevant"), "common_name")},
+        ),
     ]

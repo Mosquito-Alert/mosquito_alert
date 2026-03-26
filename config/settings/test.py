@@ -28,4 +28,4 @@ TEMPLATES[0]["OPTIONS"]["debug"] = True  # type: ignore # noqa: F405
 
 # Your stuff...
 # ------------------------------------------------------------------------------
-DEFAULT_TIGAUSER_PASSWORD='DEFAULT_PASSWORD_FOR_TESTS'
+DEFAULT_TIGAUSER_PASSWORD = "DEFAULT_PASSWORD_FOR_TESTS"

@@ -62,4 +62,3 @@ stages:
         count: 1
         results:
           - id: !int "{partner.pk}"
-

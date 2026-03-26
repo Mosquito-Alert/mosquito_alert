@@ -2,6 +2,7 @@ from typing import List
 
 from rest_framework import serializers
 
+
 def get_fk_fieldnames(model, related_model) -> List:
     user_fk_fieldnames = []
     for field in model._meta.get_fields():
@@ -9,7 +10,10 @@ def get_fk_fieldnames(model, related_model) -> List:
             user_fk_fieldnames.append(field.name)
     return user_fk_fieldnames
 
-def get_serializer_field_paths_for_csv(serializer: serializers.BaseSerializer, separator: str, prefix: str ="") -> List[str]:
+
+def get_serializer_field_paths_for_csv(
+    serializer: serializers.BaseSerializer, separator: str, prefix: str = ""
+) -> List[str]:
     fields = []
 
     # Unwrap ListSerializer (many=True)
@@ -28,7 +32,9 @@ def get_serializer_field_paths_for_csv(serializer: serializers.BaseSerializer, s
             continue
         # Nested serializer
         if isinstance(field, serializers.BaseSerializer):
-            fields.extend(get_serializer_field_paths_for_csv(field, separator, prefix=path))
+            fields.extend(
+                get_serializer_field_paths_for_csv(field, separator, prefix=path)
+            )
         else:
             fields.append(path)
 

@@ -48,7 +48,7 @@ stages:
         Authorization: "Bearer {app_user_token:s}"
     response:
       status_code: 200
-      strict: 
+      strict:
         - json:off
       json:
         - uuid: "{published_object.pk}"
@@ -70,7 +70,7 @@ stages:
         Authorization: "Bearer {token:s}"
     response:
       status_code: 200
-      strict: 
+      strict:
         - json:off
       json:
         - uuid: "{published_object.pk}"

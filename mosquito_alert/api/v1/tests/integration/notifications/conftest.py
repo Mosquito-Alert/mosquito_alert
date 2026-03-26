@@ -13,11 +13,13 @@ from mosquito_alert.notifications.models import (
 def model_class():
     return Notification
 
+
 @pytest.fixture
 def italian_user(app_user):
-    app_user.locale = 'it'
+    app_user.locale = "it"
     app_user.save()
     return app_user
+
 
 @pytest.fixture
 def topic():

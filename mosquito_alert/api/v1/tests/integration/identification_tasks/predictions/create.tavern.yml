@@ -72,7 +72,7 @@ stages:
           ae_albopictus: 0.8
           ae_japonicus: 0.01
           ae_koreicus: 0.01
-          anopheles: 0.01 
+          anopheles: 0.01
           culex: 0.01
           culiseta: 0.01
           other_species: 0.01
@@ -99,7 +99,7 @@ stages:
           ae_albopictus: 0.8
           ae_japonicus: 0.01
           ae_koreicus: 0.01
-          anopheles: 0.01 
+          anopheles: 0.01
           culex: 0.01
           culiseta: 0.01
           other_species: 0.01

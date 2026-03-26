@@ -11,7 +11,7 @@ User = get_user_model()
 
 
 class AppAPIClient(APIClient):
-    def __init__(self, device: Device = None,  *args, **kwargs):
+    def __init__(self, device: Device = None, *args, **kwargs):
         self.device = device
         super().__init__(self, *args, **kwargs)
 
@@ -24,8 +24,7 @@ class AppAPIClient(APIClient):
             return super()._login(user, backend)
         elif isinstance(user, TigaUser):
             token = AppUserTokenObtainPairSerializer.get_token(
-                user=user,
-                device_id=self.device.device_id if self.device else None
+                user=user, device_id=self.device.device_id if self.device else None
             )
             self.credentials(HTTP_AUTHORIZATION=f"Bearer {str(token.access_token)}")
         else:

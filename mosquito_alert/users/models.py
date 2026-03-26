@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 import uuid
 import os
 
@@ -13,31 +13,82 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-from langcodes import Language, closest_supported_match, standardize_tag as standarize_language_tag, tag_is_valid as language_tag_is_valid
+from langcodes import (
+    Language,
+    closest_supported_match,
+    standardize_tag as standarize_language_tag,
+    tag_is_valid as language_tag_is_valid,
+)
 from numpyencoder import NumpyEncoder
 import pydenticon
 
 from mosquito_alert.geo.models import EuropeCountry, NutsEurope
 
-from .permissions import UserRolePermissionMixin, Role, AnnotationPermission, IdentificationTaskPermission, BasePermission, NotificationPermission
+from .permissions import (
+    UserRolePermissionMixin,
+    Role,
+    AnnotationPermission,
+    IdentificationTaskPermission,
+    BasePermission,
+    NotificationPermission,
+)
+
+if TYPE_CHECKING:
+    from mosquito_alert.devices import Device
+    from mosquito_alert.identification_tasks import IdentificationTask
 
 User = get_user_model()
 
-class UserStat(UserRolePermissionMixin, models.Model):
-    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE, )
-    grabbed_reports = models.IntegerField('Grabbed reports', default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified')
-    national_supervisor_of = models.ForeignKey(EuropeCountry, blank=True, null=True, related_name="supervisors", help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', on_delete=models.PROTECT, )
-    native_of = models.ForeignKey(EuropeCountry, blank=True, null=True, related_name="natives", help_text='Country in which the user operates. Used mainly for filtering purposes', on_delete=models.SET_NULL, )
-    license_accepted = models.BooleanField('Value is true if user has accepted the license terms of EntoLab', default=False)
 
-    nuts2_assignation = models.ForeignKey(NutsEurope, blank=True, null=True, related_name="nuts2_assigned", help_text='Nuts2 division in which the user operates. Influences the priority of report assignation', on_delete=models.SET_NULL, )
+class UserStat(UserRolePermissionMixin, models.Model):
+    user = models.OneToOneField(
+        User,
+        primary_key=True,
+        on_delete=models.CASCADE,
+    )
+    grabbed_reports = models.IntegerField(
+        "Grabbed reports",
+        default=0,
+        help_text="Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified",
+    )
+    national_supervisor_of = models.ForeignKey(
+        EuropeCountry,
+        blank=True,
+        null=True,
+        related_name="supervisors",
+        help_text="Country of which the user is national supervisor. It means that the user will receive all the reports in his country",
+        on_delete=models.PROTECT,
+    )
+    native_of = models.ForeignKey(
+        EuropeCountry,
+        blank=True,
+        null=True,
+        related_name="natives",
+        help_text="Country in which the user operates. Used mainly for filtering purposes",
+        on_delete=models.SET_NULL,
+    )
+    license_accepted = models.BooleanField(
+        "Value is true if user has accepted the license terms of EntoLab", default=False
+    )
+
+    nuts2_assignation = models.ForeignKey(
+        NutsEurope,
+        blank=True,
+        null=True,
+        related_name="nuts2_assigned",
+        help_text="Nuts2 division in which the user operates. Influences the priority of report assignation",
+        on_delete=models.SET_NULL,
+    )
 
     def __str__(self):
-        geo_label = ''
+        geo_label = ""
         if self.native_of:
             geo_label = self.native_of.name_engl
         if self.nuts2_assignation:
-            geo_label += "{0} ({1})".format(self.nuts2_assignation.europecountry.name_engl, self.nuts2_assignation.name_latn)
+            geo_label += "{0} ({1})".format(
+                self.nuts2_assignation.europecountry.name_engl,
+                self.nuts2_assignation.name_latn,
+            )
         return f"{self.user.username} - {geo_label}"
 
     @property
@@ -58,15 +109,19 @@ class UserStat(UserRolePermissionMixin, models.Model):
 
     # TODO: delete this, no longer used
     @transaction.atomic
-    def assign_reports(self, country: Optional[EuropeCountry] = None) -> List[Optional['identification_tasks.IdentificationTask']]:
+    def assign_reports(
+        self, country: Optional[EuropeCountry] = None
+    ) -> List[Optional["IdentificationTask"]]:
         from mosquito_alert.identification_tasks.models import IdentificationTask
 
-        task_queue = IdentificationTask.objects.exclude(assignees=self.user).select_related('report')
+        task_queue = IdentificationTask.objects.exclude(
+            assignees=self.user
+        ).select_related("report")
         if country is not None:
             task_queue = task_queue.filter(report__country=country)
 
         if self.is_superexpert():
-            task_queue = task_queue.to_review().order_by('created_at')
+            task_queue = task_queue.to_review().order_by("created_at")
         else:
             task_queue = task_queue.backlog(user=self.user)
             # Only assign until reaching the maximum allowed.
@@ -99,9 +154,12 @@ class UserStat(UserRolePermissionMixin, models.Model):
 
         if self.user.is_superuser:
             return Role.ADMIN
-        if self.user.has_perm('%(app_label)s.add_review' % {
-            'app_label': IdentificationTask._meta.app_label,
-        }):
+        if self.user.has_perm(
+            "%(app_label)s.add_review"
+            % {
+                "app_label": IdentificationTask._meta.app_label,
+            }
+        ):
             return Role.REVIEWER
         if self.is_expert():
             if country and self.national_supervisor_of == country:
@@ -109,12 +167,14 @@ class UserStat(UserRolePermissionMixin, models.Model):
             return Role.ANNOTATOR
         return Role.BASE
 
-    def _update_permissions_from_django_perms(self, perm_obj: BasePermission, model_class: models.Model):
+    def _update_permissions_from_django_perms(
+        self, perm_obj: BasePermission, model_class: models.Model
+    ):
         app_label = model_class._meta.app_label
         model_name = model_class._meta.model_name
         perm_template = f"{app_label}.{{action}}_{model_name}"
 
-        for action in ['add', 'view', 'change', 'delete']:
+        for action in ["add", "view", "change", "delete"]:
             if self.user.has_perm(perm_template.format(action=action)):
                 setattr(perm_obj, action, True)
         return perm_obj
@@ -127,7 +187,9 @@ class UserStat(UserRolePermissionMixin, models.Model):
         return self._update_permissions_from_django_perms(perm, ExpertReportAnnotation)
 
     # NOTE: override UserRolePermissionMixin
-    def get_role_identification_task_permission(self, role: Role) -> IdentificationTaskPermission:
+    def get_role_identification_task_permission(
+        self, role: Role
+    ) -> IdentificationTaskPermission:
         from mosquito_alert.identification_tasks.models import IdentificationTask
 
         perm = super().get_role_identification_task_permission(role=role)
@@ -136,7 +198,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
     # NOTE: override UserRolePermissionMixin
     def get_role_notification_permission(self, role: Role) -> NotificationPermission:
         from mosquito_alert.notifications.models import Notification
-        
+
         perm = super().get_role_notification_permission(role=role)
         return self._update_permissions_from_django_perms(perm, Notification)
 
@@ -155,14 +217,19 @@ class UserStat(UserRolePermissionMixin, models.Model):
         return self.national_supervisor_of is not None
 
     def is_national_supervisor_for_country(self, country):
-        return self.is_national_supervisor() and self.national_supervisor_of.gid == country.gid
-    
+        return (
+            self.is_national_supervisor()
+            and self.national_supervisor_of.gid == country.gid
+        )
+
     @property
     def formatted_country_info(self):
         this_user = self.user
-        this_user_is_team_bcn = this_user.groups.filter(name='team_bcn').exists()
-        this_user_is_team_not_bcn = this_user.groups.filter(name='team_not_bcn').exists()
-        this_user_is_europe = this_user.groups.filter(name='eu_group_europe').exists()
+        this_user_is_team_bcn = this_user.groups.filter(name="team_bcn").exists()
+        this_user_is_team_not_bcn = this_user.groups.filter(
+            name="team_not_bcn"
+        ).exists()
+        this_user_is_europe = this_user.groups.filter(name="eu_group_europe").exists()
         this_user_is_spain = not this_user_is_europe
         if this_user_is_spain:
             if this_user_is_team_bcn:
@@ -173,18 +240,20 @@ class UserStat(UserRolePermissionMixin, models.Model):
                 return "Spain - Global"
         else:
             if self.is_national_supervisor():
-                return "Europe - National supervisor - " + self.national_supervisor_of.name_engl
+                return (
+                    "Europe - National supervisor - "
+                    + self.national_supervisor_of.name_engl
+                )
             elif country := self.native_of:
                 return "Europe - " + country.name_engl
             else:
                 return ""
 
-
     # this method returns the username, changing any '.' character to a '_'. This is used to avoid usernames used
     # as id or class names in views to break jquery selector queries
     @property
     def username_nopoint(self):
-        return self.user.username.replace('.', '_')
+        return self.user.username.replace(".", "_")
 
     @receiver(post_save, sender=User)
     def create_user_profile(sender, instance, created, **kwargs):
@@ -199,54 +268,79 @@ class UserStat(UserRolePermissionMixin, models.Model):
             UserStat.objects.create(user=instance)
 
     class Meta:
-        db_table = 'tigacrafting_userstat' # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigacrafting_userstat"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
 
 
 def get_default_password_hash():
     return make_password(settings.DEFAULT_TIGAUSER_PASSWORD)
 
+
 class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
     AVAILABLE_LANGUAGES = [
-        (standarize_language_tag(code), Language.get(code).autonym().title()) for code, _ in settings.LANGUAGES
+        (standarize_language_tag(code), Language.get(code).autonym().title())
+        for code, _ in settings.LANGUAGES
     ]
 
-    USERNAME_FIELD = 'pk'
+    USERNAME_FIELD = "pk"
 
-    password = models.CharField(_('password'), max_length=128, default=get_default_password_hash)
+    password = models.CharField(
+        _("password"), max_length=128, default=get_default_password_hash
+    )
 
-    user_UUID = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4, editable=False, help_text='UUID randomly generated on '
-                                                                            'phone to identify each unique user. Must be exactly 36 '
-                                                                            'characters (32 hex digits plus 4 hyphens).')
-    registration_time = models.DateTimeField(auto_now_add=True, help_text='The date and time when user '
-                                                                      'registered and consented to sharing '
-                                                                 'data. Automatically set by '
-                                                                 'server when user uploads registration.')
+    user_UUID = models.CharField(
+        max_length=36,
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        help_text="UUID randomly generated on "
+        "phone to identify each unique user. Must be exactly 36 "
+        "characters (32 hex digits plus 4 hyphens).",
+    )
+    registration_time = models.DateTimeField(
+        auto_now_add=True,
+        help_text="The date and time when user "
+        "registered and consented to sharing "
+        "data. Automatically set by "
+        "server when user uploads registration.",
+    )
 
-    score = models.IntegerField(help_text='Score associated with user. This field is used only if the user does not have a profile', default=0)
+    score = models.IntegerField(
+        help_text="Score associated with user. This field is used only if the user does not have a profile",
+        default=0,
+    )
 
-    score_v2 = models.IntegerField(help_text='Global XP Score. This field is updated whenever the user asks for the score, and is only stored here. The content must equal score_v2_adult + score_v2_bite + score_v2_site', default=0)
+    score_v2 = models.IntegerField(
+        help_text="Global XP Score. This field is updated whenever the user asks for the score, and is only stored here. The content must equal score_v2_adult + score_v2_bite + score_v2_site",
+        default=0,
+    )
 
-    score_v2_adult = models.IntegerField(help_text='Adult reports XP Score.', default=0)
+    score_v2_adult = models.IntegerField(help_text="Adult reports XP Score.", default=0)
 
-    score_v2_bite = models.IntegerField(help_text='Bite reports XP Score.', default=0)
+    score_v2_bite = models.IntegerField(help_text="Bite reports XP Score.", default=0)
 
-    score_v2_site = models.IntegerField(help_text='Site reports XP Score.',default=0)
+    score_v2_site = models.IntegerField(help_text="Site reports XP Score.", default=0)
 
     # NOTE using NumpyEncoder since compute_user_score_in_xp_v2 function get result from pandas dataframe
     # and some integer are np.int64, which can not be encoded with the regular json library setup.
-    score_v2_struct = models.JSONField(encoder=NumpyEncoder, help_text="Full cached score data", null=True, blank=True)
+    score_v2_struct = models.JSONField(
+        encoder=NumpyEncoder, help_text="Full cached score data", null=True, blank=True
+    )
 
-    last_score_update = models.DateTimeField(help_text="Last time score was updated", null=True, blank=True)
+    last_score_update = models.DateTimeField(
+        help_text="Last time score was updated", null=True, blank=True
+    )
 
     last_location = models.PointField(null=True, blank=True, srid=4326)
-    last_location_update = models.DateTimeField(help_text="Last time location was updated", null=True, blank=True)
+    last_location_update = models.DateTimeField(
+        help_text="Last time location was updated", null=True, blank=True
+    )
 
     locale = models.CharField(
         choices=AVAILABLE_LANGUAGES,
         max_length=16,
-        default='en',
+        default="en",
         validators=[language_tag_is_valid],
-        help_text="The locale code representing the language preference selected by the user for displaying the interface text. Enter the locale following the BCP 47 standard in 'language' or 'language-region' format (e.g., 'en' for English, 'en-US' for English (United States), 'fr' for French). The language is a two-letter ISO 639-1 code, and the region is an optional two-letter ISO 3166-1 alpha-2 code."
+        help_text="The locale code representing the language preference selected by the user for displaying the interface text. Enter the locale following the BCP 47 standard in 'language' or 'language-region' format (e.g., 'en' for English, 'en-US' for English (United States), 'fr' for French). The language is a two-letter ISO 639-1 code, and the region is an optional two-letter ISO 3166-1 alpha-2 code.",
     )
 
     @property
@@ -254,10 +348,11 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
         return Language.get(self.locale).language.lower()
 
     @property
-    def last_device(self) -> Optional['Device']:
+    def last_device(self) -> Optional["Device"]:
         from mosquito_alert.devices.models import Device
+
         try:
-            return self.devices.latest('date_created')
+            return self.devices.latest("date_created")
         except Device.DoesNotExist:
             return
 
@@ -293,16 +388,22 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
     def get_identicon(self):
         file_path = settings.MEDIA_ROOT + "/identicons/" + str(self.user_UUID) + ".png"
         if not os.path.exists(file_path):
-            generator = pydenticon.Generator(5, 5, foreground=[
-                "rgb(45,79,255)",
-                "rgb(254,180,44)",
-                "rgb(226,121,234)",
-                "rgb(30,179,253)",
-                "rgb(232,77,65)",
-                "rgb(49,203,115)",
-                "rgb(141,69,170)"
-            ])
-            identicon_png = generator.generate(str(self.user_UUID), 200, 200, output_format="png")
+            generator = pydenticon.Generator(
+                5,
+                5,
+                foreground=[
+                    "rgb(45,79,255)",
+                    "rgb(254,180,44)",
+                    "rgb(226,121,234)",
+                    "rgb(30,179,253)",
+                    "rgb(232,77,65)",
+                    "rgb(49,203,115)",
+                    "rgb(141,69,170)",
+                ],
+            )
+            identicon_png = generator.generate(
+                str(self.user_UUID), 200, 200, output_format="png"
+            )
             f = open(file_path, "wb")
             f.write(identicon_png)
             f.close()
@@ -322,21 +423,23 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
         self.score_v2_struct = score_dict
 
         try:
-            self.score_v2_adult = score_dict['score_detail']['adult']['score']
+            self.score_v2_adult = score_dict["score_detail"]["adult"]["score"]
         except (KeyError, TypeError):
             self.score_v2_adult = 0
 
         try:
-            self.score_v2_bite = score_dict['score_detail']['bite']['score']
+            self.score_v2_bite = score_dict["score_detail"]["bite"]["score"]
         except (KeyError, TypeError):
             self.score_v2_bite = 0
 
         try:
-            self.score_v2_site = score_dict['score_detail']['site']['score']
+            self.score_v2_site = score_dict["score_detail"]["site"]["score"]
         except (KeyError, TypeError):
             self.score_v2_site = 0
 
-        self.score_v2 = sum([self.score_v2_adult, self.score_v2_bite, self.score_v2_site])
+        self.score_v2 = sum(
+            [self.score_v2_adult, self.score_v2_bite, self.score_v2_site]
+        )
         self.last_score_update = timezone.now()
 
         if commit:
@@ -345,24 +448,27 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
     def save(self, *args, **kwargs):
 
         if self.locale:
-            self.locale = closest_supported_match(
-                self.locale,
-                [code for code, _ in self.AVAILABLE_LANGUAGES]
-            ) or 'en'
+            self.locale = (
+                closest_supported_match(
+                    self.locale, [code for code, _ in self.AVAILABLE_LANGUAGES]
+                )
+                or "en"
+            )
 
         result = super().save(*args, **kwargs)
 
         # Make sure user is subscribed to global topic
-        from mosquito_alert.notifications.models import NotificationTopic, UserSubscription
+        from mosquito_alert.notifications.models import (
+            NotificationTopic,
+            UserSubscription,
+        )
+
         try:
-            global_topic = NotificationTopic.objects.get(topic_code='global')
+            global_topic = NotificationTopic.objects.get(topic_code="global")
         except NotificationTopic.DoesNotExist:
             pass
         else:
-            UserSubscription.objects.get_or_create(
-                user=self,
-                topic=global_topic
-            )
+            UserSubscription.objects.get_or_create(user=self, topic=global_topic)
 
         # Subscribe user to the language selected.
         try:
@@ -370,14 +476,11 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
         except NotificationTopic.DoesNotExist:
             pass
         else:
-            UserSubscription.objects.get_or_create(
-                user=self,
-                topic=language_topic
-            )
+            UserSubscription.objects.get_or_create(user=self, topic=language_topic)
 
         return result
 
     class Meta:
-        db_table = 'tigaserver_app_tigauser' # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_tigauser"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
         verbose_name = "user"
         verbose_name_plural = "users"

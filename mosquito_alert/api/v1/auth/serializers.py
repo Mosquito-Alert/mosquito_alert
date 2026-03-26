@@ -10,7 +10,7 @@ from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.serializers import (
     TokenObtainSerializer,
     TokenObtainPairSerializer,
-    PasswordField
+    PasswordField,
 )
 
 from mosquito_alert.devices.models import Device
@@ -20,10 +20,13 @@ from .tokens import RefreshToken
 
 User = get_user_model()
 
+
 class AppUserTokenObtainSerializer(TokenObtainSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["device_id"] = serializers.CharField(required=False, write_only=True)
+        self.fields["device_id"] = serializers.CharField(
+            required=False, write_only=True
+        )
 
     def validate(self, attrs):
         authenticate_kwargs = {
@@ -47,8 +50,7 @@ class AppUserTokenObtainSerializer(TokenObtainSerializer):
         self.device = None
         if isinstance(self.user, TigaUser) and attrs.get("device_id"):
             self.device, _ = Device.objects.get_or_create(
-                device_id=attrs["device_id"],
-                user=self.user
+                device_id=attrs["device_id"], user=self.user
             )
 
         return {}
@@ -57,16 +59,17 @@ class AppUserTokenObtainSerializer(TokenObtainSerializer):
 class AppUserTokenObtainPairSerializer(
     TokenObtainPairSerializer, AppUserTokenObtainSerializer
 ):
-
     token_class = RefreshToken
 
     @classmethod
-    def get_token(cls, user: Union[TigaUser, 'User'], device_id: Optional[str] = None) -> Token:
+    def get_token(
+        cls, user: Union[TigaUser, "User"], device_id: Optional[str] = None
+    ) -> Token:
         token = super().get_token(user)
 
         if isinstance(user, TigaUser) and device_id:
             # Add custom claims to the JWT token
-            token['device_id'] = device_id
+            token["device_id"] = device_id
 
         return token
 
@@ -75,14 +78,14 @@ class AppUserTokenObtainPairSerializer(
 
         if isinstance(self.user, TigaUser) and self.device:
             # Recreate token passing now device_id
-            refresh =  self.get_token(user=self.user, device_id=self.device.device_id)
+            refresh = self.get_token(user=self.user, device_id=self.device.device_id)
             data["refresh"] = str(refresh)
             data["access"] = str(refresh.access_token)
 
             self.device.active_session = True
             # NOTE: adding 'active' in the update_fields is important.
             #       The save() method will trigger active = False depending on the value of active_session.
-            _update_fields=["active_session", "active"]
+            _update_fields = ["active_session", "active"]
             # Update last_login device
             if api_settings.UPDATE_LAST_LOGIN:
                 self.device.last_login = timezone.now()
@@ -116,12 +119,11 @@ class GuestRegistrationSerializer(serializers.ModelSerializer):
             "username",
             "password",
         )
-        read_only_fields = (
-            "username",
-        )
+        read_only_fields = ("username",)
         extra_kwargs = {
             "username": {"source": "user_UUID"},
         }
+
 
 class PasswordChangeSerializer(serializers.ModelSerializer):
     # Using rest_framework_simplejwt not to have problems when
@@ -135,4 +137,4 @@ class PasswordChangeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TigaUser
-        fields = ('password',)
+        fields = ("password",)
