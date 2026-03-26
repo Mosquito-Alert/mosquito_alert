@@ -164,3 +164,86 @@ stages:
         message:
           title: 'italian title'
           body: 'italian body'
+
+---
+
+test_name: Users with role annotator can not create notifications
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_with_role_annotator
+    - jwt_token_user
+
+stages:
+  - name: Annotator user can not create notification
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+    response:
+      status_code: 403
+
+
+---
+
+test_name: Users with role supervisor can not create notifications
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+
+stages:
+  - name: Supervisor user can not create notification
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+    response:
+      status_code: 403
+
+---
+
+test_name: Users with role reviewer can create notifications
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - user_with_role_reviewer
+    - jwt_token_user
+
+stages:
+  - name: Reviewer user can create notification
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        receiver_type: "user"
+        user_uuids:
+          - "{app_user.pk}"
+        message:
+          title:
+            en: "english title"
+          body:
+            en: "english body"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+    response:
+      status_code: 201
+      json:
+        - id: !anyint
+          created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z

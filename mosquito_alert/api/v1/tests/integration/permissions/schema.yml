@@ -25,6 +25,11 @@ variables:
           change: !anybool
           view: !anybool
           delete: !anybool
+        notification:
+          add: !anybool
+          change: !anybool
+          view: !anybool
+          delete: !anybool
       is_staff: !anybool
     countries:
       country:

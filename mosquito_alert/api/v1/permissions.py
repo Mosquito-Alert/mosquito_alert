@@ -104,12 +104,19 @@ class UserPermissions(FullDjangoModelPermissions):
 
 class NotificationObjectPermissions(UserObjectPermissions):
     def has_permission(self, request, view):
+        role_perm = False
         if request.method == "POST":
             # Allow only User Model to create
             if not isinstance(request.user, User):
                 return False
 
-        return super().has_permission(request, view)
+            role_perm = UserRolePermission().check_permissions(
+                user=request.user,
+                action='add',
+                obj_or_klass=Notification
+            )
+
+        return super().has_permission(request, view) or role_perm
 
     def _app_user_has_object_permission(self, request, view, obj):
         return (
