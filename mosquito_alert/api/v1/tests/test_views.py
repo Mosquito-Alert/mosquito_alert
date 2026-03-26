@@ -5,6 +5,7 @@ import pytest
 import time_machine
 import re
 import uuid
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
@@ -27,7 +28,7 @@ from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
     PhotoPrediction,
 )
-from mosquito_alert.notifications.models import Notification
+from mosquito_alert.notifications.models import Notification, SentNotification
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser
 
@@ -1822,3 +1823,76 @@ class TestFixesApi:
         app_user.refresh_from_db()
         assert app_user.last_location == expected_user_last_location
         assert app_user.last_location_update == expected_user_last_location_update
+
+
+@pytest.mark.django_db
+class TestNotificationsApi:
+    endpoint = "/api/v1/notifications/"
+
+    @pytest.fixture
+    def api_client(self, user):
+        api_client = APIClient()
+        api_client.force_login(user=user)
+
+        return api_client
+
+    @pytest.fixture
+    def permitted_user(self, user):
+        grant_permission_to_user(type="add", model_class=Notification, user=user)
+        return user
+
+    def test_create_notification(self, app_user, api_client, permitted_user):
+        response = api_client.post(
+            self.endpoint,
+            data={
+                "user_uuids": [str(app_user.pk)],
+                "message": {
+                    "title": {
+                        "en": "Test Notification",
+                    },
+                    "body": {
+                        "en": "This is a test notification.",
+                    },
+                },
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        notification = Notification.objects.get(pk=response.data[0]["id"])
+
+        assert notification.expert == permitted_user
+        notification_content = notification.notification_content
+        assert notification_content.title_en == "Test Notification"
+        assert notification_content.body_html_en == "This is a test notification."
+
+        assert not notification.notification_acknowledgements.filter(
+            user=app_user
+        ).exists()
+
+        assert SentNotification.objects.filter(
+            notification=notification, sent_to_user=app_user
+        ).exists()
+
+    def test_create_notification_send_push(self, app_user, api_client, permitted_user):
+        with patch(
+            "mosquito_alert.notifications.models.Notification.send_to_user"
+        ) as mock_send:
+            response = api_client.post(
+                self.endpoint,
+                data={
+                    "user_uuids": [str(app_user.pk)],
+                    "message": {
+                        "title": {
+                            "en": "Test Notification",
+                        },
+                        "body": {
+                            "en": "This is a test notification.",
+                        },
+                    },
+                },
+                format="json",
+            )
+
+            assert response.status_code == status.HTTP_201_CREATED
+
+            mock_send.assert_called_once()

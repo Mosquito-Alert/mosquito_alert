@@ -38,7 +38,6 @@ from mosquito_alert.identification_tasks.models import (
 from mosquito_alert.notifications.models import (
     Notification,
     NotificationContent,
-    NotificationTopic,
 )
 from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
@@ -391,7 +390,30 @@ class NotificationSerializer(serializers.ModelSerializer):
         extra_kwargs = {"created_at": {"source": "date_comment"}}
 
 
-class CreateNotificationSerializer(serializers.ModelSerializer):
+class BaseCreateNotificationSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(source="date_comment", read_only=True)
+    expert = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    def _create_notification_content(
+        self, validated_data, **kwargs
+    ) -> NotificationContent:
+        raise NotImplementedError(
+            "Subclasses must implement this method to create the NotificationContent based on the validated data."
+        )
+
+    @transaction.atomic
+    def create(self, validated_data, **kwargs):
+        validated_data["notification_content"] = self._create_notification_content(
+            validated_data, **kwargs
+        )
+        return super().create(validated_data)
+
+    class Meta:
+        model = Notification
+        fields = ("id", "created_at", "expert")
+
+
+class UserNotificationCreateSerializer(BaseCreateNotificationSerializer):
     class CreateNotificationMessageSerializer(serializers.Serializer):
         class LocalizedMessageTitleSerializer(
             LocalizedSerializerMixin, serializers.Serializer
@@ -412,49 +434,18 @@ class CreateNotificationSerializer(serializers.ModelSerializer):
             help_text="Provide the message's body in all supported languages",
         )
 
+        def validate_title(self, data):
+            if data is None or data == {}:
+                raise serializers.ValidationError("Title cannot be empty.")
+            return data
+
+        def validate_body(self, data):
+            if data is None or data == {}:
+                raise serializers.ValidationError("Body cannot be empty.")
+            return data
+
         class Meta:
             fields = ("title", "body")
-
-    created_at = serializers.DateTimeField(source="date_comment", read_only=True)
-    expert = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    message = CreateNotificationMessageSerializer(
-        many=False, write_only=True, help_text="The message of the notification"
-    )
-    receiver_type = serializers.HiddenField(default=None)
-
-    @transaction.atomic
-    def create(self, validated_data, user: Optional[TigaUser] = None):
-        # Pop receiver_type since is not used on any model
-        del validated_data["receiver_type"]
-
-        message = validated_data.pop("message")
-        titles = message.pop("title")
-        bodies = message.pop("body")
-
-        validated_data["notification_content"] = NotificationContent.objects.create(
-            title_en=titles.get("en"),
-            body_html_en=bodies.get("en"),
-            title_es=titles.get("es"),
-            body_html_es=bodies.get("es"),
-            title_ca=titles.get("ca"),
-            body_html_ca=bodies.get("ca"),
-            title_native=titles.get(user.locale) if user else None,
-            body_html_native=bodies.get(user.locale) if user else None,
-            native_locale=user.locale if user else None,
-        )
-
-        return super().create(validated_data=validated_data)
-
-    class Meta:
-        model = Notification
-        fields = ("receiver_type", "id", "message", "created_at", "expert")
-
-
-class UserNotificationCreateSerializer(CreateNotificationSerializer):
-    # NOTE: needed for drf-spectacular
-    receiver_type = serializers.ChoiceField(
-        choices=["user"], default="user", write_only=True
-    )
 
     user_uuids = serializers.ListField(
         child=serializers.UUIDField(),
@@ -462,6 +453,10 @@ class UserNotificationCreateSerializer(CreateNotificationSerializer):
         allow_empty=False,
         min_length=1,
         write_only=True,
+    )
+
+    message = CreateNotificationMessageSerializer(
+        many=False, write_only=True, help_text="The message of the notification"
     )
 
     def validate(self, data):
@@ -472,55 +467,102 @@ class UserNotificationCreateSerializer(CreateNotificationSerializer):
         data["users"] = users
         return data
 
+    def _create_notification_content(
+        self, validated_data, user_locale: Optional[str] = None, *args, **kwargs
+    ) -> NotificationContent:
+        message = validated_data.pop("message")
+        titles = message.pop("title")
+        bodies = message.pop("body")
+
+        return NotificationContent.objects.create(
+            title_en=titles.get("en"),
+            body_html_en=bodies.get("en"),
+            title_es=titles.get("es"),
+            body_html_es=bodies.get("es"),
+            title_ca=titles.get("ca"),
+            body_html_ca=bodies.get("ca"),
+            title_native=titles.get(user_locale) if user_locale else None,
+            body_html_native=bodies.get(user_locale) if user_locale else None,
+            native_locale=user_locale,
+        )
+
     def create(self, validated_data):
         result = []
         for user in validated_data.pop("users"):
-            instance = super().create(validated_data, user=user)
+            # TODO: this can be improved by grouping users by locale and creating one NotificationContent per locale group.
+            instance = super().create(validated_data, user_locale=user.locale)
             instance.send_to_user(user=user)
             result.append(instance)
 
         return result
 
-    class Meta(CreateNotificationSerializer.Meta):
-        fields = CreateNotificationSerializer.Meta.fields + ("user_uuids",)
+    class Meta(BaseCreateNotificationSerializer.Meta):
+        fields = (
+            "user_uuids",
+            "message",
+        ) + BaseCreateNotificationSerializer.Meta.fields
 
 
-class TopicNotificationCreateSerializer(CreateNotificationSerializer):
-    # NOTE: needed for drf-spectacular
-    receiver_type = serializers.ChoiceField(
-        choices=["topic"], default="topic", write_only=True
-    )
+class TopicNotificationCreateSerializer(BaseCreateNotificationSerializer):
+    class CreateTopicNotificationMessageSerializer(serializers.Serializer):
+        class LocalizedTopicMessageTitleSerializer(
+            LocalizedSerializerMixin, serializers.Serializer
+        ):
+            pass
 
-    topic_codes = serializers.ListField(
-        child=serializers.CharField(),
-        required=True,
-        allow_empty=False,
-        min_length=1,
+        class LocalizedTopicMessageBodySerializer(
+            LocalizedSerializerMixin, serializers.Serializer
+        ):
+            pass
+
+        title = LocalizedTopicMessageTitleSerializer(
+            languages=["en", "es", "ca"],
+            required_languages=[
+                "en"
+            ],  # For topic notifications, english is required as fallback if user locale is not supported.
+            max_length=255,
+            help_text="Provide the message's title in all supported languages for this topic",
+        )
+        body = LocalizedTopicMessageBodySerializer(
+            languages=["en", "es", "ca"],
+            required_languages=[
+                "en"
+            ],  # For topic notifications, english is required as fallback if user locale is not supported.
+            help_text="Provide the message's body in all supported languages for this topic",
+        )
+
+        class Meta:
+            fields = ("title", "body")
+
+    message = CreateTopicNotificationMessageSerializer(
+        many=False,
         write_only=True,
+        help_text="The message of the notification for topic",
     )
 
-    def validate(self, data):
-        topic_codes = data.pop("topic_codes")
-        topics = NotificationTopic.objects.filter(topic_code__in=topic_codes)
-        if topics.count() != len(topic_codes):
-            raise serializers.ValidationError("Some topics were not found.")
-        data["topics"] = topics
-        return data
+    def _create_notification_content(self, validated_data) -> NotificationContent:
+        message = validated_data.pop("message")
+        titles = message.pop("title")
+        bodies = message.pop("body")
+        return NotificationContent.objects.create(
+            title_en=titles.get("en"),
+            body_html_en=bodies.get("en"),
+            title_es=titles.get("es"),
+            body_html_es=bodies.get("es"),
+            title_ca=titles.get("ca"),
+            body_html_ca=bodies.get("ca"),
+        )
 
     def create(self, validated_data):
-        topics = validated_data.pop("topics")
+        topic = self.context.get("topic")
 
-        result = []
         instance = super().create(validated_data)
-        result.append(instance)
+        instance.send_to_topic(topic=topic)
 
-        for topic in topics:
-            instance.send_to_topic(topic=topic)
+        return instance
 
-        return result
-
-    class Meta(CreateNotificationSerializer.Meta):
-        fields = CreateNotificationSerializer.Meta.fields + ("topic_codes",)
+    class Meta(BaseCreateNotificationSerializer.Meta):
+        fields = ("message",) + BaseCreateNotificationSerializer.Meta.fields
 
 
 #### END NOTIFICATION SERIALIZERS ####
