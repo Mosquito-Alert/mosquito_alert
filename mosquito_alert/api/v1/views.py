@@ -112,6 +112,7 @@ from .serializers import (
     NotificationSerializer,
     TopicNotificationCreateSerializer,
     UserNotificationCreateSerializer,
+    NotificationStatsSerializer,
 )
 from .permissions import (
     UserRolePermission,
@@ -221,6 +222,17 @@ class NotificationViewSet(
             qs = qs.for_user(user=user)
 
         return qs
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        queryset=Notification.objects.select_related("expert").all(),
+        serializer_class=NotificationStatsSerializer,
+    )
+    def stats(self, request, *args, **kwargs):
+        notification = self.get_object()
+        serializer = self.get_serializer(notification)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         tags=["notifications"],
