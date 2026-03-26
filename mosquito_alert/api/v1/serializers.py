@@ -35,7 +35,7 @@ from mosquito_alert.identification_tasks.models import (
     ExpertReportAnnotation,
     PhotoPrediction
 )
-from mosquito_alert.notifications.models import Notification, NotificationContent, NotificationTopic
+from mosquito_alert.notifications.models import Notification, NotificationContent, NotificationTopic, SentNotification
 from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
@@ -535,6 +535,17 @@ class TopicNotificationCreateSerializer(CreateNotificationSerializer):
 
     class Meta(CreateNotificationSerializer.Meta):
         fields = CreateNotificationSerializer.Meta.fields + ("topic_codes", )
+
+class SentNotificationSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source="notification__id", read_only=True)
+    recipient_user = serializers.UUIDField(source="sent_to_user", read_only=True)
+    sender_user = serializers.UUIDField(source="notification__user__user_UUID", read_only=True)
+    is_read = serializers.BooleanField(source="notification_acknowledgement__isnull", read_only=True)
+    created_at = serializers.DateTimeField(source="notification__date_comment", read_only=True)
+    message = NotificationSerializer.NotificationMessageSerializer(source="notification", read_only=True)
+
+    class Meta:
+        model = SentNotification
 
 #### END NOTIFICATION SERIALIZERS ####
 

@@ -230,12 +230,29 @@ class NotificationViewSet(
         tags=['notifications'],
         operation_id='notifications_list_mine',
         description="Get Current User's Notifications"
+    ),
+    list_sent=extend_schema(
+        tags=['notifications'],
+        operation_id='notifications_list_sent',
+        description="Get Current User's sent Notifications"
     )
 )
 class MyNotificationViewSet(NotificationViewSet, GenericMobileOnlyViewSet):
     permission_classes = (MyNotificationPermissions,)
     def get_queryset(self):
         return super().get_queryset().for_user(user=self.request.user)
+
+@extend_schema_view(
+    list=extend_schema(
+        tags=['notifications'],
+        operation_id='notifications_list_sent',
+        description="Get Current User's sent Notifications"
+    )
+)
+class MyNotificationSentViewSet(NotificationViewSet, GenericNoMobileViewSet):
+    permission_classes = (AllowAny,)
+    def get_queryset(self):
+        return super().get_queryset().filter(expert=self.request.user)
 
 class PartnersViewSet(ReadOnlyModelViewSet, GenericViewSet):
     queryset = OrganizationPin.objects.all()
