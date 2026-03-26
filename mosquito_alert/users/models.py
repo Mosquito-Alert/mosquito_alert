@@ -34,8 +34,8 @@ from .permissions import (
 )
 
 if TYPE_CHECKING:
-    from mosquito_alert.devices import Device
-    from mosquito_alert.identification_tasks import IdentificationTask
+    from mosquito_alert.devices.models import Device
+    from mosquito_alert.identification_tasks.models import IdentificationTask
 
 User = get_user_model()
 
