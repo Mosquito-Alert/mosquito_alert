@@ -120,8 +120,22 @@ class NotificationObjectPermissions(UserObjectPermissions):
             role_perm = UserRolePermission.check_permissions(
                 user=request.user, action="add", obj_or_klass=Notification
             )
+        elif request.method == "GET" and isinstance(request.user, User):
+            role_perm = UserRolePermission.check_permissions(
+                user=request.user, action="view", obj_or_klass=Notification
+            )
 
         return super().has_permission(request, view) or role_perm
+
+    def has_object_permission(self, request, view, obj):
+        if view.action == "stats":
+            if isinstance(request.user, User):
+                return (
+                    super().has_permission(request, view) or obj.expert == request.user
+                )
+            return False
+
+        return super().has_object_permission(request, view, obj)
 
     def _app_user_has_object_permission(self, request, view, obj):
         return (

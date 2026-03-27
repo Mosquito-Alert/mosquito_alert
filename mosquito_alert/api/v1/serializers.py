@@ -38,6 +38,9 @@ from mosquito_alert.identification_tasks.models import (
 from mosquito_alert.notifications.models import (
     Notification,
     NotificationContent,
+    AcknowledgedNotification,
+    SentNotification,
+    UserSubscription,
 )
 from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
@@ -563,6 +566,84 @@ class TopicNotificationCreateSerializer(BaseCreateNotificationSerializer):
 
     class Meta(BaseCreateNotificationSerializer.Meta):
         fields = ("message",) + BaseCreateNotificationSerializer.Meta.fields
+
+
+class NotificationRecipientStatsSerializer(serializers.Serializer):
+    user = MinimalUserSerializer(read_only=True)
+    has_read = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        fields = ("user", "has_read")
+
+
+class NotificationStatsSerializer(serializers.ModelSerializer):
+    sender_user = SimpleUserSerializer(source="expert", read_only=True, allow_null=True)
+    recipients = serializers.SerializerMethodField()
+
+    @extend_schema_field(
+        lazy_serializer(
+            "mosquito_alert.api.v1.serializers.NotificationRecipientStatsSerializer"
+        )(many=True)
+    )
+    def get_recipients(self, obj: Notification):
+        sendings = (
+            SentNotification.objects.filter(
+                notification=obj,
+                sent_to_user__isnull=False,
+            )
+            .annotate(
+                user_uuid=models.F("sent_to_user_id"),
+                user_locale=models.F("sent_to_user__locale"),
+                acknowledged=models.Exists(
+                    AcknowledgedNotification.objects.filter(
+                        notification=obj,
+                        user_id=models.OuterRef("sent_to_user"),
+                    )
+                ),
+            )
+            .values("user_uuid", "user_locale", "acknowledged")
+        )
+
+        topic_sendings = (
+            UserSubscription.objects.filter(
+                topic__in=SentNotification.objects.filter(
+                    notification=obj,
+                    sent_to_topic__isnull=False,
+                ).values_list("sent_to_topic_id", flat=True)
+            )
+            .annotate(
+                user_uuid=models.F("user_id"),
+                user_locale=models.Subquery(
+                    TigaUser.objects.filter(pk=models.OuterRef("user_id")).values(
+                        "locale"
+                    )[:1]
+                ),
+                acknowledged=models.Exists(
+                    AcknowledgedNotification.objects.filter(
+                        notification=obj,
+                        user_id=models.OuterRef("user"),
+                    )
+                ),
+            )
+            .values("user_uuid", "user_locale", "acknowledged")
+        )
+
+        recipients_data = []
+        for send in sendings.union(topic_sendings).iterator():
+            recipients_data.append(
+                {
+                    "user": TigaUser(
+                        pk=send.get("user_uuid"), locale=send.get("user_locale")
+                    ),
+                    "has_read": send.get("acknowledged"),
+                }
+            )
+
+        return NotificationRecipientStatsSerializer(recipients_data, many=True).data
+
+    class Meta:
+        model = Notification
+        fields = ("sender_user", "recipients")
 
 
 #### END NOTIFICATION SERIALIZERS ####
