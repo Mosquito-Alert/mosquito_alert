@@ -54,7 +54,9 @@ stages:
         - json:off
       json:
         recipients:
-          - user_uuid: "{app_user.pk}"
+          - user:
+              uuid: "{app_user.pk}"
+              locale: "{app_user.locale}"
             has_read: true
 
 
@@ -85,7 +87,9 @@ stages:
         - json:off
       json:
         recipients:
-          - user_uuid: "{app_user.pk}"
+          - user:
+              uuid: "{app_user.pk}"
+              locale: "{app_user.locale}"
             has_read: false
 
 
@@ -116,7 +120,9 @@ stages:
         - json:off
       json:
         recipients:
-          - user_uuid: "{app_user.pk}"
+          - user:
+              uuid: "{app_user.pk}"
+              locale: "{app_user.locale}"
             has_read: false
 
 ---

@@ -569,11 +569,11 @@ class TopicNotificationCreateSerializer(BaseCreateNotificationSerializer):
 
 
 class NotificationRecipientStatsSerializer(serializers.Serializer):
-    user_uuid = serializers.UUIDField(read_only=True)
+    user = MinimalUserSerializer(read_only=True)
     has_read = serializers.BooleanField(read_only=True)
 
     class Meta:
-        fields = ("user_uuid", "has_read")
+        fields = ("user", "has_read")
 
 
 class NotificationStatsSerializer(serializers.ModelSerializer):
@@ -593,6 +593,7 @@ class NotificationStatsSerializer(serializers.ModelSerializer):
             )
             .annotate(
                 user_uuid=models.F("sent_to_user_id"),
+                user_locale=models.F("sent_to_user__locale"),
                 acknowledged=models.Exists(
                     AcknowledgedNotification.objects.filter(
                         notification=obj,
@@ -600,7 +601,7 @@ class NotificationStatsSerializer(serializers.ModelSerializer):
                     )
                 ),
             )
-            .values("user_uuid", "acknowledged")
+            .values("user_uuid", "user_locale", "acknowledged")
         )
 
         topic_sendings = (
@@ -612,6 +613,11 @@ class NotificationStatsSerializer(serializers.ModelSerializer):
             )
             .annotate(
                 user_uuid=models.F("user_id"),
+                user_locale=models.Subquery(
+                    TigaUser.objects.filter(pk=models.OuterRef("user_id")).values(
+                        "locale"
+                    )[:1]
+                ),
                 acknowledged=models.Exists(
                     AcknowledgedNotification.objects.filter(
                         notification=obj,
@@ -619,14 +625,16 @@ class NotificationStatsSerializer(serializers.ModelSerializer):
                     )
                 ),
             )
-            .values("user_uuid", "acknowledged")
+            .values("user_uuid", "user_locale", "acknowledged")
         )
 
         recipients_data = []
         for send in sendings.union(topic_sendings).iterator():
             recipients_data.append(
                 {
-                    "user_uuid": send.get("user_uuid"),
+                    "user": TigaUser(
+                        pk=send.get("user_uuid"), locale=send.get("user_locale")
+                    ),
                     "has_read": send.get("acknowledged"),
                 }
             )
