@@ -1011,7 +1011,7 @@ class SpeciesIdentificationSerializer(serializers.ModelSerializer):
             }
 
     class SpeciesCharacteristicsSerializer(serializers.Serializer):
-        sex = serializers.ChoiceField(choices=['male', 'female'], required=True)
+        sex = serializers.ChoiceField(choices=['male', 'female'], required=True, allow_null=True)
         is_blood_fed = serializers.BooleanField(required=False, allow_null=True)
         is_gravid = serializers.BooleanField(required=False, allow_null=True)
 
@@ -1021,7 +1021,7 @@ class SpeciesIdentificationSerializer(serializers.ModelSerializer):
             return data
 
         def to_internal_value(self, data):
-            if self.allow_null and data is None:
+            if self.allow_null and data.get('sex') is None:
                 return {
                     'sex': None,
                     'is_blood_fed': None,

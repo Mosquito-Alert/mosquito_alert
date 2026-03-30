@@ -1150,6 +1150,7 @@ class TestIdentificationTaskAnnotationsApi:
             (pytest.lazy_fixture('taxon_root'), 'female', True, False, status.HTTP_201_CREATED),
             (pytest.lazy_fixture('taxon_root'), 'female', True, True, status.HTTP_201_CREATED),
             (pytest.lazy_fixture('taxon_root'), None, None, None, status.HTTP_201_CREATED),
+            (pytest.lazy_fixture('taxon_root'), None, False, False, status.HTTP_201_CREATED),
         ]
     )
     def test_characteristics(self, api_client, user, endpoint, identification_task, common_post_data, with_add_permission, taxon, sex, is_blood_fed, is_gravid, expected_status_code):
@@ -1167,7 +1168,7 @@ class TestIdentificationTaskAnnotationsApi:
             'sex': sex,
             'is_blood_fed': is_blood_fed,
             'is_gravid': is_gravid
-        } if sex else None
+        }
 
         response = api_client.post(
             endpoint,
@@ -1181,8 +1182,8 @@ class TestIdentificationTaskAnnotationsApi:
                 user=user
             )
             assert annotation.sex == sex
-            assert annotation.is_blood_fed == is_blood_fed
-            assert annotation.is_gravid == is_gravid
+            assert annotation.is_blood_fed == is_blood_fed if sex else None
+            assert annotation.is_gravid == is_gravid if sex else None
 
     @pytest.mark.parametrize(
         "pre_assign",
