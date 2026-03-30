@@ -21,6 +21,14 @@ CACHES = {
     }
 }
 
+# django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
+# -------------------------------------------------------------------------------
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    "sentry-trace",
+    "baggage",
+)
+
 # FIREBASE
 # ------------------------
 FIREBASE_APP = None
@@ -38,12 +46,4 @@ if env("SENTRY_DSN", default=None):
         integrations=[
             DjangoIntegration(cache_spans=True),
         ],
-    )
-
-    # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
-    # -------------------------------------------------------------------------------
-    CORS_ALLOW_HEADERS = (
-        *default_headers,
-        "sentry-trace",
-        "baggage",
     )
