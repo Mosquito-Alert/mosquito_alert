@@ -1,0 +1,162 @@
+---
+
+test_name: Create method is not allowed for non auth user and app users.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - jwt_token_user
+
+stages:
+  - name: Anonymous user can not create
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+    response:
+      status_code: 401
+  - name: Auth users without perms can not create
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+    response:
+      status_code: 403
+  - name: Mobile app users can not create
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Create user message
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - jwt_token_user_can_add
+
+stages:
+  - name: Create user message using auth user with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        user_uuids:
+          - "{app_user.pk}"
+        content:
+          title:
+            en: "english title"
+          body:
+            en: "english body"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_add:s}"
+      method: "POST"
+    response:
+      status_code: 201
+      json: !force_original_structure "{response_data_validation}"
+  - name: Create message without empty title or body should return 400
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        user_uuids:
+          - "{app_user.pk}"
+        content:
+          title: {}
+          body: {}
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_add:s}"
+      method: "POST"
+    response:
+      status_code: 400
+
+---
+
+test_name: Users with role annotator can not create messages
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_with_role_annotator
+    - jwt_token_user
+
+stages:
+  - name: Annotator user can not create message
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+    response:
+      status_code: 403
+
+
+---
+
+test_name: Users with role supervisor can not create messages
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+
+stages:
+  - name: Supervisor user can not create message
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+    response:
+      status_code: 403
+
+---
+
+test_name: Users with role reviewer can create messages
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - user_with_role_reviewer
+    - jwt_token_user
+
+stages:
+  - name: Reviewer user can create message
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        user_uuids:
+          - "{app_user.pk}"
+        content:
+          title:
+            en: "english title"
+          body:
+            en: "english body"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "POST"
+    response:
+      status_code: 201
+      json: !force_original_structure "{response_data_validation}"

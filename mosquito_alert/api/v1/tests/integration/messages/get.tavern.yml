@@ -1,0 +1,136 @@
+---
+
+test_name: Retrieve method is not allowed for non auth user.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_message
+    - app_user_token
+    - jwt_token_user
+
+stages:
+  - name: Anonymous user can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      method: "GET"
+    response:
+      status_code: 401
+  - name: User without perm can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 403
+  - name: Mobile users can not retrieve even if message is for them
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 403
+
+---
+
+test_name: Retrieve method is allowed for auth user with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_message
+    - jwt_token_user_can_view
+
+stages:
+  - name: User with perm can retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      json: !force_original_structure "{response_data_validation}"
+
+---
+
+
+test_name: Users with role annotator can not retrieve messages
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_with_role_annotator
+    - user_message
+    - jwt_token_user
+
+stages:
+  - name: Annotator user can not retrieve message
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "GET"
+    response:
+      status_code: 403
+
+
+---
+
+test_name: Users with role supervisor can not retrieve messages
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_with_role_supervisor_in_country
+    - user_message
+    - jwt_token_user
+
+stages:
+  - name: Supervisor user can not retrieve message
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+      method: "GET"
+    response:
+      status_code: 403
+
+---
+
+test_name: Users with role reviewer can retrieve messages
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - user_with_role_reviewer
+    - user_message
+    - jwt_token_user
+
+stages:
+  - name: Reviewer user can retrieve message
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+    response:
+      status_code: 200

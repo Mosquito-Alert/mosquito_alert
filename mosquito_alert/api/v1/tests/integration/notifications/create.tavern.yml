@@ -1,6 +1,6 @@
 ---
 
-test_name: Create method is not allowed for non auth user and app users.
+test_name: Create method is disabled
 
 includes:
   - !include schema.yml
@@ -9,209 +9,28 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user_token
-    - jwt_token_user
+    - jwt_token_user_can_add
 
 stages:
-  - name: Anonymous user can not create
+  - name: Create method not allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "POST"
+    response:
+      status_code: 405
+  - name: Create method non authenticated users
     request:
       url: "{api_live_url}/{endpoint}/"
       method: "POST"
     response:
       status_code: 401
-  - name: Auth users without perms can not create
+  - name: Create method users even with permissions
     request:
       url: "{api_live_url}/{endpoint}/"
-      method: "POST"
-      headers:
-        Authorization: "Bearer {jwt_token_user}"
-    response:
-      status_code: 403
-  - name: Mobile app users can not create
-    request:
-      url: "{api_live_url}/{endpoint}/"
-      method: "POST"
-      headers:
-        Authorization: "Bearer {app_user_token}"
-    response:
-      status_code: 403
-
----
-
-test_name: Create user notification
-
-includes:
-  - !include schema.yml
-
-marks:
-  - usefixtures:
-    - api_live_url
-    - app_user
-    - jwt_token_user_can_add
-
-stages:
-  - name: Create user notification using auth user with permissions
-    request:
-      url: "{api_live_url}/{endpoint}/"
-      json:
-        user_uuids:
-          - "{app_user.pk}"
-        message:
-          title:
-            en: "english title"
-          body:
-            en: "english body"
-      headers:
-        Authorization: "Bearer {jwt_token_user_can_add:s}"
-      method: "POST"
-    response:
-      status_code: 201
-      json:
-        - id: !anyint
-          created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
-  - name: Create notification without empty title or body should return 400
-    request:
-      url: "{api_live_url}/{endpoint}/"
-      json:
-        user_uuids:
-          - "{app_user.pk}"
-        message:
-          title: {}
-          body: {}
-      headers:
-        Authorization: "Bearer {jwt_token_user_can_add:s}"
-      method: "POST"
-    response:
-      status_code: 400
-
----
-
-test_name: User receives the notification in their language
-
-includes:
-  - !include schema.yml
-
-marks:
-  - usefixtures:
-    - api_live_url
-    - italian_user
-    - app_user_token
-    - jwt_token_user_can_add
-
-stages:
-  - name: Create user notification
-    request:
-      url: "{api_live_url}/{endpoint}/"
-      json:
-        user_uuids:
-          - "{italian_user.pk}"
-        message:
-          title:
-            en: "english title"
-            it: "italian title"
-          body:
-            en: "english body"
-            it: "italian body"
       headers:
         Authorization: "Bearer {jwt_token_user_can_add}"
       method: "POST"
     response:
-      status_code: 201
-      save:
-        json:
-          notification_id: "[0].id"
-  - name: Check notification message is in italian
-    request:
-      url: "{api_live_url}/{endpoint}/{notification_id}/"
-      method: "GET"
-      headers:
-        Authorization: "Bearer {app_user_token}"
-    response:
-      status_code: 200
-      strict:
-        - json:off
-      json:
-        message:
-          title: 'italian title'
-          body: 'italian body'
-
----
-
-test_name: Users with role annotator can not create notifications
-
-includes:
-  - !include schema.yml
-
-marks:
-  - usefixtures:
-    - api_live_url
-    - user_with_role_annotator
-    - jwt_token_user
-
-stages:
-  - name: Annotator user can not create notification
-    request:
-      url: "{api_live_url}/{endpoint}/"
-      headers:
-        Authorization: "Bearer {jwt_token_user}"
-      method: "POST"
-    response:
-      status_code: 403
-
-
----
-
-test_name: Users with role supervisor can not create notifications
-
-includes:
-  - !include schema.yml
-
-marks:
-  - usefixtures:
-    - api_live_url
-    - user_with_role_supervisor_in_country
-    - jwt_token_user
-
-stages:
-  - name: Supervisor user can not create notification
-    request:
-      url: "{api_live_url}/{endpoint}/"
-      headers:
-        Authorization: "Bearer {jwt_token_user}"
-      method: "POST"
-    response:
-      status_code: 403
-
----
-
-test_name: Users with role reviewer can create notifications
-
-includes:
-  - !include schema.yml
-
-marks:
-  - usefixtures:
-    - api_live_url
-    - app_user
-    - user_with_role_reviewer
-    - jwt_token_user
-
-stages:
-  - name: Reviewer user can create notification
-    request:
-      url: "{api_live_url}/{endpoint}/"
-      json:
-        user_uuids:
-          - "{app_user.pk}"
-        message:
-          title:
-            en: "english title"
-          body:
-            en: "english body"
-      headers:
-        Authorization: "Bearer {jwt_token_user}"
-      method: "POST"
-    response:
-      status_code: 201
-      json:
-        - id: !anyint
-          created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
+      status_code: 405

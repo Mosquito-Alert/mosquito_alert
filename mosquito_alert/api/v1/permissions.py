@@ -110,6 +110,20 @@ class UserPermissions(FullDjangoModelPermissions):
 
 
 class NotificationObjectPermissions(UserObjectPermissions):
+    def _app_user_has_object_permission(self, request, view, obj):
+        return (
+            Notification.objects.for_user(user=request.user).filter(pk=obj.pk).exists()
+        )
+
+
+class MyNotificationPermissions(NotificationObjectPermissions):
+    def has_permission(self, request, view):
+        return isinstance(request.user, TigaUser) and super().has_permission(
+            request, view
+        )
+
+
+class MessagePermissions(FullDjangoModelPermissions):
     def has_permission(self, request, view):
         role_perm = False
         if request.method == "POST":
@@ -128,7 +142,7 @@ class NotificationObjectPermissions(UserObjectPermissions):
         return super().has_permission(request, view) or role_perm
 
     def has_object_permission(self, request, view, obj):
-        if view.action == "stats":
+        if view.action == "recipients":
             if isinstance(request.user, User):
                 return (
                     super().has_permission(request, view) or obj.expert == request.user
@@ -137,17 +151,9 @@ class NotificationObjectPermissions(UserObjectPermissions):
 
         return super().has_object_permission(request, view, obj)
 
-    def _app_user_has_object_permission(self, request, view, obj):
-        return (
-            Notification.objects.for_user(user=request.user).filter(pk=obj.pk).exists()
-        )
 
-
-class MyNotificationPermissions(NotificationObjectPermissions):
-    def has_permission(self, request, view):
-        return isinstance(request.user, TigaUser) and super().has_permission(
-            request, view
-        )
+class MyMessagePermissions(MessagePermissions):
+    pass
 
 
 class ReportPermissions(UserObjectPermissions):

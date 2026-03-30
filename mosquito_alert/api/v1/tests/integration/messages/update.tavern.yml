@@ -1,0 +1,40 @@
+test_name: Update is disabled
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - jwt_token_user_can_change
+    - user_message
+  - parametrize:
+      key: method
+      vals:
+        - PUT
+        - PATCH
+
+stages:
+  - name: Update is disabled
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "{method}"
+    response:
+      status_code: 403
+  - name: Update is disabled for non auth users
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      method: "{method}"
+    response:
+      status_code: 401
+  - name: Update is disabled for users even with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_change}"
+      method: "{method}"
+    response:
+      status_code: 405

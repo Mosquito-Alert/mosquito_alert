@@ -40,7 +40,7 @@ class ReviewPermission(BasePermission):
 
 
 @dataclass
-class NotificationPermission(BasePermission):
+class MessagePermission(BasePermission):
     pass
 
 
@@ -49,7 +49,7 @@ class Permissions:
     annotation: AnnotationPermission
     identification_task: IdentificationTaskPermission
     review: ReviewPermission
-    notification: NotificationPermission
+    message: MessagePermission
 
 
 class UserRolePermissionMixin:
@@ -75,7 +75,7 @@ class UserRolePermissionMixin:
             annotation=self.get_role_annotation_permission(role),
             identification_task=self.get_role_identification_task_permission(role),
             review=self.get_role_review_permission(role),
-            notification=self.get_role_notification_permission(role),
+            message=self.get_role_message_permission(role),
         )
 
     def get_role_annotation_permission(self, role: Role) -> AnnotationPermission:
@@ -105,8 +105,8 @@ class UserRolePermissionMixin:
             delete=role in [Role.ADMIN],
         )
 
-    def get_role_notification_permission(self, role: Role) -> NotificationPermission:
-        return NotificationPermission(
+    def get_role_message_permission(self, role: Role) -> MessagePermission:
+        return MessagePermission(
             add=role in [Role.REVIEWER, Role.ADMIN],
             change=role in [Role.ADMIN],
             view=role in [Role.REVIEWER, Role.ADMIN],
@@ -133,9 +133,7 @@ class UserRolePermissionMixin:
         elif model == ReviewPermission:
             return self.get_role_review_permission(role=self.get_role(country=country))
         elif model == Notification:
-            return self.get_role_notification_permission(
-                role=self.get_role(country=country)
-            )
+            return self.get_role_message_permission(role=self.get_role(country=country))
 
         return BasePermission(add=False, view=False, change=False, delete=False)
 

@@ -38,9 +38,6 @@ from mosquito_alert.identification_tasks.models import (
 from mosquito_alert.notifications.models import (
     Notification,
     NotificationContent,
-    AcknowledgedNotification,
-    SentNotification,
-    UserSubscription,
 )
 from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
@@ -393,31 +390,12 @@ class NotificationSerializer(serializers.ModelSerializer):
         extra_kwargs = {"created_at": {"source": "date_comment"}}
 
 
-class BaseCreateNotificationSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(source="date_comment", read_only=True)
-    expert = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
-    def _create_notification_content(
-        self, validated_data, **kwargs
-    ) -> NotificationContent:
-        raise NotImplementedError(
-            "Subclasses must implement this method to create the NotificationContent based on the validated data."
-        )
-
-    @transaction.atomic
-    def create(self, validated_data, **kwargs):
-        validated_data["notification_content"] = self._create_notification_content(
-            validated_data, **kwargs
-        )
-        return super().create(validated_data)
-
-    class Meta:
-        model = Notification
-        fields = ("id", "created_at", "expert")
+#### END NOTIFICATION SERIALIZERS ####
 
 
-class UserNotificationCreateSerializer(BaseCreateNotificationSerializer):
-    class CreateNotificationMessageSerializer(serializers.Serializer):
+#### START MESSAGE SERIALIZERS ####
+class MessageSerializer(serializers.ModelSerializer):
+    class MessageContentSerializer(serializers.Serializer):
         class LocalizedMessageTitleSerializer(
             LocalizedSerializerMixin, serializers.Serializer
         ):
@@ -450,16 +428,103 @@ class UserNotificationCreateSerializer(BaseCreateNotificationSerializer):
         class Meta:
             fields = ("title", "body")
 
+    created_at = serializers.DateTimeField(source="date_comment", read_only=True)
+
+    sender_user_hidden_obj = serializers.HiddenField(
+        source="expert", default=serializers.CurrentUserDefault()
+    )
+    sender_user = SimpleUserSerializer(source="expert", read_only=True)
+
+    content = WritableSerializerMethodField(
+        source="notification_content",
+        field_class=MessageContentSerializer,
+        required=True,
+        help_text="The content of the message",
+    )
+
+    def get_content(self, obj: Notification) -> MessageContentSerializer:
+        titles = {
+            "en": obj.notification_content.get_title(language_code="en", fallback=False)
+            if obj.notification_content
+            else None,
+            "es": obj.notification_content.get_title(language_code="es", fallback=False)
+            if obj.notification_content
+            else None,
+            "ca": obj.notification_content.get_title(language_code="ca", fallback=False)
+            if obj.notification_content
+            else None,
+        }
+        if obj.notification_content.native_locale:
+            titles[obj.notification_content.native_locale] = (
+                obj.notification_content.get_title(
+                    language_code=obj.notification_content.native_locale, fallback=False
+                )
+                if obj.notification_content
+                else None
+            )
+
+        bodies = {
+            "en": obj.notification_content.get_body_html(
+                language_code="en", fallback=False
+            )
+            if obj.notification_content
+            else None,
+            "es": obj.notification_content.get_body_html(
+                language_code="es", fallback=False
+            )
+            if obj.notification_content
+            else None,
+            "ca": obj.notification_content.get_body_html(
+                language_code="ca", fallback=False
+            )
+            if obj.notification_content
+            else None,
+        }
+        if obj.notification_content.native_locale:
+            bodies[obj.notification_content.native_locale] = (
+                obj.notification_content.get_body_html(
+                    language_code=obj.notification_content.native_locale, fallback=False
+                )
+                if obj.notification_content
+                else None
+            )
+
+        return self.MessageContentSerializer(
+            instance={"title": titles, "body": bodies}
+        ).data
+
+    def _create_notification_content(
+        self, validated_data, **kwargs
+    ) -> NotificationContent:
+        raise NotImplementedError(
+            "Subclasses must implement this method to create the NotificationContent based on the validated data."
+        )
+
+    @transaction.atomic
+    def create(self, validated_data, **kwargs):
+        validated_data["notification_content"] = self._create_notification_content(
+            validated_data, **kwargs
+        )
+        return super().create(validated_data)
+
+    class Meta:
+        model = Notification
+        fields = (
+            "id",
+            "sender_user",
+            "sender_user_hidden_obj",
+            "content",
+            "created_at",
+        )
+
+
+class CreateUserMessageSerializer(MessageSerializer):
     user_uuids = serializers.ListField(
         child=serializers.UUIDField(),
         required=True,
         allow_empty=False,
         min_length=1,
         write_only=True,
-    )
-
-    message = CreateNotificationMessageSerializer(
-        many=False, write_only=True, help_text="The message of the notification"
     )
 
     def validate(self, data):
@@ -473,9 +538,9 @@ class UserNotificationCreateSerializer(BaseCreateNotificationSerializer):
     def _create_notification_content(
         self, validated_data, user_locale: Optional[str] = None, *args, **kwargs
     ) -> NotificationContent:
-        message = validated_data.pop("message")
-        titles = message.pop("title")
-        bodies = message.pop("body")
+        content = validated_data.pop("notification_content")
+        titles = content.pop("title")
+        bodies = content.pop("body")
 
         return NotificationContent.objects.create(
             title_en=titles.get("en"),
@@ -491,23 +556,22 @@ class UserNotificationCreateSerializer(BaseCreateNotificationSerializer):
 
     def create(self, validated_data):
         result = []
+        # TODO: at some point this would only need to create one notification, and a single
+        # notification content with all the localized text in it.
         for user in validated_data.pop("users"):
             # TODO: this can be improved by grouping users by locale and creating one NotificationContent per locale group.
             instance = super().create(validated_data, user_locale=user.locale)
             instance.send_to_user(user=user)
             result.append(instance)
 
-        return result
+        return result[0]
 
-    class Meta(BaseCreateNotificationSerializer.Meta):
-        fields = (
-            "user_uuids",
-            "message",
-        ) + BaseCreateNotificationSerializer.Meta.fields
+    class Meta(MessageSerializer.Meta):
+        fields = ("user_uuids",) + MessageSerializer.Meta.fields
 
 
-class TopicNotificationCreateSerializer(BaseCreateNotificationSerializer):
-    class CreateTopicNotificationMessageSerializer(serializers.Serializer):
+class CreateTopicMessageSerializer(MessageSerializer):
+    class CreateTopicMessageContentSerializer(serializers.ModelSerializer):
         class LocalizedTopicMessageTitleSerializer(
             LocalizedSerializerMixin, serializers.Serializer
         ):
@@ -522,7 +586,7 @@ class TopicNotificationCreateSerializer(BaseCreateNotificationSerializer):
             languages=["en", "es", "ca"],
             required_languages=[
                 "en"
-            ],  # For topic notifications, english is required as fallback if user locale is not supported.
+            ],  # For topic messages, english is required as fallback if user locale is not supported.
             max_length=255,
             help_text="Provide the message's title in all supported languages for this topic",
         )
@@ -530,23 +594,25 @@ class TopicNotificationCreateSerializer(BaseCreateNotificationSerializer):
             languages=["en", "es", "ca"],
             required_languages=[
                 "en"
-            ],  # For topic notifications, english is required as fallback if user locale is not supported.
+            ],  # For topic messages, english is required as fallback if user locale is not supported.
             help_text="Provide the message's body in all supported languages for this topic",
         )
 
         class Meta:
+            model = NotificationContent
             fields = ("title", "body")
 
-    message = CreateTopicNotificationMessageSerializer(
-        many=False,
-        write_only=True,
-        help_text="The message of the notification for topic",
+    content = WritableSerializerMethodField(
+        source="notification_content",
+        field_class=CreateTopicMessageContentSerializer,
+        required=True,
+        help_text="The content of the message for the topic",
     )
 
     def _create_notification_content(self, validated_data) -> NotificationContent:
-        message = validated_data.pop("message")
-        titles = message.pop("title")
-        bodies = message.pop("body")
+        content = validated_data.pop("notification_content")
+        titles = content.pop("title")
+        bodies = content.pop("body")
         return NotificationContent.objects.create(
             title_en=titles.get("en"),
             body_html_en=bodies.get("en"),
@@ -564,11 +630,8 @@ class TopicNotificationCreateSerializer(BaseCreateNotificationSerializer):
 
         return instance
 
-    class Meta(BaseCreateNotificationSerializer.Meta):
-        fields = ("message",) + BaseCreateNotificationSerializer.Meta.fields
 
-
-class NotificationRecipientStatsSerializer(serializers.Serializer):
+class MessageRecipientSerializer(serializers.Serializer):
     user = MinimalUserSerializer(read_only=True)
     has_read = serializers.BooleanField(read_only=True)
 
@@ -576,77 +639,7 @@ class NotificationRecipientStatsSerializer(serializers.Serializer):
         fields = ("user", "has_read")
 
 
-class NotificationStatsSerializer(serializers.ModelSerializer):
-    sender_user = SimpleUserSerializer(source="expert", read_only=True, allow_null=True)
-    recipients = serializers.SerializerMethodField()
-
-    @extend_schema_field(
-        lazy_serializer(
-            "mosquito_alert.api.v1.serializers.NotificationRecipientStatsSerializer"
-        )(many=True)
-    )
-    def get_recipients(self, obj: Notification):
-        sendings = (
-            SentNotification.objects.filter(
-                notification=obj,
-                sent_to_user__isnull=False,
-            )
-            .annotate(
-                user_uuid=models.F("sent_to_user_id"),
-                user_locale=models.F("sent_to_user__locale"),
-                acknowledged=models.Exists(
-                    AcknowledgedNotification.objects.filter(
-                        notification=obj,
-                        user_id=models.OuterRef("sent_to_user"),
-                    )
-                ),
-            )
-            .values("user_uuid", "user_locale", "acknowledged")
-        )
-
-        topic_sendings = (
-            UserSubscription.objects.filter(
-                topic__in=SentNotification.objects.filter(
-                    notification=obj,
-                    sent_to_topic__isnull=False,
-                ).values_list("sent_to_topic_id", flat=True)
-            )
-            .annotate(
-                user_uuid=models.F("user_id"),
-                user_locale=models.Subquery(
-                    TigaUser.objects.filter(pk=models.OuterRef("user_id")).values(
-                        "locale"
-                    )[:1]
-                ),
-                acknowledged=models.Exists(
-                    AcknowledgedNotification.objects.filter(
-                        notification=obj,
-                        user_id=models.OuterRef("user"),
-                    )
-                ),
-            )
-            .values("user_uuid", "user_locale", "acknowledged")
-        )
-
-        recipients_data = []
-        for send in sendings.union(topic_sendings).iterator():
-            recipients_data.append(
-                {
-                    "user": TigaUser(
-                        pk=send.get("user_uuid"), locale=send.get("user_locale")
-                    ),
-                    "has_read": send.get("acknowledged"),
-                }
-            )
-
-        return NotificationRecipientStatsSerializer(recipients_data, many=True).data
-
-    class Meta:
-        model = Notification
-        fields = ("sender_user", "recipients")
-
-
-#### END NOTIFICATION SERIALIZERS ####
+#### END MESSAGE SERIALIZERS ####
 
 
 class PartnerSerializer(serializers.ModelSerializer):

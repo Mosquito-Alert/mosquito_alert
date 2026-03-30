@@ -1,0 +1,20 @@
+---
+
+name: Common test information
+description: Login information for test server
+
+
+variables:
+  endpoint: "messages"
+  response_data_validation:
+    id: !anyint
+    sender_user:
+      uuid: !re_fullmatch "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+      username: !anystr
+      first_name: !anystr
+      last_name: !anystr
+      full_name: !anystr
+    content:
+      title: !anydict
+      body: !anydict
+    created_at: !re_fullmatch \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z
