@@ -30,7 +30,7 @@ from .permissions import (
     AnnotationPermission,
     IdentificationTaskPermission,
     BasePermission,
-    NotificationPermission,
+    MessagePermission,
 )
 
 if TYPE_CHECKING:
@@ -196,10 +196,10 @@ class UserStat(UserRolePermissionMixin, models.Model):
         return self._update_permissions_from_django_perms(perm, IdentificationTask)
 
     # NOTE: override UserRolePermissionMixin
-    def get_role_notification_permission(self, role: Role) -> NotificationPermission:
+    def get_role_message_permission(self, role: Role) -> MessagePermission:
         from mosquito_alert.notifications.models import Notification
 
-        perm = super().get_role_notification_permission(role=role)
+        perm = super().get_role_message_permission(role=role)
         return self._update_permissions_from_django_perms(perm, Notification)
 
     def is_expert(self):

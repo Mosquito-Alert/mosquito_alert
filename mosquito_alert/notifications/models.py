@@ -109,7 +109,10 @@ class NotificationContent(models.Model):
         return None
 
     def _get_localized_field(
-        self, fieldname_prefix: str, language_code: Optional[str] = None
+        self,
+        fieldname_prefix: str,
+        language_code: Optional[str] = None,
+        fallback: bool = True,
     ) -> str:
         # Default to english
         language_code = language_code or "en"
@@ -128,20 +131,28 @@ class NotificationContent(models.Model):
             result_local = getattr(self, fieldname)
 
         # Return result with fallback to English
-        return result_local or result_en or ""
+        if fallback:
+            return result_local or result_en or ""
+        return result_local or ""
 
-    def get_title(self, language_code: Optional[str] = None) -> str:
+    def get_title(
+        self, language_code: Optional[str] = None, fallback: bool = True
+    ) -> str:
         return self._get_localized_field(
-            fieldname_prefix="title", language_code=language_code
+            fieldname_prefix="title", language_code=language_code, fallback=fallback
         )
 
-    def get_body_html(self, language_code: Optional[str] = None) -> str:
+    def get_body_html(
+        self, language_code: Optional[str] = None, fallback: bool = True
+    ) -> str:
         return self._get_localized_field(
-            fieldname_prefix="body_html", language_code=language_code
+            fieldname_prefix="body_html", language_code=language_code, fallback=fallback
         )
 
-    def get_body(self, language_code: Optional[str] = None) -> str:
-        body_html = self.get_body_html(language_code=language_code)
+    def get_body(
+        self, language_code: Optional[str] = None, fallback: bool = True
+    ) -> str:
+        body_html = self.get_body_html(language_code=language_code, fallback=fallback)
         soup = BeautifulSoup(body_html, "html.parser")
         body = soup.find("body")  # Try to find the <body> tag
         if body:

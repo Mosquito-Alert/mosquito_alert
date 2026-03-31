@@ -59,7 +59,13 @@ from mosquito_alert.identification_tasks.models import (
     ExpertReportAnnotation,
     PhotoPrediction,
 )
-from mosquito_alert.notifications.models import Notification, NotificationTopic
+from mosquito_alert.notifications.models import (
+    Notification,
+    NotificationTopic,
+    SentNotification,
+    UserSubscription,
+    AcknowledgedNotification,
+)
 from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
@@ -74,6 +80,7 @@ from .filters import (
     IdentificationTaskFilter,
     AnnotationFilter,
     TaxonFilter,
+    MessageFilter,
 )
 from .mixins import IdentificationTaskNestedAttribute
 from .renderers import GeoJsonRenderer
@@ -107,12 +114,13 @@ from .serializers import (
     CreateAgreeReviewSerializer,
     CreateOverwriteReviewSerializer,
     TemporaryBoundarySerializer,
+    NotificationSerializer,
 )
 from .serializers import (
-    NotificationSerializer,
-    TopicNotificationCreateSerializer,
-    UserNotificationCreateSerializer,
-    NotificationStatsSerializer,
+    MessageSerializer,
+    MessageRecipientSerializer,
+    CreateTopicMessageSerializer,
+    CreateUserMessageSerializer,
 )
 from .permissions import (
     UserRolePermission,
@@ -129,6 +137,8 @@ from .permissions import (
     MyAnnotationPermissions,
     PhotoPredictionPermissions,
     CountriesPermissions,
+    MessagePermissions,
+    MyMessagePermissions,
 )
 from .utils import get_serializer_field_paths_for_csv
 from .viewsets import (
@@ -174,7 +184,6 @@ class FixViewSet(CreateModelMixin, GenericViewSet):
 
 
 class NotificationViewSet(
-    CreateModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
@@ -192,28 +201,6 @@ class NotificationViewSet(
         .all()
     )
 
-    @property
-    def pagination_class(self):
-        if self.request.method == "POST":
-            return None
-        return super().pagination_class
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        notifications = serializer.save()
-
-        response_serializer = self.get_serializer(notifications, many=True)
-        headers = self.get_success_headers(response_serializer.data)
-        return Response(
-            response_serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
-
-    def get_serializer_class(self):
-        if self.action == "create":
-            return UserNotificationCreateSerializer
-        return super().get_serializer_class()
-
     def get_queryset(self):
         qs = super().get_queryset()
 
@@ -223,28 +210,115 @@ class NotificationViewSet(
 
         return qs
 
+
+@extend_schema_view(
+    list=extend_schema(
+        tags=["notifications"],
+        operation_id="notifications_list_mine",
+        description="Get Current User's Notifications",
+    )
+)
+class MyNotificationViewSet(NotificationViewSet, GenericMobileOnlyViewSet):
+    permission_classes = (MyNotificationPermissions,)
+
+    def get_queryset(self):
+        return super().get_queryset().for_user(user=self.request.user)
+
+
+class MessageViewSet(
+    CreateModelMixin, ListModelMixin, RetrieveModelMixin, GenericViewSet
+):
+    filterset_class = MessageFilter
+    permission_classes = (MessagePermissions,)
+    serializer_class = MessageSerializer
+    queryset = (
+        Notification.objects.filter(expert__isnull=False)
+        .select_related("notification_content", "expert")
+        .all()
+    )
+
+    @property
+    def pagination_class(self):
+        if self.request.method == "POST":
+            return None
+        if self.action == "recipients":
+            return None
+        return super().pagination_class
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        notification = serializer.save()
+
+        response_serializer = MessageSerializer(notification)
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(
+            response_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CreateUserMessageSerializer
+        return super().get_serializer_class()
+
+    def get_serializer(self, *args, **kwargs):
+        if self.action == "recipients":
+            kwargs["many"] = True
+        return super().get_serializer(*args, **kwargs)
+
     @action(
         detail=True,
         methods=["GET"],
         queryset=Notification.objects.select_related("expert").all(),
-        serializer_class=NotificationStatsSerializer,
+        serializer_class=MessageRecipientSerializer,
+        filterset_class=(),
     )
-    def stats(self, request, *args, **kwargs):
+    def recipients(self, request, *args, **kwargs):
         notification = self.get_object()
-        serializer = self.get_serializer(notification)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        users = TigaUser.objects.annotate(
+            has_direct=models.Exists(
+                SentNotification.objects.filter(
+                    notification=notification,
+                    sent_to_user_id=models.OuterRef("pk"),
+                )
+            ),
+            has_topic=models.Exists(
+                UserSubscription.objects.filter(
+                    topic__topic_sentnotifications__notification=notification,
+                    user_id=models.OuterRef("pk"),
+                )
+            ),
+            acknowledged=models.Exists(
+                AcknowledgedNotification.objects.filter(
+                    notification=notification,
+                    user_id=models.OuterRef("pk"),
+                )
+            ),
+        ).filter(models.Q(has_direct=True) | models.Q(has_topic=True))
+
+        recipients_data = []
+        for user in users.iterator():
+            recipients_data.append(
+                {
+                    "user": user,
+                    "has_read": user.acknowledged,
+                }
+            )
+
+        return Response(self.get_serializer(recipients_data).data)
 
     @extend_schema(
-        tags=["notifications"],
-        operation_id="notifications_send_to_topic",
-        description="Send a notification to a specific topic",
+        tags=["messages"],
+        operation_id="messages_send_to_topic",
+        description="Send a message to a specific topic",
     )
     @action(
         detail=False,
         methods=["POST"],
         url_path=r"topics/(?P<code>[^/.]+)",
         queryset=NotificationTopic.objects.all(),
-        serializer_class=TopicNotificationCreateSerializer,
+        serializer_class=CreateTopicMessageSerializer,
         filterset_class=(),
         lookup_field="topic_code",
         lookup_url_kwarg="code",
@@ -263,16 +337,16 @@ class NotificationViewSet(
 
 @extend_schema_view(
     list=extend_schema(
-        tags=["notifications"],
-        operation_id="notifications_list_mine",
-        description="Get Current User's Notifications",
+        tags=["messages"],
+        operation_id="messages_list_mine_sent",
+        description="Get current user's sent messages",
     )
 )
-class MyNotificationViewSet(NotificationViewSet, GenericMobileOnlyViewSet):
-    permission_classes = (MyNotificationPermissions,)
+class MySentMessageViewSet(MessageViewSet):
+    permission_classes = (MyMessagePermissions,)
 
     def get_queryset(self):
-        return super().get_queryset().for_user(user=self.request.user)
+        return super().get_queryset().filter(expert=self.request.user)
 
 
 class PartnersViewSet(ReadOnlyModelViewSet, GenericViewSet):

@@ -1,0 +1,137 @@
+test_name: List is not allowed for non auth users
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - jwt_token_user
+    - app_user_token
+  - parametrize:
+      key:
+        - endpoint
+        - status_code_token
+      vals:
+        - ["{endpoint}", 403]
+        - ["me/{endpoint}/sent", 403]
+
+stages:
+  - name: Non auth user can not list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+    response:
+      status_code: 401
+  - name: Mobile users can not list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: !int "{status_code_token}"
+  - name: User without perm can not list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: !int "{status_code_token}"
+
+---
+
+test_name: List method is allowed for auth user with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - jwt_token_user_can_view
+    - user_message
+
+stages:
+  - name: User with perm can list
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{user_message.pk}"
+
+---
+
+test_name: List mine sent only
+
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - jwt_token_user_can_view
+    - user_message
+    - user_message_sent_by_other_user
+
+stages:
+  - name: User with perm can list
+    request:
+      url: "{api_live_url}/me/{endpoint}/sent/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{user_message.pk}"
+
+---
+
+test_name: Filter by recipient_uuids
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - user_message
+    - jwt_token_user_can_view
+  - parametrize:
+      key: endpoint
+      vals:
+        - "{endpoint}"
+        - "me/{endpoint}/sent"
+
+stages:
+  - name: App user list their messages by not recipient_uuids
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      params:
+        recipient_uuids: "{app_user.pk}"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{user_message.pk}"

@@ -40,6 +40,8 @@ from .views import (
     MyIdentificationTaskViewSet,
     TaxaViewSet,
     BoundaryViewSet,
+    MessageViewSet,
+    MySentMessageViewSet,
 )
 
 
@@ -76,6 +78,7 @@ identification_task_router.register(
     r"predictions", IdentificationTaskViewSet.PhotoPredictionViewSet
 )
 
+router.register(r"messages", MessageViewSet, basename="messages")
 router.register(r"notifications", NotificationViewSet)
 router.register(r"observations", ObservationViewSest, basename="observations")
 router.register(r"partners", PartnersViewSet)
@@ -112,6 +115,11 @@ api_urlpatterns += [
         "me/permissions/",
         MyPermissionViewSet.as_view({"get": "retrieve"}),
         name="my-permissions",
+    ),
+    path(
+        "me/messages/sent/",
+        MySentMessageViewSet.as_view({"get": "list"}),
+        name="my-messages-sent",
     ),
     path(
         "me/notifications/",

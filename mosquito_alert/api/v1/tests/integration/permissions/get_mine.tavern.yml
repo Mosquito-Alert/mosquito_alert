@@ -59,7 +59,7 @@ stages:
               change: false
               view: false
               delete: false
-            notification:
+            message:
               add: false
               change: false
               view: false
@@ -109,7 +109,7 @@ stages:
               change: false
               view: false
               delete: false
-            notification:
+            message:
               add: false
               change: false
               view: false

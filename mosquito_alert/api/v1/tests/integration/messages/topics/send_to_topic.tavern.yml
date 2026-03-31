@@ -38,7 +38,7 @@ stages:
 
 ---
 
-test_name: Create topic notification
+test_name: Create topic message
 
 includes:
   - !include schema.yml
@@ -51,11 +51,11 @@ marks:
     - jwt_token_user_can_add
 
 stages:
-  - name: Create topic notification using auth user with permissions
+  - name: Create topic message using auth user with permissions
     request:
       url: "{api_live_url}/{endpoint}/{topic.topic_code}/"
       json:
-        message:
+        content:
           title:
             en: "english title"
           body:
@@ -69,7 +69,7 @@ stages:
 
 ---
 
-test_name: Send notification to topic that does not exist should return 404
+test_name: Send message to topic that does not exist should return 404
 
 
 includes:
@@ -82,11 +82,11 @@ marks:
     - jwt_token_user_can_add
 
 stages:
-  - name: Create topic notification using auth user with permissions
+  - name: Create topic message using auth user with permissions
     request:
       url: "{api_live_url}/{endpoint}/random_topic/"
       json:
-        message:
+        content:
           title:
             en: "english title"
           body:
@@ -100,7 +100,7 @@ stages:
 ---
 
 
-test_name: Users with role annotator can not create topic notifications
+test_name: Users with role annotator can not create topic messages
 
 includes:
   - !include schema.yml
@@ -113,7 +113,7 @@ marks:
     - jwt_token_user
 
 stages:
-  - name: Annotator user can not create notification
+  - name: Annotator user can not create message
     request:
       url: "{api_live_url}/{endpoint}/{topic.topic_code}/"
       headers:
@@ -125,7 +125,7 @@ stages:
 
 ---
 
-test_name: Users with role supervisor can not create notifications
+test_name: Users with role supervisor can not create messages
 
 includes:
   - !include schema.yml
@@ -138,7 +138,7 @@ marks:
     - jwt_token_user
 
 stages:
-  - name: Supervisor user can not create notification
+  - name: Supervisor user can not create message
     request:
       url: "{api_live_url}/{endpoint}/{topic.topic_code}/"
       headers:
@@ -149,7 +149,7 @@ stages:
 
 ---
 
-test_name: Users with role reviewer can create notifications
+test_name: Users with role reviewer can create messages
 
 includes:
   - !include schema.yml
@@ -163,13 +163,13 @@ marks:
     - jwt_token_user
 
 stages:
-  - name: Reviewer user can create notification
+  - name: Reviewer user can create message
     request:
       url: "{api_live_url}/{endpoint}/{topic.topic_code}/"
       json:
         user_uuids:
           - "{app_user.pk}"
-        message:
+        content:
           title:
             en: "english title"
           body:

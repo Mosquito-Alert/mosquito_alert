@@ -2,7 +2,6 @@ import pytest
 
 from mosquito_alert.notifications.models import (
     Notification,
-    NotificationTopic,
     NotificationContent,
     UserSubscription,
 )
@@ -22,22 +21,12 @@ def italian_user(app_user):
 
 
 @pytest.fixture
-def topic():
-    return NotificationTopic.objects.create(
-        topic_code="test", topic_description="test description"
-    )
-
-
-@pytest.fixture
-def user_notification(app_user):
-    notification = Notification.objects.create(
-        notification_content=NotificationContent.objects.create(
-            title_en="Test title", body_html_en="Test body"
-        )
-    )
-    notification.send_to_user(user=app_user, push=False)
-
-    return notification
+def italian_notification(user_notification):
+    user_notification.notification_content.title_native = "Titolo di prova"
+    user_notification.notification_content.body_html_native = "Corpo di prova"
+    user_notification.notification_content.native_locale = "it"
+    user_notification.notification_content.save()
+    return user_notification
 
 
 @pytest.fixture

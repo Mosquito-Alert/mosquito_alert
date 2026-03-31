@@ -1649,8 +1649,8 @@ class TestPermissionsApi:
         assert response.data["general"]["role"] == "annotator"
         assert not response.data["general"]["permissions"]["review"]["add"]
         assert not response.data["general"]["permissions"]["review"]["view"]
-        assert not response.data["general"]["permissions"]["notification"]["add"]
-        assert not response.data["general"]["permissions"]["notification"]["view"]
+        assert not response.data["general"]["permissions"]["message"]["add"]
+        assert not response.data["general"]["permissions"]["message"]["view"]
 
     def test_general_role_reviewer(self, api_client, user, me_endpoint):
         grant_permission_to_user(
@@ -1662,8 +1662,8 @@ class TestPermissionsApi:
         assert response.data["general"]["role"] == "reviewer"
         assert response.data["general"]["permissions"]["review"]["add"]
         assert response.data["general"]["permissions"]["review"]["view"]
-        assert response.data["general"]["permissions"]["notification"]["add"]
-        assert response.data["general"]["permissions"]["notification"]["view"]
+        assert response.data["general"]["permissions"]["message"]["add"]
+        assert response.data["general"]["permissions"]["message"]["view"]
 
     def test_general_role_admin(self, api_client, user, me_endpoint):
         user.is_superuser = True
@@ -1728,13 +1728,13 @@ class TestPermissionsApi:
         assert not response.data["countries"][0]["permissions"]["review"]["add"]
         assert not response.data["countries"][0]["permissions"]["review"]["view"]
 
-    def test_notification_permissions_enabled_on_user_has_add_permission(
+    def test_message_permissions_enabled_on_user_has_add_permission(
         self, api_client, user, me_endpoint
     ):
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert not response.data["general"]["permissions"]["notification"]["add"]
-        assert not response.data["general"]["permissions"]["notification"]["view"]
+        assert not response.data["general"]["permissions"]["message"]["add"]
+        assert not response.data["general"]["permissions"]["message"]["view"]
 
         grant_permission_to_user(
             codename="add_notification", model_class=Notification, user=user
@@ -1742,8 +1742,8 @@ class TestPermissionsApi:
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["permissions"]["notification"]["add"]
-        assert not response.data["general"]["permissions"]["notification"]["view"]
+        assert response.data["general"]["permissions"]["message"]["add"]
+        assert not response.data["general"]["permissions"]["message"]["view"]
 
         grant_permission_to_user(
             codename="view_notification", model_class=Notification, user=user
@@ -1751,8 +1751,8 @@ class TestPermissionsApi:
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["permissions"]["notification"]["add"]
-        assert response.data["general"]["permissions"]["notification"]["view"]
+        assert response.data["general"]["permissions"]["message"]["add"]
+        assert response.data["general"]["permissions"]["message"]["view"]
 
 
 @pytest.mark.django_db
@@ -1826,8 +1826,8 @@ class TestFixesApi:
 
 
 @pytest.mark.django_db
-class TestNotificationsApi:
-    endpoint = "/api/v1/notifications/"
+class TestMessagesApi:
+    endpoint = "/api/v1/messages/"
 
     @pytest.fixture
     def api_client(self, user):
@@ -1841,12 +1841,12 @@ class TestNotificationsApi:
         grant_permission_to_user(type="add", model_class=Notification, user=user)
         return user
 
-    def test_create_notification(self, app_user, api_client, permitted_user):
+    def test_create_message(self, app_user, api_client, permitted_user):
         response = api_client.post(
             self.endpoint,
             data={
                 "user_uuids": [str(app_user.pk)],
-                "message": {
+                "content": {
                     "title": {
                         "en": "Test Notification",
                     },
@@ -1858,7 +1858,7 @@ class TestNotificationsApi:
             format="json",
         )
         assert response.status_code == status.HTTP_201_CREATED
-        notification = Notification.objects.get(pk=response.data[0]["id"])
+        notification = Notification.objects.get(pk=response.data["id"])
 
         assert notification.expert == permitted_user
         notification_content = notification.notification_content
@@ -1873,7 +1873,7 @@ class TestNotificationsApi:
             notification=notification, sent_to_user=app_user
         ).exists()
 
-    def test_create_notification_send_push(self, app_user, api_client, permitted_user):
+    def test_create_message_send_push(self, app_user, api_client, permitted_user):
         with patch(
             "mosquito_alert.notifications.models.Notification.send_to_user"
         ) as mock_send:
@@ -1881,7 +1881,7 @@ class TestNotificationsApi:
                 self.endpoint,
                 data={
                     "user_uuids": [str(app_user.pk)],
-                    "message": {
+                    "content": {
                         "title": {
                             "en": "Test Notification",
                         },

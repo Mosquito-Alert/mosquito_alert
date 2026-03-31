@@ -22,6 +22,11 @@ from mosquito_alert.api.v1.tests.clients import AppAPIClient
 
 from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.identification_tasks.models import IdentificationTask
+from mosquito_alert.notifications.models import (
+    Notification,
+    NotificationTopic,
+    NotificationContent,
+)
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import UserStat
@@ -357,3 +362,23 @@ def use_test_cache_backend(settings):
             "LOCATION": "unique-test-cache",
         }
     }
+
+
+@pytest.fixture
+def topic():
+    return NotificationTopic.objects.create(
+        topic_code="test", topic_description="test description"
+    )
+
+
+@pytest.fixture
+def user_notification(app_user, user):
+    notification = Notification.objects.create(
+        expert=user,
+        notification_content=NotificationContent.objects.create(
+            title_en="Test title", body_html_en="Test body"
+        ),
+    )
+    notification.send_to_user(user=app_user, push=False)
+
+    return notification

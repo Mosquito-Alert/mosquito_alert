@@ -21,6 +21,7 @@ from mosquito_alert.notifications.models import Notification
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.geo.models import EuropeCountry, TemporaryBoundary
+from mosquito_alert.users.models import TigaUser
 
 
 User = get_user_model()
@@ -247,6 +248,18 @@ class NotificationFilter(filters.FilterSet):
     class Meta:
         model = Notification
         fields = ("is_read",)
+
+
+class MessageFilter(filters.FilterSet):
+    order_by = filters.OrderingFilter(fields=(("date_comment", "created_at"),))
+    recipient_uuids = filters.ModelMultipleChoiceFilter(
+        field_name="notification_sendings__sent_to_user",
+        queryset=TigaUser.objects.all(),
+    )
+
+    class Meta:
+        model = Notification
+        fields = {}
 
 
 class IdentificationTaskFilter(filters.FilterSet):
