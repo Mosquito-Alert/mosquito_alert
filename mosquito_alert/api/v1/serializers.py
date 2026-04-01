@@ -584,7 +584,6 @@ class CreateTopicMessageSerializer(MessageSerializer):
             pass
 
         title = LocalizedTopicMessageTitleSerializer(
-            languages=["en", "es", "ca"],
             required_languages=[
                 "en"
             ],  # For topic messages, english is required as fallback if user locale is not supported.
@@ -592,7 +591,6 @@ class CreateTopicMessageSerializer(MessageSerializer):
             help_text="Provide the message's title in all supported languages for this topic",
         )
         body = LocalizedTopicMessageBodySerializer(
-            languages=["en", "es", "ca"],
             required_languages=[
                 "en"
             ],  # For topic messages, english is required as fallback if user locale is not supported.
@@ -614,6 +612,10 @@ class CreateTopicMessageSerializer(MessageSerializer):
         content = validated_data.pop("notification_content")
         titles = content.pop("title")
         bodies = content.pop("body")
+        native_locale = next(
+            filter(lambda x: x not in ("en", "es", "ca"), titles.keys()), None
+        )
+
         return NotificationContent.objects.create(
             title_en=titles.get("en"),
             body_html_en=bodies.get("en"),
@@ -621,6 +623,9 @@ class CreateTopicMessageSerializer(MessageSerializer):
             body_html_es=bodies.get("es"),
             title_ca=titles.get("ca"),
             body_html_ca=bodies.get("ca"),
+            title_native=titles.get(native_locale),
+            body_html_native=bodies.get(native_locale),
+            native_locale=native_locale,
         )
 
     def create(self, validated_data):
