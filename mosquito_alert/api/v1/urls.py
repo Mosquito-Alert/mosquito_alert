@@ -42,6 +42,7 @@ from .views import (
     BoundaryViewSet,
     MessageViewSet,
     MySentMessageViewSet,
+    MessageTopicViewSet,
 )
 
 
@@ -78,6 +79,7 @@ identification_task_router.register(
     r"predictions", IdentificationTaskViewSet.PhotoPredictionViewSet
 )
 
+router.register(r"messages/topics", MessageTopicViewSet, basename="messages-topics")
 router.register(r"messages", MessageViewSet, basename="messages")
 router.register(r"notifications", NotificationViewSet)
 router.register(r"observations", ObservationViewSest, basename="observations")

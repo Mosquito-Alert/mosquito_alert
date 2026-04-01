@@ -38,6 +38,7 @@ from mosquito_alert.identification_tasks.models import (
 from mosquito_alert.notifications.models import (
     Notification,
     NotificationContent,
+    NotificationTopic,
 )
 from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
@@ -637,6 +638,16 @@ class MessageRecipientSerializer(serializers.Serializer):
 
     class Meta:
         fields = ("user", "has_read")
+
+
+class MessageTopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationTopic
+        fields = ("code", "description")
+        extra_kwargs = {
+            "code": {"source": "topic_code"},
+            "description": {"source": "topic_description"},
+        }
 
 
 #### END MESSAGE SERIALIZERS ####

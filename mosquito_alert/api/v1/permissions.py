@@ -156,6 +156,17 @@ class MyMessagePermissions(MessagePermissions):
     pass
 
 
+class MessageTopicPermissions(FullDjangoModelPermissions):
+    def has_permission(self, request, view):
+        role_perm = False
+        if request.method == "GET" and isinstance(request.user, User):
+            role_perm = UserRolePermission.check_permissions(
+                user=request.user, action="view", obj_or_klass=Notification
+            )
+
+        return super().has_permission(request, view) or role_perm
+
+
 class ReportPermissions(UserObjectPermissions):
     perms_map = permissions.DjangoObjectPermissions.perms_map
     authenticated_users_only = False

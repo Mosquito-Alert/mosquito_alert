@@ -1,9 +1,9 @@
 import pytest
 
-from mosquito_alert.notifications.models import NotificationTopic
+from mosquito_alert.notifications.models import Notification
 
 
 # NOTE: needed for token with perms fixture
 @pytest.fixture
 def model_class():
-    return NotificationTopic
+    return Notification
