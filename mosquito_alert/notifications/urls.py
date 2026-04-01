@@ -1,23 +1,27 @@
 from django.urls import path
-
-from .views import (
-    notifications_version_two,
-    notification_detail,
-    notifications_table,
-    user_notifications_datatable,
-)
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
-    path("", notifications_version_two, name="notifications"),
-    path("list/", notifications_table, name="notifications_table"),
     path(
-        "apilist/",
-        user_notifications_datatable,
-        name="user_notifications_datatable",
+        "",
+        RedirectView.as_view(
+            url="https://app.mosquitoalert.com/messages", permanent=True
+        ),
+        name="notifications",
+    ),
+    path(
+        "list/",
+        RedirectView.as_view(
+            url="https://app.mosquitoalert.com/messages", permanent=True
+        ),
+        name="notifications_table",
     ),
     path(
         "detail/<int:notification_id>",
-        notification_detail,
+        RedirectView.as_view(
+            url="https://app.mosquitoalert.com/messages/%(notification_id)s/",
+            permanent=True,
+        ),
         name="notification_detail",
     ),
 ]

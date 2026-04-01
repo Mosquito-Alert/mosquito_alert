@@ -12,7 +12,6 @@ from mosquito_alert.devices.models import Device
 from mosquito_alert.tigaserver_app.models import Session
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
-from django.views.decorators.cache import cache_page
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -28,7 +27,6 @@ from mosquito_alert.identification_tasks.models import (
 )
 from mosquito_alert.notifications.models import (
     Notification,
-    NotificationContent,
     SentNotification,
     AcknowledgedNotification,
     NotificationTopic,
@@ -39,16 +37,8 @@ from mosquito_alert.reports.models import Report, ReportResponse, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import TigaUser
 
-from .criteria import (
-    users_with_pictures,
-    users_with_storm_drain_pictures,
-    users_with_score,
-    users_with_score_range,
-    users_with_topic,
-)
 from .serializers import (
     NotificationSerializer,
-    NotificationContentSerializer,
     UserSerializer,
     ReportSerializer,
     PhotoSerializer,
@@ -417,30 +407,6 @@ def token(request):
         raise ParseError(detail="Invalid parameters")
 
 
-@api_view(["GET"])
-@cache_page(60)
-def user_count(request):
-    filter_criteria = request.query_params.get("filter_criteria", -1)
-    if filter_criteria == -1:
-        raise ParseError(detail="Invalid filter criteria")
-    if filter_criteria == "uploaded_pictures":
-        results = users_with_pictures()
-    elif filter_criteria == "uploaded_pictures_sd":
-        results = users_with_storm_drain_pictures()
-    elif filter_criteria.startswith("score_arbitrary"):
-        range = filter_criteria.split("-")
-        results = users_with_score_range(range[1], range[2])
-    elif filter_criteria.startswith("score"):
-        results = users_with_score(filter_criteria)
-    elif filter_criteria.startswith("topic"):
-        topic_code = request.query_params.get("value")
-        results = users_with_topic(topic_code)
-    else:
-        raise ParseError(detail="Invalid filter criteria")
-    content = {"user_count": len(results)}
-    return Response(content)
-
-
 def custom_render_map_notifications(map_notification):
     expert_comment = map_notification.notification_content.title_es
     expert_html = map_notification.notification_content.body_html_es
@@ -602,98 +568,6 @@ def user_notifications(request):
         this_notification.save()
         serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
-
-
-@api_view(["PUT"])
-def notification_content(request):
-    if request.method == "PUT":
-        this_notification_content = NotificationContent()
-        serializer = NotificationContentSerializer(
-            this_notification_content, data=request.data
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(["PUT"])
-def send_notifications(request):
-    if request.method == "PUT":
-        data = request.data
-        id = data["notification_content_id"]
-        sender = data["user_id"]
-        push = bool(data["ppush"].lower() == "true")
-        # report with oldest creation date
-        r = None
-        try:
-            r = data["report_id"]
-        except KeyError:
-            pass
-        report = None
-        # queryset = NotificationContent.objects.all()
-        # notification_content = get_object_or_404(queryset, pk=id)
-        notification_content = get_object_or_404(NotificationContent, pk=id)
-        recipients = data["recipients"]
-        topic = None
-        send_to = None
-
-        notification_estimate = 0
-
-        if recipients == "all":
-            topic = NotificationTopic.objects.get(topic_code="global")
-            # if global, estimate is all users with token
-            notification_estimate = UserSubscription.objects.filter(
-                topic=topic, user__fcmdevice__active=True
-            ).count()
-        elif "$" in recipients:
-            ids_list = recipients.split("$")
-            send_to = TigaUser.objects.filter(user_UUID__in=ids_list)
-            notification_estimate = len(ids_list)
-        else:  # it's either a topic or a single UUID
-            try:
-                topic = NotificationTopic.objects.get(topic_code=recipients)
-                # users subscribed to topic
-                notification_estimate = UserSubscription.objects.filter(
-                    topic=topic, user__fcmdevice__active=True
-                ).count()
-            except NotificationTopic.DoesNotExist:
-                notification_estimate = 1
-                send_to = [TigaUser.objects.get(pk=recipients)]
-
-        if r is not None:
-            try:
-                report = Report.objects.get(pk=r)
-            except Report.DoesNotExist:
-                pass
-
-        n = Notification(
-            expert_id=sender, notification_content=notification_content, report=report
-        )
-        n.save()
-
-        push_success = False
-        if topic is not None:
-            # send to topic
-            try:
-                send_response = n.send_to_topic(topic=topic, push=push)
-                push_success = send_response.success
-            except Exception:
-                pass
-        else:
-            # send to recipient(s)
-            for recipient in send_to:
-                try:
-                    batch_response = n.send_to_user(user=recipient, push=push)
-                    push_success = batch_response.success_count >= 0
-                except Exception:
-                    pass
-
-        results = {
-            "non_push_estimate_num": notification_estimate,
-            "push_success": push_success,
-        }
-        return Response(results)
 
 
 def send_unblock_email(name, email):
