@@ -98,16 +98,6 @@ class NotificationContent(models.Model):
         help_text="Arbitrary label used to group thematically equal notifications. Optional. ",
     )
 
-    @property
-    def body_image(self) -> Optional[str]:
-        soup = BeautifulSoup(self.body_html_en, "html.parser")
-
-        img_tag = soup.find("img")
-        if img_tag:
-            return img_tag.get("src")
-
-        return None
-
     def _get_localized_field(
         self,
         fieldname_prefix: str,
@@ -162,6 +152,20 @@ class NotificationContent(models.Model):
         else:
             # If no <body> tag is found, return text from the entire HTML document
             return soup.get_text(separator=" ", strip=True)
+
+    def get_body_image(
+        self, language_code: Optional[str] = None, fallback: bool = True
+    ) -> Optional[str]:
+        soup = BeautifulSoup(
+            self.get_body_html(language_code=language_code, fallback=fallback),
+            "html.parser",
+        )
+
+        img_tag = soup.find("img")
+        if img_tag:
+            return img_tag.get("src")
+
+        return None
 
     def save(self, *args, **kwargs):
         if not (self.title_native and self.body_html_native):
@@ -404,7 +408,9 @@ class SentNotification(models.Model):
                 body=self.notification.notification_content.get_body(
                     language_code=language_code
                 ),
-                image=self.notification.notification_content.body_image,
+                image=self.notification.notification_content.get_body_image(
+                    language_code=language_code
+                ),
             ),
             android=AndroidConfig(
                 notification=AndroidNotification(
