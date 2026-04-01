@@ -15,13 +15,13 @@ marks:
 stages:
   - name: Anonymous user can not create
     request:
-      url: "{api_live_url}/{endpoint}/{topic.topic_code}/"
+      url: "{api_live_url}/{endpoint}/{topic.topic_code}/send/"
       method: "POST"
     response:
       status_code: 401
   - name: Auth users without perms can not create
     request:
-      url: "{api_live_url}/{endpoint}/{topic.topic_code}/"
+      url: "{api_live_url}/{endpoint}/{topic.topic_code}/send/"
       method: "POST"
       headers:
         Authorization: "Bearer {jwt_token_user}"
@@ -29,7 +29,7 @@ stages:
       status_code: 403
   - name: Mobile app users can not create
     request:
-      url: "{api_live_url}/{endpoint}/{topic.topic_code}/"
+      url: "{api_live_url}/{endpoint}/{topic.topic_code}/send/"
       method: "POST"
       headers:
         Authorization: "Bearer {app_user_token}"
@@ -53,7 +53,7 @@ marks:
 stages:
   - name: Create topic message using auth user with permissions
     request:
-      url: "{api_live_url}/{endpoint}/{topic.topic_code}/"
+      url: "{api_live_url}/{endpoint}/{topic.topic_code}/send/"
       json:
         content:
           title:
@@ -84,7 +84,7 @@ marks:
 stages:
   - name: Create topic message using auth user with permissions
     request:
-      url: "{api_live_url}/{endpoint}/random_topic/"
+      url: "{api_live_url}/{endpoint}/random_topic/send/"
       json:
         content:
           title:
@@ -115,7 +115,7 @@ marks:
 stages:
   - name: Annotator user can not create message
     request:
-      url: "{api_live_url}/{endpoint}/{topic.topic_code}/"
+      url: "{api_live_url}/{endpoint}/{topic.topic_code}/send/"
       headers:
         Authorization: "Bearer {jwt_token_user}"
       method: "POST"
@@ -140,7 +140,7 @@ marks:
 stages:
   - name: Supervisor user can not create message
     request:
-      url: "{api_live_url}/{endpoint}/{topic.topic_code}/"
+      url: "{api_live_url}/{endpoint}/{topic.topic_code}/send/"
       headers:
         Authorization: "Bearer {jwt_token_user}"
       method: "POST"
@@ -165,7 +165,7 @@ marks:
 stages:
   - name: Reviewer user can create message
     request:
-      url: "{api_live_url}/{endpoint}/{topic.topic_code}/"
+      url: "{api_live_url}/{endpoint}/{topic.topic_code}/send/"
       json:
         user_uuids:
           - "{app_user.pk}"

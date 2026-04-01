@@ -115,6 +115,7 @@ from .serializers import (
     CreateOverwriteReviewSerializer,
     TemporaryBoundarySerializer,
     NotificationSerializer,
+    MessageTopicSerializer,
 )
 from .serializers import (
     MessageSerializer,
@@ -139,6 +140,7 @@ from .permissions import (
     CountriesPermissions,
     MessagePermissions,
     MyMessagePermissions,
+    MessageTopicPermissions,
 )
 from .utils import get_serializer_field_paths_for_csv
 from .viewsets import (
@@ -308,28 +310,34 @@ class MessageViewSet(
 
         return Response(self.get_serializer(recipients_data).data)
 
+
+class MessageTopicViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
+    queryset = NotificationTopic.objects.all()
+    serializer_class = MessageTopicSerializer
+    permission_classes = (MessageTopicPermissions,)
+
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    search_fields = ("topic_code", "topic_description")
+    lookup_url_kwarg = "code"
+    lookup_field = "topic_code"
+
     @extend_schema(
-        tags=["messages"],
-        operation_id="messages_send_to_topic",
+        operation_id="messages_topics_send",
         description="Send a message to a specific topic",
     )
     @action(
-        detail=False,
+        detail=True,
         methods=["POST"],
-        url_path=r"topics/(?P<code>[^/.]+)",
-        queryset=NotificationTopic.objects.all(),
         serializer_class=CreateTopicMessageSerializer,
-        filterset_class=(),
-        lookup_field="topic_code",
-        lookup_url_kwarg="code",
+        permission_classes=[MessagePermissions],
     )
-    def send_to_topic(self, request, code=None):
+    def send(self, request, code=None):
         topic = self.get_object()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.context["topic"] = topic
         serializer.save()
-        headers = self.get_success_headers(serializer.data)
+        headers = CreateModelMixin().get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
