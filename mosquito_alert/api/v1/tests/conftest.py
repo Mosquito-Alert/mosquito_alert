@@ -379,6 +379,6 @@ def user_notification(app_user, user):
             title_en="Test title", body_html_en="Test body"
         ),
     )
-    notification.send_to_user(user=app_user, push=False)
+    notification.send_to_user(user=app_user)
 
     return notification

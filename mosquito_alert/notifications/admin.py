@@ -9,9 +9,6 @@ class NotificationAdmin(admin.ModelAdmin):
         "report",
         "expert",
         "date_comment",
-        "expert_comment",
-        "expert_html",
-        "photo_url",
     )
     search_fields = ["report__version_UUID", "user__user_UUID"]
 

@@ -7,6 +7,7 @@ from mosquito_alert.notifications.models import (
     Notification,
     UserSubscription,
     NotificationContent,
+    NotificationRecipient,
 )
 
 
@@ -23,14 +24,18 @@ def user_message(user_notification):
 
 @pytest.fixture
 def unseen_user_message(user_message, app_user):
-    user_message.mark_as_unseen_for_user(user=app_user)
+    NotificationRecipient.objects.update_or_create(
+        notification=user_message, user=app_user, defaults={"is_read": False}
+    )
 
     return user_message
 
 
 @pytest.fixture
 def seen_user_message(user_message, app_user):
-    user_message.mark_as_seen_for_user(user=app_user)
+    NotificationRecipient.objects.update_or_create(
+        notification=user_message, user=app_user, defaults={"is_read": True}
+    )
 
     return user_message
 
@@ -44,7 +49,7 @@ def user_message_sent_by_other_user(app_user):
             title_en="Test title", body_html_en="Test body"
         ),
     )
-    notification.send_to_user(user=app_user, push=False)
+    notification.send_to_user(user=app_user)
 
     return notification
 
@@ -58,6 +63,6 @@ def topic_message(app_user, topic):
             title_en="Test title", body_html_en="Test body"
         )
     )
-    notification.send_to_topic(topic=topic, push=False)
+    notification.send_to_topic(topic=topic)
 
     return notification

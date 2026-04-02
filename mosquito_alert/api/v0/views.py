@@ -4,7 +4,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import mixins, GenericAPIView
 from rest_framework.exceptions import ParseError, ValidationError
-from django.db.models import Q
 from django.conf import settings
 from django_filters import rest_framework as filters
 import json
@@ -26,9 +25,7 @@ from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
 )
 from mosquito_alert.notifications.models import (
-    Notification,
-    SentNotification,
-    AcknowledgedNotification,
+    NotificationRecipient,
     NotificationTopic,
     UserSubscription,
 )
@@ -49,15 +46,6 @@ from .serializers import (
     UserSubscriptionSerializer,
     CoarseReportSerializer,
 )
-
-
-def score_label(score):
-    if score > 66:
-        return "user_score_pro"
-    elif 33 < score <= 66:
-        return "user_score_advanced"
-    else:
-        return "user_score_beginner"
 
 
 @api_view(["POST"])
@@ -278,15 +266,11 @@ class SessionViewSet(viewsets.ModelViewSet):
         return queryset.order_by("-session_ID")
 
 
-# This implementation is weird AF. The correct ack to be used should be /api/ack_notif. This one does the same, but
-# uses the DELETE verb and answers with no content in case of success, which is really counter-intuitive because
-# in fact it CREATES an AcknowledgedNotification
+# This implementation is weird AF.
 @api_view(["DELETE"])
 def mark_notif_as_ack(request):
     user = request.query_params.get("user", "-1")
     notif = request.query_params.get("notif", -1)
-    u = None
-    n = None
     if user == "-1":
         raise ParseError(detail="user param is mandatory")
     if notif == -1:
@@ -296,21 +280,19 @@ def mark_notif_as_ack(request):
     except TigaUser.DoesNotExist:
         raise ParseError(detail="This user does not exist")
     try:
-        n = Notification.objects.get(pk=notif)
-    except Notification.DoesNotExist:
+        notification_recipient = NotificationRecipient.objects.get(
+            user=u, notification_id=notif
+        )
+    except NotificationRecipient.DoesNotExist:
         raise ParseError(detail="This notification does not exist")
-    if AcknowledgedNotification.objects.filter(user=u).filter(notification=n).exists():
+
+    if notification_recipient.is_read:
         return Response(status=status.HTTP_204_NO_CONTENT)
-    else:
-        try:
-            ack_notif = AcknowledgedNotification(user=u, notification=n)
-            ack_notif.save()
-            map_notif = Notification.objects.get(id=notif)
-            map_notif.acknowledged = True
-            map_notif.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except AcknowledgedNotification.DoesNotExist:
-            raise ParseError(detail="Acknowledged not found")
+
+    notification_recipient.is_read = True
+    notification_recipient.save()
+
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
@@ -407,166 +389,24 @@ def token(request):
         raise ParseError(detail="Invalid parameters")
 
 
-def custom_render_map_notifications(map_notification):
-    expert_comment = map_notification.notification_content.title_es
-    expert_html = map_notification.notification_content.body_html_es
-    content = {
-        "id": map_notification.id,
-        "report_id": map_notification.report.version_UUID,
-        "user_id": map_notification.user.user_UUID,
-        "user_score": map_notification.user.score,
-        "user_score_label": score_label(map_notification.user.score),
-        "expert_id": map_notification.expert.id,
-        "date_comment": map_notification.date_comment,
-        "expert_comment": expert_comment,
-        "expert_html": expert_html,
-        "acknowledged": map_notification.acknowledged,
-        "public": map_notification.public,
-    }
-    return content
-
-
-def custom_render_mapnotification_queryset(queryset):
-    content = []
-    for notification in queryset:
-        content.append(custom_render_map_notifications(notification))
-    return content
-
-
-def custom_render_sent_notifications(queryset, acknowledged_queryset, locale):
-    content = []
-    ack_ids = [a.notification.id for a in acknowledged_queryset]
-    for sent_notif in queryset:
-        notification = sent_notif.notification
-        expert_comment = notification.notification_content.get_title(
-            language_code=locale
-        )
-        expert_html = notification.notification_content.get_body_html(
-            language_code=locale
-        )
-        this_content = {
-            "id": notification.id,
-            "report_id": notification.report.version_UUID
-            if notification.report is not None
-            else None,
-            "user_id": sent_notif.sent_to_user.user_UUID
-            if sent_notif.sent_to_user is not None
-            else None,
-            "topic": sent_notif.sent_to_topic.topic_code
-            if sent_notif.sent_to_topic is not None
-            else None,
-            "user_score": sent_notif.sent_to_user.score
-            if sent_notif.sent_to_user is not None
-            else None,
-            "user_score_label": score_label(sent_notif.sent_to_user.score)
-            if sent_notif.sent_to_user is not None
-            else None,
-            "expert_id": notification.expert.id if notification.expert else None,
-            "date_comment": notification.date_comment,
-            "expert_comment": expert_comment,
-            "expert_html": expert_html,
-            "acknowledged": True if sent_notif.notification.id in ack_ids else False,
-            "public": notification.public,
-        }
-        content.append(this_content)
-    return content
-
-
 @api_view(["GET"])
 def user_notifications(request):
     if request.method == "GET":
         locale = request.query_params.get("locale", "en")
         user_id = request.query_params.get("user_id", -1)
-        acknowledged = "ignore"
-        if request.query_params.get("acknowledged") is not None:
-            acknowledged = request.query_params.get("acknowledged", False)
-        # all_notifications = Notification.objects.all()
-        all_notifications = SentNotification.objects.all().select_related(
-            "notification"
-        )
         if user_id == -1:
             raise ParseError(detail="user_id is mandatory")
-        else:
-            all_notifications = all_notifications.filter(
-                sent_to_user__user_UUID=user_id
-            ).order_by("-notification__date_comment")
 
-        # we exclude from this the notifications sent via the new system (the ones which have an id entry in SentNotification)
-        # these are the notifications sent directly to a user + the notifications sent to a topic
-        new_notif_ids = (
-            SentNotification.objects.filter(
-                Q(sent_to_user__user_UUID=user_id) | Q(sent_to_topic__isnull=False)
-            )
-            .values("notification__id")
-            .distinct()
-        )
-        map_notifications_queryset = (
-            Notification.objects.filter(user__user_UUID=user_id)
-            .exclude(id__in=new_notif_ids)
-            .order_by("-date_comment")
+        notifications_qs = (
+            NotificationRecipient.objects.filter(user=user_id)
+            .select_related("notification", "notification__notification_content")
+            .order_by("-notification__date_comment")
         )
 
-        # global_topic notifications
-        global_notifications = SentNotification.objects.filter(
-            sent_to_topic__topic_code="global"
-        ).select_related("notification")
-
-        # other notifications
-        this_user = TigaUser.objects.get(pk=user_id)
-        user_subscriptions = this_user.user_subscriptions.all()
-        subscribed_topics = [a.topic for a in user_subscriptions]
-        other_topic_notifications = SentNotification.objects.filter(
-            sent_to_topic__in=subscribed_topics
-        ).select_related("notification")
-
-        notifications_all_of_them = (
-            all_notifications | global_notifications | other_topic_notifications
+        serializer = NotificationSerializer(
+            notifications_qs, many=True, context={"locale": locale}
         )
 
-        acknowledgements = AcknowledgedNotification.objects.filter(
-            user__user_UUID=user_id
-        )
-        if acknowledged != "ignore":
-            ack_bool = acknowledged.lower() == "true" if acknowledged else False
-            acknowledged_notifs = acknowledgements.values("notification")
-            if ack_bool is True:
-                notifications_all_of_them = notifications_all_of_them.filter(
-                    notification__in=acknowledged_notifs
-                ).order_by("-notification__date_comment")
-            else:
-                notifications_all_of_them = notifications_all_of_them.exclude(
-                    notification__in=acknowledged_notifs
-                ).order_by("-notification__date_comment")
-        # serializer = NotificationSerializer(all_notifications)
-        content = custom_render_sent_notifications(
-            notifications_all_of_them, acknowledgements, locale
-        )
-        map_content = custom_render_mapnotification_queryset(map_notifications_queryset)
-
-        final_content = content + map_content
-
-        final_content = sorted(
-            final_content, key=lambda x: x["date_comment"], reverse=True
-        )
-
-        # return Response(serializer.data)
-        return Response(final_content)
-    # we keep the post method so the old ack method keeps working
-    if request.method == "POST":
-        id = request.query_params.get("id", -1)
-        try:
-            int(id)
-        except ValueError:
-            raise ParseError(detail="Invalid id integer value")
-        queryset = Notification.objects.all()
-        this_notification = get_object_or_404(queryset, pk=id)
-        if request.query_params.get("acknowledged") is not None:
-            ack = request.query_params.get("acknowledged", True)
-        if ack != "ignore":
-            ack_bool = ack.lower() == "true" if ack else False
-            this_notification.acknowledged = ack_bool
-        this_notification.save()
-        serializer = NotificationSerializer(this_notification)
         return Response(serializer.data)
 
 

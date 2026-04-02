@@ -1130,8 +1130,13 @@ class NotificationTestCase(APITestCase):
         nc.save()
         n = Notification(expert=self.reritja_user, notification_content=nc)
         n.save()
+
+        UserSubscription.objects.get_or_create(
+            user=self.regular_user, topic=self.global_topic
+        )
+
         # send notif to global topic
-        n.send_to_topic(topic=self.global_topic, push=False)
+        n.send_to_topic(topic=self.global_topic)
 
         # the regular user should see this notification
         some_user = self.regular_user
@@ -1174,19 +1179,7 @@ class NotificationTestCase(APITestCase):
         n = Notification(expert=self.reritja_user, notification_content=nc)
         n.save()
 
-        # send notif to regular topic
-        n.send_to_topic(topic=self.some_topic, push=False)
-
         self.client.force_authenticate(user=self.reritja_user)
-        # list notifications for regular user
-        response = self.client.get(
-            "/api/user_notifications/?user_id=" + self.regular_user.user_UUID
-        )
-        # response should be ok
-        self.assertEqual(response.status_code, 200)
-        # no notifications should be available
-        self.assertEqual(len(response.data), 0)
-
         # subscribe user to regular topic
         response = self.client.post(
             "/api/subscribe_to_topic/?code="
@@ -1197,6 +1190,9 @@ class NotificationTestCase(APITestCase):
         # should respond created
         self.assertEqual(response.status_code, 201)
 
+        # send notif to regular topic
+        n.send_to_topic(topic=self.some_topic)
+
         # list notifications for regular user again
         response = self.client.get(
             "/api/user_notifications/?user_id=" + self.regular_user.user_UUID
@@ -1205,8 +1201,6 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         # only the topic notification should be available
         self.assertEqual(len(response.data), 1)
-        # the only notification should be about the topic
-        self.assertEqual(response.data[0]["topic"], "some_topic")
 
         # now, unsubscribe!
         response = self.client.post(
@@ -1224,8 +1218,8 @@ class NotificationTestCase(APITestCase):
         )
         # response should be ok
         self.assertEqual(response.status_code, 200)
-        # no notifications available
-        self.assertEqual(len(response.data), 0)
+        # notifications are still available
+        self.assertEqual(len(response.data), 1)
         self.client.logout()
 
     def test_direct_notifs_and_topic_sort_okay(self):
@@ -1253,20 +1247,23 @@ class NotificationTestCase(APITestCase):
         n1.save()
 
         # send notif to user
-        n1.send_to_user(user=some_user, push=False)
+        n1.send_to_user(user=some_user)
+
+        # Ensure user is subscribed to global topic
+        UserSubscription.objects.get_or_create(user=some_user, topic=self.global_topic)
 
         # GLOBAL notification
         n3 = Notification(expert=self.reritja_user, notification_content=nc1)
         n3.save()
         # send notif to global topic
-        n3.send_to_topic(topic=self.global_topic, push=False)
+        n3.send_to_topic(topic=self.global_topic)
 
         # SECOND direct  NOTIFICATION
         n2 = Notification(expert=self.reritja_user, notification_content=nc2)
         n2.save()
 
         # send notif to user
-        n2.send_to_user(user=some_user, push=False)
+        n2.send_to_user(user=some_user)
 
         self.client.force_authenticate(user=self.reritja_user)
         response = self.client.get(
@@ -1276,8 +1273,6 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         # should receive both direct notifications and global
         self.assertEqual(len(response.data), 3)
-        # global should be in the middle
-        self.assertEqual(response.data[1]["topic"], "global")
         # most recent should be 2
         self.assertEqual(response.data[0]["expert_comment"], nc2.title_en)
         # 0 should be more recent than 1

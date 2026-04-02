@@ -344,7 +344,7 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
     )
 
     @property
-    def language_iso2(self):
+    def language_iso2(self) -> str:
         return Language.get(self.locale).language.lower()
 
     @property

@@ -39,6 +39,7 @@ from mosquito_alert.notifications.models import (
     Notification,
     NotificationContent,
     NotificationTopic,
+    NotificationRecipient,
 )
 from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
@@ -321,30 +322,22 @@ class NotificationSerializer(serializers.ModelSerializer):
         title = serializers.SerializerMethodField()
         body = serializers.SerializerMethodField()
 
-        def get_title(self, obj) -> str:
-            if obj.notification_content is None:
-                return ""
-
+        def get_title(self, obj: NotificationContent) -> str:
             language_code = None
             user = self.context.get("request").user
             if user and isinstance(user, TigaUser):
                 language_code = user.locale
 
-            return obj.notification_content.get_title(language_code=language_code)
+            return obj.get_title(language_code=language_code)
 
         @extend_schema_field(HTMLCharField)
-        def get_body(self, obj) -> str:
-            if obj.notification_content is None:
-                return ""
-
+        def get_body(self, obj: NotificationContent) -> str:
             language_code = None
             user = self.context.get("request").user
             if user and isinstance(user, TigaUser):
                 language_code = user.locale
 
-            body_html = obj.notification_content.get_body_html(
-                language_code=language_code
-            )
+            body_html = obj.get_body_html(language_code=language_code)
 
             return minify_html.minify(
                 body_html or "",
@@ -352,43 +345,24 @@ class NotificationSerializer(serializers.ModelSerializer):
             )
 
         class Meta:
-            model = Notification
+            model = NotificationContent
             fields = ("title", "body")
 
-    message = NotificationMessageSerializer(source="*", read_only=True)
-    is_read = WritableSerializerMethodField(
-        field_class=serializers.BooleanField, required=True
+    message = NotificationMessageSerializer(
+        source="notification.notification_content", read_only=True
     )
-
-    def get_is_read(self, obj) -> bool:
-        user = self.context.get("request").user
-        if not isinstance(user, TigaUser):
-            return False
-
-        if not hasattr(obj, "notification_acknowledgements"):
-            return False
-
-        return obj.notification_acknowledgements.filter(
-            user=self.context.get("request").user
-        ).exists() or (obj.user == user and obj.acknowledged)
-
-    def update(self, instance, validated_data):
-        is_read = validated_data.pop("is_read", None)
-        instance = super().update(instance, validated_data)
-
-        if is_read is not None:
-            if is_read is True:
-                instance.mark_as_seen_for_user(user=self.context.get("request").user)
-            else:
-                instance.mark_as_unseen_for_user(user=self.context.get("request").user)
-
-        return instance
+    created_at = serializers.DateTimeField(
+        source="notification.date_comment", read_only=True
+    )
+    is_read = serializers.BooleanField(required=True)
 
     class Meta:
-        model = Notification
+        model = NotificationRecipient
         fields = ("id", "message", "is_read", "created_at")
         read_only_fields = ("created_at",)
-        extra_kwargs = {"created_at": {"source": "date_comment"}}
+        extra_kwargs = {
+            "id": {"source": "notification_id", "read_only": True},
+        }
 
 
 #### END NOTIFICATION SERIALIZERS ####
@@ -502,7 +476,7 @@ class MessageSerializer(serializers.ModelSerializer):
         )
 
     @transaction.atomic
-    def create(self, validated_data, **kwargs):
+    def create(self, validated_data, **kwargs) -> Notification:
         validated_data["notification_content"] = self._create_notification_content(
             validated_data, **kwargs
         )
@@ -637,11 +611,12 @@ class CreateTopicMessageSerializer(MessageSerializer):
         return instance
 
 
-class MessageRecipientSerializer(serializers.Serializer):
+class MessageRecipientSerializer(serializers.ModelSerializer):
     user = MinimalUserSerializer(read_only=True)
-    has_read = serializers.BooleanField(read_only=True)
+    has_read = serializers.BooleanField(source="is_read", read_only=True)
 
     class Meta:
+        model = NotificationRecipient
         fields = ("user", "has_read")
 
 
