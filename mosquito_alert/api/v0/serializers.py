@@ -6,8 +6,7 @@ from mosquito_alert.campaigns.models import OWCampaigns
 from mosquito_alert.fixes.models import Fix
 from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.notifications.models import (
-    Notification,
-    NotificationContent,
+    NotificationRecipient,
     UserSubscription,
 )
 from mosquito_alert.reports.models import Report, ReportResponse, Photo
@@ -325,51 +324,32 @@ class FixSerializer(
         ]
 
 
-class NotificationContentSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    body_html_en = serializers.CharField()
-    title_en = serializers.CharField()
-    body_html_native = serializers.CharField(required=False)
-    title_native = serializers.CharField(required=False)
-    native_locale = serializers.CharField(required=False)
-    notification_label = serializers.CharField(required=False)
-
-    class Meta:
-        model = NotificationContent
-        fields = (
-            "id",
-            "body_html_en",
-            "body_html_native",
-            "title_en",
-            "title_native",
-            "native_locale",
-            "notification_label",
-        )
-
-
 class NotificationSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    report_id = serializers.CharField()
-    user_id = serializers.CharField()
-    expert_id = serializers.IntegerField()
-    date_comment = serializers.Field()
-    photo_url = serializers.CharField()
-    acknowledged = serializers.BooleanField()
-    notification_content = NotificationContentSerializer()
-    public = serializers.BooleanField()
-    map_notification = serializers.BooleanField()
+    expert_comment = serializers.SerializerMethodField()
+    expert_html = serializers.SerializerMethodField()
+    date_comment = serializers.DateTimeField(
+        source="notification.date_comment", read_only=True
+    )
+
+    def get_expert_comment(self, obj: NotificationRecipient) -> str:
+        locale = self.context.get("locale", None)
+        return obj.notification.notification_content.get_title(
+            language_code=locale or obj.user.language_iso2
+        )
+
+    def get_expert_html(self, obj: NotificationRecipient) -> str:
+        locale = self.context.get("locale", None)
+        return obj.notification.notification_content.get_body_html(
+            language_code=locale or obj.user.language_iso2
+        )
 
     class Meta:
-        model = Notification
-        fields = (
-            "id",
-            "report_id",
-            "expert_id",
-            "date_comment",
-            "notification_content",
-            "public",
-            "map_notification",
-        )
+        model = NotificationRecipient
+        fields = ("id", "acknowledged", "expert_comment", "expert_html", "date_comment")
+        extra_kwargs = {
+            "id": {"source": "notification_id", "read_only": True},
+            "acknowledged": {"source": "is_read", "read_only": True},
+        }
 
 
 class UserSubscriptionSerializer(serializers.ModelSerializer):

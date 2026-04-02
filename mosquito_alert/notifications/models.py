@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from collections import Counter
 from firebase_admin.exceptions import FirebaseError
 from firebase_admin.messaging import (
     Message,
@@ -18,8 +19,6 @@ from django.db import models
 from mosquito_alert.devices.models import Device
 from mosquito_alert.reports.models import Report
 from mosquito_alert.users.models import TigaUser
-
-from .managers import NotificationManager
 
 User = get_user_model()
 
@@ -185,9 +184,9 @@ class Notification(models.Model):
         help_text="Report regarding the current notification",
         on_delete=models.CASCADE,
     )
-    # The field 'user' is kept for backwards compatibility with the map notifications. It only has meaningful content on MAP NOTIFICATIONS
-    # and in all other cases is given a default value (null user 00000000-0000-0000-0000-000000000000)
-    user = models.ForeignKey(TigaUser, null=True, blank=True, on_delete=models.CASCADE)
+    recipients = models.ManyToManyField(
+        TigaUser, through="NotificationRecipient", related_name="notifications"
+    )
     expert = models.ForeignKey(
         User,
         null=True,
@@ -200,95 +199,90 @@ class Notification(models.Model):
     # blank is True to avoid problems in the migration, this should be removed!!
     notification_content = models.ForeignKey(
         NotificationContent,
-        blank=True,
-        null=True,
         related_name="notification_content",
         help_text="Multi language content of the notification",
-        on_delete=models.SET_NULL,
-    )
-    # All this becomes obsolete, now all notification text is outside. This allows for re-use in massive notifications
-    expert_comment = models.TextField(
-        "Expert comment", help_text="Text message sent to user"
-    )
-    expert_html = models.TextField(
-        "Expert comment, expanded and allows html",
-        help_text="Expanded message information goes here. This field can contain HTML",
-    )
-    photo_url = models.TextField(
-        "Url to picture that originated the comment",
-        null=True,
-        blank=True,
-        help_text="Relative url to the public report photo",
-    )
-    public = models.BooleanField(
-        default=False,
-        help_text="Whether the notification is shown in the public map or not",
-    )
-    # The field 'acknowledged' is kept for backwards compatibility with the map notifications. It only has meaningful content on MAP NOTIFICATIONS
-    acknowledged = models.BooleanField(
-        default=False,
-        help_text="This is set to True through the public API, when the user signals that the message has been received",
+        on_delete=models.PROTECT,
     )
 
-    objects = NotificationManager()
-
-    def mark_as_seen_for_user(self, user: TigaUser) -> None:
-        _ = AcknowledgedNotification.objects.get_or_create(user=user, notification=self)
-
-    def mark_as_unseen_for_user(self, user: TigaUser) -> None:
-        _ = AcknowledgedNotification.objects.filter(
-            user=user, notification=self
-        ).delete()
-
-    def send_to_topic(
-        self,
-        topic: "NotificationTopic",
-        push: bool = True,
-        language_code: Optional[str] = None,
-    ) -> Optional[SendResponse]:
-        obj, _ = SentNotification.objects.get_or_create(
-            sent_to_topic=topic, notification=self
+    def get_fcm_message(self, language_code: str) -> Message:
+        # See: https://firebase.google.com/docs/reference/admin/python/firebase_admin.messaging
+        # See: https://firebaseopensource.com/projects/flutter/plugins/packages/firebase_messaging/readme/
+        return Message(
+            data={"id": str(self.notification.pk)},
+            notification=FirebaseNotification(
+                title=self.notification.notification_content.get_title(
+                    language_code=language_code
+                ),
+                body=self.notification.notification_content.get_body(
+                    language_code=language_code
+                ),
+                image=self.notification.notification_content.get_body_image(
+                    language_code=language_code
+                ),
+            ),
+            android=AndroidConfig(
+                notification=AndroidNotification(
+                    click_action="FLUTTER_NOTIFICATION_CLICK"
+                ),
+                # NOTE: priority high is needed to show notification when the app is in foreground.
+                # see https://firebase.google.com/docs/cloud-messaging/flutter/receive#foreground_and_notification_messages
+                priority="high",
+            ),
         )
 
-        if push:
-            return obj.send_push(language_code=language_code)
+    def send_to_topic(self, topic: "NotificationTopic") -> None:
+        topic.send_notification(notification=self)
 
-    def send_to_user(
-        self, user: TigaUser, push: bool = True
-    ) -> Optional[BatchResponse]:
-        obj, _ = SentNotification.objects.get_or_create(
-            sent_to_user=user, notification=self
-        )
-
-        if push:
-            return obj.send_push(language_code=user.locale)
+    def send_to_user(self, user: TigaUser) -> None:
+        NotificationRecipient.objects.get_or_create(user=user, notification=self)
 
     class Meta:
         db_table = "tigaserver_app_notification"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
 
 
-class AcknowledgedNotification(models.Model):
-    user = models.ForeignKey(
-        TigaUser,
-        related_name="user_acknowledgements",
-        help_text="User which has acknowledged the notification",
-        on_delete=models.CASCADE,
-    )
-    notification = models.ForeignKey(
-        Notification,
-        related_name="notification_acknowledgements",
-        help_text="The notification which has been acknowledged or not",
-        on_delete=models.CASCADE,
-    )
-    # no explicit ack field. If there is a row in this table, it has been acked
-    # acknowledged = models.BooleanField(default=True, help_text='This is set to True through the public API, when the user signals that the message has been received')
+class NotificationRecipient(models.Model):
+    notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
+    user = models.ForeignKey(TigaUser, on_delete=models.CASCADE)
+
+    through_topics = models.ManyToManyField("NotificationTopic", blank=True)
+
+    is_read = models.BooleanField(default=False)
+
+    # TODO: Make it async (celery task)
+    def send_push(self) -> Union[SendResponse, None]:
+
+        if settings.DISABLE_PUSH:
+            return
+
+        message = self.notification.get_fcm_message(
+            language_code=self.user.locale or "en"
+        )
+
+        try:
+            return self.user.devices.all().send_message(message=message).response
+        except (FirebaseError, ValueError) as e:
+            logger_notification.exception(str(e))
+        except Exception as e:
+            logger_notification.exception(str(e))
+
+    def save(self, *args, **kwargs):
+        is_adding = self._state.adding
+
+        super().save(*args, **kwargs)
+
+        if is_adding:
+            try:
+                self.send_push()
+            except Exception:
+                pass
 
     class Meta:
-        db_table = "tigaserver_app_acknowledgednotification"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
-        unique_together = (
-            "user",
-            "notification",
-        )
+        constraints = [
+            models.UniqueConstraint(
+                fields=["notification", "user"],
+                name="unique_notification_recipient",
+            )
+        ]
 
 
 TOPIC_GROUPS = (
@@ -314,6 +308,39 @@ class NotificationTopic(models.Model):
         default=0,
         help_text="Your degree of belief that at least one photo shows a tiger mosquito breeding site",
     )
+
+    def send_notification(
+        self, notification: Notification
+    ) -> Union[BatchResponse, None]:
+        bulk_recipients = []
+        users = []
+        users_qs = TigaUser.objects.filter(user_subscriptions__topic=self)
+        for user in users_qs.iterator():
+            users.append(user)
+            bulk_recipients.append(
+                NotificationRecipient(notification=notification, user=user)
+            )
+
+        if len(users) == 0:
+            return
+
+        _ = NotificationRecipient.objects.bulk_create(
+            bulk_recipients, batch_size=1000, ignore_conflicts=True
+        )
+        # NOTE: ignore_conflicts make returned object not having its pk set.
+        for recipient in NotificationRecipient.objects.filter(
+            user__in=users
+        ).iterator():
+            recipient.through_topics.add(self)
+
+        if settings.DISABLE_PUSH:
+            return
+
+        majority_locale = Counter(u.locale for u in users).most_common(1)[0][0]
+        return Device.send_topic_message(
+            message=self.notification.get_fcm_message(language_code=majority_locale),
+            topic_name=self.sent_to_topic.topic_code,
+        )
 
     class Meta:
         db_table = "tigaserver_app_notificationtopic"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
@@ -362,81 +389,3 @@ class UserSubscription(models.Model):
             "user",
             "topic",
         )
-
-
-class SentNotification(models.Model):
-    sent_to_user = models.ForeignKey(
-        TigaUser,
-        null=True,
-        blank=True,
-        related_name="user_sentnotifications",
-        help_text="User to which the notification was sent",
-        on_delete=models.CASCADE,
-    )
-    sent_to_topic = models.ForeignKey(
-        NotificationTopic,
-        null=True,
-        blank=True,
-        related_name="topic_sentnotifications",
-        help_text="Topic to which the notification was sent.",
-        on_delete=models.CASCADE,
-    )
-    # both sent_to_user and sent_to_topic can be null, but they can't be null at the same time. In other words, a sending
-    # you either send a notification to a user, or to a group of users via topics
-    notification = models.ForeignKey(
-        Notification,
-        related_name="notification_sendings",
-        help_text="The notification which has been sent",
-        on_delete=models.CASCADE,
-    )
-
-    def send_push(
-        self, language_code: str = None
-    ) -> Union[SendResponse, BatchResponse]:
-
-        if settings.DISABLE_PUSH:
-            return
-
-        # See: https://firebase.google.com/docs/reference/admin/python/firebase_admin.messaging
-        # See: https://firebaseopensource.com/projects/flutter/plugins/packages/firebase_messaging/readme/
-        message = Message(
-            data={"id": str(self.notification.pk)},
-            notification=FirebaseNotification(
-                title=self.notification.notification_content.get_title(
-                    language_code=language_code
-                ),
-                body=self.notification.notification_content.get_body(
-                    language_code=language_code
-                ),
-                image=self.notification.notification_content.get_body_image(
-                    language_code=language_code
-                ),
-            ),
-            android=AndroidConfig(
-                notification=AndroidNotification(
-                    click_action="FLUTTER_NOTIFICATION_CLICK"
-                ),
-                # NOTE: priority high is needed to show notification when the app is in foreground.
-                # see https://firebase.google.com/docs/cloud-messaging/flutter/receive#foreground_and_notification_messages
-                priority="high",
-            ),
-        )
-
-        try:
-            if self.sent_to_topic:
-                return Device.send_topic_message(
-                    message=message, topic_name=self.sent_to_topic.topic_code
-                )
-            elif self.sent_to_user:
-                return (
-                    self.sent_to_user.devices.all()
-                    .send_message(message=message)
-                    .response
-                )
-        except (FirebaseError, ValueError) as e:
-            logger_notification.exception(str(e))
-        except Exception as e:
-            logger_notification.exception(str(e))
-
-    class Meta:
-        db_table = "tigaserver_app_sentnotification"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.

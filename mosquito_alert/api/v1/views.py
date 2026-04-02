@@ -62,9 +62,7 @@ from mosquito_alert.identification_tasks.models import (
 from mosquito_alert.notifications.models import (
     Notification,
     NotificationTopic,
-    SentNotification,
-    UserSubscription,
-    AcknowledgedNotification,
+    NotificationRecipient,
 )
 from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
@@ -186,10 +184,9 @@ class FixViewSet(CreateModelMixin, GenericViewSet):
 
 
 class NotificationViewSet(
-    ListModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
-    GenericViewSet,
+    GenericMobileOnlyViewSet,
 ):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = NotificationFilter
@@ -197,18 +194,19 @@ class NotificationViewSet(
 
     permission_classes = (NotificationObjectPermissions,)
 
-    queryset = (
-        Notification.objects.select_related("notification_content")
-        .prefetch_related("notification_acknowledgements")
-        .all()
-    )
+    lookup_field = "notification_id"
+    lookup_url_kwarg = "id"
+
+    queryset = NotificationRecipient.objects.select_related(
+        "notification", "notification__notification_content"
+    ).all()
 
     def get_queryset(self):
         qs = super().get_queryset()
 
         user = self.request.user
         if isinstance(user, TigaUser):
-            qs = qs.for_user(user=user)
+            qs = qs.filter(user=user)
 
         return qs
 
@@ -220,11 +218,8 @@ class NotificationViewSet(
         description="Get Current User's Notifications",
     )
 )
-class MyNotificationViewSet(NotificationViewSet, GenericMobileOnlyViewSet):
+class MyNotificationViewSet(NotificationViewSet, ListModelMixin):
     permission_classes = (MyNotificationPermissions,)
-
-    def get_queryset(self):
-        return super().get_queryset().for_user(user=self.request.user)
 
 
 class MessageViewSet(
@@ -278,37 +273,11 @@ class MessageViewSet(
     def recipients(self, request, *args, **kwargs):
         notification = self.get_object()
 
-        users = TigaUser.objects.annotate(
-            has_direct=models.Exists(
-                SentNotification.objects.filter(
-                    notification=notification,
-                    sent_to_user_id=models.OuterRef("pk"),
-                )
-            ),
-            has_topic=models.Exists(
-                UserSubscription.objects.filter(
-                    topic__topic_sentnotifications__notification=notification,
-                    user_id=models.OuterRef("pk"),
-                )
-            ),
-            acknowledged=models.Exists(
-                AcknowledgedNotification.objects.filter(
-                    notification=notification,
-                    user_id=models.OuterRef("pk"),
-                )
-            ),
-        ).filter(models.Q(has_direct=True) | models.Q(has_topic=True))
-
-        recipients_data = []
-        for user in users.iterator():
-            recipients_data.append(
-                {
-                    "user": user,
-                    "has_read": user.acknowledged,
-                }
-            )
-
-        return Response(self.get_serializer(recipients_data).data)
+        recipients = NotificationRecipient.objects.filter(
+            notification=notification
+        ).select_related("user")
+        serializer = self.get_serializer(recipients, many=True)
+        return Response(serializer.data)
 
 
 class MessageTopicViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):

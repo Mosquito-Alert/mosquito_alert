@@ -17,7 +17,7 @@ from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
     ExpertReportAnnotation,
 )
-from mosquito_alert.notifications.models import Notification
+from mosquito_alert.notifications.models import Notification, NotificationRecipient
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.geo.models import EuropeCountry, TemporaryBoundary
@@ -238,22 +238,19 @@ class BreedingSiteFilter(BaseReportWithPhotosFilter):
 
 
 class NotificationFilter(filters.FilterSet):
-    is_read = filters.BooleanFilter(method="filter_is_read")
-
-    order_by = filters.OrderingFilter(fields=(("date_comment", "created_at"),))
-
-    def filter_is_read(self, queryset, name, value):
-        return queryset.seen_by_user(user=self.request.user, state=value)
+    order_by = filters.OrderingFilter(
+        fields=(("notification__date_comment", "created_at"),)
+    )
 
     class Meta:
-        model = Notification
+        model = NotificationRecipient
         fields = ("is_read",)
 
 
 class MessageFilter(filters.FilterSet):
     order_by = filters.OrderingFilter(fields=(("date_comment", "created_at"),))
     recipient_uuids = filters.ModelMultipleChoiceFilter(
-        field_name="notification_sendings__sent_to_user",
+        field_name="notificationrecipient__user",
         queryset=TigaUser.objects.all(),
     )
 

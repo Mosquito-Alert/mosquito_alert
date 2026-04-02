@@ -33,4 +33,4 @@ stages:
         Authorization: "Bearer {jwt_token_user_can_delete:s}"
       method: "DELETE"
     response:
-      status_code: 405
+      status_code: 403

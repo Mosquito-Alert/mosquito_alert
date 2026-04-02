@@ -9,7 +9,7 @@ from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
     ExpertReportAnnotation,
 )
-from mosquito_alert.notifications.models import Notification
+from mosquito_alert.notifications.models import Notification, NotificationRecipient
 from mosquito_alert.users.models import UserStat, TigaUser
 from mosquito_alert.users.permissions import ReviewPermission
 
@@ -110,17 +110,19 @@ class UserPermissions(FullDjangoModelPermissions):
 
 
 class NotificationObjectPermissions(UserObjectPermissions):
-    def _app_user_has_object_permission(self, request, view, obj):
-        return (
-            Notification.objects.for_user(user=request.user).filter(pk=obj.pk).exists()
-        )
+    def has_permission(self, request, view):
+        if isinstance(request.user, User):
+            return False
+        return super().has_permission(request, view)
+
+    def _app_user_has_object_permission(
+        self, request, view, obj: NotificationRecipient
+    ):
+        return obj.user == request.user
 
 
 class MyNotificationPermissions(NotificationObjectPermissions):
-    def has_permission(self, request, view):
-        return isinstance(request.user, TigaUser) and super().has_permission(
-            request, view
-        )
+    pass
 
 
 class MessagePermissions(FullDjangoModelPermissions):

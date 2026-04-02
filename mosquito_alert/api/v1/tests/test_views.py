@@ -28,7 +28,11 @@ from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
     PhotoPrediction,
 )
-from mosquito_alert.notifications.models import Notification, SentNotification
+from mosquito_alert.notifications.models import (
+    Notification,
+    UserSubscription,
+    NotificationRecipient,
+)
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser
 
@@ -1865,13 +1869,11 @@ class TestMessagesApi:
         assert notification_content.title_en == "Test Notification"
         assert notification_content.body_html_en == "This is a test notification."
 
-        assert not notification.notification_acknowledgements.filter(
-            user=app_user
-        ).exists()
-
-        assert SentNotification.objects.filter(
-            notification=notification, sent_to_user=app_user
-        ).exists()
+        recipient = NotificationRecipient.objects.filter(
+            notification=notification, user=app_user
+        ).first()
+        assert recipient is not None
+        assert not recipient.is_read
 
     def test_create_message_send_push(self, app_user, api_client, permitted_user):
         with patch(
@@ -1896,3 +1898,37 @@ class TestMessagesApi:
             assert response.status_code == status.HTTP_201_CREATED
 
             mock_send.assert_called_once()
+
+    def test_send_message_to_topic(self, app_user, api_client, permitted_user, topic):
+        UserSubscription.objects.get_or_create(
+            user=app_user,
+            topic=topic,
+        )
+
+        response = api_client.post(
+            self.endpoint + f"topics/{topic.topic_code}/send/",
+            data={
+                "content": {
+                    "title": {
+                        "en": "Test Notification",
+                    },
+                    "body": {
+                        "en": "This is a test notification.",
+                    },
+                },
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        notification = Notification.objects.get(pk=response.data["id"])
+
+        assert notification.expert == permitted_user
+        notification_content = notification.notification_content
+        assert notification_content.title_en == "Test Notification"
+        assert notification_content.body_html_en == "This is a test notification."
+
+        recipient = NotificationRecipient.objects.filter(
+            notification=notification, user=app_user
+        ).first()
+        assert recipient is not None
+        assert recipient.through_topics.filter(pk=topic.pk).exists()
