@@ -21,12 +21,6 @@ from mosquito_alert.identification_tasks.views import (
     expert_report_complete,
     coarse_filter,
 )
-from mosquito_alert.notifications.views import (
-    notifications_version_two,
-    notification_detail,
-    notifications_table,
-    user_notifications_datatable,
-)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browseable API.
@@ -128,6 +122,7 @@ urlpatterns += i18n_patterns(
         ),
     ),
     path("stats/", include("mosquito_alert.stats.urls")),
+    path("notifications/", include("mosquito_alert.notifications.urls")),
     path("experts/", expert_report_annotation, name="expert_report_annotation"),
     path("experts/report_expiration/", report_expiration, name="report_expiration"),
     path(
@@ -162,18 +157,6 @@ urlpatterns += i18n_patterns(
     ),
     path("experts/status/people/", expert_status, name="expert_status"),
     path("coarse_filter/", coarse_filter, name="coarse_filter"),
-    path("notifications/", notifications_version_two, name="notifications"),
-    path("notifications/list", notifications_table, name="notifications_table"),
-    path(
-        "notifications/apilist",
-        user_notifications_datatable,
-        name="user_notifications_datatable",
-    ),
-    path(
-        "notifications/detail/<int:notification_id>",
-        notification_detail,
-        name="notification_detail",
-    ),
     path("aimalog/", aimalog, name="aimalog"),
     path("aimalog/apilist/", aimalog_datatable, name="aimalog_datatable"),
     path("accounts/login/", auth_views.LoginView.as_view(), name="login"),

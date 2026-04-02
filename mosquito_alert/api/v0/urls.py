@@ -26,9 +26,6 @@ urlpatterns = [
     path("topics_subscribed/", views.topics_subscribed),
     path("photos/", views.post_photo),
     path("user_notifications/", views.user_notifications),
-    path("notification_content/", views.notification_content),
-    path("send_notifications/", views.send_notifications),
-    path("user_count/", views.user_count),
     path("token/", views.token),
     re_path("clear_blocked/(?P<username>[\w.@+-]+)/", views.clear_blocked),
     re_path(
