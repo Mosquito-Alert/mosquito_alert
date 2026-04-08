@@ -37,3 +37,41 @@ stages:
     response:
       status_code: 200
       json: !force_format_include "{response_data_validation}"
+
+---
+
+test_name: Taxa can be retrieved by everybody with localized common name.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - taxon_italian_localized
+    - jwt_token_user
+
+stages:
+  - name: Retrieve is in english as default fallback
+    request:
+      url: "{api_live_url}/{endpoint}/{taxon_italian_localized.pk}/"
+      method: "GET"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        common_name: "English common name"
+  - name: Retrieve is in italian when requested
+    request:
+      url: "{api_live_url}/{endpoint}/{taxon_italian_localized.pk}/"
+      method: "GET"
+      headers:
+        Accept-Language: "it"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        common_name: "Italian common name"
