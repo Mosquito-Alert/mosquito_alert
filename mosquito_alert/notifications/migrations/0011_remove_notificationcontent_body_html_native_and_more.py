@@ -54,7 +54,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='notificationcontent',
             name='body_html',
-            field=models.TextField(),
+            field=models.TextField(default=""),
+            preserve_default=False,
         ),
         migrations.AddField(
             model_name='notificationcontent',
@@ -164,7 +165,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='notificationcontent',
             name='title',
-            field=models.TextField(),
+            field=models.TextField(default=""),
+            preserve_default=False,
         ),
         migrations.AddField(
             model_name='notificationcontent',

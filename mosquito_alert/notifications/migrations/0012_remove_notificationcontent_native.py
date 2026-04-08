@@ -8,10 +8,17 @@ def populate_title_and_body_html(apps, schema_editor):
 
     available_native_locale = NotificationContent.objects.filter(
         native_locale__isnull=False
+    ).exclude(
+        native_locale=""
     ).values_list("native_locale", flat=True).distinct()
 
     for native_locale in available_native_locale:
-        NotificationContent.objects.filter(native_locale=native_locale).update(**{
+        NotificationContent.objects.filter(
+            native_locale=native_locale
+        ).filter(
+            models.Q(**{build_localized_fieldname("body_html", native_locale) + "__isnull": True})
+            | models.Q(**{build_localized_fieldname("title", native_locale) + "__isnull": True})
+        ).update(**{
             build_localized_fieldname("title", native_locale): models.F("title_native"),
             build_localized_fieldname("body_html", native_locale): models.F("body_html_native"),
         })
