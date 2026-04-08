@@ -23,9 +23,8 @@ def italian_user(app_user):
 
 @pytest.fixture
 def italian_notification(user_notification):
-    user_notification.notification_content.title_native = "Titolo di prova"
-    user_notification.notification_content.body_html_native = "Corpo di prova"
-    user_notification.notification_content.native_locale = "it"
+    user_notification.notification_content.title_it = "Titolo di prova"
+    user_notification.notification_content.body_html_it = "Corpo di prova"
     user_notification.notification_content.save()
     return user_notification
 

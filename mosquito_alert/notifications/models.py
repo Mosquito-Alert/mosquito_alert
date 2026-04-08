@@ -15,6 +15,7 @@ from typing import Optional, Union
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils import translation
 
 from mosquito_alert.devices.models import Device
 from mosquito_alert.reports.models import Report
@@ -26,122 +27,19 @@ logger_notification = logging.getLogger("mosquitoalert.notification")
 
 
 class NotificationContent(models.Model):
-    body_html_es = models.TextField(
-        default=None,
-        blank=True,
-        null=True,
-        help_text="Expert comment, expanded and allows html, in spanish",
-    )
-    body_html_ca = models.TextField(
-        default=None,
-        blank=True,
-        null=True,
-        help_text="Expert comment, expanded and allows html, in catalan",
-    )
-    body_html_en = models.TextField(
-        default=None,
-        blank=True,
-        null=True,
-        help_text="Expert comment, expanded and allows html, in english",
-    )
-    title_es = models.TextField(
-        default=None,
-        blank=True,
-        null=True,
-        help_text="Title of the comment, shown in non-detail view, in spanish",
-    )
-    title_ca = models.TextField(
-        default=None,
-        blank=True,
-        null=True,
-        help_text="Title of the comment, shown in non-detail view, in catalan",
-    )
-    title_en = models.TextField(
-        default=None,
-        blank=True,
-        null=True,
-        help_text="Title of the comment, shown in non-detail view, in english",
-    )
-    predefined_available_to = models.ForeignKey(
-        User,
-        blank=True,
-        null=True,
-        related_name="predefined_notifications",
-        help_text="If this field is not null, this notification is predefined - the predefined map notifications will go here. This field indicates the expert to which the notification is available",
-        on_delete=models.SET_NULL,
-    )
-    body_html_native = models.TextField(
-        default=None,
-        blank=True,
-        null=True,
-        help_text="Expert comment, expanded and allows html, in the language indicated by the field native_locale",
-    )
-    title_native = models.TextField(
-        default=None,
-        blank=True,
-        null=True,
-        help_text="Title of the comment, shown in non-detail view, in the language indicated by the field title_native",
-    )
-    native_locale = models.CharField(
-        default=None,
-        blank=True,
-        null=True,
-        max_length=10,
-        help_text="Locale code for text in body_html_native and title_native",
-    )
-    notification_label = models.CharField(
-        default=None,
-        blank=True,
-        null=True,
-        max_length=255,
-        help_text="Arbitrary label used to group thematically equal notifications. Optional. ",
-    )
+    title = models.TextField()
+    body_html = models.TextField()
 
-    def _get_localized_field(
-        self,
-        fieldname_prefix: str,
-        language_code: Optional[str] = None,
-        fallback: bool = True,
-    ) -> str:
-        # Default to english
-        language_code = language_code or "en"
+    def get_title(self, language_code: str) -> str:
+        with translation.override(language_code):
+            return self.title
 
-        if (
-            self.native_locale
-            and self.native_locale.lower().strip() == language_code.lower().strip()
-        ):
-            language_code = "native"
+    def get_body_html(self, language_code: str) -> str:
+        with translation.override(language_code):
+            return self.body_html
 
-        # Check if the field for the specified language exists
-        result_en = getattr(self, f"{fieldname_prefix}_en")
-        result_local = None
-        fieldname = f"{fieldname_prefix}_{language_code}"
-        if hasattr(self, fieldname):
-            result_local = getattr(self, fieldname)
-
-        # Return result with fallback to English
-        if fallback:
-            return result_local or result_en or ""
-        return result_local or ""
-
-    def get_title(
-        self, language_code: Optional[str] = None, fallback: bool = True
-    ) -> str:
-        return self._get_localized_field(
-            fieldname_prefix="title", language_code=language_code, fallback=fallback
-        )
-
-    def get_body_html(
-        self, language_code: Optional[str] = None, fallback: bool = True
-    ) -> str:
-        return self._get_localized_field(
-            fieldname_prefix="body_html", language_code=language_code, fallback=fallback
-        )
-
-    def get_body(
-        self, language_code: Optional[str] = None, fallback: bool = True
-    ) -> str:
-        body_html = self.get_body_html(language_code=language_code, fallback=fallback)
+    def get_body(self, language_code: str) -> str:
+        body_html = self.get_body_html(language_code=language_code)
         soup = BeautifulSoup(body_html, "html.parser")
         body = soup.find("body")  # Try to find the <body> tag
         if body:
@@ -152,11 +50,9 @@ class NotificationContent(models.Model):
             # If no <body> tag is found, return text from the entire HTML document
             return soup.get_text(separator=" ", strip=True)
 
-    def get_body_image(
-        self, language_code: Optional[str] = None, fallback: bool = True
-    ) -> Optional[str]:
+    def get_body_image(self, language_code: str) -> Optional[str]:
         soup = BeautifulSoup(
-            self.get_body_html(language_code=language_code, fallback=fallback),
+            self.get_body_html(language_code=language_code),
             "html.parser",
         )
 
@@ -165,11 +61,6 @@ class NotificationContent(models.Model):
             return img_tag.get("src")
 
         return None
-
-    def save(self, *args, **kwargs):
-        if not (self.title_native and self.body_html_native):
-            self.native_locale = None
-        super().save(*args, **kwargs)
 
     class Meta:
         db_table = "tigaserver_app_notificationcontent"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.

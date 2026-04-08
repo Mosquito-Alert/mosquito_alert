@@ -691,7 +691,7 @@ class ScoringTestCase(TestCase):
             #     print("<---- END SEPARATOR ---->")
             self.assertEqual(
                 Notification.objects.filter(
-                    notification_content__body_html_native=notification_body
+                    notification_content__body_html_sq=notification_body
                 ).count(),
                 1,
             )

@@ -1121,11 +1121,8 @@ class NotificationTestCase(APITestCase):
 
     def test_user_sees_notifications_sent_to_global_topic(self):
         nc = NotificationContent(
-            body_html_en="<p>Notification Body</p>",
-            body_html_native="<p>Native Notification Body</p>",
-            title_en="Notification title",
-            title_native="Títol notificació",
-            native_locale="ca",
+            body_html="<p>Notification Body</p>",
+            title="Notification title",
         )
         nc.save()
         n = Notification(expert=self.reritja_user, notification_content=nc)
@@ -1169,11 +1166,8 @@ class NotificationTestCase(APITestCase):
 
     def test_subscription_and_unsubscription(self):
         nc = NotificationContent(
-            body_html_en="<p>Notification Body</p>",
-            body_html_native="<p>Native Notification Body</p>",
-            title_en="Notification title",
-            title_native="Títol notificació",
-            native_locale="ca",
+            body_html="<p>Notification Body</p>",
+            title="Notification title",
         )
         nc.save()
         n = Notification(expert=self.reritja_user, notification_content=nc)
@@ -1225,20 +1219,14 @@ class NotificationTestCase(APITestCase):
     def test_direct_notifs_and_topic_sort_okay(self):
         some_user = self.regular_user
         nc1 = NotificationContent(
-            body_html_en="<p>Notification Body 1</p>",
-            body_html_native="<p>Native Notification Body 1</p>",
-            title_en="Notification title 1",
-            title_native="Títol notificació 1",
-            native_locale="ca",
+            body_html="<p>Notification Body 1</p>",
+            title="Notification title 1",
         )
         nc1.save()
 
         nc2 = NotificationContent(
-            body_html_en="<p>Notification Body 2</p>",
-            body_html_native="<p>Native Notification Body 2</p>",
-            title_en="Notification title 2",
-            title_native="Títol notificació 2",
-            native_locale="ca",
+            body_html="<p>Notification Body 2</p>",
+            title="Notification title 2",
         )
         nc2.save()
 
@@ -1399,20 +1387,19 @@ class AnnotateCoarseTestCase(APITestCase):
             notif_content = notif.notification_content
             if t_id == 1:  # other species
                 self.assertTrue(
-                    other_insect_msg_dict["es"] in notif_content.body_html_native,
+                    other_insect_msg_dict["es"] in notif_content.body_html_es,
                     "Report classified as other species associated notification should contain other insect message, it does not",
                 )
                 #'no pertenece a la familia de los Culícidos'
             elif t_id == 10:  # culex sp.
                 self.assertTrue(
-                    culex_msg_dict["es"] in notif_content.body_html_native,
+                    culex_msg_dict["es"] in notif_content.body_html_es,
                     "Report classified as culex associated notification should contain culex message, it does not",
                 )
                 #'no podemos asegurar totalmente que sea un Culex'
             elif t_id == 112:  # aedes albopictus
                 self.assertTrue(
-                    albopictus_probably_msg_dict["es"]
-                    in notif_content.body_html_native,
+                    albopictus_probably_msg_dict["es"] in notif_content.body_html_es,
                     "Report classified as albopictus associated notification should contain probably albopictus message, it does not",
                 )
                 #'Has conseguido que se pueda identificar perfectamente el mosquito tigre'
@@ -1441,7 +1428,7 @@ class AnnotateCoarseTestCase(APITestCase):
         notif = Notification.objects.get(report=r)
         notif_content = notif.notification_content
         self.assertTrue(
-            albopictus_msg_dict["es"] in notif_content.body_html_native,
+            albopictus_msg_dict["es"] in notif_content.body_html_es,
             "Report classified as albopictus associated notification should contain definitely albopictus message, it does not",
         )
         Notification.objects.filter(report=r).delete()

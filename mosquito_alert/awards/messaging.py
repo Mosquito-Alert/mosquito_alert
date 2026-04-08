@@ -6,6 +6,8 @@ from django.template.loader import render_to_string
 from django.template.exceptions import TemplateDoesNotExist
 from django.utils.translation import activate, deactivate, gettext as _
 
+from modeltranslation.utils import build_localized_fieldname
+
 from mosquito_alert.notifications.models import Notification, NotificationContent
 
 if TYPE_CHECKING:
@@ -91,11 +93,16 @@ def send_new_award_notification(award: "Award") -> None:
     body_html_native = render_body_html(user_language_code, context_native)
 
     notification_content = NotificationContent.objects.create(
-        native_locale=user_language_code,
         title_en=title_en,
-        title_native=title_native,
         body_html_en=body_html_en,
-        body_html_native=body_html_native,
+        **{
+            build_localized_fieldname("title", user_language_code): title_native,
+            build_localized_fieldname(
+                "body_html", user_language_code
+            ): body_html_native,
+        }
+        if user_language_code != "en"
+        else {},
     )
 
     notification = Notification.objects.create(
