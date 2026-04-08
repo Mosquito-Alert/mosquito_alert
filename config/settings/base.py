@@ -285,7 +285,14 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 
 # Django modeltranslations
-MODELTRANSLATION_LANGUAGES = ("en", "es", "ca")
+MODELTRANSLATION_FALLBACK_LANGUAGES = {
+    "default": ("en",),
+    "ca": ("es", "en"),
+    "eu": ("es", "en"),
+    "gl": ("es", "en"),
+    "lb": ("de", "en"),
+    "nl": ("de", "en"),
+}
 
 # django-rest-framework
 # -------------------------------------------------------------------------------

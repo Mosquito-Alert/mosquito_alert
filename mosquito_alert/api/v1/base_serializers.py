@@ -1,11 +1,12 @@
 from django.db.models import Model
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.translation import get_language_info
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import empty
 
-from mosquito_alert.users.models import TigaUser
+from modeltranslation.translator import translator
 
 from .fields import HTMLCharField
 
@@ -125,39 +126,42 @@ class FieldPolymorphicSerializer(serializers.Serializer):
             )
 
 
-class LocalizedSerializerMixin:
+class LocalizedModelSerializerMixin:
     """
     A custom serializer field that supports localization for a dynamic field name.
     Allows calling with arguments such as 'title', 'message', max_length, help_text, etc.
     """
 
     def __init__(self, *args, **kwargs):
-        # From CharField
-        allow_blank = kwargs.pop("allow_blank", False)
-        trim_whitespace = kwargs.pop("trim_whitespace", True)
-        max_length = kwargs.pop("max_length", None)
-        min_length = kwargs.pop("min_length", None)
+        self.allow_blank = kwargs.pop("allow_blank", False)
+        self.trim_whitespace = kwargs.pop("trim_whitespace", True)
+        self.max_length = kwargs.pop("max_length", None)
+        self.min_length = kwargs.pop("min_length", None)
 
-        is_html = kwargs.pop("is_html", False)
-        required_languages = kwargs.pop("required_languages", [])
-        languages = kwargs.pop(
-            "languages", [lang[0] for lang in TigaUser.AVAILABLE_LANGUAGES]
-        )
+        self.is_html = kwargs.pop("is_html", False)
+        self.required_languages = kwargs.pop("required_languages", [])
+        if source := kwargs.pop("source"):
+            self.source_field = source.split(".")[-1]
+            kwargs["source"] = source.split(".")[0]
 
         super().__init__(*args, **kwargs)
 
-        # Sort the languages alphabetically based on the language code
-        for code, name in sorted(TigaUser.AVAILABLE_LANGUAGES, key=lambda x: x[0]):
-            if code not in languages:
-                continue
-            # Use max_length if provided and if the field is for 'title'
+    def get_fields(self):
+        trans_opts = translator.get_options_for_model(self.Meta.model)
+        trans_field = trans_opts.fields.get(self.source_field)
+
+        result = {}
+        for field in sorted(trans_field, key=lambda x: x.language):
             field_params = {
-                "required": code in required_languages,
-                "allow_blank": allow_blank,
-                "trim_whitespace": trim_whitespace,
-                "max_length": max_length,
-                "min_length": min_length,
-                "help_text": name,
+                "source": field.name,
+                "required": field.language in self.required_languages,
+                "allow_blank": self.allow_blank,
+                "allow_null": field.language not in self.required_languages,
+                "trim_whitespace": self.trim_whitespace,
+                "max_length": self.max_length,
+                "min_length": self.min_length,
+                "help_text": get_language_info(field.language)["name_local"].title(),
             }
-            field_klass = HTMLCharField if is_html else serializers.CharField
-            self.fields[code] = field_klass(**field_params)
+            field_klass = HTMLCharField if self.is_html else serializers.CharField
+            result[field.language] = field_klass(**field_params)
+        return result

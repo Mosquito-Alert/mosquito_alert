@@ -1336,7 +1336,7 @@ class NewReportAssignment(TransactionTestCase):
                 activate(locale)
 
                 self.assertEqual(
-                    _("your_picture_has_been_validated_by_an_expert"), nc.title_native
+                    _("your_picture_has_been_validated_by_an_expert"), nc.title
                 )
                 deactivate()
                 # we do this to avoid triggering the unique(user_id,report_id) constraint
