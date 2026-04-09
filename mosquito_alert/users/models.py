@@ -484,3 +484,41 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
         db_table = "tigaserver_app_tigauser"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
         verbose_name = "user"
         verbose_name_plural = "users"
+
+
+class TeamMembership(models.Model):
+    class Role(models.TextChoices):
+        MEMBER = "member", "Member"
+        ANNOTATOR = "annotator", "Annotator"
+        SUPERVISOR = "supervisor", "Supervisor"
+        ADMIN = "admin", "Admin"
+
+    user = models.ForeignKey(
+        TigaUser, on_delete=models.CASCADE, related_name="team_memberships"
+    )
+    team = models.ForeignKey(
+        "Team", on_delete=models.CASCADE, related_name="memberships"
+    )
+
+    role = models.CharField(max_length=16, choices=Role.choices, default=Role.MEMBER)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "team")
+
+
+class Team(models.Model):
+    # NOTE: only allow one team per country for simplicity and politics issues.
+    country = models.OneToOneField(
+        EuropeCountry,
+        related_name="team",
+        help_text="Country associated with the team. Mainly for filtering purposes",
+        on_delete=models.PROTECT,
+    )
+    members = models.ManyToManyField(
+        TigaUser, through=TeamMembership, related_name="teams"
+    )
+
+    def __str__(self):
+        return f"Team {self.id} - {self.country}"
