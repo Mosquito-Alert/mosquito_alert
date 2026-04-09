@@ -146,9 +146,7 @@ class MessagePermissions(FullDjangoModelPermissions):
     def has_object_permission(self, request, view, obj):
         if view.action == "recipients":
             if isinstance(request.user, User):
-                return (
-                    super().has_permission(request, view) or obj.expert == request.user
-                )
+                return self.has_permission(request, view) or obj.expert == request.user
             return False
 
         return super().has_object_permission(request, view, obj)
