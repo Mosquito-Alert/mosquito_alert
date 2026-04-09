@@ -758,7 +758,7 @@ class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
 
         # Also extract tags from note field
         note = validated_data.get("note", "")
-        note_tags = Report.get_tags_from_note(note)
+        note_tags = Report.get_tags_from_note(note or "")
         tags["tags"] = list(set(tags.get("tags", []) + note_tags))
 
         return tags, validated_data
