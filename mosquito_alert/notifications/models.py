@@ -99,15 +99,15 @@ class Notification(models.Model):
         # See: https://firebase.google.com/docs/reference/admin/python/firebase_admin.messaging
         # See: https://firebaseopensource.com/projects/flutter/plugins/packages/firebase_messaging/readme/
         return Message(
-            data={"id": str(self.notification.pk)},
+            data={"id": str(self.pk)},
             notification=FirebaseNotification(
-                title=self.notification.notification_content.get_title(
+                title=self.notification_content.get_title(
                     language_code=language_code
                 ),
-                body=self.notification.notification_content.get_body(
+                body=self.notification_content.get_body(
                     language_code=language_code
                 ),
-                image=self.notification.notification_content.get_body_image(
+                image=self.notification_content.get_body_image(
                     language_code=language_code
                 ),
             ),
@@ -229,8 +229,8 @@ class NotificationTopic(models.Model):
 
         majority_locale = Counter(u.locale for u in users).most_common(1)[0][0]
         return Device.send_topic_message(
-            message=self.notification.get_fcm_message(language_code=majority_locale),
-            topic_name=self.sent_to_topic.topic_code,
+            message=notification.get_fcm_message(language_code=majority_locale),
+            topic_name=self.topic_code,
         )
 
     class Meta:
