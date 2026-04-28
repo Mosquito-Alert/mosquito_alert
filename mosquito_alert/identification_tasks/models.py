@@ -19,9 +19,9 @@ from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, AFTER_CREATE
 from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged
 
 from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.workspaces.models import Workspace, WorkspaceMembership
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.users.models import UserStat, Team
 
 from .managers import ExpertReportAnnotationManager, IdentificationTaskManager
 from .messages import (
@@ -247,13 +247,6 @@ class IdentificationTask(LifecycleModel):
         on_delete=models.CASCADE,
         limit_choices_to={"type": "adult"},
     )
-    identification_project = models.ForeignKey(
-        "IdentificationProject",
-        related_name="identification_tasks",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-    )
     photo = models.ForeignKey(
         Photo,
         related_name="identification_tasks",
@@ -390,10 +383,19 @@ class IdentificationTask(LifecycleModel):
 
     @cached_property
     def exclusivity_end(self) -> Optional[timezone.datetime]:
-        country = self.report.country
-        if country and UserStat.objects.filter(national_supervisor_of=country).exists():
+        if not self.country:
+            return None
+
+        country_workspace = Workspace.objects.filter(country=self.country).first()
+        if not country_workspace:
+            return None
+
+        supervisors_qs = WorkspaceMembership.objects.filter(
+            workspace=country_workspace, role=WorkspaceMembership.Role.SUPERVISOR
+        )
+        if supervisors_qs.exists():
             return self.report.server_upload_time + timedelta(
-                days=country.national_supervisor_report_expires_in
+                days=country_workspace.supervisor_exclusivity_days
             )
         return None
 
@@ -723,11 +725,6 @@ class IdentificationTask(LifecycleModel):
 
         if not self.report.is_browsable:
             self.status = self.Status.ARCHIVED
-
-        if self._state.adding:
-            self.identification_project = IdentificationProject.objects.filter(
-                team__country=self.report.country
-            ).first()
 
         super().save(*args, **kwargs)
 
@@ -1211,28 +1208,3 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
                 name="unique_photo_identification_task",
             ),
         ]
-
-
-class IdentificationProject(models.Model):
-    reviewers = models.ManyToManyField(
-        User,
-        related_name="identification_projects",
-        help_text="Users who can review the identification tasks of the project.",
-    )
-    # TODO: a team can only be in a project. Need to add validation for this.
-    teams = models.ManyToManyField(
-        Team,
-        related_name="identification_projects",
-        help_text="Teams whose members can annotate the identification tasks of the project.",
-    )
-
-    name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-
-    result_is_public = models.BooleanField(
-        default=True,
-        help_text="Whether the identification results of the project are visible to the public. If False, the identification tasks of the project will be hidden from public map and API.",
-    )
-
-    created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    updated_at = models.DateTimeField(auto_now=True, editable=False)

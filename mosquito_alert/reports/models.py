@@ -36,6 +36,7 @@ from mosquito_alert.tigaserver_app.models import Session
 from mosquito_alert.users.models import TigaUser
 from mosquito_alert.utils.models import UUIDTaggedItem
 from mosquito_alert.utils.mixins import TimeZoneModelMixin
+from mosquito_alert.workspaces.models import Workspace
 
 from .fields import ProcessedImageField
 from .managers import ReportManager, PhotoManager
@@ -947,10 +948,18 @@ class Report(TimeZoneModelMixin, models.Model):
 
             self.bite_count = sum(getattr(self, fname) for fname in bite_fieldnames)
 
+        country_workspace = None
+        try:
+            country_workspace = (
+                Workspace.objects.get(country=self.country) if self.country else None
+            )
+        except Workspace.DoesNotExist:
+            pass
+
         if (
             (self.type not in self.PUBLISHABLE_TYPES)
             or (not self.is_browsable)
-            or (self.country and not self.country.reports_can_be_published)
+            or (country_workspace and not country_workspace.is_public)
         ):
             self.published_at = None
 

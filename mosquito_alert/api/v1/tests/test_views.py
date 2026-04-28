@@ -35,6 +35,7 @@ from mosquito_alert.notifications.models import (
 )
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.workspaces.models import WorkspaceMembership
 
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
 from mosquito_alert.api.v1.tests.integration.observations.factories import (
@@ -1686,14 +1687,12 @@ class TestPermissionsApi:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["general"]["is_staff"] == is_staff
 
-    def test_countries_role_supervisor(
-        self, api_client, user, group_expert, me_endpoint, country
-    ):
-        user.groups.add(group_expert)
-
-        userstat = user.userstat
-        userstat.national_supervisor_of = country
-        userstat.save()
+    def test_countries_role_supervisor(self, api_client, user, me_endpoint, country):
+        WorkspaceMembership.objects.create(
+            user=user,
+            workspace=country.workspace,
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        )
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
@@ -1709,14 +1708,12 @@ class TestPermissionsApi:
         assert not response.data["countries"][0]["permissions"]["review"]["add"]
         assert not response.data["countries"][0]["permissions"]["review"]["view"]
 
-    def test_countries_role_annotator(
-        self, api_client, user, group_expert, me_endpoint, country
-    ):
-        user.groups.add(group_expert)
-
-        userstat = user.userstat
-        userstat.native_of = country
-        userstat.save()
+    def test_countries_role_annotator(self, api_client, user, me_endpoint, country):
+        WorkspaceMembership.objects.create(
+            user=user,
+            workspace=country.workspace,
+            role=WorkspaceMembership.Role.ANNOTATOR,
+        )
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK

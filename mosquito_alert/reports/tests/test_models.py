@@ -646,8 +646,10 @@ class ReportModelTest(TestCase):
             iso3_code="RND",
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
-            reports_can_be_published=False,
         )
+        w = disabled_publish_country.workspace
+        w.is_public = False
+        w.save()
         point_on_surface = disabled_publish_country.geom.point_on_surface
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -712,8 +714,10 @@ class ReportModelTest(TestCase):
             iso3_code="RND",
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
-            reports_can_be_published=False,
         )
+        w = disabled_publish_country.workspace
+        w.is_public = False
+        w.save()
         point_on_surface = disabled_publish_country.geom.point_on_surface
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -754,8 +758,10 @@ class ReportModelTest(TestCase):
             iso3_code="RND",
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
-            reports_can_be_published=False,
         )
+        w = disabled_publish_country.workspace
+        w.is_public = False
+        w.save()
         point_on_surface = disabled_publish_country.geom.point_on_surface
         report = Report.objects.create(
             user=TigaUser.objects.create(),
