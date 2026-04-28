@@ -890,12 +890,6 @@ class ExpertReportAnnotation(models.Model):
             ),
         ]
 
-    def is_superexpert(self):
-        return self.user.groups.filter(name="superexpert").exists()
-
-    def is_expert(self):
-        return self.user.groups.filter(name="expert").exists()
-
     @property
     def confidence_label(self):
         return get_confidence_label(value=self.confidence)
@@ -931,12 +925,13 @@ class ExpertReportAnnotation(models.Model):
             return False
 
         # If the user is the supervisor of that country -> False
-        if self.user.userstat.national_supervisor_of:
-            if (
-                self.user.userstat.national_supervisor_of
-                == self.identification_task.country
-            ):
-                return False
+        is_country_supervisor = WorkspaceMembership.objects.filter(
+            workspace__country=self.identification_task.country,
+            user=self.user,
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        ).exists()
+        if is_country_supervisor:
+            return False
 
         # Return False if no is_simplified found or if the objects to be
         # created is suposed to be the last.

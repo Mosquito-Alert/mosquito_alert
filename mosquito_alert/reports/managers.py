@@ -42,23 +42,6 @@ class ReportQuerySet(models.QuerySet):
             )
         )
 
-    def in_supervised_country(self, state: bool = True) -> QuerySet:
-        from mosquito_alert.users.models import UserStat
-
-        return self.annotate(
-            _in_supervised_country=models.Exists(
-                UserStat.objects.filter(
-                    national_supervisor_of__isnull=False,
-                    national_supervisor_of=models.OuterRef("country"),
-                )
-            ),
-        ).filter(
-            models.Q(
-                models.Q(country__isnull=False, _in_supervised_country=True),
-                _negated=not state,
-            )
-        )
-
     def in_coarse_filter(self) -> QuerySet:
         from .models import Report
         from mosquito_alert.identification_tasks.models import IdentificationTask

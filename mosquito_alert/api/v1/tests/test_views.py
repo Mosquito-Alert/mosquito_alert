@@ -1646,17 +1646,6 @@ class TestPermissionsApi:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["general"]["role"] == "base"
 
-    def test_general_role_annotator(self, api_client, user, group_expert, me_endpoint):
-        user.groups.add(group_expert)
-
-        response = api_client.get(me_endpoint, format="json")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "annotator"
-        assert not response.data["general"]["permissions"]["review"]["add"]
-        assert not response.data["general"]["permissions"]["review"]["view"]
-        assert not response.data["general"]["permissions"]["message"]["add"]
-        assert not response.data["general"]["permissions"]["message"]["view"]
-
     def test_general_role_reviewer(self, api_client, user, me_endpoint):
         grant_permission_to_user(
             codename="add_review", model_class=IdentificationTask, user=user

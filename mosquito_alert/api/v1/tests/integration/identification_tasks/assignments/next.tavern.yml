@@ -125,7 +125,7 @@ marks:
   - usefixtures:
     - api_live_url
     - identification_task
-    - user_with_role_annotator
+    - user_with_role_annotator_in_country
     - jwt_token_user
 
 stages:
