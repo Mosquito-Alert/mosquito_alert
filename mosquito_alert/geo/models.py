@@ -2,7 +2,6 @@ from datetime import timedelta
 from typing import Optional
 import uuid
 
-from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
 from django.core.cache import cache
@@ -10,8 +9,6 @@ from django.utils import timezone
 
 
 class EuropeCountry(models.Model):
-    SPAIN_PK = 17
-
     gid = models.AutoField(primary_key=True)
     cntr_id = models.CharField(max_length=2, blank=True)
     name_engl = models.CharField(
@@ -27,18 +24,6 @@ class EuropeCountry(models.Model):
     x_max = models.FloatField(blank=True, null=True)
     y_min = models.FloatField(blank=True, null=True)
     y_max = models.FloatField(blank=True, null=True)
-    is_bounding_box = models.BooleanField(
-        default=False,
-        db_index=True,
-        help_text="If true, this geometry acts as a bounding box. The bounding boxes act as little separate entolabs, in the sense that no reports located inside a bounding box should reach an expert outside this bounding box",
-    )
-    national_supervisor_report_expires_in = models.IntegerField(
-        default=settings.DEFAULT_EXPIRATION_DAYS,
-        db_index=True,
-        help_text="Number of days that a report in the queue is exclusively available to the nagional supervisor. For example, if the field value is 6, after report_creation_time + 6 days a report will be available to all users",
-    )
-
-    reports_can_be_published = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["name_engl"]

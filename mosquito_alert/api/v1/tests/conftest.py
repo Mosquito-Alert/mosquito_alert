@@ -6,7 +6,6 @@ import random
 
 from rest_framework.authtoken.models import Token
 
-from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.contrib.auth import get_user_model
@@ -29,7 +28,8 @@ from mosquito_alert.notifications.models import (
 )
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.users.models import UserStat
+from mosquito_alert.workspaces.models import WorkspaceMembership
+
 
 from .factories import create_mobile_user, create_regular_user
 
@@ -299,10 +299,10 @@ def taxon_root():
     )
 
 
-@pytest.fixture
-def group_expert():
-    group, _ = Group.objects.get_or_create(name="expert")
-    return group
+# @pytest.fixture
+# def group_expert():
+#     group, _ = Group.objects.get_or_create(name="expert")
+#     return group
 
 
 @pytest.fixture
@@ -313,19 +313,22 @@ def user_with_role_annotator(user, group_expert):
 
 @pytest.fixture
 def user_with_role_annotator_in_country(user_with_role_annotator, es_country):
-    user_stat = UserStat.objects.get(user=user_with_role_annotator)
-    user_stat.native_of = es_country
-    user_stat.save()
+    WorkspaceMembership.objects.create(
+        user=user_with_role_annotator,
+        workspace=es_country.workspace,
+        role=WorkspaceMembership.Role.ANNOTATOR,
+    )
 
     return user_with_role_annotator
 
 
 @pytest.fixture
-def user_with_role_supervisor_in_country(user, group_expert, es_country):
-    user.groups.add(group_expert)
-    user_stat = UserStat.objects.get(user=user)
-    user_stat.national_supervisor_of = es_country
-    user_stat.save()
+def user_with_role_supervisor_in_country(user, es_country):
+    WorkspaceMembership.objects.create(
+        user=user,
+        workspace=es_country.workspace,
+        role=WorkspaceMembership.Role.SUPERVISOR,
+    )
 
     return user
 
