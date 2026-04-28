@@ -299,27 +299,15 @@ def taxon_root():
     )
 
 
-# @pytest.fixture
-# def group_expert():
-#     group, _ = Group.objects.get_or_create(name="expert")
-#     return group
-
-
 @pytest.fixture
-def user_with_role_annotator(user, group_expert):
-    user.groups.add(group_expert)
-    return user
-
-
-@pytest.fixture
-def user_with_role_annotator_in_country(user_with_role_annotator, es_country):
+def user_with_role_annotator_in_country(user, es_country):
     WorkspaceMembership.objects.create(
-        user=user_with_role_annotator,
+        user=user,
         workspace=es_country.workspace,
         role=WorkspaceMembership.Role.ANNOTATOR,
     )
 
-    return user_with_role_annotator
+    return user
 
 
 @pytest.fixture

@@ -13,11 +13,7 @@
             "email": "email@example.com",
             "is_staff": true,
             "is_active": true,
-            "date_joined": "2015-08-18T08:08:58Z",
-            "groups":
-            [
-                4
-            ]
+            "date_joined": "2015-08-18T08:08:58Z"
         }
     }
 ]

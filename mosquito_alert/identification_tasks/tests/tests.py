@@ -21,6 +21,8 @@ from mosquito_alert.identification_tasks.models import (
 from mosquito_alert.notifications.models import NotificationContent
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.workspaces.models import Workspace
+
 from django.contrib.auth.models import User, Group
 from django.utils import timezone
 from django.db import IntegrityError
@@ -69,17 +71,17 @@ class NewReportAssignment(TransactionTestCase):
 
         u2 = User.objects.create(pk=2)
         u2.username = "expert_2_eu"
-        u2.userstat.native_of = EuropeCountry.objects.get(pk=45)  # Isle of man
+        u2.userstat.country = EuropeCountry.objects.get(pk=45)  # Isle of man
         u2.save()
 
         u9 = User.objects.create(pk=9)
         u9.username = "expert_9_eu"
-        u9.userstat.native_of = EuropeCountry.objects.get(pk=22)  # Faroes
+        u9.userstat.country = EuropeCountry.objects.get(pk=22)  # Faroes
         u9.save()
 
         u10 = User.objects.create(pk=10)
         u10.username = "expert_10_eu"
-        u10.userstat.native_of = EuropeCountry.objects.get(pk=22)  # Faroes
+        u10.userstat.country = EuropeCountry.objects.get(pk=22)  # Faroes
         u10.save()
 
         europe_group.user_set.add(u2)
@@ -111,17 +113,13 @@ class NewReportAssignment(TransactionTestCase):
         # Regular eu user 1
         u2 = User.objects.create(pk=2)
         u2.username = "expert_2_eu"
-        u2.userstat.native_of = EuropeCountry.objects.get(
-            pk=34
-        )  # Austria regular user 1
+        u2.userstat.country = EuropeCountry.objects.get(pk=34)  # Austria regular user 1
         u2.save()
 
         # Regular eu user 2
         u3 = User.objects.create(pk=5)
         u3.username = "expert_5_eu"
-        u3.userstat.native_of = EuropeCountry.objects.get(
-            pk=34
-        )  # Austria regular user 2
+        u3.userstat.country = EuropeCountry.objects.get(pk=34)  # Austria regular user 2
         u3.save()
 
         europe_group.user_set.add(u1)
@@ -154,13 +152,13 @@ class NewReportAssignment(TransactionTestCase):
         # Regular eu user 1
         u2 = User.objects.create(pk=2)
         u2.username = "expert_2_eu"
-        u2.userstat.native_of = EuropeCountry.objects.get(pk=8)  # Norway
+        u2.userstat.country = EuropeCountry.objects.get(pk=8)  # Norway
         u2.save()
 
         # Regular eu user 2
         u3 = User.objects.create(pk=5)
         u3.username = "expert_5_eu"
-        u3.userstat.native_of = EuropeCountry.objects.get(pk=22)  # Faroes
+        u3.userstat.country = EuropeCountry.objects.get(pk=22)  # Faroes
         u3.save()
 
         europe_group.user_set.add(u1)
@@ -189,7 +187,7 @@ class NewReportAssignment(TransactionTestCase):
 
         u2 = User.objects.create(pk=2)
         u2.username = "expert_2_eu"
-        u2.userstat.native_of = EuropeCountry.objects.get(pk=45)  # Isle of man
+        u2.userstat.country = EuropeCountry.objects.get(pk=45)  # Isle of man
         u2.save()
 
         u3 = User.objects.create(pk=3)
@@ -224,17 +222,17 @@ class NewReportAssignment(TransactionTestCase):
 
         u9 = User.objects.create(pk=9)
         u9.username = "expert_9_eu"
-        u9.userstat.native_of = EuropeCountry.objects.get(pk=22)  # Faroes
+        u9.userstat.country = EuropeCountry.objects.get(pk=22)  # Faroes
         u9.save()
 
         u10 = User.objects.create(pk=10)
         u10.username = "expert_10_eu"
-        u10.userstat.native_of = EuropeCountry.objects.get(pk=22)  # Faroes
+        u10.userstat.country = EuropeCountry.objects.get(pk=22)  # Faroes
         u10.save()
 
         u12 = User.objects.create(pk=12)
         u12.username = "expert_12_sl"
-        u12.userstat.native_of = EuropeCountry.objects.get(pk=53)  # St Louis bb
+        u12.userstat.country = EuropeCountry.objects.get(pk=53)  # St Louis bb
         u12.save()
 
         europe_group.user_set.add(u2)
@@ -602,7 +600,7 @@ class NewReportAssignment(TransactionTestCase):
 
         u3 = User.objects.create(pk=3)
         u3.username = "expert_1_eu"
-        u3.userstat.native_of = greece
+        u3.userstat.country = greece
         u3.save()
 
         spain_group.user_set.add(u1)
@@ -628,17 +626,17 @@ class NewReportAssignment(TransactionTestCase):
 
         u2 = User.objects.create(pk=2)
         u2.username = "expert_2_sl"
-        u2.userstat.native_of = stlouis
+        u2.userstat.country = stlouis
         u2.save()
 
         u3 = User.objects.create(pk=3)
         u3.username = "expert_3_sl"
-        u3.userstat.native_of = stlouis
+        u3.userstat.country = stlouis
         u3.save()
 
         u4 = User.objects.create(pk=4)
         u4.username = "expert_4_sl"
-        u4.userstat.native_of = stlouis
+        u4.userstat.country = stlouis
         u4.save()
 
         u5 = User.objects.create(pk=5)
@@ -699,7 +697,7 @@ class NewReportAssignment(TransactionTestCase):
             else:
                 if this_user.userstat.is_bb_user():
                     self.assertEqual(
-                        this_user.userstat.native_of.is_bounding_box,
+                        this_user.userstat.country.is_bounding_box,
                         True,
                         "BB user native of should be bounding box",
                     )
@@ -715,7 +713,7 @@ class NewReportAssignment(TransactionTestCase):
                         )
                     else:  # is regular user
                         # if no native country, it is spain
-                        if this_user.userstat.native_of is None:
+                        if this_user.userstat.country is None:
                             if this_user.userstat.is_superexpert():
                                 pass
                             else:
@@ -831,9 +829,9 @@ class NewReportAssignment(TransactionTestCase):
                 )
 
         # get all bounding box users
-        for this_user in User.objects.filter(userstat__native_of__is_bounding_box=True):
+        for this_user in User.objects.filter(userstat__country__is_bounding_box=True):
             # Get all reports in bounding box
-            bb = this_user.userstat.native_of
+            bb = this_user.userstat.country
             reports_in_bounding_box = Report.objects.filter(country=bb).count()
             # there's less than 5 reports in supervised country
             assigned_reports = (
@@ -876,7 +874,7 @@ class NewReportAssignment(TransactionTestCase):
 
         # get all regular users
         regular_users = User.objects.filter(
-            Q(userstat__native_of__is_bounding_box=False)
+            Q(userstat__country__is_bounding_box=False)
             & Q(userstat__national_supervisor_of__isnull=True)
         )
         for this_user in regular_users:
@@ -928,7 +926,7 @@ class NewReportAssignment(TransactionTestCase):
         # let's take a closer look at es experts
         spain_users = (
             User.objects.filter(
-                Q(userstat__native_of__isnull=True) | Q(userstat__native_of__gid=17)
+                Q(userstat__country__isnull=True) | Q(userstat__country__gid=17)
             )
             .exclude(groups__name="eu_group_europe")
             .exclude(id__in=[24, 25])
@@ -1718,10 +1716,8 @@ class TestIdentificationTaskModel:
         assert not created
 
     def test_get_or_create_for_report_in_supervised_country_should_return_task_with_exclusivity_end_date(
-        self, user_national_supervisor, adult_report
+        self, user_national_supervisor, country, adult_report
     ):
-        country = user_national_supervisor.userstat.national_supervisor_of
-
         assert adult_report.country == country
 
         # Creating a photo will auto create a new IdentificationTask. Delete it and force manual.
@@ -1840,14 +1836,16 @@ class TestIdentificationTaskModel:
         assert IdentificationTask._meta.get_field("updated_at").auto_now
 
     # properties
-    def test_exclusivity_end(self, identification_task, user_national_supervisor):
-        country = user_national_supervisor.userstat.national_supervisor_of
+    def test_exclusivity_end(
+        self, identification_task, country, user_national_supervisor
+    ):
         assert identification_task.report.country == country
 
+        workspace = Workspace.objects.get(country=country)
         assert (
             identification_task.exclusivity_end
             == identification_task.report.server_upload_time
-            + timedelta(days=country.national_supervisor_report_expires_in)
+            + timedelta(days=workspace.supervisor_exclusivity_days)
         )
 
         # Delete the national supervisor.

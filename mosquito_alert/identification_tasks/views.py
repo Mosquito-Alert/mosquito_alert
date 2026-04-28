@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
-from django.db.models import Q
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.http import (
     HttpResponse,
@@ -16,6 +15,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.workspaces.models import Workspace, WorkspaceCollaborationGroup
 from .models import ExpertReportAnnotation
 
 
@@ -23,9 +23,12 @@ from .models import ExpertReportAnnotation
 def report_expiration(request, country_id=None):
     this_user = request.user
 
-    if not this_user.userstat.is_superexpert():
+    user_is_reviewer = WorkspaceCollaborationGroup.objects.filter(
+        reviewers=this_user
+    ).exists()
+    if not user_is_reviewer:
         return HttpResponse(
-            "You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
+            "You need to be logged in as reviewer to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
         )
 
     qs = ExpertReportAnnotation.objects.blocking()
@@ -72,17 +75,13 @@ def expert_report_annotation(request):
                 + settings.ENTOLAB_ADMIN
             )
 
-    this_user_is_expert = this_user.userstat.is_expert()
-    this_user_is_superexpert = this_user.userstat.is_superexpert()
+    this_user_is_reviewer = WorkspaceCollaborationGroup.objects.filter(
+        reviewers=this_user
+    ).exists()
 
-    if not (this_user_is_expert or this_user_is_superexpert):
-        return HttpResponse(
-            "You need to be logged in as an expert member to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
-        )
-
-    if not this_user_is_superexpert:
+    if not this_user_is_reviewer:
         return HttpResponsePermanentRedirect("https://app.mosquitoalert.com")
-    # NOTE: from now on, only superexpert is allowed to visit this view
+    # NOTE: from now on, only reviewers are allowed to visit this view
 
     if request.method == "GET":
         return render(
@@ -93,10 +92,19 @@ def expert_report_annotation(request):
 @login_required
 def expert_status(request):
     this_user = request.user
-    if this_user.groups.filter(Q(name="superexpert") | Q(name="movelab")).exists():
-        groups = Group.objects.filter(name__in=["expert", "superexpert"])
+    user_is_reviewer = WorkspaceCollaborationGroup.objects.filter(
+        reviewers=this_user
+    ).exists()
+    if user_is_reviewer:
+        workspaces = (
+            Workspace.objects.filter(members__isnull=False)
+            .distinct()
+            .order_by("country__name_engl")
+        )
         return render(
-            request, "identification_tasks/expert_status.html", {"groups": groups}
+            request,
+            "identification_tasks/expert_status.html",
+            {"workspaces": workspaces},
         )
     else:
         return HttpResponseRedirect(reverse("login"))

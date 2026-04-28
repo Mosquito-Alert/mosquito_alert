@@ -26,6 +26,12 @@ from django.db import models
 from django.db.models import Count
 from django.db.models.functions import Extract, Trunc
 
+from mosquito_alert.workspaces.models import (
+    Workspace,
+    WorkspaceMembership,
+    WorkspaceCollaborationGroup,
+)
+
 from .models import RankingData
 
 User = get_user_model()
@@ -273,19 +279,26 @@ def stats_user_ranking(request, page=1, user_uuid=None):
 def global_assignments(request):
     this_user = request.user
 
-    is_national_supervisor = this_user.userstat.is_national_supervisor()
-    is_super_expert = this_user.userstat.is_superexpert()
+    is_national_supervisor = WorkspaceMembership.objects.filter(
+        user=this_user, role=WorkspaceMembership.Role.SUPERVISOR
+    ).exists()
+    user_is_reviewer = WorkspaceCollaborationGroup.objects.filter(
+        reviewers=this_user
+    ).exists()
 
-    if not (is_national_supervisor or is_super_expert):
+    if not (is_national_supervisor or user_is_reviewer):
         return HttpResponse(
-            "You need to be logged in as superexpert or be a national supervisor to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
+            "You need to be logged in as reviewer or be a national supervisor to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
         )
 
     task_qs = IdentificationTask.objects
     if is_national_supervisor:
         # Only allow stats from its country
         task_qs = task_qs.filter(
-            report__country=this_user.userstat.national_supervisor_of
+            report__country__in=Workspace.objects.filter(
+                members__user=this_user,
+                members__role=WorkspaceMembership.Role.SUPERVISOR,
+            ).values("country")
         )
 
     n_unassigned = (
@@ -397,6 +410,7 @@ def global_assignments(request):
         "encoded_data": json.dumps(data),
         "summary": summary,
         "days": settings.ENTOLAB_LOCK_PERIOD,
+        "is_reviewer": user_is_reviewer,
     }
     return render(request, "stats/global_assignments.html", context)
 
@@ -461,12 +475,13 @@ def global_assignments_list(request, country_code=None, status=None):
 def workload_stats(request, country_id=None):
     this_user = request.user
     user_id_filter = settings.USERS_IN_STATS
-    if this_user.userstat and this_user.userstat.is_superexpert():
+    user_is_reviewer = WorkspaceCollaborationGroup.objects.filter(
+        reviewers=this_user
+    ).exists()
+    if user_is_reviewer:
         if country_id is None:
-            users = (
-                User.objects.filter(groups__name="expert")
-                .filter(id__in=user_id_filter)
-                .order_by("first_name", "last_name")
+            users = User.objects.filter(id__in=user_id_filter).order_by(
+                "first_name", "last_name"
             )
             context = {
                 "users": users,
@@ -476,17 +491,15 @@ def workload_stats(request, country_id=None):
             return render(request, "stats/workload.html", context)
         else:
             user_id_filter = UserStat.objects.filter(
-                native_of__iso3_code=country_id
+                country__iso3_code=country_id
             ).values("user__id")
             country_name = "Unknown country??"
             try:
                 country_name = EuropeCountry.objects.get(iso3_code=country_id).name_engl
             except Exception:
                 pass
-            users = (
-                User.objects.filter(groups__name="expert")
-                .filter(id__in=user_id_filter)
-                .order_by("first_name", "last_name")
+            users = User.objects.filter(id__in=user_id_filter).order_by(
+                "first_name", "last_name"
             )
             context = {
                 "users": users,
@@ -496,7 +509,7 @@ def workload_stats(request, country_id=None):
             return render(request, "stats/workload.html", context)
     else:
         return HttpResponse(
-            "You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
+            "You need to be logged in as reviewer to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
         )
 
 
