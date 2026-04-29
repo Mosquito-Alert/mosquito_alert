@@ -29,9 +29,7 @@ from mosquito_alert.notifications.models import (
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.workspaces.models import WorkspaceMembership
-
-
-from .factories import create_mobile_user, create_regular_user
+from mosquito_alert.users.tests.factories import create_mobile_user, create_regular_user
 
 User = get_user_model()
 TEST_DATA_PATH = Path(Path(__file__).parent.absolute(), "test_data/")

@@ -10,6 +10,7 @@ from django.utils import timezone
 
 class EuropeCountry(models.Model):
     gid = models.AutoField(primary_key=True)
+    # TODO: keep only cntr_id or fid, not both.
     cntr_id = models.CharField(max_length=2, blank=True)
     name_engl = models.CharField(
         max_length=44, help_text="Full name of the country in English (e.g., Spain)."
@@ -19,7 +20,10 @@ class EuropeCountry(models.Model):
         help_text="ISO 3166-1 alpha-3 country code (3-letter code, e.g., ESP).",
     )
     fid = models.CharField(max_length=2, blank=True)
+    # TODO: do not allow geom to be null.
     geom = models.MultiPolygonField(blank=True, null=True)
+
+    # TODO: these are not used. remove
     x_min = models.FloatField(blank=True, null=True)
     x_max = models.FloatField(blank=True, null=True)
     y_min = models.FloatField(blank=True, null=True)
