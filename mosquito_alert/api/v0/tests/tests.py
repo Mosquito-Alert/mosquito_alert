@@ -937,7 +937,6 @@ class FixEndpointTestCase(APITestCase):
 
 class NotificationTestCase(APITestCase):
     fixtures = [
-        "auth_group.json",
         "reritja_like.json",
         "awardcategory.json",
         "europe_countries.json",
@@ -1281,7 +1280,6 @@ class AnnotateCoarseTestCase(APITestCase):
         "europe_countries.json",
         "tigausers.json",
         "reports.json",
-        "auth_group.json",
         "movelab_like.json",
         "taxon.json",
     ]

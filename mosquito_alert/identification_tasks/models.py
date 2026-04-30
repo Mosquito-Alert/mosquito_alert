@@ -19,9 +19,9 @@ from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, AFTER_CREATE
 from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged
 
 from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.workspaces.models import Workspace, WorkspaceMembership
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.users.models import UserStat
 
 from .managers import ExpertReportAnnotationManager, IdentificationTaskManager
 from .messages import (
@@ -383,10 +383,19 @@ class IdentificationTask(LifecycleModel):
 
     @cached_property
     def exclusivity_end(self) -> Optional[timezone.datetime]:
-        country = self.report.country
-        if country and UserStat.objects.filter(national_supervisor_of=country).exists():
+        if not self.country:
+            return None
+
+        country_workspace = Workspace.objects.filter(country=self.country).first()
+        if not country_workspace:
+            return None
+
+        supervisors_qs = WorkspaceMembership.objects.filter(
+            workspace=country_workspace, role=WorkspaceMembership.Role.SUPERVISOR
+        )
+        if supervisors_qs.exists():
             return self.report.server_upload_time + timedelta(
-                days=country.national_supervisor_report_expires_in
+                days=country_workspace.supervisor_exclusivity_days
             )
         return None
 
@@ -881,12 +890,6 @@ class ExpertReportAnnotation(models.Model):
             ),
         ]
 
-    def is_superexpert(self):
-        return self.user.groups.filter(name="superexpert").exists()
-
-    def is_expert(self):
-        return self.user.groups.filter(name="expert").exists()
-
     @property
     def confidence_label(self):
         return get_confidence_label(value=self.confidence)
@@ -922,12 +925,13 @@ class ExpertReportAnnotation(models.Model):
             return False
 
         # If the user is the supervisor of that country -> False
-        if self.user.userstat.national_supervisor_of:
-            if (
-                self.user.userstat.national_supervisor_of
-                == self.identification_task.country
-            ):
-                return False
+        is_country_supervisor = WorkspaceMembership.objects.filter(
+            workspace__country=self.identification_task.country,
+            user=self.user,
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        ).exists()
+        if is_country_supervisor:
+            return False
 
         # Return False if no is_simplified found or if the objects to be
         # created is suposed to be the last.

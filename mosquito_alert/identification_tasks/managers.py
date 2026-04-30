@@ -8,10 +8,13 @@ from django.db.models.functions import Coalesce
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
-from mosquito_alert.geo.models import EuropeCountry
-from mosquito_alert.reports.models import Report
 from mosquito_alert.users.models import TigaUser
 from mosquito_alert.users.permissions import ReviewPermission
+from mosquito_alert.workspaces.models import (
+    Workspace,
+    WorkspaceMembership,
+    WorkspaceCollaborationGroup,
+)
 
 
 class IdentificationTaskQuerySet(models.QuerySet):
@@ -50,119 +53,105 @@ class IdentificationTaskQuerySet(models.QuerySet):
         if not user:
             return qs
 
-        # Filter and prioritize tasks for the user
-        qs = (
-            qs.exclude(assignees=user)
-            .annotate(
-                in_supervised_country=models.Exists(
-                    Report.objects.filter(
-                        identification_task=models.OuterRef("pk")
-                    ).in_supervised_country()
-                )
-                # NOTE: ordering by report__server_upload_time instead of the created_at from IdentificationTask.
-                #      To be discussed. Keeping like this for legacy reasons now.
-            )
-            .order_by("-in_supervised_country", "-report__server_upload_time")
+        user_workspace_qs = Workspace.objects.filter(
+            memberships__user=user,
+            memberships__role__in=[
+                WorkspaceMembership.Role.SUPERVISOR,
+                WorkspaceMembership.Role.ANNOTATOR,
+            ],
         )
 
-        # Start pioritization:
-        # Summary:
-        # - Case user in bounding box:
-        #       1. Report.country is the bounding box
-        # - Other (expert and national supervisor):
-        #       1. Report.country is not bounding box
-        #       2. Report is not in the exclusivity period (except for its country if user is national supervisor)
-        #       3. Sort by:
-        #           European user:
-        #               1. Report is in europe
-        #               2. Report is user's country
-        #               3. Append default ordering
-        #           Spanish user:
-        #               1. Report is in spain and nuts2 region
-        #               2. Report is in spain
-        #               3. Report is in europe
-        #               4. Append default ordering
-        if user.userstat.is_bb_user():
-            # Case user in a bounding box
-            return qs.filter(report__country=user.userstat.native_of)
+        if not user_workspace_qs.exists():
+            # If user has no workspace with permissions, return nothing
+            return qs.none()
 
-        # Case regular user (expert and national supervisors)
-        qs = qs.filter(report__country__is_bounding_box=False)
+        qs = qs.exclude(assignees=user)
 
-        # Case regular expert user
-        qs = qs.in_exclusivity_period(state=False)
-
-        # Prioritize for user
-        if user.groups.filter(name="eu_group_europe").exists():
-            # Case European user: Prioritize reports from own country
-            qs = qs.annotate(
-                in_user_country=models.Case(
+        # Prioritize tasks by:
+        # 1. Tasks from user's workspace where they have permissions (supervisor or annotator)
+        # 2. Tasks from other workspaces but from the same identification pool.
+        # 3. Tasks from other countries without identification pool
+        qs = (
+            qs.annotate(
+                in_unknown_country=models.Q(report__country__isnull=True),
+                in_user_nuts2=models.Case(
                     models.When(
-                        report__country=user.userstat.national_supervisor_of
-                        or user.userstat.native_of,
-                        then=True,
+                        report__nuts_2_fk__isnull=False,
+                        report__nuts_2_fk_id=user.userstat.nuts2_assignation_id,
+                        then=models.Value(True),
                     ),
-                    default=False,
+                    default=models.Value(False),
                     output_field=models.BooleanField(),
-                )
-            ).order_by(
-                # NOTE: appending here all the field to be ordered_by since order_by function
-                #       can not be chained, and each order_by cal will clear any previous ordering.
-                *(("-in_user_country",) + qs.query.order_by)
+                ),
+                in_user_workspace=models.Exists(
+                    user_workspace_qs.filter(country=models.OuterRef("report__country"))
+                ),
+                in_user_workspace_collaboration_group=models.Exists(
+                    WorkspaceCollaborationGroup.objects.filter(
+                        workspaces__country=models.OuterRef("report__country")
+                    ).filter(
+                        workspaces__in=user_workspace_qs,
+                    )
+                ),
+                has_workspace=models.Exists(
+                    Workspace.objects.filter(
+                        country_id=models.OuterRef("report__country_id")
+                    )
+                ),
             )
-        else:
-            # Case Non European user: Prioritize reports from nuts2 assignation, then spain, the Europe.
-            qs = qs.annotate(
-                in_spain_own_region=models.Case(
+            .filter(
+                models.Q(in_unknown_country=True)
+                | models.Q(in_user_workspace=True)
+                | models.Q(in_user_workspace_collaboration_group=True)
+                | models.Q(has_workspace=False)
+            )
+            .in_exclusivity_period(state=False)
+            .annotate(
+                priority=models.Case(
+                    models.When(in_user_nuts2=True, then=models.Value(4)),
+                    models.When(in_user_workspace=True, then=models.Value(3)),
                     models.When(
-                        models.Q(
-                            report__country_id=EuropeCountry.SPAIN_PK,
-                            report__nuts_2=user.userstat.nuts2_assignation.nuts_id
-                            if user.userstat.nuts2_assignation
-                            else None,
-                        ),
-                        then=True,
+                        in_user_workspace_collaboration_group=True, then=models.Value(2)
                     ),
-                    default=False,
-                    output_field=models.BooleanField(),
-                ),
-                in_spain=models.Case(
-                    models.When(report__country_id=EuropeCountry.SPAIN_PK, then=True),
-                    default=False,
-                    output_field=models.BooleanField(),
-                ),
-                in_europe=models.Case(
-                    models.When(report__country__isnull=False, then=True),
-                    default=False,
-                    output_field=models.BooleanField(),
-                ),
-            ).order_by(
-                # NOTE: appending here all the field to be ordered_by since order_by function
-                #       can not be chained, and each order_by cal will clear any previous ordering.
-                *(
-                    ("-in_spain_own_region", "-in_spain", "-in_europe")
-                    + qs.query.order_by
+                    models.When(has_workspace=False, then=models.Value(1)),
+                    default=models.Value(0),
+                    output_field=models.IntegerField(),
                 )
             )
+            .order_by(
+                # NOTE: ordering by report__server_upload_time instead of the created_at from IdentificationTask.
+                #      To be discussed. Keeping like this for legacy reasons now.
+                "-priority",
+                "-report__server_upload_time",
+            )
+        )
 
-        if user.userstat.national_supervisor_of:
-            # Case national supervisor
+        countries_with_supervisor_role_qs = (
+            Workspace.objects.filter(
+                memberships__user=user,
+                memberships__role=WorkspaceMembership.Role.SUPERVISOR,
+            )
+            .values("country")
+            .distinct()
+        )
+        if countries_with_supervisor_role_qs.exists():
+            # Case supervisor
             qs_in_exclusivity = (
                 self._assignable()
                 .exclude(assignees=user)
-                .filter(report__country=user.userstat.national_supervisor_of)
+                .filter(report__country__in=countries_with_supervisor_role_qs)
                 .in_exclusivity_period(state=True)
+            )
+            qs_in_exclusivity = qs_in_exclusivity.annotate(
+                in_exclusivity=models.Value(True, output_field=models.BooleanField())
             )
 
             qs = qs.annotate(
-                in_exclusivty=models.Value(False, output_field=models.BooleanField())
-            )
-            qs_in_exclusivity = qs_in_exclusivity.annotate(
-                in_exclusivty=models.Value(True, output_field=models.BooleanField())
+                in_exclusivity=models.Value(False, output_field=models.BooleanField())
             )
 
             qs = qs | qs_in_exclusivity
-            qs.order_by(*(("-in_exclusivty",) + qs.query.order_by))
+            qs.order_by(*(("-in_exclusivity",) + qs.query.order_by))
 
         return qs
 
@@ -222,10 +211,11 @@ class IdentificationTaskQuerySet(models.QuerySet):
         from .models import IdentificationTask
 
         qs = self.filter(status=IdentificationTask.Status.OPEN).annotate(
-            in_supervised_country=models.Exists(
-                Report.objects.filter(
-                    identification_task=models.OuterRef("pk")
-                ).in_supervised_country()
+            country_has_supervisor=models.Exists(
+                WorkspaceMembership.objects.filter(
+                    role=WorkspaceMembership.Role.SUPERVISOR,
+                    workspace__country=models.OuterRef("report__country"),
+                )
             ),
             supervisor_has_annotated=models.Exists(
                 IdentificationTask.objects.supervisor_has_annotated().filter(
@@ -236,7 +226,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
             _exclusivity_end=models.ExpressionWrapper(
                 models.F("report__server_upload_time")
                 + Coalesce(
-                    models.F("report__country__national_supervisor_report_expires_in"),
+                    models.F("report__country__workspace__supervisor_exclusivity_days"),
                     models.Value(0),
                 )
                 * models.Value(timedelta(days=1)),
@@ -246,7 +236,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
         return qs.filter(
             models.Q(
-                models.Q(in_supervised_country=True)
+                models.Q(country_has_supervisor=True)
                 & models.Q(_exclusivity_end__gt=timezone.now())
                 & models.Q(supervisor_has_annotated=False),
                 _negated=not state,
@@ -256,26 +246,20 @@ class IdentificationTaskQuerySet(models.QuerySet):
     def supervisor_has_annotated(self, state: bool = True) -> QuerySet:
         from .models import ExpertReportAnnotation
 
-        return (
-            self.filter(
-                report__in=Report.objects.filter(
-                    identification_task__isnull=False
-                ).in_supervised_country()
-            )
-            .annotate(
-                supervisor_has_annotated=models.Exists(
-                    ExpertReportAnnotation.objects.filter(
-                        identification_task=models.OuterRef("pk"),
-                        is_finished=True,
-                        user__userstat__national_supervisor_of__isnull=False,
-                        user__userstat__national_supervisor_of=models.OuterRef(
-                            "report__country"
+        return self.annotate(
+            supervisor_has_annotated=models.Exists(
+                ExpertReportAnnotation.objects.filter(
+                    identification_task=models.OuterRef("pk"),
+                    is_finished=True,
+                    user__in=WorkspaceMembership.objects.filter(
+                        role=WorkspaceMembership.Role.SUPERVISOR,
+                        workspace__country=models.OuterRef(
+                            "identification_task__report__country"
                         ),
-                    )
+                    ).values("user"),
                 )
             )
-            .filter(supervisor_has_annotated=state)
-        )
+        ).filter(supervisor_has_annotated=state)
 
     def annotated_by(self, users: List[User]) -> QuerySet:
         from .models import ExpertReportAnnotation
