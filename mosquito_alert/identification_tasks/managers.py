@@ -84,28 +84,26 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     output_field=models.BooleanField(),
                 ),
                 in_user_workspace=models.Exists(
-                    user_workspace_qs.filter(
-                        countries=models.OuterRef("report__country")
-                    )
+                    user_workspace_qs.filter(country=models.OuterRef("report__country"))
                 ),
                 in_user_workspace_collaboration_group=models.Exists(
                     WorkspaceCollaborationGroup.objects.filter(
-                        workspaces__countries=models.OuterRef("report__country"),
-                        workspaces__in=models.Subquery(user_workspace_qs.values("pk")),
+                        workspaces__country=models.OuterRef("report__country")
+                    ).filter(
+                        workspaces__in=user_workspace_qs,
                     )
                 ),
-                without_collaboration_group=models.Exists(
-                    WorkspaceCollaborationGroup.objects.filter(
-                        workspaces__countries=models.OuterRef("report__country")
-                    ),
-                    negated=True,
+                has_workspace=models.Exists(
+                    Workspace.objects.filter(
+                        country_id=models.OuterRef("report__country_id")
+                    )
                 ),
             )
             .filter(
                 models.Q(in_unknown_country=True)
                 | models.Q(in_user_workspace=True)
                 | models.Q(in_user_workspace_collaboration_group=True)
-                | models.Q(without_collaboration_group=True)
+                | models.Q(has_workspace=False)
             )
             .in_exclusivity_period(state=False)
             .annotate(
@@ -115,7 +113,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     models.When(
                         in_user_workspace_collaboration_group=True, then=models.Value(2)
                     ),
-                    models.When(without_collaboration_group=True, then=models.Value(1)),
+                    models.When(has_workspace=False, then=models.Value(1)),
                     default=models.Value(0),
                     output_field=models.IntegerField(),
                 )
@@ -255,7 +253,9 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     is_finished=True,
                     user__in=WorkspaceMembership.objects.filter(
                         role=WorkspaceMembership.Role.SUPERVISOR,
-                        workspace__country=models.OuterRef("report__country"),
+                        workspace__country=models.OuterRef(
+                            "identification_task__report__country"
+                        ),
                     ).values("user"),
                 )
             )

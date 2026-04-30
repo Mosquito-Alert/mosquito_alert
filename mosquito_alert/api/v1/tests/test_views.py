@@ -36,6 +36,7 @@ from mosquito_alert.notifications.models import (
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser
 from mosquito_alert.workspaces.models import WorkspaceMembership
+from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
 
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
 from mosquito_alert.api.v1.tests.integration.observations.factories import (
@@ -1679,7 +1680,7 @@ class TestPermissionsApi:
     def test_countries_role_supervisor(self, api_client, user, me_endpoint, country):
         WorkspaceMembership.objects.create(
             user=user,
-            workspace=country.workspace,
+            workspace=WorkspaceFactory(country=country),
             role=WorkspaceMembership.Role.SUPERVISOR,
         )
 
@@ -1700,7 +1701,7 @@ class TestPermissionsApi:
     def test_countries_role_annotator(self, api_client, user, me_endpoint, country):
         WorkspaceMembership.objects.create(
             user=user,
-            workspace=country.workspace,
+            workspace=WorkspaceFactory(country=country),
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
 

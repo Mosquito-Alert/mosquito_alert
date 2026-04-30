@@ -37,7 +37,7 @@ class EuropeCountry(models.Model):
         return self.name_engl
 
     def __str__(self):
-        return "{} - {}".format(self.gid, self.name_engl)
+        return self.name_engl
 
 
 class NutsEurope(models.Model):
