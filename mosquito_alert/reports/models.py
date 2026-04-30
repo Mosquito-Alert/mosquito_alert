@@ -1305,11 +1305,8 @@ class Photo(models.Model):
 
         if not _is_adding:
             return
-        from mosquito_alert.identification_tasks.models import IdentificationTask
 
-        if self.report.type == Report.TYPE_ADULT:
-            IdentificationTask.get_or_create_for_report(report=self.report)
-        elif self.report.type == Report.TYPE_SITE:
+        if self.report.type == Report.TYPE_SITE:
             self.report.published_at = self.report.server_upload_time + timedelta(
                 days=2
             )

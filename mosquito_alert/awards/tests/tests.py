@@ -21,13 +21,12 @@ from zoneinfo import ZoneInfo
 
 import random
 from django.template.loader import render_to_string
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 import string
 
 
 class ScoringTestCase(TestCase):
     fixtures = [
-        "auth_group.json",
         "awardcategory.json",
         "tigausers.json",
         "reritja_like.json",
@@ -124,8 +123,6 @@ class ScoringTestCase(TestCase):
         identification_task = report_in_season.identification_task
         report_in_season.refresh_from_db()
         reritja_user = User.objects.get(pk=25)
-        superexperts_group = Group.objects.get(name="superexpert")
-        superexperts_group.user_set.add(reritja_user)
         aedes_albopictus = Taxon.objects.get(pk=112)
         _ = ExpertReportAnnotation.objects.create(
             user=reritja_user,

@@ -29,6 +29,7 @@ from mosquito_alert.notifications.models import (
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.workspaces.models import WorkspaceMembership
+from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
 from mosquito_alert.users.tests.factories import create_mobile_user, create_regular_user
 
 User = get_user_model()
@@ -301,7 +302,7 @@ def taxon_root():
 def user_with_role_annotator_in_country(user, es_country):
     WorkspaceMembership.objects.create(
         user=user,
-        workspace=es_country.workspace,
+        workspace=WorkspaceFactory(country=es_country),
         role=WorkspaceMembership.Role.ANNOTATOR,
     )
 
@@ -312,7 +313,7 @@ def user_with_role_annotator_in_country(user, es_country):
 def user_with_role_supervisor_in_country(user, es_country):
     WorkspaceMembership.objects.create(
         user=user,
-        workspace=es_country.workspace,
+        workspace=WorkspaceFactory(country=es_country),
         role=WorkspaceMembership.Role.SUPERVISOR,
     )
 
