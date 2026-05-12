@@ -1,3 +1,4 @@
+from datetime import timedelta
 import pytest
 
 from mosquito_alert.reports.models import Report, Photo
@@ -19,6 +20,16 @@ def object(app_user):
 @pytest.fixture
 def published_object(app_user):
     return create_observation_object(user=app_user, is_published=True)
+
+
+@pytest.fixture
+def published_object_30_days_ago(app_user):
+    observation_obj = create_observation_object(user=app_user)
+    observation_obj.published_at = observation_obj.server_upload_time
+    observation_obj.creation_time = observation_obj.creation_time - timedelta(days=30)
+    observation_obj.save()
+
+    return observation_obj
 
 
 @pytest.fixture

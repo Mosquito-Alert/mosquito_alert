@@ -92,3 +92,23 @@ stages:
     id: filter_by_reverse_distance
   - type: ref
     id: order_by_distance_without_point
+
+---
+
+test_name: 'Filters for bites list'
+
+includes:
+  - !include '../shared/reports/list.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_object
+    - published_object_30_days_ago
+
+stages:
+  - type: ref
+    id: order_by_created_at
+  - type: ref
+    id: order_by_reverse_created_at

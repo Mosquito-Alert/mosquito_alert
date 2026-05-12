@@ -1,3 +1,4 @@
+from datetime import timedelta
 import pytest
 
 from mosquito_alert.reports.models import Report
@@ -20,6 +21,16 @@ def object(app_user):
 def published_object(app_user):
     bite_obj = create_bite_object(user=app_user)
     bite_obj.published_at = bite_obj.server_upload_time
+    bite_obj.save()
+
+    return bite_obj
+
+
+@pytest.fixture
+def published_object_30_days_ago(app_user):
+    bite_obj = create_bite_object(user=app_user)
+    bite_obj.published_at = bite_obj.server_upload_time
+    bite_obj.creation_time = bite_obj.creation_time - timedelta(days=30)
     bite_obj.save()
 
     return bite_obj
