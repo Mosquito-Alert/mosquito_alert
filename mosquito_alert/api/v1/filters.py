@@ -64,15 +64,17 @@ class TagFilter(filters.BaseInFilter, filters.CharFilter):
 class DistanceOrderingFilter(filters.OrderingFilter):
     def __init__(self, ordering_filter_field, *args, **kwargs):
         self.ordering_filter_field = ordering_filter_field
+        kwargs["fields"] = kwargs.get("fields", ()) + (("distance", "distance"),)
+        kwargs["field_labels"] = kwargs.get("field_labels", {}) | {
+            "distance": "Distance"
+        }
         super().__init__(*args, **kwargs)
-        self.extra["choices"] += [
-            ("distance", "Distance"),
-            ("-distance", "Distance (descending)"),
-        ]
 
     def get_ordering_value(self, param):
-        descending = param.startswith("-")
-        param = param[1:] if descending else param
+        res = super().get_ordering_value(param)
+
+        descending = res.startswith("-")
+        param = res[1:] if descending else res
         if param == "distance":
             point_string = self.parent.request.query_params.get(
                 DistanceToPointFilter.point_param, None
@@ -100,13 +102,11 @@ class DistanceOrderingFilter(filters.OrderingFilter):
                     )
                 )
 
-            return (
-                Distance(self.ordering_filter_field, point)
-                if not descending
-                else -Distance(self.ordering_filter_field, point)
-            )
+            res = Distance(self.ordering_filter_field, point)
+            if descending:
+                res = -res
 
-        return super().get_ordering_value(param)
+        return res
 
 
 class BaseReportFilter(GeoFilterSet):

@@ -142,3 +142,35 @@ stages:
         order_by: "distance"
     response:
       status_code: 400
+  - id: order_by_created_at
+    name: Order by created_at
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      params:
+        order_by: "created_at"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 2
+        results:
+          - uuid: "{published_object_30_days_ago.pk}"
+          - uuid: "{published_object.pk}"
+  - id: order_by_reverse_created_at
+    name: Order by reverse created_at
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      method: "GET"
+      params:
+        order_by: "-created_at"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 2
+        results:
+          - uuid: "{published_object.pk}"
+          - uuid: "{published_object_30_days_ago.pk}"
