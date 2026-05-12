@@ -87,9 +87,11 @@ class UserStat(UserRolePermissionMixin, models.Model):
 
     # NOTE: override UserRolePermissionMixin
     def get_countries_with_roles(self) -> List[EuropeCountry]:
-        return EuropeCountry.objects.filter(
-            workspace__memberships__user=self.user,
-        ).distinct()
+        return list(
+            EuropeCountry.objects.filter(
+                workspace__memberships__user=self.user,
+            ).distinct()
+        )
 
     # NOTE: override UserRolePermissionMixin
     def get_role(self, country: Optional[EuropeCountry] = None) -> Role:
