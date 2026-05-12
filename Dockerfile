@@ -20,7 +20,7 @@ RUN ln -sf /usr/bin/python3.9 /usr/bin/python3
 
 # Install pip for Python 3.9
 RUN apt-get install -y python3-setuptools
-RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN curl https://bootstrap.pypa.io/pip/3.9/get-pip.py -o get-pip.py
 RUN python3.9 get-pip.py
 RUN rm get-pip.py
 
