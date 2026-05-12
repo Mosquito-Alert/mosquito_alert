@@ -12,6 +12,7 @@ def populate_workspace(apps, schema_editor):
     EuropeCountry = apps.get_model("geo", "EuropeCountry")
     UserStat = apps.get_model("users", "UserStat")
 
+    # TODO: only country with at least one user.
     for country in EuropeCountry.objects.all():
         w = Workspace.objects.create(
             country=country,
