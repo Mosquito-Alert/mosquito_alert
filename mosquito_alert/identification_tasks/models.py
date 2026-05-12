@@ -694,6 +694,7 @@ class IdentificationTask(LifecycleModel):
             return
         from .messaging import send_finished_identification_task_notification
 
+        # TODO: remove send from pk 25
         send_finished_identification_task_notification(
             identification_task=self, from_user=User.objects.filter(pk=25).first()
         )
