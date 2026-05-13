@@ -1275,11 +1275,11 @@ class NotificationTestCase(APITestCase):
 
 class AnnotateCoarseTestCase(APITestCase):
     fixtures = [
+        "europe_countries.json",
+        "reports.json",
         "photos.json",
         "users.json",
-        "europe_countries.json",
         "tigausers.json",
-        "reports.json",
         "movelab_like.json",
         "taxon.json",
     ]
