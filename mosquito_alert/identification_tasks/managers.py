@@ -73,7 +73,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
         # 3. Tasks from other countries without identification pool
         qs = (
             qs.annotate(
-                in_unknown_country=models.Q(report__country__isnull=True),
+                # in_unknown_country=models.Q(report__country__isnull=True),
                 in_user_nuts2=models.Case(
                     models.When(
                         report__nuts_2_fk__isnull=False,
@@ -100,10 +100,10 @@ class IdentificationTaskQuerySet(models.QuerySet):
                 ),
             )
             .filter(
-                models.Q(in_unknown_country=True)
-                | models.Q(in_user_workspace=True)
+                models.Q(in_user_workspace=True)
                 | models.Q(in_user_workspace_collaboration_group=True)
                 | models.Q(has_workspace=False)
+                # | models.Q(in_unknown_country=True)
             )
             .in_exclusivity_period(state=False)
             .annotate(
