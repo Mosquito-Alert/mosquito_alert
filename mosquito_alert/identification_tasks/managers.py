@@ -48,6 +48,8 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
     def backlog(self, user: Optional[User] = None) -> QuerySet:
         """Awaiting assignment but part of the annotation cycle."""
+        from .models import ExpertReportAnnotation
+
         qs = self._assignable()
 
         if not user:
@@ -61,7 +63,13 @@ class IdentificationTaskQuerySet(models.QuerySet):
             ],
         )
 
-        if not user_workspace_qs.exists():
+        if not user_workspace_qs.exists() and not user.has_perm(
+            "%(app_label)s.add_%(model_name)s"
+            % {
+                "app_label": ExpertReportAnnotation._meta.app_label,
+                "model_name": ExpertReportAnnotation._meta.model_name,
+            }
+        ):
             # If user has no workspace with permissions, return nothing
             return qs.none()
 
