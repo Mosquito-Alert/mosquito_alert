@@ -2,11 +2,39 @@ import factory
 from factory.django import DjangoModelFactory
 from faker import Faker
 
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+
+from shapely import wkt
+from shapely.affinity import scale
+
 from ..models import EuropeCountry, NutsEurope
 
 from .fuzzy import FuzzyMultiPolygon, FuzzyGriddedPolygon
 
 fake = Faker()
+
+
+def scale_geom(geom: GEOSGeometry, factor=0.1):
+    if geom is None:
+        return None
+
+    # ensure GEOSGeometry
+    if not hasattr(geom, "wkt"):
+        geom = GEOSGeometry(geom.wkt, srid=geom.srid)
+
+    # convert to Shapely
+    shapely_geom = wkt.loads(geom.wkt)
+
+    # scale
+    scaled = scale(
+        shapely_geom,
+        xfact=factor,
+        yfact=factor,
+        origin="centroid",
+    )
+
+    # back to GEOS
+    return GEOSGeometry(scaled.wkt, srid=geom.srid)
 
 
 class EuropeCountryFactory(DjangoModelFactory):
@@ -27,12 +55,20 @@ class EuropeCountryFactory(DjangoModelFactory):
 class NutsEuropeFactory(DjangoModelFactory):
     fid = factory.Sequence(lambda n: "%s" % n)
     nuts_id = factory.Sequence(lambda n: "%s" % n)
-    levl_code = 1
     cntr_code = factory.Sequence(lambda n: "%s" % n)
     name_latn = factory.Faker("province", locale="en_CA")
     nuts_name = factory.Faker("province", locale="en_CA")
-    geom = FuzzyMultiPolygon(srid=4326, polygon_klass=FuzzyGriddedPolygon)
     europecountry = factory.SubFactory(EuropeCountryFactory)
+
+    geom = factory.LazyAttribute(
+        lambda obj: (
+            MultiPolygon(
+                scale_geom(obj.europecountry.geom[0]), srid=obj.europecountry.geom.srid
+            )
+            if obj.europecountry and obj.europecountry.geom
+            else FuzzyMultiPolygon(srid=4326, polygon_klass=FuzzyGriddedPolygon).fuzz()
+        )
+    )
 
     class Meta:
         model = NutsEurope

@@ -233,7 +233,7 @@ class TestIdentificationTaskModel:
         assert obj is not None
         assert created
         assert obj.exclusivity_end == adult_report.server_upload_time + timedelta(
-            days=10
+            days=14
         )
 
     def test_get_taxon_consensus_empty_annotations(self):
@@ -672,6 +672,11 @@ class TestIdentificationTaskManager:
             ExpertReportAnnotationFactory(
                 identification_task=identification_task, user=user, is_finished=False
             )
+            ExpertReportAnnotationFactory.create_batch(
+                size=settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1,
+                identification_task=identification_task,
+                is_finished=True,
+            )
 
             traveller.shift(timedelta(days=settings.ENTOLAB_LOCK_PERIOD + 1))
 
@@ -702,6 +707,11 @@ class TestIdentificationTaskManager:
                 identification_task=identification_task,
                 user=user,
                 is_finished=False,
+            )
+            ExpertReportAnnotationFactory.create_batch(
+                size=settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1,
+                identification_task=identification_task,
+                is_finished=True,
             )
 
             traveller.shift(timedelta(days=5))
@@ -962,6 +972,7 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 2
         assert result.first() == identification_task
+        assert result.first().priority == 3
 
     def test_backlog_orders_by_upload_time_recent_first(self, country, user):
         """backlog() should order tasks by report upload time (newest first)."""
@@ -1034,12 +1045,13 @@ class TestIdentificationTaskManager:
                 report__point=country.geom.point_on_surface
             )
 
+            assert not IdentificationTask.objects.backlog(user=annotator_user).exists()
+
             traveller.shift(
                 timedelta(days=country.workspace.supervisor_exclusivity_days + 1)
             )
 
             result = IdentificationTask.objects.backlog(user=annotator_user)
-
             assert result.count() == 1
             assert result.first() == identification_task
 
@@ -1058,6 +1070,8 @@ class TestIdentificationTaskManager:
         identification_task = IdentificationTaskFactory(
             report__point=country.geom.point_on_surface
         )
+
+        assert not IdentificationTask.objects.backlog(user=annotator_user).exists()
 
         ExpertReportAnnotationFactory(
             identification_task=identification_task,
@@ -1078,14 +1092,16 @@ class TestIdentificationTaskManager:
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
 
+        min_x, min_y, max_x, max_y = country.geom.extent
         identification_task = IdentificationTaskFactory(
-            report__point=Point(0, 0)  # Point in international waters
+            report__point=Point(max_x + 1, max_y + 1, srid=country.geom.srid)
         )
 
         result = IdentificationTask.objects.backlog(user=user)
 
         assert result.count() == 1
         assert result.first() == identification_task
+        assert result.first().priority == 1
 
     @pytest.mark.parametrize("collaboration_exists", [False, True])
     def test_backlog_user_only_sees_other_workspace_if_collaboration_agreement(
@@ -1113,6 +1129,8 @@ class TestIdentificationTaskManager:
         result = IdentificationTask.objects.backlog(user=user)
 
         assert result.exists() == collaboration_exists
+        if collaboration_exists:
+            assert result.first().priority == 2
 
     def test_backlog_user_prioritizes_nuts2(self):
         """backlog() should prioritize tasks from user's NUTS2 region."""
@@ -1123,9 +1141,7 @@ class TestIdentificationTaskManager:
             workspace=workspace, user=user, role=WorkspaceMembership.Role.ANNOTATOR
         )
 
-        nuts2_region = NutsEuropeFactory(
-            levl_code=2, europecountry=workspace.country, geom=workspace.country.geom
-        )
+        nuts2_region = NutsEuropeFactory(levl_code=2, europecountry=workspace.country)
 
         user.userstat.nuts2_assignation = nuts2_region
         user.userstat.save()
@@ -1140,6 +1156,8 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 2
         assert list(result) == [task_in_nuts2, task_outside_nuts2]
+        assert result.get(pk=task_in_nuts2.pk).priority == 4
+        assert result.get(pk=task_outside_nuts2.pk).priority == 1
 
     def test_backlog_prioritizes_countries_without_workspace(self):
         """backlog() should include tasks from countries without workspace (priority 1)."""
@@ -1161,6 +1179,7 @@ class TestIdentificationTaskManager:
         result = IdentificationTask.objects.backlog(user=user)
 
         assert result.filter(pk=task_no_workspace.pk).exists()
+        assert result.get(pk=task_no_workspace.pk).priority == 1
 
     def test_backlog_combined_priority_ordering(self):
         """backlog() should correctly order tasks across all priority levels."""
@@ -1174,9 +1193,7 @@ class TestIdentificationTaskManager:
 
         # Setup: NUTS2 region (priority 4 - highest)
         nuts2_region = NutsEuropeFactory(
-            levl_code=2,
-            europecountry=user_workspace.country,
-            geom=user_workspace.country.geom,
+            levl_code=2, europecountry=user_workspace.country
         )
         user.userstat.nuts2_assignation = nuts2_region
         user.userstat.save()
@@ -1194,58 +1211,46 @@ class TestIdentificationTaskManager:
         # Create tasks in all categories
         task_nuts2 = IdentificationTaskFactory(
             report__point=nuts2_region.geom.point_on_surface,
-            report__country=user_workspace.country,
         )
 
-        IdentificationTaskFactory(
-            report__point=user_workspace.country.geom.point_on_surface,
-            report__country=user_workspace.country,
+        task_workspace = IdentificationTaskFactory(
+            report__point=user_workspace.country.geom[1].point_on_surface,
         )
 
         task_collab = IdentificationTaskFactory(
-            report__point=collab_workspace.country.geom.point_on_surface,
-            report__country=collab_workspace.country,
+            report__point=collab_workspace.country.geom[1].point_on_surface
         )
 
         task_no_workspace = IdentificationTaskFactory(
-            report__point=country_no_workspace.geom.point_on_surface,
-            report__country=country_no_workspace,
-        )
-
-        task_unknown = IdentificationTaskFactory(
-            report__point=Point(0, 0),  # International waters
-            report__country=None,
+            report__point=country_no_workspace.geom.point_on_surface
         )
 
         result = list(IdentificationTask.objects.backlog(user=user))
 
-        # Expected order: unknown country, NUTS2 (4), user workspace (3), collaboration (2), no workspace (1)
-        # Since unknown country gets filtered first, then ordered by priority
-        assert task_nuts2 in result[:2]  # NUTS2 should be in top results
-        assert task_unknown in result  # Unknown country should be included
-        assert result.index(task_nuts2) < result.index(
-            task_collab
-        )  # NUTS2 before collab
-        assert result.index(task_collab) < result.index(
-            task_no_workspace
-        )  # collab before no workspace
+        # Expected order: NUTS2 (4), user workspace (3), collaboration (2), no workspace (1)
+        assert [
+            task_nuts2,
+            task_workspace,
+            task_collab,
+            task_no_workspace,
+        ] == result
 
     def test_backlog_supervisor_exclusivity_tasks_ordered_first(
         self, country, user_national_supervisor
     ):
         """backlog() should order exclusivity tasks before non-exclusivity tasks for supervisors."""
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
-            # Create a task in exclusivity period
-            task_in_exclusivity = IdentificationTaskFactory(
+            # Create a task outside exclusivity period
+            task_outside_exclusivity = IdentificationTaskFactory(
                 report__point=country.geom.point_on_surface, report__country=country
             )
 
-            # Create a task outside exclusivity period
+            # Create a task in exclusivity period
             traveller.shift(
                 timedelta(days=country.workspace.supervisor_exclusivity_days + 1)
             )
 
-            task_outside_exclusivity = IdentificationTaskFactory(
+            task_in_exclusivity = IdentificationTaskFactory(
                 report__point=country.geom.point_on_surface, report__country=country
             )
 
@@ -1255,46 +1260,6 @@ class TestIdentificationTaskManager:
         # Exclusivity tasks should come first
         assert result[0] == task_in_exclusivity
         assert result[1] == task_outside_exclusivity
-
-    def test_backlog_nuts2_has_higher_priority_than_workspace(self):
-        """backlog() should prioritize NUTS2 tasks over general workspace tasks."""
-        user = UserFactory()
-
-        workspace = WorkspaceFactory()
-        WorkspaceMembership.objects.create(
-            workspace=workspace, user=user, role=WorkspaceMembership.Role.ANNOTATOR
-        )
-
-        # Create another workspace in the same country for testing
-        other_workspace = WorkspaceFactory()
-        WorkspaceMembership.objects.create(
-            workspace=other_workspace,
-            user=user,
-            role=WorkspaceMembership.Role.ANNOTATOR,
-        )
-
-        # Setup NUTS2 in first workspace
-        nuts2_region = NutsEuropeFactory(
-            levl_code=2, europecountry=workspace.country, geom=workspace.country.geom
-        )
-        user.userstat.nuts2_assignation = nuts2_region
-        user.userstat.save()
-
-        # Create tasks
-        task_nuts2 = IdentificationTaskFactory(
-            report__point=nuts2_region.geom.point_on_surface,
-            report__country=workspace.country,
-        )
-
-        task_other_workspace = IdentificationTaskFactory(
-            report__point=other_workspace.country.geom.point_on_surface,
-            report__country=other_workspace.country,
-        )
-
-        result = list(IdentificationTask.objects.backlog(user=user))
-
-        # NUTS2 task should come before other workspace task
-        assert result.index(task_nuts2) < result.index(task_other_workspace)
 
     # Test browsable() method
     def test_browsable_returns_all_for_user_with_view_perm(self, identification_task):
