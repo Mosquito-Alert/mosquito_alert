@@ -387,6 +387,7 @@ class ReportModelTest(TestCase):
         tag_names = list(report.tags.values_list("name", flat=True))
         self.assertEqual(sorted(tag_names), ["tag1", "tag2"])
 
+    @pytest.mark.enable_report_location_masking
     def test_report_above_greenland_should_be_marked_as_masked(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -403,6 +404,7 @@ class ReportModelTest(TestCase):
 
         self.assertTrue(report.location_is_masked)
 
+    @pytest.mark.enable_report_location_masking
     def test_report_below_antartic_circle_should_be_marked_as_masked(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -419,6 +421,7 @@ class ReportModelTest(TestCase):
 
         self.assertTrue(report.location_is_masked)
 
+    @pytest.mark.enable_report_location_masking
     def test_report_in_the_ocean_should_be_marked_as_masked(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -435,6 +438,7 @@ class ReportModelTest(TestCase):
 
         self.assertTrue(report.location_is_masked)
 
+    @pytest.mark.enable_report_location_masking
     def test_report_in_land_should_not_be_marked_as_masked(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -866,6 +870,7 @@ class ReportModelTest(TestCase):
 
         self.assertEqual(report.published, False)
 
+    @pytest.mark.enable_report_location_masking
     def test_published_report_is_unpublished_if_location_is_masked(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -932,6 +937,7 @@ class ReportModelTest(TestCase):
 
         assert report.lau_fk == lau
 
+    @pytest.mark.enable_report_location_masking
     def test_report_location_is_forced_if_missing(self):
         for t, _ in Report.TYPE_CHOICES:
             report = Report.objects.create(
