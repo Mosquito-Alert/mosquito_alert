@@ -458,9 +458,7 @@ SEASON_START_DAY = 23
 # mosquito_alert.users & mosquito_alert.identification_tasks
 # -------------------------------------------------------------------------------
 # Entolab
-MAX_N_OF_PENDING_REPORTS = 5
 MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT = 3
-DEFAULT_EXPIRATION_DAYS = 14
 ENTOLAB_LOCK_PERIOD = 14  # number of days after a report is considered blocked
 
 # tigatrapp variables (legacy)
