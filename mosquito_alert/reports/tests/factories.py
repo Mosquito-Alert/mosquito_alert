@@ -27,7 +27,6 @@ class ReportFactory(DjangoModelFactory):
     version_UUID = factory.LazyFunction(lambda: str(uuid.uuid4()))
 
     user = factory.SubFactory(TigaUserFactory)
-    type = factory.Iterator(Report.TYPE_CHOICES, getter=lambda c: c[0])
 
     phone_upload_time = factory.Faker("past_datetime", tzinfo=datetime.timezone.utc)
     creation_time = factory.SelfAttribute("phone_upload_time")
@@ -35,7 +34,7 @@ class ReportFactory(DjangoModelFactory):
     point = factory.LazyFunction(random_valid_location)
 
     location_choice = factory.Iterator(
-        Report.LOCATION_CHOICE_CHOICES, getter=lambda c: c[0]
+        [Report.LOCATION_CURRENT, Report.LOCATION_SELECTED]
     )
     current_location_lon = factory.LazyAttribute(
         lambda o: o.point.x if o.location_choice == Report.LOCATION_CURRENT else None
