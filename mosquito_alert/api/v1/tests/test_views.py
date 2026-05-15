@@ -1654,7 +1654,7 @@ class TestPermissionsApi:
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "reviewer"
+        assert response.data["general"]["role"] == "reviewer"  # TODO: remove
         assert response.data["general"]["permissions"]["review"]["add"]
         assert response.data["general"]["permissions"]["review"]["view"]
         assert response.data["general"]["permissions"]["message"]["add"]
@@ -1686,7 +1686,7 @@ class TestPermissionsApi:
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "annotator"
+        assert response.data["general"]["role"] == "base"  # TODO: remove
         assert response.data["countries"][0]["country"]["id"] == country.pk
         assert response.data["countries"][0]["role"] == "supervisor"
         assert response.data["countries"][0]["permissions"]["annotation"][
@@ -1707,7 +1707,7 @@ class TestPermissionsApi:
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "annotator"
+        assert response.data["general"]["role"] == "base"  # TODO: remove
         assert response.data["countries"][0]["role"] == "annotator"
         assert response.data["countries"][0]["country"]["id"] == country.pk
         assert not response.data["countries"][0]["permissions"]["annotation"][
