@@ -360,12 +360,25 @@ def global_assignments(request):
             stats_country_data[country][fieldname] = entry["total_count"]
 
     country_info = list(
-        EuropeCountry.objects.values(
+        EuropeCountry.objects.annotate(
+            supervisor_pk=models.Subquery(
+                WorkspaceMembership.objects.filter(
+                    workspace__country=models.OuterRef("pk"),
+                    role=WorkspaceMembership.Role.SUPERVISOR,
+                ).values("user__pk")[:1]
+            ),
+            supervisor_username=models.Subquery(
+                WorkspaceMembership.objects.filter(
+                    workspace__country=models.OuterRef("pk"),
+                    role=WorkspaceMembership.Role.SUPERVISOR,
+                ).values("user__username")[:1]
+            ),
+        ).values(
             "gid",
             "iso3_code",
             "name_engl",
-            "supervisors__user",
-            "supervisors__user__username",
+            "supervisor_pk",
+            "supervisor_username",
         )
     )
 
@@ -375,8 +388,8 @@ def global_assignments(request):
             "gid": "N/A",
             "iso3_code": "Other",
             "name_engl": "Other",
-            "supervisors__user": None,
-            "supervisors__user__username": None,
+            "supervisor_pk": None,
+            "supervisor_username": None,
         }
     )
 
@@ -385,8 +398,8 @@ def global_assignments(request):
         stats = stats_country_data.get(country["gid"])
         data.append(
             {
-                "ns_id": country["supervisors__user"],
-                "ns_username": country["supervisors__user__username"],
+                "ns_id": country["supervisor_pk"],
+                "ns_username": country["supervisor_username"],
                 "ns_country_id": country["gid"],
                 "ns_country_code": country["iso3_code"],
                 "ns_country_name": country["name_engl"],
