@@ -133,7 +133,7 @@ class PermissionsSerializer(DataclassSerializer):
 
 
 class BaseRolePermissionSerializer(serializers.Serializer):
-    role = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()  # TODO: remove here, only to countries
     permissions = serializers.SerializerMethodField()
 
     @abstractmethod
@@ -168,7 +168,7 @@ class BaseRolePermissionSerializer(serializers.Serializer):
 
 class UserPermissionSerializer(serializers.Serializer):
     class GeneralPermissionSerializer(BaseRolePermissionSerializer):
-        is_staff = serializers.BooleanField()
+        is_staff = serializers.BooleanField()  # TODO: remove
 
         def _get_role(self, obj: Union[User, TigaUser]) -> Role:
             return obj.get_role()
