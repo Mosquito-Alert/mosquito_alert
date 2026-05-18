@@ -213,6 +213,9 @@ class UserStat(UserRolePermissionMixin, models.Model):
     class Meta:
         db_table = "tigacrafting_userstat"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
 
+    def __str__(self):
+        return self.user.username
+
 
 def get_default_password_hash():
     return make_password(settings.DEFAULT_TIGAUSER_PASSWORD)
