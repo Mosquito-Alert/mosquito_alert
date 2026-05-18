@@ -14,9 +14,9 @@ def populate_workspace(apps, schema_editor):
 
     country_qs = EuropeCountry.objects.annotate(
         num_members=models.Count("natives"),
-        num_supervisors=models.Count("national_supervisor_of")
+        num_supervisors=models.Count("supervisors")
     ).filter(
-        models.Q(is_bounding_box=True) | models.Q(num_members__gt=0) | models.Q(num_supervisors__gt=0) | models.Q(is_public=False)
+        models.Q(is_bounding_box=True) | models.Q(num_members__gt=0) | models.Q(num_supervisors__gt=0) | models.Q(reports_can_be_published=False)
     )
     for country in country_qs.all():
         w = Workspace.objects.create(
@@ -64,7 +64,7 @@ def populate_workspace_collaboration(apps, schema_editor):
     collaboration_group = WorkspaceCollaborationGroup.objects.create(name="European Collaboration Group")
     if superexpert := User.objects.filter(pk=25).first():
         collaboration_group.reviewers.add(superexpert)
-    collaborating_workspaces = Workspace.objects.filter(is_bounding_box=False)
+    collaborating_workspaces = Workspace.objects.filter(country__is_bounding_box=False)
     collaboration_group.workspaces.set(collaborating_workspaces)
 
 class Migration(migrations.Migration):
