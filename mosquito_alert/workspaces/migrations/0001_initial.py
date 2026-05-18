@@ -97,7 +97,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=255, unique=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('reviewers', models.ManyToManyField(related_name='collaboration_groups', to=settings.AUTH_USER_MODEL)),
+                ('reviewers', models.ManyToManyField(related_name='collaboration_groups_as_reviewer', to=settings.AUTH_USER_MODEL)),
                 ('workspaces', models.ManyToManyField(help_text='Workspaces that can collaborate with each other within this group.', related_name='collaboration_groups', to='workspaces.workspace')),
             ],
         ),

@@ -136,7 +136,7 @@ class TestWorkspaceCollaborationGroup:
             WorkspaceCollaborationGroup._meta.get_field(
                 "reviewers"
             ).remote_field.related_name
-            == "collaboration_groups"
+            == "collaboration_groups_as_reviewer"
         )
 
     def test_name_cannot_be_null(self):

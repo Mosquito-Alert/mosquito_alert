@@ -69,7 +69,7 @@ class WorkspaceCollaborationGroup(models.Model):
     # NOTE: in a future this might be converted to a through model if we want to have different user roles
     reviewers = models.ManyToManyField(
         User,
-        related_name="collaboration_groups",
+        related_name="collaboration_groups_as_reviewer",
     )
 
     name = models.CharField(max_length=255, unique=True)

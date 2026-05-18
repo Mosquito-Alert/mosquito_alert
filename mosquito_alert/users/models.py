@@ -22,6 +22,10 @@ from numpyencoder import NumpyEncoder
 import pydenticon
 
 from mosquito_alert.geo.models import EuropeCountry, NutsEurope
+from mosquito_alert.workspaces.models import (
+    WorkspaceMembership,
+    WorkspaceCollaborationGroup,
+)
 
 from .permissions import (
     UserRolePermissionMixin,
@@ -87,19 +91,45 @@ class UserStat(UserRolePermissionMixin, models.Model):
 
     # NOTE: override UserRolePermissionMixin
     def get_countries_with_roles(self) -> List[EuropeCountry]:
+        qs = EuropeCountry.objects.all()
+
+        if self.get_role(country=None) in [Role.ADMIN, Role.REVIEWER, Role.ANNOTATOR]:
+            return list(qs)
+
         return list(
-            EuropeCountry.objects.filter(
-                workspace__memberships__user=self.user,
+            qs.filter(
+                models.Q(workspace__memberships__user=self.user)
+                | models.Q(workspace__collaboration_groups__reviewers=self.user)
             ).distinct()
         )
 
     # NOTE: override UserRolePermissionMixin
     def get_role(self, country: Optional[EuropeCountry] = None) -> Role:
-        from mosquito_alert.identification_tasks.models import IdentificationTask
-        from mosquito_alert.workspaces.models import WorkspaceMembership
+        from mosquito_alert.identification_tasks.models import (
+            IdentificationTask,
+            ExpertReportAnnotation,
+        )
 
         if self.user.is_superuser:
             return Role.ADMIN
+
+        if country is not None:
+            if WorkspaceCollaborationGroup.objects.filter(
+                reviewers=self.user, workspaces__country=country
+            ).exists():
+                return Role.REVIEWER
+            user_workspace_qs = WorkspaceMembership.objects.filter(
+                user=self.user, workspace__country=country
+            )
+            if user_workspace_qs.filter(
+                role=WorkspaceMembership.Role.SUPERVISOR
+            ).exists():
+                return Role.SUPERVISOR
+            elif user_workspace_qs.filter(
+                role=WorkspaceMembership.Role.ANNOTATOR
+            ).exists():
+                return Role.ANNOTATOR
+
         if self.user.has_perm(
             "%(app_label)s.add_review"
             % {
@@ -107,18 +137,22 @@ class UserStat(UserRolePermissionMixin, models.Model):
             }
         ):
             return Role.REVIEWER
-
-        user_workspace_qs = WorkspaceMembership.objects.filter(
-            user=self.user, workspace__country=country
-        )
-        if user_workspace_qs.filter(role=WorkspaceMembership.Role.SUPERVISOR).exists():
-            return Role.SUPERVISOR
-        elif user_workspace_qs.filter(role=WorkspaceMembership.Role.ANNOTATOR).exists():
+        if self.user.has_perm(
+            "%(app_label)s.add_%(model_name)s"
+            % {
+                "app_label": ExpertReportAnnotation._meta.app_label,
+                "model_name": ExpertReportAnnotation._meta.model_name,
+            }
+        ):
             return Role.ANNOTATOR
+
         return Role.BASE
 
     def _update_permissions_from_django_perms(
-        self, perm_obj: BasePermission, model_class: models.Model
+        self,
+        perm_obj: BasePermission,
+        model_class: models.Model,
+        allow_staff_view: bool = True,
     ):
         app_label = model_class._meta.app_label
         model_name = model_class._meta.model_name
@@ -127,6 +161,10 @@ class UserStat(UserRolePermissionMixin, models.Model):
         for action in ["add", "view", "change", "delete"]:
             if self.user.has_perm(perm_template.format(action=action)):
                 setattr(perm_obj, action, True)
+
+        if allow_staff_view and self.user.is_staff:
+            setattr(perm_obj, "view", True)
+
         return perm_obj
 
     # NOTE: override UserRolePermissionMixin
@@ -150,7 +188,9 @@ class UserStat(UserRolePermissionMixin, models.Model):
         from mosquito_alert.notifications.models import Notification
 
         perm = super().get_role_message_permission(role=role)
-        return self._update_permissions_from_django_perms(perm, Notification)
+        return self._update_permissions_from_django_perms(
+            perm, Notification, allow_staff_view=False
+        )
 
     # this method returns the username, changing any '.' character to a '_'. This is used to avoid usernames used
     # as id or class names in views to break jquery selector queries

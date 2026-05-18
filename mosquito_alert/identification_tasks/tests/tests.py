@@ -906,12 +906,6 @@ class TestIdentificationTaskManager:
         assert result.count() == 0
 
     # Test backlog() method
-    def test_backlog_without_user_returns_assignable_tasks(self, identification_task):
-        """backlog() without user should return all assignable tasks."""
-        result = IdentificationTask.objects.backlog(user=None)
-
-        assert result.count() == 1
-
     def test_backlog_excludes_assigned_to_user(
         self, identification_task, user, country
     ):
@@ -939,7 +933,7 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 0
 
-    def test_backlog_user_without_workspace_role_returns_nothing(
+    def test_backlog_user_without_workspace_annotation_role_returns(
         self, identification_task, user
     ):
         """backlog() should return nothing for users without workspace memberships."""
@@ -951,7 +945,7 @@ class TestIdentificationTaskManager:
 
         result = IdentificationTask.objects.backlog(user=user)
 
-        assert result.count() == 0
+        assert result.count() == 1
 
     def test_backlog_prioritizes_user_workspace(self, country, user):
         """backlog() should prioritize tasks from user's workspace."""
