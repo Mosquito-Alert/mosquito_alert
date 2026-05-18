@@ -139,7 +139,7 @@ class UserRolePermissionMixin:
 
     def has_role_permission_by_model(
         self, action, model, country: Optional[EuropeCountry] = None
-    ) -> BasePermission:
+    ) -> bool:
         countries = set([None, country])
         for country in countries:
             permission = self._get_role_permission_by_model(
