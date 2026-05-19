@@ -68,7 +68,7 @@ stages:
       method: "GET"
     response:
       status_code: 404
-  - id: auth_can_retrieve_unpublished
+  - id: auth_cannot_retrieve_unpublished
     name: User without perm view per retrieve
     request:
       url: "{api_live_url}/{endpoint}/{unpublished_object.pk}/"
@@ -76,12 +76,7 @@ stages:
       headers:
         Authorization: "Bearer {jwt_token_user:s}"
     response:
-      status_code: 200
-      strict:
-        - json:off
-      json:
-        published: false
-        note: null
+      status_code: 404
   - id: auth_with_viewperm_can_retrieve_unpublished
     name: User without perm view per retrieve
     request:

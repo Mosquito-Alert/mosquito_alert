@@ -67,7 +67,7 @@ stages:
   - type: ref
     id: anonymous_cannot_retrieve_unpublished
   - type: ref
-    id: auth_can_retrieve_unpublished
+    id: auth_cannot_retrieve_unpublished
   - type: ref
     id: appuser_can_retrieve_owned_unpublished
   # Creating a new appuser that does not own the object

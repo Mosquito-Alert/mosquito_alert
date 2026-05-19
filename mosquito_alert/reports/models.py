@@ -1023,7 +1023,7 @@ class Report(TimeZoneModelMixin, models.Model):
             # NOTE: Improve performance of api.v0.views.ReportViewSet
             models.Index(fields=["user", "type", "report_id"]),
             # NOTE: Improve performance of /api/observations when
-            # filtering by non_deleted() and published() endpoint.
+            # filtering by non_deleted() and browsable() endpoint.
             models.Index(
                 fields=["published_at"],
                 name="report_visible_published_idx",

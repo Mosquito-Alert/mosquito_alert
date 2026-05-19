@@ -116,11 +116,6 @@ class BreedingSiteReportFactory(ReportWithPhotosFactory):
 class ObservationReportFactory(ReportWithPhotosFactory):
     type = Report.TYPE_ADULT
 
-    identification_task = factory.RelatedFactory(
-        "mosquito_alert.identification_tasks.tests.factories.IdentificationTaskFactory",
-        factory_related_name="report",
-    )
-
     class Meta:
         model = Report
 
@@ -130,6 +125,11 @@ class ObservationReportWithoutSignalFactory(ObservationReportFactory):
         "mosquito_alert.reports.tests.factories.PhotoWithoutSignalFactory",
         factory_related_name="report",
         size=2,
+    )
+
+    identification_task = factory.RelatedFactory(
+        "mosquito_alert.identification_tasks.tests.factories.IdentificationTaskFactory",
+        factory_related_name="report",
     )
 
     class Meta:

@@ -34,6 +34,11 @@ from mosquito_alert.notifications.models import (
     NotificationRecipient,
 )
 from mosquito_alert.reports.models import Report, Photo
+from mosquito_alert.reports.tests.factories import (
+    ObservationReportFactory,
+    BiteReportFactory,
+    BreedingSiteReportFactory,
+)
 from mosquito_alert.users.models import TigaUser
 from mosquito_alert.workspaces.models import WorkspaceMembership
 from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
@@ -86,6 +91,13 @@ class BaseReportTest:
     def data_create_request(self):
         return self._common_post_data
 
+    @pytest.fixture
+    def api_client(self, user):
+        api_client = APIClient()
+        api_client.force_login(user=user)
+
+        return api_client
+
     @abstractmethod
     def report_object(self):
         raise NotImplementedError
@@ -93,6 +105,11 @@ class BaseReportTest:
     @property
     @abstractmethod
     def endpoint(self):
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def factory_cls(self):
         raise NotImplementedError
 
     def test_package_is_set_on_report_create(self, app_user, data_create_request):
@@ -288,10 +305,41 @@ class BaseReportTest:
         # Ensure 'tags' is not in the header
         assert b"tags" not in first_chunk.lower()
 
+    @pytest.mark.parametrize("is_member", [True, False])
+    def test_user_from_workspace_can_see_unpublished(self, api_client, user, is_member):
+        workspace = WorkspaceFactory()
+        if is_member:
+            workspace.members.add(user)
+
+        obj = self.factory_cls(point=workspace.country.geom.point_on_surface)
+        obj.published_at = None
+        obj.save()
+
+        another_workspace = WorkspaceFactory()
+        another_obj = self.factory_cls(
+            point=another_workspace.country.geom.point_on_surface
+        )
+        another_obj.published_at = None
+        another_obj.save()
+
+        # Test list
+        response = api_client.get(self.endpoint)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == (1 if is_member else 0)
+        if is_member:
+            assert response.data["results"][0]["uuid"] == str(obj.pk)
+
+        # Test retrieve
+        response = api_client.get(self.endpoint + f"{obj.pk}/")
+        assert response.status_code == (
+            status.HTTP_200_OK if is_member else status.HTTP_404_NOT_FOUND
+        )
+
 
 class TestBiteAPI(BaseReportTest):
     endpoint = "/api/v1/bites/"
     queryset = Report.objects.filter(type=Report.TYPE_BITE)
+    factory_cls = BiteReportFactory
 
     _common_post_data = BaseReportTest._common_post_data | {"counts": {"head": 1}}
 
@@ -304,6 +352,7 @@ class TestBreedingSiteAPI(BaseReportTest):
     endpoint = "/api/v1/breeding-sites/"
     queryset = Report.objects.filter(type=Report.TYPE_SITE)
     POST_FORMAT = "multipart"
+    factory_cls = BreedingSiteReportFactory
 
     @pytest.fixture
     def report_object(self, app_user):
@@ -314,6 +363,7 @@ class TestObservationAPI(BaseReportTest):
     endpoint = "/api/v1/observations/"
     queryset = Report.objects.filter(type=Report.TYPE_ADULT)
     POST_FORMAT = "multipart"
+    factory_cls = ObservationReportFactory
 
     @pytest.fixture
     def report_object(self, app_user):
