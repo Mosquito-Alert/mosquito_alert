@@ -16,6 +16,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
 from mosquito_alert.geo.tests.factories import EuropeCountryFactory, NutsEuropeFactory
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.identification_tasks.models import (
@@ -933,6 +934,14 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 0
 
+    def test_backlog_returns_none_for_non_user_types(
+        self, identification_task, tiga_user
+    ):
+        """backlog() should return empty queryset for TigaUser."""
+        result = IdentificationTask.objects.backlog(user=tiga_user)
+
+        assert result.count() == 0
+
     def test_backlog_user_without_workspace_annotation_role_returns(
         self, identification_task, user
     ):
@@ -1256,19 +1265,13 @@ class TestIdentificationTaskManager:
         assert result[1] == task_outside_exclusivity
 
     # Test browsable() method
-    def test_browsable_returns_all_for_user_with_view_perm(self, identification_task):
+    def test_browsable_returns_all_for_user_with_view_perm(
+        self, identification_task, user
+    ):
         """browsable() should return all tasks for users with view permission."""
-        user_with_perm = UserFactory()
-        from django.contrib.contenttypes.models import ContentType
-        from django.contrib.auth.models import Permission
+        grant_permission_to_user(type="view", model_class=IdentificationTask, user=user)
 
-        content_type = ContentType.objects.get_for_model(IdentificationTask)
-        permission = Permission.objects.get(
-            codename="view_identificationtask", content_type=content_type
-        )
-        user_with_perm.user_permissions.add(permission)
-
-        result = IdentificationTask.objects.browsable(user=user_with_perm)
+        result = IdentificationTask.objects.browsable(user=user)
 
         assert result.count() == 1
 
@@ -1281,11 +1284,18 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 0
 
-    def test_browsable_returns_user_annotated_tasks(self, identification_task, user):
+    @pytest.mark.parametrize("task_is_archived", [False, True])
+    def test_browsable_returns_user_annotated_tasks(
+        self, identification_task, user, task_is_archived
+    ):
         """browsable() should return tasks annotated by the user."""
         ExpertReportAnnotationFactory(
             identification_task=identification_task, user=user, is_finished=True
         )
+
+        if task_is_archived:
+            identification_task.status = IdentificationTask.Status.ARCHIVED
+            identification_task.save()
 
         result = IdentificationTask.objects.browsable(user=user)
 
@@ -1295,7 +1305,166 @@ class TestIdentificationTaskManager:
         """browsable() should exclude tasks not annotated by user without permissions."""
         result = IdentificationTask.objects.browsable(user=user)
 
+        ExpertReportAnnotationFactory(
+            identification_task=identification_task, is_finished=True
+        )
+
         assert result.count() == 0
+
+    def test_browsable_returns_none_for_non_user_types(
+        self, identification_task, tiga_user
+    ):
+        """browsable() should return empty queryset for TigaUser."""
+        result = IdentificationTask.objects.browsable(user=tiga_user)
+
+        assert result.count() == 0
+
+    def test_browsable_includes_archived_with_permission(
+        self, identification_task, user
+    ):
+        """browsable() should include archived tasks if user has permission."""
+        identification_task.status = IdentificationTask.Status.ARCHIVED
+        identification_task.save()
+
+        # Grant archived view permission
+        grant_permission_to_user(type="view", model_class=IdentificationTask, user=user)
+        grant_permission_to_user(
+            codename="view_archived_identificationtasks",
+            model_class=IdentificationTask,
+            user=user,
+        )
+
+        result = IdentificationTask.objects.browsable(user=user)
+
+        assert result.count() == 1
+        assert result.first() == identification_task
+
+    def test_browsable_with_role_based_global_view_permission(
+        self, identification_task, user
+    ):
+        """browsable() should return all tasks for users with global role view permission."""
+        grant_permission_to_user(type="view", model_class=IdentificationTask, user=user)
+
+        result = IdentificationTask.objects.browsable(user=user)
+
+        assert result.count() == 1
+        assert result.first() == identification_task
+
+    @pytest.mark.parametrize(
+        "status, role, expected_result",
+        [
+            # Role annotator
+            (
+                IdentificationTask.Status.OPEN,
+                WorkspaceMembership.Role.ANNOTATOR,
+                False,
+            ),
+            (
+                IdentificationTask.Status.CONFLICT,
+                WorkspaceMembership.Role.ANNOTATOR,
+                False,
+            ),
+            (
+                IdentificationTask.Status.REVIEW,
+                WorkspaceMembership.Role.ANNOTATOR,
+                False,
+            ),
+            (
+                IdentificationTask.Status.ARCHIVED,
+                WorkspaceMembership.Role.ANNOTATOR,
+                False,
+            ),
+            (
+                IdentificationTask.Status.DONE,
+                WorkspaceMembership.Role.ANNOTATOR,
+                True,
+            ),
+            # Role member
+            (
+                IdentificationTask.Status.OPEN,
+                WorkspaceMembership.Role.MEMBER,
+                False,
+            ),
+            (
+                IdentificationTask.Status.CONFLICT,
+                WorkspaceMembership.Role.MEMBER,
+                False,
+            ),
+            (
+                IdentificationTask.Status.REVIEW,
+                WorkspaceMembership.Role.MEMBER,
+                False,
+            ),
+            (
+                IdentificationTask.Status.ARCHIVED,
+                WorkspaceMembership.Role.MEMBER,
+                False,
+            ),
+            (
+                IdentificationTask.Status.DONE,
+                WorkspaceMembership.Role.MEMBER,
+                True,
+            ),
+            # Role supervisor
+            (
+                IdentificationTask.Status.DONE,
+                WorkspaceMembership.Role.SUPERVISOR,
+                True,
+            ),
+            (
+                IdentificationTask.Status.CONFLICT,
+                WorkspaceMembership.Role.SUPERVISOR,
+                True,
+            ),
+            (
+                IdentificationTask.Status.REVIEW,
+                WorkspaceMembership.Role.SUPERVISOR,
+                True,
+            ),
+            (
+                IdentificationTask.Status.ARCHIVED,
+                WorkspaceMembership.Role.SUPERVISOR,
+                False,
+            ),
+            (
+                IdentificationTask.Status.DONE,
+                WorkspaceMembership.Role.SUPERVISOR,
+                True,
+            ),
+        ],
+    )
+    def test_browsable_with_country_specific_permissions(
+        self,
+        user,
+        country,
+        status: IdentificationTask.Status,
+        role: WorkspaceMembership.Role,
+        expected_result: bool,
+    ):
+        """browsable() should return tasks from countries where user has view permissions."""
+        # Grant country-specific permission by making user a national supervisor
+        WorkspaceMembership.objects.create(
+            workspace=WorkspaceFactory(country=country),
+            user=user,
+            role=role,
+        )
+        identification_task = IdentificationTaskFactory(
+            status=status, report__point=country.geom.point_on_surface
+        )
+
+        # Forcing finished task from other workspaces, that should not be visible for the user, even if it's done.
+        another_workspace = WorkspaceFactory()
+        IdentificationTaskFactory(
+            status=IdentificationTask.Status.DONE,
+            report__point=another_workspace.country.geom.point_on_surface,
+        )
+
+        result = IdentificationTask.objects.browsable(user=user)
+        if expected_result:
+            assert result.count() == 1
+            assert result.first() == identification_task
+        else:
+            assert result.count() == 0
 
 
 @pytest.mark.django_db

@@ -8,6 +8,7 @@ from django.db.models.functions import Coalesce
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
+from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.users.models import TigaUser, UserStat
 from mosquito_alert.workspaces.models import (
     Workspace,
@@ -228,6 +229,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
             _exclusivity_end=models.ExpressionWrapper(
                 models.F("report__server_upload_time")
                 + Coalesce(
+                    # TODO: what if two workspaces? max or min?
                     models.F("report__country__workspace__supervisor_exclusivity_days"),
                     models.Value(0),
                 )
@@ -326,10 +328,10 @@ class IdentificationTaskQuerySet(models.QuerySet):
             # Has global view permission, can see all tasks.
             return qs
 
-        result_qs = qs.annotated_by(users=[user])
-
+        result_qs = self.annotated_by(users=[user])
         # Filter by countries if user has region-specific permissions
         if userstat:
+            country_lookup = models.Q()
             view_countries = (
                 userstat.get_countries_with_permissions(
                     action="view", model=IdentificationTask
@@ -337,11 +339,20 @@ class IdentificationTaskQuerySet(models.QuerySet):
                 if userstat
                 else []
             )
-
             if view_countries:
-                result_qs |= qs.filter(
-                    report__country__in=view_countries,
+                country_lookup |= models.Q(report__country__in=view_countries)
+
+            country_workspace_member = EuropeCountry.objects.filter(
+                workspace__members=user
+            ).distinct()
+            if country_workspace_member:
+                country_lookup |= models.Q(
+                    report__country__in=country_workspace_member,
+                    status=IdentificationTask.Status.DONE,
                 )
+
+            if country_lookup:
+                result_qs |= qs.filter(country_lookup)
 
         return result_qs
 
