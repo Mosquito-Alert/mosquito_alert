@@ -103,7 +103,7 @@ class ReportWithPhotosFactory(ReportFactory):
 class BreedingSiteReportFactory(ReportWithPhotosFactory):
     type = Report.TYPE_SITE
 
-    breeding_site_type = factory.Iterator(Report.BreedingSiteType.choices)
+    breeding_site_type = factory.Iterator(Report.BreedingSiteType.values)
     breeding_site_has_water = factory.Faker("boolean")
     breeding_site_in_public_area = factory.Faker("boolean")
     breeding_site_has_near_mosquitoes = factory.Faker("boolean")
