@@ -30,28 +30,28 @@
         <div class="starter-template">
             <h1>Expert Validation Status: People</h1>
         </div>
-    {% for group in groups %}
+    {% for workspace in workspaces %}
         <div class="row" >
             <div class="col-md-12" style="background-color: #99ff99">
-                <h2>{{ group.name | capfirst }}s</h2>
+                <h2>{{ workspace.country.name_engl | capfirst }}</h2>
             </div>
         </div>
-        {% for user in group.user_set.all %}
+        {% for membership in workspace.memberships.all %}
             <div class="row">
                 <div class="col-md-12">
-                    <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                    <h3>{{ membership.user.first_name }} {{ membership.user.last_name }}</h3>
                     <table>
                         <tbody>
                             <tr>
-                                <td style="padding-right:5px"><strong>Username:</strong></td><td>{{ user.username }}</td>
+                                <td style="padding-right:5px"><strong>Username:</strong></td><td>{{ membership.user.username }}</td>
                             </tr>
 
                             <tr>
-                                <td style="padding-right:5px"><strong>Team:</strong></td><td>{{ user.userstat.formatted_country_info }}</td>
+                                <td style="padding-right:5px"><strong>Role:</strong></td><td>{{ membership.role }}</td>
                             </tr>
 
                             <tr>
-                                <td style="padding-right:5px"><strong>Email:</strong></td><td><a href="mailto:{{ user.email }}" target="_top">{{ user.email }}</a></td>
+                                <td style="padding-right:5px"><strong>Email:</strong></td><td><a href="mailto:{{ membership.user.email }}" target="_top">{{ membership.user.email }}</a></td>
                             </tr>
                         </tbody>
                     </table>
@@ -59,23 +59,23 @@
                     <br>
                     <p>
                         <a role="button" data-toggle="collapse"
-                            href="#current_status_collapse_pending{{ user.userstat.username_nopoint }}_{{ group.name }}"
-                            aria-expanded="false" aria-controls="current_status_collapse_pending{{ user.userstat.username_nopoint }}"
-                            onClick="getPendingReports('{{ user.username }}','{{ group.name }}')">
+                            href="#current_status_collapse_pending{{ membership.user.userstat.username_nopoint }}_{{ group.name }}"
+                            aria-expanded="false" aria-controls="current_status_collapse_pending{{ membership.user.userstat.username_nopoint }}"
+                            onClick="getPendingReports('{{ membership.user.username }}','{{ group.name }}')">
                             <i class="fa fa-plus-square-o"></i>
                         </a>
                         <strong>Pending Reports</strong>
-                        <span class="badge">{{ user.userstat.num_pending_annotations }}</span>
+                        <span class="badge">{{ membership.user.userstat.num_pending_annotations }}</span>
                     </p>
 
-                    <div id="loading_{{ user.userstat.username_nopoint }}_{{ group.name }}_pending"></div>
-                    <div class="collapse" id="current_status_collapse_pending{{ user.userstat.username_nopoint }}_{{ group.name }}">
+                    <div id="loading_{{ membership.user.userstat.username_nopoint }}_{{ group.name }}_pending"></div>
+                    <div class="collapse" id="current_status_collapse_pending{{ membership.user.userstat.username_nopoint }}_{{ group.name }}">
 
 
                             <div class="table-responsive">
                                 <table class="table table-condensed borderless display nowrap"
                                        data-page-length='25' style="font-size: smaller;"
-                                       id="current_status_collapse_pending_{{ user.userstat.username_nopoint }}_{{ group.name }}">
+                                       id="current_status_collapse_pending_{{ membership.user.userstat.username_nopoint }}_{{ group.name }}">
                                     <thead>
                                     <tr>
                                     <th>Report ID</th>
@@ -94,22 +94,22 @@
 
                     <p>
                         <a role="button" data-toggle="collapse"
-                           href="#current_status_collapse_complete{{ user.userstat.username_nopoint }}_{{ group.name }}"
+                           href="#current_status_collapse_complete{{ membership.user.userstat.username_nopoint }}_{{ group.name }}"
                            aria-expanded="false"
-                           aria-controls="current_status_collapse_complete{{ user.userstat.username_nopoint }}"
-                           onClick="getCompleteReports('{{ user.username }}','{{ group.name }}')">
+                           aria-controls="current_status_collapse_complete{{ membership.user.userstat.username_nopoint }}"
+                           onClick="getCompleteReports('{{ membership.user.username }}','{{ group.name }}')">
                             <i class="fa fa-plus-square-o"></i>
                         </a>
                         <strong>Complete Reports</strong>
-                        <span class="badge">{{ user.userstat.num_completed_annotations }}</span>
+                        <span class="badge">{{ membership.user.userstat.num_completed_annotations }}</span>
                     </p>
-                    <div id="loading_{{ user.userstat.username_nopoint }}_{{ group.name }}_complete"></div>
-                    <div class="collapse" id="current_status_collapse_complete{{ user.userstat.username_nopoint }}_{{ group.name }}">
+                    <div id="loading_{{ membership.user.userstat.username_nopoint }}_{{ group.name }}_complete"></div>
+                    <div class="collapse" id="current_status_collapse_complete{{ membership.user.userstat.username_nopoint }}_{{ group.name }}">
 
                         <div class="table-responsive">
                                 <table class="table table-condensed borderless display nowrap"
                                        data-page-length='25' style="font-size: smaller;"
-                                       id="current_status_collapse_complete_{{ user.userstat.username_nopoint }}_{{ group.name }}">
+                                       id="current_status_collapse_complete_{{ membership.user.userstat.username_nopoint }}_{{ group.name }}">
                                     <thead>
                                     <tr>
                                     <th>Report ID</th>

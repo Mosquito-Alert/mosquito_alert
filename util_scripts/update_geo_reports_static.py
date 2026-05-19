@@ -21,7 +21,7 @@ SPECIES_ONLY_FILENAME = "geo_all_species_reports.csv"
 # Create common qs to be used.
 common_qs = (
     Report.objects.filter(point__isnull=False)
-    .published()
+    .browsable()
     .non_deleted()
     .order_by("creation_time")
 )

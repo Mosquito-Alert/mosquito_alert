@@ -8,6 +8,8 @@ from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.identification_tasks.models import IdentificationTask
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.workspaces.models import WorkspaceMembership
+from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
 
 User = get_user_model()
 
@@ -29,7 +31,6 @@ def country(db):
         iso3_code="123",
         fid="12",
         geom=MultiPolygon(Polygon.from_bbox((0, 0, 1, 1))),
-        national_supervisor_report_expires_in=10,
     )
 
 
@@ -68,8 +69,10 @@ def identification_task(adult_report):
 
 @pytest.fixture
 def user_national_supervisor(user, country):
-    userstat = user.userstat
-    userstat.national_supervisor_of = country
-    userstat.save()
+    WorkspaceMembership.objects.create(
+        workspace=WorkspaceFactory(country=country),
+        user=user,
+        role=WorkspaceMembership.Role.SUPERVISOR,
+    )
 
     return user
