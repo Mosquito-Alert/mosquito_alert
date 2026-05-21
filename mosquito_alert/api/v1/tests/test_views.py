@@ -1018,6 +1018,49 @@ class TestDeviceAPI:
         device.refresh_from_db()
         assert device.mobile_app == mobile_app
 
+    def test_returns_single_device_and_removes_conflicting_duplicates(
+        self, app_api_client, app_user
+    ):
+        first_device_created_from_report = Device.objects.create(
+            user=app_user,
+            device_id=None,
+            registration_id=None,
+            active_session=True,
+            last_login=timezone.now(),
+            type=DeviceType.ANDROID,
+            model="test_model",
+        )
+        assert not first_device_created_from_report.active
+
+        second_device_created_from_token_api_v0 = Device.objects.create(
+            user=app_user,
+            device_id=None,
+            registration_id="fcm_token",
+            active_session=True,
+            last_login=timezone.now(),
+        )
+
+        response = app_api_client.post(
+            self.endpoint,
+            data={
+                "device_id": "unique_id",
+                "fcm_token": "fcm_token",
+                "type": DeviceType.ANDROID,
+                "manufacturer": "test_make",
+                "model": "test_model",
+                "os": {"name": "test_os_name", "version": "test_os_version"},
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        first_device_created_from_report.refresh_from_db()
+        assert first_device_created_from_report.device_id == "unique_id"
+        assert first_device_created_from_report.registration_id == "fcm_token"
+        assert first_device_created_from_report.active
+
+        with pytest.raises(Device.DoesNotExist):
+            second_device_created_from_token_api_v0.refresh_from_db()
+
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("taxa")

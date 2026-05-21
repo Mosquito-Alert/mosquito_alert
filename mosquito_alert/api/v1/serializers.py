@@ -1846,15 +1846,13 @@ class DeviceSerializer(serializers.ModelSerializer):
 
         # Check if there is a device with the same user, model, and device_id=None
         # That is for the users that are migrating from the legacy API to this.
-        device = (
-            Device.objects.filter(
-                models.Q(model=model)
-                | models.Q(registration_id=validated_data.get("registration_id"))
-            )
-            .filter(user=user, device_id=None)
-            .first()
-        )
-        if device:
+        devices_to_deduplicate_qs = Device.objects.filter(
+            models.Q(model=model)
+            | models.Q(registration_id=validated_data.get("registration_id"))
+        ).filter(user=user, device_id=None)
+
+        if device := devices_to_deduplicate_qs.order_by("date_created").first():
+            devices_to_deduplicate_qs.exclude(pk=device.pk).delete()
             Device.objects.filter(user=user, model=model, device_id=device_id).delete()
             # If device exists, update it
             for attr, value in validated_data.items():
