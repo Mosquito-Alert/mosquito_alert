@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from datetime import datetime
 from typing import Literal, Optional, Union
 from uuid import UUID
@@ -45,7 +44,7 @@ from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import UserStat, TigaUser
-from mosquito_alert.users.permissions import Permissions, Role
+from mosquito_alert.users.permissions import Permissions
 
 from .base_serializers import LocalizedModelSerializerMixin
 from .fields import (
@@ -133,23 +132,7 @@ class PermissionsSerializer(DataclassSerializer):
 
 
 class BaseRolePermissionSerializer(serializers.Serializer):
-    role = serializers.SerializerMethodField()  # TODO: remove here, only to countries
     permissions = serializers.SerializerMethodField()
-
-    @abstractmethod
-    def _get_role(self, obj: Union[User, TigaUser]) -> Role:
-        raise NotImplementedError
-
-    def get_role(self, obj: Union[User, TigaUser]) -> Role:
-        if isinstance(obj, User):
-            try:
-                obj = obj.userstat
-            except UserStat.DoesNotExist:
-                obj = None
-
-        if not obj:
-            obj = TigaUser()
-        return self._get_role(obj=obj)
 
     @extend_schema_field(PermissionsSerializer)
     def get_permissions(self, obj: Union[User, TigaUser]):
@@ -170,18 +153,13 @@ class UserPermissionSerializer(serializers.Serializer):
     class GeneralPermissionSerializer(BaseRolePermissionSerializer):
         is_staff = serializers.BooleanField()  # TODO: remove
 
-        def _get_role(self, obj: Union[User, TigaUser]) -> Role:
-            return obj.get_role()
-
+    # TODO: make it workspace instead of country
     class CountryPermissionSerializer(BaseRolePermissionSerializer):
         def __init__(self, *args, **kwargs):
             self.country = kwargs.pop("country", None)
             super().__init__(*args, **kwargs)
 
         country = serializers.SerializerMethodField()
-
-        def _get_role(self, obj: Union[User, TigaUser]) -> Role:
-            return obj.get_role(country=self.country)
 
         @extend_schema_field(CountrySerializer)
         def get_country(self, obj: Union[User, TigaUser]):
@@ -196,16 +174,15 @@ class UserPermissionSerializer(serializers.Serializer):
 
     @extend_schema_field(CountryPermissionSerializer(many=True))
     def get_countries(self, obj: Union[User, TigaUser]):
-        if isinstance(obj, User):
-            try:
-                obj = obj.userstat
-            except UserStat.DoesNotExist:
-                obj = None
-        if not obj:
-            return self.CountryPermissionSerializer(many=True).data
+        if not obj or isinstance(obj, TigaUser):
+            return []
 
         result = []
-        for country in obj.get_countries_with_roles():
+        qs = EuropeCountry.objects(
+            models.Q(workspace__members=obj)
+            | models.Q(workspace__collaboration_groups__reviewers=obj)
+        ).distinct()
+        for country in qs.iterator():
             result.append(
                 self.CountryPermissionSerializer(instance=obj, country=country).data
             )

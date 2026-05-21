@@ -374,6 +374,11 @@ class IdentificationTask(LifecycleModel):
     def country(self) -> Optional[EuropeCountry]:
         return self.report.country
 
+    @cached_property
+    def workspace(self) -> Optional[Workspace]:
+        if self.country:
+            return Workspace.objects.filter(country=self.country).first()
+
     # LEGACY
     @property
     def is_high_confidence(self) -> bool:
@@ -732,7 +737,6 @@ class IdentificationTask(LifecycleModel):
     class Meta:
         db_table = "tigacrafting_identificationtask"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
         permissions = [
-            ("view_archived_identificationtasks", "Can view archived records"),
             ("add_review", "Can review"),
         ]
         indexes = [

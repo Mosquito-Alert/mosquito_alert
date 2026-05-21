@@ -16,6 +16,8 @@ from mosquito_alert.workspaces.models import (
     WorkspaceCollaborationGroup,
 )
 
+from .rules import has_global_view_identificationtask_perm
+
 
 class IdentificationTaskQuerySet(models.QuerySet):
     """
@@ -42,26 +44,22 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
     def backlog(self, user: User) -> QuerySet:
         """Awaiting assignment but part of the annotation cycle for this user."""
-        from .models import IdentificationTask
+
+        if not isinstance(user, User):
+            return self.none()
 
         qs = self._assignable()
 
-        if not isinstance(user, User):
-            return qs.none()
+        if has_global_view_identificationtask_perm(user):
+            return qs
+
+        qs = qs.exclude(assignees=user)
 
         userstat: Optional[UserStat] = None
         try:
             userstat = user.userstat
         except UserStat.DoesNotExist:
             pass
-        has_role_view_perm = userstat and userstat.has_role_permission_by_model(
-            action="view", model=IdentificationTask, country=None
-        )
-        if has_role_view_perm:
-            # Has global view permission, can see all tasks.
-            return qs
-
-        qs = qs.exclude(assignees=user)
 
         user_workspace_qs = Workspace.objects.filter(memberships__user=user)
 
@@ -309,52 +307,38 @@ class IdentificationTaskQuerySet(models.QuerySet):
         if not isinstance(user, User):
             return qs.none()
 
-        view_archived_perm = "%(app_label)s.view_archived_identificationtasks" % {
-            "app_label": IdentificationTask._meta.app_label,
-        }
-        # Exclude archived tasks unless user is a full User and has permission
-        if not user.has_perm(view_archived_perm):
-            qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
-
-        userstat: Optional[UserStat] = None
-        try:
-            userstat = user.userstat
-        except UserStat.DoesNotExist:
-            pass
-        has_role_view_perm = userstat and userstat.has_role_permission_by_model(
-            action="view", model=IdentificationTask, country=None
-        )
-        if has_role_view_perm:
-            # Has global view permission, can see all tasks.
+        if has_global_view_identificationtask_perm(user):
             return qs
 
-        result_qs = self.annotated_by(users=[user])
-        # Filter by countries if user has region-specific permissions
-        if userstat:
-            country_lookup = models.Q()
-            view_countries = (
-                userstat.get_countries_with_permissions(
-                    action="view", model=IdentificationTask
-                )
-                if userstat
-                else []
+        qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
+
+        # Annotated by the user
+        lookup_q = models.Q(
+            expert_report_annotations__user=user,
+            expert_report_annotations__is_finished=True,
+        )
+
+        # Countries where user has supervisor role
+        countries_supervisor = EuropeCountry.objects.filter(
+            workspace__memberships__user=user,
+            workspace__memberships__role=WorkspaceMembership.Role.SUPERVISOR,
+        ).distinct()
+        if countries_supervisor:
+            lookup_q |= models.Q(report__country__in=countries_supervisor) & ~models.Q(
+                status=IdentificationTask.Status.ARCHIVED
             )
-            if view_countries:
-                country_lookup |= models.Q(report__country__in=view_countries)
 
-            country_workspace_member = EuropeCountry.objects.filter(
-                workspace__members=user
-            ).distinct()
-            if country_workspace_member:
-                country_lookup |= models.Q(
-                    report__country__in=country_workspace_member,
-                    status=IdentificationTask.Status.DONE,
-                )
+        country_workspace_member = EuropeCountry.objects.filter(
+            workspace__members=user
+        ).distinct()
+        # Countries where user is a member of the workspace and tasks are done
+        if country_workspace_member:
+            lookup_q |= models.Q(
+                report__country__in=country_workspace_member,
+                status=IdentificationTask.Status.DONE,
+            )
 
-            if country_lookup:
-                result_qs |= qs.filter(country_lookup)
-
-        return result_qs
+        return self.filter(lookup_q)
 
 
 IdentificationTaskManager = models.Manager.from_queryset(IdentificationTaskQuerySet)
