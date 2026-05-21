@@ -1852,8 +1852,11 @@ class DeviceSerializer(serializers.ModelSerializer):
         ).filter(user=user, device_id=None)
 
         if device := devices_to_deduplicate_qs.order_by("date_created").first():
-            devices_to_deduplicate_qs.exclude(pk=device.pk).delete()
-            Device.objects.filter(user=user, model=model, device_id=device_id).delete()
+            devices_to_delete = devices_to_deduplicate_qs.exclude(
+                pk=device.pk
+            ) | Device.objects.filter(user=user, model=model, device_id=device_id)
+            Report.objects.filter(device__in=devices_to_delete).update(device=device)
+            devices_to_delete.delete()
             # If device exists, update it
             for attr, value in validated_data.items():
                 setattr(device, attr, value)

@@ -1032,6 +1032,12 @@ class TestDeviceAPI:
         )
         assert not first_device_created_from_report.active
 
+        first_report = create_report_object(user=app_user)
+        first_report.type = Report.TYPE_BITE
+        first_report.device_model = "test_model"
+        first_report.save()
+        assert first_report.device == first_device_created_from_report
+
         second_device_created_from_token_api_v0 = Device.objects.create(
             user=app_user,
             device_id=None,
@@ -1039,6 +1045,10 @@ class TestDeviceAPI:
             active_session=True,
             last_login=timezone.now(),
         )
+        second_report = create_report_object(user=app_user)
+        second_report.type = Report.TYPE_BITE
+        second_report.save()
+        assert second_report.device == second_device_created_from_token_api_v0
 
         response = app_api_client.post(
             self.endpoint,
@@ -1060,6 +1070,12 @@ class TestDeviceAPI:
 
         with pytest.raises(Device.DoesNotExist):
             second_device_created_from_token_api_v0.refresh_from_db()
+
+        first_report.refresh_from_db()
+        assert first_report.device == first_device_created_from_report
+
+        second_report.refresh_from_db()
+        assert second_report.device == first_device_created_from_report
 
 
 @pytest.mark.django_db
