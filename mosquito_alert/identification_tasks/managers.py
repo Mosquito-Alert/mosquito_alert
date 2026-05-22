@@ -86,6 +86,13 @@ class IdentificationTaskQuerySet(models.QuerySet):
                 in_user_workspace=models.Exists(
                     user_workspace_qs.filter(country=models.OuterRef("report__country"))
                 ),
+                in_supervised_user_workspace=models.Exists(
+                    WorkspaceMembership.objects.filter(
+                        user=user,
+                        role=WorkspaceMembership.Role.SUPERVISOR,
+                        workspace__country=models.OuterRef("report__country"),
+                    )
+                ),
                 in_user_workspace_collaboration_group=models.Exists(
                     WorkspaceCollaborationGroup.objects.filter(
                         workspaces__country=models.OuterRef("report__country")
@@ -102,15 +109,23 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     )
                 ),
             )
+            .annotate_exclusivity_period()
+            .filter(
+                models.Q(_in_exclusivity_period=False)
+                | models.Q(
+                    _in_exclusivity_period=True,
+                    in_supervised_user_workspace=True,
+                )
+            )
             .filter(
                 models.Q(in_user_workspace=True)
                 | models.Q(in_user_workspace_collaboration_group=True)
                 | models.Q(has_workspace=False)
                 # | models.Q(in_unknown_country=True)
             )
-            .in_exclusivity_period(state=False)
             .annotate(
                 priority=models.Case(
+                    models.When(_in_exclusivity_period=True, then=models.Value(5)),
                     models.When(in_user_nuts2=True, then=models.Value(4)),
                     models.When(in_user_workspace=True, then=models.Value(3)),
                     models.When(
@@ -121,42 +136,14 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     output_field=models.IntegerField(),
                 )
             )
-            .order_by(
-                # NOTE: ordering by report__server_upload_time instead of the created_at from IdentificationTask.
-                #      To be discussed. Keeping like this for legacy reasons now.
-                "-priority",
-                "-report__server_upload_time",
-            )
         )
 
-        countries_with_supervisor_role_qs = (
-            Workspace.objects.filter(
-                memberships__user=user,
-                memberships__role=WorkspaceMembership.Role.SUPERVISOR,
-            )
-            .values("country")
-            .distinct()
+        return qs.order_by(
+            # NOTE: ordering by report__server_upload_time instead of the created_at from IdentificationTask.
+            #      To be discussed. Keeping like this for legacy reasons now.
+            "-priority",
+            "-report__server_upload_time",
         )
-        if countries_with_supervisor_role_qs.exists():
-            # Case supervisor
-            qs_in_exclusivity = (
-                self._assignable()
-                .exclude(assignees=user)
-                .filter(report__country__in=countries_with_supervisor_role_qs)
-                .in_exclusivity_period(state=True)
-            )
-            qs_in_exclusivity = qs_in_exclusivity.annotate(
-                in_exclusivity=models.Value(True, output_field=models.BooleanField())
-            )
-
-            qs = qs.annotate(
-                in_exclusivity=models.Value(False, output_field=models.BooleanField())
-            )
-
-            qs = qs | qs_in_exclusivity
-            qs.order_by(*(("-in_exclusivity",) + qs.query.order_by))
-
-        return qs
 
     def ongoing(self) -> QuerySet:
         "Any task that has entered the annotation cycle"
@@ -210,42 +197,60 @@ class IdentificationTaskQuerySet(models.QuerySet):
         )
 
     # SUPPORTING QUERYSETS
-    def in_exclusivity_period(self, state: bool = True) -> QuerySet:
+    def annotate_exclusivity_period(self) -> QuerySet:
         from .models import IdentificationTask
 
-        qs = self.filter(status=IdentificationTask.Status.OPEN).annotate(
+        return self.annotate(
             country_has_supervisor=models.Exists(
                 WorkspaceMembership.objects.filter(
                     role=WorkspaceMembership.Role.SUPERVISOR,
                     workspace__country=models.OuterRef("report__country"),
                 )
             ),
-            supervisor_has_annotated=models.Exists(
-                IdentificationTask.objects.supervisor_has_annotated().filter(
-                    pk=models.OuterRef("pk")
-                )
+            supervisor_has_annotated=models.Case(
+                models.When(
+                    country_has_supervisor=True,
+                    then=models.Exists(
+                        IdentificationTask.objects.supervisor_has_annotated().filter(
+                            pk=models.OuterRef("pk")
+                        )
+                    ),
+                ),
+                default=models.Value(False),
+                output_field=models.BooleanField(),
             ),
             # NOTE: using "_" not to raise error due to same name is used for a @property.
-            _exclusivity_end=models.ExpressionWrapper(
-                models.F("report__server_upload_time")
-                + Coalesce(
-                    # TODO: what if two workspaces? max or min?
-                    models.F("report__country__workspace__supervisor_exclusivity_days"),
-                    models.Value(0),
-                )
-                * models.Value(timedelta(days=1)),
+            _exclusivity_end=models.Case(
+                models.When(
+                    models.Q(status=IdentificationTask.Status.OPEN),
+                    then=models.ExpressionWrapper(
+                        models.F("report__server_upload_time")
+                        + Coalesce(
+                            # TODO: what if two workspaces? max or min?
+                            models.F(
+                                "report__country__workspace__supervisor_exclusivity_days"
+                            ),
+                            models.Value(0),
+                        )
+                        * models.Value(timedelta(days=1)),
+                        output_field=models.DateTimeField(),
+                    ),
+                ),
+                default=models.Value(None),
                 output_field=models.DateTimeField(),
+            ),
+            # NOTE: using "_" not to raise error due to same name is used for a @property.
+            _in_exclusivity_period=models.Q(
+                models.Q(country_has_supervisor=True)
+                & models.Q(
+                    _exclusivity_end__isnull=False, _exclusivity_end__gt=timezone.now()
+                )
+                & models.Q(supervisor_has_annotated=False)
             ),
         )
 
-        return qs.filter(
-            models.Q(
-                models.Q(country_has_supervisor=True)
-                & models.Q(_exclusivity_end__gt=timezone.now())
-                & models.Q(supervisor_has_annotated=False),
-                _negated=not state,
-            )
-        )
+    def in_exclusivity_period(self, state: bool = True) -> QuerySet:
+        return self.annotate_exclusivity_period().filter(_in_exclusivity_period=state)
 
     def supervisor_has_annotated(self, state: bool = True) -> QuerySet:
         from .models import ExpertReportAnnotation

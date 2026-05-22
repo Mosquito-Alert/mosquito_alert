@@ -372,7 +372,16 @@ class IdentificationTask(LifecycleModel):
 
     @cached_property
     def country(self) -> Optional[EuropeCountry]:
-        return self.report.country
+        try:
+            return self.report.country
+        except EuropeCountry.DoesNotExist:
+            return None
+
+    @cached_property
+    def workspace(self) -> Optional[Workspace]:
+        if not self.country:
+            return None
+        return Workspace.objects.filter(country=self.country).first()
 
     # LEGACY
     @property
@@ -383,19 +392,16 @@ class IdentificationTask(LifecycleModel):
 
     @cached_property
     def exclusivity_end(self) -> Optional[timezone.datetime]:
-        if not self.country:
-            return None
-
-        country_workspace = Workspace.objects.filter(country=self.country).first()
-        if not country_workspace:
+        workspace = self.workspace
+        if not workspace:
             return None
 
         supervisors_qs = WorkspaceMembership.objects.filter(
-            workspace=country_workspace, role=WorkspaceMembership.Role.SUPERVISOR
+            workspace=workspace, role=WorkspaceMembership.Role.SUPERVISOR
         )
         if supervisors_qs.exists():
             return self.report.server_upload_time + timedelta(
-                days=country_workspace.supervisor_exclusivity_days
+                days=workspace.supervisor_exclusivity_days
             )
         return None
 

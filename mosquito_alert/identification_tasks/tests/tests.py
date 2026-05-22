@@ -344,9 +344,8 @@ class TestIdentificationTaskModel:
     def test_exclusivity_end(
         self, identification_task, country, user_national_supervisor
     ):
-        assert identification_task.report.country == country
-
         workspace = Workspace.objects.get(country=country)
+        assert identification_task.workspace == workspace
         assert (
             identification_task.exclusivity_end
             == identification_task.report.server_upload_time
@@ -934,6 +933,17 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 0
 
+    def test_backlog_returns_all_for_user_with_view_perm(
+        self, identification_task, user
+    ):
+        """backlog() should return all tasks for users with view permission."""
+        grant_permission_to_user(type="view", model_class=IdentificationTask, user=user)
+
+        result = IdentificationTask.objects.backlog(user=user)
+
+        assert result.count() == 1
+        assert result.first() == identification_task
+
     def test_backlog_returns_none_for_non_user_types(
         self, identification_task, tiga_user
     ):
@@ -996,9 +1006,9 @@ class TestIdentificationTaskManager:
                 report__point=country.geom.point_on_surface,
             )
 
-        result = IdentificationTask.objects.backlog(user=user)
+            result = IdentificationTask.objects.backlog(user=user)
 
-        assert list(result) == [new_identification_task, old_identification_task]
+            assert list(result) == [new_identification_task, old_identification_task]
 
     def test_backlog_supervisor_sees_exclusivity_tasks(
         self, country, user_national_supervisor
@@ -1013,6 +1023,7 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 1
         assert result.first() == identification_task
+        assert result.first().priority == 5
 
     def test_backlog_annotator_doesnt_see_exclusivity_tasks(
         self, country, user_national_supervisor
@@ -1135,6 +1146,44 @@ class TestIdentificationTaskManager:
         if collaboration_exists:
             assert result.first().priority == 2
 
+    @pytest.mark.parametrize("task_in_exclusivity_period", [False, True])
+    def test_backlog_reviewer_user_sees_collaboration_workspace(
+        self, task_in_exclusivity_period
+    ):
+        user = UserFactory()
+
+        workspace = WorkspaceFactory()
+
+        WorkspaceMembership.objects.create(
+            workspace=workspace,
+            user=UserFactory(),
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        )
+
+        with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
+            IdentificationTaskFactory(
+                report__point=workspace.country.geom.point_on_surface
+            )
+
+            if not task_in_exclusivity_period:
+                traveller.shift(
+                    timedelta(days=workspace.supervisor_exclusivity_days + 1)
+                )
+
+            WorkspaceCollaborationGroupFactory(
+                workspaces=[
+                    workspace,
+                ],
+                reviewers=[
+                    user,
+                ],
+            )
+
+            result = IdentificationTask.objects.backlog(user=user)
+
+            # Reviewer can only see if not in exclusivity period.
+            assert result.exists() == (not task_in_exclusivity_period)
+
     def test_backlog_user_prioritizes_nuts2(self):
         """backlog() should prioritize tasks from user's NUTS2 region."""
         user = UserFactory()
@@ -1256,13 +1305,24 @@ class TestIdentificationTaskManager:
             task_in_exclusivity = IdentificationTaskFactory(
                 report__point=country.geom.point_on_surface, report__country=country
             )
+            traveller.shift(timedelta(minutes=1))
+            # Create task from no workspace, that the user will be able to retrieve.
+            # Create on last position to force the order (will try sorting desc server_upload_time)
+            task_without_workspace = IdentificationTaskFactory()
 
-        result = list(IdentificationTask.objects.backlog(user=user_national_supervisor))
+            result = list(
+                IdentificationTask.objects.backlog(user=user_national_supervisor)
+            )
 
-        assert len(result) == 2
-        # Exclusivity tasks should come first
-        assert result[0] == task_in_exclusivity
-        assert result[1] == task_outside_exclusivity
+            # Exclusivity tasks should come first
+            assert result == [
+                task_in_exclusivity,
+                task_outside_exclusivity,
+                task_without_workspace,
+            ]
+            assert result[0].priority == 5
+            assert result[1].priority == 3
+            assert result[2].priority == 1
 
     # Test browsable() method
     def test_browsable_returns_all_for_user_with_view_perm(
@@ -1274,48 +1334,17 @@ class TestIdentificationTaskManager:
         result = IdentificationTask.objects.browsable(user=user)
 
         assert result.count() == 1
+        assert result.first() == identification_task
 
     def test_browsable_excludes_archived_without_perm(self, identification_task, user):
         """browsable() should exclude archived tasks for users without permission."""
         identification_task.status = IdentificationTask.Status.ARCHIVED
         identification_task.save()
 
-        result = IdentificationTask.objects.browsable(user=user)
-
-        assert result.count() == 0
-
-    @pytest.mark.parametrize("task_is_archived", [False, True])
-    def test_browsable_returns_user_annotated_tasks(
-        self, identification_task, user, task_is_archived
-    ):
-        """browsable() should return tasks annotated by the user."""
-        ExpertReportAnnotationFactory(
-            identification_task=identification_task, user=user, is_finished=True
-        )
-
-        if task_is_archived:
-            identification_task.status = IdentificationTask.Status.ARCHIVED
-            identification_task.save()
+        # Has view permission but not view_archived_identificationtasks permission
+        grant_permission_to_user(type="view", model_class=IdentificationTask, user=user)
 
         result = IdentificationTask.objects.browsable(user=user)
-
-        assert result.count() == 1
-
-    def test_browsable_excludes_other_users_tasks(self, identification_task, user):
-        """browsable() should exclude tasks not annotated by user without permissions."""
-        result = IdentificationTask.objects.browsable(user=user)
-
-        ExpertReportAnnotationFactory(
-            identification_task=identification_task, is_finished=True
-        )
-
-        assert result.count() == 0
-
-    def test_browsable_returns_none_for_non_user_types(
-        self, identification_task, tiga_user
-    ):
-        """browsable() should return empty queryset for TigaUser."""
-        result = IdentificationTask.objects.browsable(user=tiga_user)
 
         assert result.count() == 0
 
@@ -1339,16 +1368,41 @@ class TestIdentificationTaskManager:
         assert result.count() == 1
         assert result.first() == identification_task
 
-    def test_browsable_with_role_based_global_view_permission(
-        self, identification_task, user
+    @pytest.mark.parametrize("task_is_archived", [False, True])
+    def test_browsable_returns_user_annotated_tasks(
+        self, identification_task, user, task_is_archived
     ):
-        """browsable() should return all tasks for users with global role view permission."""
-        grant_permission_to_user(type="view", model_class=IdentificationTask, user=user)
+        """browsable() should return tasks annotated by the user."""
+        ExpertReportAnnotationFactory(
+            identification_task=identification_task, user=user, is_finished=True
+        )
+
+        if task_is_archived:
+            identification_task.status = IdentificationTask.Status.ARCHIVED
+            identification_task.save()
 
         result = IdentificationTask.objects.browsable(user=user)
 
         assert result.count() == 1
-        assert result.first() == identification_task
+
+    def test_browsable_excludes_other_users_tasks(self, identification_task, user):
+        """browsable() should exclude tasks not annotated by user without permissions."""
+
+        ExpertReportAnnotationFactory(
+            identification_task=identification_task, is_finished=True
+        )
+
+        result = IdentificationTask.objects.browsable(user=user)
+
+        assert result.count() == 0
+
+    def test_browsable_returns_none_for_non_user_types(
+        self, identification_task, tiga_user
+    ):
+        """browsable() should return empty queryset for TigaUser."""
+        result = IdentificationTask.objects.browsable(user=tiga_user)
+
+        assert result.count() == 0
 
     @pytest.mark.parametrize(
         "status, role, expected_result",
@@ -1465,6 +1519,34 @@ class TestIdentificationTaskManager:
             assert result.first() == identification_task
         else:
             assert result.count() == 0
+
+    def test_browsable_for_reviewer_see_all_from_collaboration_countries(self):
+        """browsable() should return all tasks from countries for users with review permissions."""
+        reviewer_user = UserFactory()
+
+        workspace_with_collaboration = WorkspaceFactory()
+        workspace_without_collaboration = WorkspaceFactory()
+
+        WorkspaceCollaborationGroupFactory(
+            workspaces=[
+                workspace_with_collaboration,
+            ],
+            reviewers=[
+                reviewer_user,
+            ],
+        )
+
+        identification_task = IdentificationTaskFactory(
+            report__point=workspace_with_collaboration.country.geom.point_on_surface
+        )
+        IdentificationTaskFactory(
+            report__point=workspace_without_collaboration.country.geom.point_on_surface
+        )
+
+        result = IdentificationTask.objects.browsable(user=reviewer_user)
+
+        assert result.count() == 1
+        assert result.first() == identification_task
 
 
 @pytest.mark.django_db
