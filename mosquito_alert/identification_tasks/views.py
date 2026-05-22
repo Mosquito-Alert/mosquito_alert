@@ -4,38 +4,46 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.http import (
     HttpResponse,
-    HttpResponseRedirect,
     HttpResponsePermanentRedirect,
 )
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
 from django.utils import timezone
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from mosquito_alert.geo.models import EuropeCountry
-from mosquito_alert.workspaces.models import Workspace, WorkspaceCollaborationGroup
-from .models import ExpertReportAnnotation
+from mosquito_alert.workspaces.models import Workspace
+from .models import IdentificationTask, ExpertReportAnnotation
 
 
 @login_required
 def report_expiration(request, country_id=None):
     this_user = request.user
 
-    user_is_reviewer = WorkspaceCollaborationGroup.objects.filter(
-        reviewers=this_user
-    ).exists()
-    if not user_is_reviewer:
+    has_global_review_perm = this_user.has_perm(
+        "%(app_label)s.add_review"
+        % {
+            "app_label": IdentificationTask._meta.app_label,
+        }
+    )
+    reviewer_countries = EuropeCountry.objects.filter(
+        workspace__collaboration_groups__reviewers=this_user
+    )
+
+    if not (has_global_review_perm or reviewer_countries.exists()):
         return HttpResponse(
             "You need to be logged in as reviewer to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
         )
 
     qs = ExpertReportAnnotation.objects.blocking()
 
+    if reviewer_countries.exists() and not has_global_review_perm:
+        qs = qs.filter(identification_task__report__country__in=reviewer_countries)
+
     country = None
     if country_id is not None:
-        country = get_object_or_404(EuropeCountry, pk=country_id)
+        country = get_object_or_404(reviewer_countries, pk=country_id)
         qs = qs.filter(identification_task__report__country=country)
 
     data_dict = {}
@@ -75,11 +83,14 @@ def expert_report_annotation(request):
                 + settings.ENTOLAB_ADMIN
             )
 
-    this_user_is_reviewer = WorkspaceCollaborationGroup.objects.filter(
-        reviewers=this_user
-    ).exists()
+    has_global_review_perm = this_user.has_perm(
+        "%(app_label)s.add_review"
+        % {
+            "app_label": IdentificationTask._meta.app_label,
+        }
+    )
 
-    if not this_user_is_reviewer:
+    if not has_global_review_perm:
         return HttpResponsePermanentRedirect("https://app.mosquitoalert.com")
     # NOTE: from now on, only reviewers are allowed to visit this view
 
@@ -92,22 +103,32 @@ def expert_report_annotation(request):
 @login_required
 def expert_status(request):
     this_user = request.user
-    user_is_reviewer = WorkspaceCollaborationGroup.objects.filter(
-        reviewers=this_user
-    ).exists()
-    if user_is_reviewer:
-        workspaces = (
-            Workspace.objects.filter(members__isnull=False)
-            .distinct()
-            .order_by("country__name_engl")
-        )
-        return render(
-            request,
-            "identification_tasks/expert_status.html",
-            {"workspaces": workspaces},
-        )
-    else:
-        return HttpResponseRedirect(reverse("login"))
+
+    has_global_review_perm = this_user.has_perm(
+        "%(app_label)s.add_review"
+        % {
+            "app_label": IdentificationTask._meta.app_label,
+        }
+    )
+
+    reviewer_workspaces_qs = Workspace.objects.filter(
+        collaboration_groups__reviewers=this_user
+    )
+
+    if not (has_global_review_perm or reviewer_workspaces_qs.exists()):
+        return HttpResponse("You need to be logged in as reviewer to view this page.")
+
+    workspaces_qs = Workspace.objects.none()
+    if has_global_review_perm:
+        workspaces_qs = Workspace.objects.filter(members__isnull=False)
+    elif reviewer_workspaces_qs.exists():
+        workspaces_qs = reviewer_workspaces_qs.filter(members__isnull=False)
+
+    return render(
+        request,
+        "identification_tasks/expert_status.html",
+        {"workspaces": workspaces_qs.order_by("country__name_engl")},
+    )
 
 
 # var is an ExpertReportAnnotation
