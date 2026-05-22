@@ -27,7 +27,6 @@ from django.db.models import Count
 from django.db.models.functions import Extract, Trunc
 
 from mosquito_alert.workspaces.models import (
-    Workspace,
     WorkspaceMembership,
     WorkspaceCollaborationGroup,
 )
@@ -279,27 +278,34 @@ def stats_user_ranking(request, page=1, user_uuid=None):
 def global_assignments(request):
     this_user = request.user
 
-    is_national_supervisor = WorkspaceMembership.objects.filter(
-        user=this_user, role=WorkspaceMembership.Role.SUPERVISOR
-    ).exists()
-    user_is_reviewer = WorkspaceCollaborationGroup.objects.filter(
-        reviewers=this_user
-    ).exists()
+    has_global_review_perm = this_user.has_perm(
+        "%(app_label)s.add_review"
+        % {
+            "app_label": IdentificationTask._meta.app_label,
+        }
+    )
 
-    if not (is_national_supervisor or user_is_reviewer):
+    countries_with_perm = EuropeCountry.objects.none()
+    if has_global_review_perm:
+        countries_with_perm = EuropeCountry.objects.all()
+    else:
+        countries_with_perm = EuropeCountry.objects.filter(
+            models.Q(
+                workspace__memberships__user=this_user,
+                workspace__memberships__role=WorkspaceMembership.Role.SUPERVISOR,
+            )
+            | models.Q(workspace__collaboration_groups__reviewers=this_user)
+        )
+
+    if not countries_with_perm.exists():
         return HttpResponse(
             "You need to be logged in as reviewer or be a national supervisor to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
         )
 
     task_qs = IdentificationTask.objects
-    if is_national_supervisor:
-        # Only allow stats from its country
-        task_qs = task_qs.filter(
-            report__country__in=Workspace.objects.filter(
-                members__user=this_user,
-                members__role=WorkspaceMembership.Role.SUPERVISOR,
-            ).values("country")
-        )
+    if not has_global_review_perm:
+        # Only allow stats from countries with permissions
+        task_qs = task_qs.filter(report__country__in=countries_with_perm)
 
     n_unassigned = (
         task_qs.new()
@@ -360,7 +366,7 @@ def global_assignments(request):
             stats_country_data[country][fieldname] = entry["total_count"]
 
     country_info = list(
-        EuropeCountry.objects.annotate(
+        countries_with_perm.annotate(
             supervisor_pk=models.Subquery(
                 WorkspaceMembership.objects.filter(
                     workspace__country=models.OuterRef("pk"),
@@ -423,7 +429,8 @@ def global_assignments(request):
         "encoded_data": json.dumps(data),
         "summary": summary,
         "days": settings.ENTOLAB_LOCK_PERIOD,
-        "is_reviewer": user_is_reviewer,
+        "is_reviewer": has_global_review_perm
+        or WorkspaceCollaborationGroup.objects.filter(reviewers=this_user).exists(),
     }
     return render(request, "stats/global_assignments.html", context)
 
@@ -488,10 +495,15 @@ def global_assignments_list(request, country_code=None, status=None):
 def workload_stats(request, country_id=None):
     this_user = request.user
     user_id_filter = settings.USERS_IN_STATS
-    user_is_reviewer = WorkspaceCollaborationGroup.objects.filter(
-        reviewers=this_user
-    ).exists()
-    if user_is_reviewer:
+
+    has_global_review_perm = this_user.has_perm(
+        "%(app_label)s.add_review"
+        % {
+            "app_label": IdentificationTask._meta.app_label,
+        }
+    )
+
+    if has_global_review_perm:
         if country_id is None:
             users = User.objects.filter(id__in=user_id_filter).order_by(
                 "first_name", "last_name"
