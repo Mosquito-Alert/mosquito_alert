@@ -379,8 +379,6 @@ class IdentificationTask(LifecycleModel):
 
     @cached_property
     def workspace(self) -> Optional[Workspace]:
-        if not self.country:
-            return None
         return Workspace.objects.filter(country=self.country).first()
 
     # LEGACY

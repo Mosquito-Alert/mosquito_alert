@@ -17,11 +17,11 @@ class TestWorkspace:
     def test_country_fk_is_unique(self):
         assert Workspace._meta.get_field("country").unique
 
-    def test_country_cannot_be_null(self):
-        assert not Workspace._meta.get_field("country").null
+    def test_country_can_be_null(self):
+        assert Workspace._meta.get_field("country").null
 
-    def test_country_cannot_be_blank(self):
-        assert not Workspace._meta.get_field("country").blank
+    def test_country_can_be_blank(self):
+        assert Workspace._meta.get_field("country").blank
 
     def test_country_is_PROTECTED(self):
         _on_delete = Workspace._meta.get_field("country").remote_field.on_delete

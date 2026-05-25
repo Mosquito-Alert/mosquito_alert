@@ -65,13 +65,26 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
         user_workspace_qs = Workspace.objects.filter(memberships__user=user)
 
+        workspace_id_subquery = (
+            Workspace.objects.annotate(
+                report_country_id=models.ExpressionWrapper(
+                    models.OuterRef(models.OuterRef("report__country")),
+                    output_field=models.IntegerField(),
+                )
+            )
+            .filter(
+                models.Q(country=models.F("report_country_id"))
+                | models.Q(country__isnull=True, report_country_id__isnull=True)
+            )
+            .values("pk")[:1]
+        )
+
         # Prioritize tasks by:
         # 1. Tasks from user's workspace where they have permissions (supervisor or annotator)
         # 2. Tasks from other workspaces but from the same identification pool.
         # 3. Tasks from other countries without identification pool
         qs = (
             qs.annotate(
-                # in_unknown_country=models.Q(report__country__isnull=True),
                 in_user_nuts2=models.Case(
                     models.When(
                         report__nuts_2_fk__isnull=False,
@@ -84,28 +97,23 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     output_field=models.BooleanField(),
                 ),
                 in_user_workspace=models.Exists(
-                    user_workspace_qs.filter(country=models.OuterRef("report__country"))
+                    user_workspace_qs.filter(pk=models.Subquery(workspace_id_subquery))
                 ),
                 in_supervised_user_workspace=models.Exists(
                     WorkspaceMembership.objects.filter(
                         user=user,
                         role=WorkspaceMembership.Role.SUPERVISOR,
-                        workspace__country=models.OuterRef("report__country"),
+                        workspace_id=models.Subquery(workspace_id_subquery),
                     )
                 ),
                 in_user_workspace_collaboration_group=models.Exists(
                     WorkspaceCollaborationGroup.objects.filter(
-                        workspaces__country=models.OuterRef("report__country")
+                        workspaces=models.Subquery(workspace_id_subquery)
                     ).filter(
                         models.Q(workspaces__in=user_workspace_qs)
                         | models.Q(
                             pk__in=user.collaboration_groups_as_reviewer.values("pk")
                         )
-                    )
-                ),
-                has_workspace=models.Exists(
-                    Workspace.objects.filter(
-                        country_id=models.OuterRef("report__country_id")
                     )
                 ),
             )
@@ -120,8 +128,6 @@ class IdentificationTaskQuerySet(models.QuerySet):
             .filter(
                 models.Q(in_user_workspace=True)
                 | models.Q(in_user_workspace_collaboration_group=True)
-                | models.Q(has_workspace=False)
-                # | models.Q(in_unknown_country=True)
             )
             .annotate(
                 priority=models.Case(
@@ -131,7 +137,6 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     models.When(
                         in_user_workspace_collaboration_group=True, then=models.Value(2)
                     ),
-                    models.When(has_workspace=False, then=models.Value(1)),
                     default=models.Value(0),
                     output_field=models.IntegerField(),
                 )
