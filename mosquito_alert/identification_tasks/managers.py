@@ -131,11 +131,11 @@ class IdentificationTaskQuerySet(models.QuerySet):
             )
             .annotate(
                 priority=models.Case(
-                    models.When(_in_exclusivity_period=True, then=models.Value(5)),
-                    models.When(in_user_nuts2=True, then=models.Value(4)),
-                    models.When(in_user_workspace=True, then=models.Value(3)),
+                    models.When(_in_exclusivity_period=True, then=models.Value(4)),
+                    models.When(in_user_nuts2=True, then=models.Value(3)),
+                    models.When(in_user_workspace=True, then=models.Value(2)),
                     models.When(
-                        in_user_workspace_collaboration_group=True, then=models.Value(2)
+                        in_user_workspace_collaboration_group=True, then=models.Value(1)
                     ),
                     default=models.Value(0),
                     output_field=models.IntegerField(),

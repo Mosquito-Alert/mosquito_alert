@@ -985,7 +985,7 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 1
         assert result.first() == identification_task
-        assert result.first().priority == 3
+        assert result.first().priority == 2
 
     def test_backlog_orders_by_upload_time_recent_first(self, country, user):
         """backlog() should order tasks by report upload time (newest first)."""
@@ -1023,7 +1023,7 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 1
         assert result.first() == identification_task
-        assert result.first().priority == 5
+        assert result.first().priority == 4
 
     def test_backlog_annotator_doesnt_see_exclusivity_tasks(
         self, country, user_national_supervisor
@@ -1142,7 +1142,7 @@ class TestIdentificationTaskManager:
 
         assert result.exists() == collaboration_exists
         if collaboration_exists:
-            assert result.first().priority == 2
+            assert result.first().priority == 1
 
     @pytest.mark.parametrize("task_in_exclusivity_period", [False, True])
     def test_backlog_reviewer_user_sees_collaboration_workspace(
@@ -1208,7 +1208,7 @@ class TestIdentificationTaskManager:
         assert list(result) == [
             task_in_nuts2,
         ]
-        assert result.get(pk=task_in_nuts2.pk).priority == 4
+        assert result.get(pk=task_in_nuts2.pk).priority == 3
 
     def test_backlog_filters_out_countries_without_workspace_if_not_member_or_collaborator(
         self,
@@ -1268,26 +1268,26 @@ class TestIdentificationTaskManager:
         """backlog() should correctly order tasks across all priority levels."""
         user = UserFactory()
 
-        # Setup: user workspace (priority 3)
+        # Setup: user workspace (priority 2)
         user_workspace = WorkspaceFactory()
         WorkspaceMembership.objects.create(
             workspace=user_workspace, user=user, role=WorkspaceMembership.Role.ANNOTATOR
         )
 
-        # Setup: NUTS2 region (priority 4 - highest)
+        # Setup: NUTS2 region (priority 3 - highest)
         nuts2_region = NutsEuropeFactory(
             levl_code=2, europecountry=user_workspace.country
         )
         user.userstat.nuts2_assignation = nuts2_region
         user.userstat.save()
 
-        # Setup: collaboration group (priority 2)
+        # Setup: collaboration group (priority 1)
         collab_workspace = WorkspaceFactory()
         WorkspaceCollaborationGroupFactory(
             workspaces=[user_workspace, collab_workspace]
         )
 
-        # Setup: country without workspace (priority 1)
+        # Setup: country without workspace: filtered out
         country_no_workspace = EuropeCountryFactory()
 
         # Setup: unknown country (prioritized)
@@ -1311,7 +1311,7 @@ class TestIdentificationTaskManager:
 
         result = list(IdentificationTask.objects.backlog(user=user))
 
-        # Expected order: NUTS2 (4), user workspace (3), collaboration (2)
+        # Expected order: NUTS2 (3), user workspace (2), collaboration (1)
         assert [
             task_nuts2,
             task_workspace,
@@ -1350,8 +1350,8 @@ class TestIdentificationTaskManager:
                 task_in_exclusivity,
                 task_outside_exclusivity,
             ]
-            assert result[0].priority == 5
-            assert result[1].priority == 3
+            assert result[0].priority == 4
+            assert result[1].priority == 2
 
     # Test browsable() method
     def test_browsable_returns_all_for_user_with_view_perm(
