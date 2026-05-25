@@ -102,6 +102,13 @@ def assigned_only_identification_task(identification_task, user):
 
 
 @pytest.fixture
+def perm_user_can_view_identificationtasks(user):
+    return grant_permission_to_user(
+        type="view", model_class=IdentificationTask, user=user
+    )
+
+
+@pytest.fixture
 def perm_user_can_view_archived_identificationtasks(user, model_class):
     return grant_permission_to_user(
         codename="view_archived_identificationtasks", model_class=model_class, user=user

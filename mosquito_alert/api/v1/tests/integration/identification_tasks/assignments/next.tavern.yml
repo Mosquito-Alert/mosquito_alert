@@ -49,6 +49,7 @@ marks:
     - identification_task
     - jwt_token_user
     - perm_user_can_add_annotations
+    - perm_user_can_view_identificationtasks
 
 stages:
   - name: User with perm can assign new identification tasks.
