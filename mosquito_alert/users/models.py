@@ -428,5 +428,3 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
 
     class Meta:
         db_table = "tigaserver_app_tigauser"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
-        verbose_name = "user"
-        verbose_name_plural = "users"
