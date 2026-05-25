@@ -39,8 +39,6 @@ class Migration(migrations.Migration):
                         ('locale', models.CharField(choices=[('en', 'English'), ('es', 'Español'), ('ca', 'Català'), ('eu', 'Euskara'), ('bn', 'বাংলা'), ('sv', 'Svenska'), ('de', 'Deutsch'), ('sq', 'Shqip'), ('el', 'Ελληνικά'), ('gl', 'Galego'), ('hu', 'Magyar'), ('pt', 'Português'), ('sl', 'Slovenščina'), ('it', 'Italiano'), ('fr', 'Français'), ('bg', 'Български'), ('ro', 'Română'), ('hr', 'Hrvatski'), ('mk', 'Македонски'), ('sr', 'Српски'), ('lb', 'Lëtzebuergesch'), ('nl', 'Nederlands'), ('tr', 'Türkçe'), ('zh-CN', '中文（中国）')], default='en', help_text="The locale code representing the language preference selected by the user for displaying the interface text. Enter the locale following the BCP 47 standard in 'language' or 'language-region' format (e.g., 'en' for English, 'en-US' for English (United States), 'fr' for French). The language is a two-letter ISO 639-1 code, and the region is an optional two-letter ISO 3166-1 alpha-2 code.", max_length=16, validators=[langcodes.tag_is_valid])),
                     ],
                     options={
-                        'verbose_name': 'user',
-                        'verbose_name_plural': 'users',
                         'db_table': 'tigaserver_app_tigauser',
                     },
                 ),
