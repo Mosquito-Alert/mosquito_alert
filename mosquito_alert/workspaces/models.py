@@ -8,7 +8,11 @@ User = get_user_model()
 
 class Workspace(models.Model):
     country = models.OneToOneField(
-        EuropeCountry, on_delete=models.PROTECT, related_name="workspace"
+        EuropeCountry,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="workspace",
     )
     members = models.ManyToManyField(
         User,
@@ -30,7 +34,10 @@ class Workspace(models.Model):
     updated_at = models.DateTimeField(auto_now=True, editable=False)
 
     def __str__(self):
-        return f"{self.country.name_engl} workspace"
+        name = "No country"
+        if self.country:
+            name = self.country.name_engl
+        return f"{name} workspace".format(name)
 
 
 class WorkspaceMembership(models.Model):
