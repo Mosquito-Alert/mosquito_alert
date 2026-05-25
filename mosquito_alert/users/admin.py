@@ -1,23 +1,24 @@
 from django.contrib import admin
-from mosquito_alert.geo.models import NutsEurope
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.models import User
 
+from mosquito_alert.geo.models import NutsEurope
 from mosquito_alert.reports.admin import ReportInline
 from mosquito_alert.devices.admin import DeviceInline
 
 from .models import UserStat, TigaUser
 
 
-@admin.register(UserStat)
-class UserStatAdmin(admin.ModelAdmin):
-    search_fields = ("user__username",)
-    ordering = ("user__username",)
+class UserStatAdminInline(admin.StackedInline):
+    model = UserStat
+    can_delete = False
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "nuts2_assignation":
             kwargs["queryset"] = NutsEurope.objects.all().order_by(
                 "europecountry__name_engl", "name_latn"
             )
-        return super(UserStatAdmin, self).formfield_for_foreignkey(
+        return super(UserStatAdminInline, self).formfield_for_foreignkey(
             db_field, request, **kwargs
         )
 
@@ -49,3 +50,12 @@ class TigaUserAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+# Unregister default User admin
+admin.site.unregister(User)
+
+
+@admin.register(User)
+class UserAdmin(DjangoUserAdmin):
+    inlines = [UserStatAdminInline]
