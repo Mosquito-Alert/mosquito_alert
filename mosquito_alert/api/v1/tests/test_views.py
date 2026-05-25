@@ -451,6 +451,27 @@ class TestIdentificationTaskAPI:
         assert characteristics["is_gravid"]
         assert characteristics["is_blood_fed"]
 
+    def test_identification_task_can_be_retrieved_by_workspace_member_if_done_and_not_annotator(
+        self, api_client, user, identification_task
+    ):
+        workspace = WorkspaceFactory(country=identification_task.country)
+        workspace.members.add(user)
+
+        assert not identification_task.annotators.filter(pk=user.pk).exists()
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task), format="json"
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+        identification_task.status = IdentificationTask.Status.DONE
+        identification_task.save()
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task), format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+
 
 @pytest.mark.django_db
 class TestIdentificationTaskPredictionAPI:

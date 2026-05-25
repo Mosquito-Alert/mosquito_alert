@@ -2,6 +2,7 @@ from typing import Union
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import MultipleObjectsReturned
+from django.db import models
 
 from rest_framework import permissions
 
@@ -12,6 +13,7 @@ from mosquito_alert.identification_tasks.models import (
 from mosquito_alert.notifications.models import Notification, NotificationRecipient
 from mosquito_alert.users.models import UserStat, TigaUser
 from mosquito_alert.users.permissions import ReviewPermission
+from mosquito_alert.workspaces.models import Workspace
 
 from .utils import get_fk_fieldnames
 
@@ -267,7 +269,14 @@ class BaseIdentificationTaskPermissions(FullDjangoModelPermissions):
         if not super().has_object_permission(request, view, obj):
             return False
 
-        if view.action == "retrieve" and self._check_is_annotator(request, view, obj):
+        can_view = (
+            self._check_is_annotator(request, view, obj)
+            or Workspace.objects.filter(
+                models.Q(members=request.user)
+                | models.Q(collaboration_groups__reviewers=request.user)
+            ).exists()
+        )
+        if view.action == "retrieve" and can_view:
             return True
 
         perms = self.get_required_permissions(request.method, obj._meta.model)
