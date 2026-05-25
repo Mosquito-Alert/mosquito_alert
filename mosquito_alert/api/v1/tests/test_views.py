@@ -34,7 +34,14 @@ from mosquito_alert.notifications.models import (
     NotificationRecipient,
 )
 from mosquito_alert.reports.models import Report, Photo
+from mosquito_alert.reports.tests.factories import (
+    ObservationReportFactory,
+    BiteReportFactory,
+    BreedingSiteReportFactory,
+)
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.workspaces.models import WorkspaceMembership
+from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
 
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
 from mosquito_alert.api.v1.tests.integration.observations.factories import (
@@ -84,6 +91,13 @@ class BaseReportTest:
     def data_create_request(self):
         return self._common_post_data
 
+    @pytest.fixture
+    def api_client(self, user):
+        api_client = APIClient()
+        api_client.force_login(user=user)
+
+        return api_client
+
     @abstractmethod
     def report_object(self):
         raise NotImplementedError
@@ -91,6 +105,11 @@ class BaseReportTest:
     @property
     @abstractmethod
     def endpoint(self):
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def factory_cls(self):
         raise NotImplementedError
 
     def test_package_is_set_on_report_create(self, app_user, data_create_request):
@@ -286,10 +305,41 @@ class BaseReportTest:
         # Ensure 'tags' is not in the header
         assert b"tags" not in first_chunk.lower()
 
+    @pytest.mark.parametrize("is_member", [True, False])
+    def test_user_from_workspace_can_see_unpublished(self, api_client, user, is_member):
+        workspace = WorkspaceFactory()
+        if is_member:
+            workspace.members.add(user)
+
+        obj = self.factory_cls(point=workspace.country.geom.point_on_surface)
+        obj.published_at = None
+        obj.save()
+
+        another_workspace = WorkspaceFactory()
+        another_obj = self.factory_cls(
+            point=another_workspace.country.geom.point_on_surface
+        )
+        another_obj.published_at = None
+        another_obj.save()
+
+        # Test list
+        response = api_client.get(self.endpoint)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == (1 if is_member else 0)
+        if is_member:
+            assert response.data["results"][0]["uuid"] == str(obj.pk)
+
+        # Test retrieve
+        response = api_client.get(self.endpoint + f"{obj.pk}/")
+        assert response.status_code == (
+            status.HTTP_200_OK if is_member else status.HTTP_404_NOT_FOUND
+        )
+
 
 class TestBiteAPI(BaseReportTest):
     endpoint = "/api/v1/bites/"
     queryset = Report.objects.filter(type=Report.TYPE_BITE)
+    factory_cls = BiteReportFactory
 
     _common_post_data = BaseReportTest._common_post_data | {"counts": {"head": 1}}
 
@@ -302,6 +352,7 @@ class TestBreedingSiteAPI(BaseReportTest):
     endpoint = "/api/v1/breeding-sites/"
     queryset = Report.objects.filter(type=Report.TYPE_SITE)
     POST_FORMAT = "multipart"
+    factory_cls = BreedingSiteReportFactory
 
     @pytest.fixture
     def report_object(self, app_user):
@@ -312,6 +363,7 @@ class TestObservationAPI(BaseReportTest):
     endpoint = "/api/v1/observations/"
     queryset = Report.objects.filter(type=Report.TYPE_ADULT)
     POST_FORMAT = "multipart"
+    factory_cls = ObservationReportFactory
 
     @pytest.fixture
     def report_object(self, app_user):
@@ -398,6 +450,27 @@ class TestIdentificationTaskAPI:
         assert characteristics["sex"] == "female"
         assert characteristics["is_gravid"]
         assert characteristics["is_blood_fed"]
+
+    def test_identification_task_can_be_retrieved_by_workspace_member_if_done_and_not_annotator(
+        self, api_client, user, identification_task
+    ):
+        workspace = WorkspaceFactory(country=identification_task.country)
+        workspace.members.add(user)
+
+        assert not identification_task.annotators.filter(pk=user.pk).exists()
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task), format="json"
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+        identification_task.status = IdentificationTask.Status.DONE
+        identification_task.save()
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task), format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.django_db
@@ -1704,17 +1777,6 @@ class TestPermissionsApi:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["general"]["role"] == "base"
 
-    def test_general_role_annotator(self, api_client, user, group_expert, me_endpoint):
-        user.groups.add(group_expert)
-
-        response = api_client.get(me_endpoint, format="json")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "annotator"
-        assert not response.data["general"]["permissions"]["review"]["add"]
-        assert not response.data["general"]["permissions"]["review"]["view"]
-        assert not response.data["general"]["permissions"]["message"]["add"]
-        assert not response.data["general"]["permissions"]["message"]["view"]
-
     def test_general_role_reviewer(self, api_client, user, me_endpoint):
         grant_permission_to_user(
             codename="add_review", model_class=IdentificationTask, user=user
@@ -1722,7 +1784,7 @@ class TestPermissionsApi:
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "reviewer"
+        assert response.data["general"]["role"] == "reviewer"  # TODO: remove
         assert response.data["general"]["permissions"]["review"]["add"]
         assert response.data["general"]["permissions"]["review"]["view"]
         assert response.data["general"]["permissions"]["message"]["add"]
@@ -1745,18 +1807,16 @@ class TestPermissionsApi:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["general"]["is_staff"] == is_staff
 
-    def test_countries_role_supervisor(
-        self, api_client, user, group_expert, me_endpoint, country
-    ):
-        user.groups.add(group_expert)
-
-        userstat = user.userstat
-        userstat.national_supervisor_of = country
-        userstat.save()
+    def test_countries_role_supervisor(self, api_client, user, me_endpoint, country):
+        WorkspaceMembership.objects.create(
+            user=user,
+            workspace=WorkspaceFactory(country=country),
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        )
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "annotator"
+        assert response.data["general"]["role"] == "base"  # TODO: remove
         assert response.data["countries"][0]["country"]["id"] == country.pk
         assert response.data["countries"][0]["role"] == "supervisor"
         assert response.data["countries"][0]["permissions"]["annotation"][
@@ -1768,18 +1828,16 @@ class TestPermissionsApi:
         assert not response.data["countries"][0]["permissions"]["review"]["add"]
         assert not response.data["countries"][0]["permissions"]["review"]["view"]
 
-    def test_countries_role_annotator(
-        self, api_client, user, group_expert, me_endpoint, country
-    ):
-        user.groups.add(group_expert)
-
-        userstat = user.userstat
-        userstat.native_of = country
-        userstat.save()
+    def test_countries_role_annotator(self, api_client, user, me_endpoint, country):
+        WorkspaceMembership.objects.create(
+            user=user,
+            workspace=WorkspaceFactory(country=country),
+            role=WorkspaceMembership.Role.ANNOTATOR,
+        )
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "annotator"
+        assert response.data["general"]["role"] == "base"  # TODO: remove
         assert response.data["countries"][0]["role"] == "annotator"
         assert response.data["countries"][0]["country"]["id"] == country.pk
         assert not response.data["countries"][0]["permissions"]["annotation"][

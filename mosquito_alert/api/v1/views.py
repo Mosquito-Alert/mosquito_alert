@@ -545,15 +545,7 @@ class BaseReportViewSet(
         self.perform_create(serializer=serializer)
 
     def get_queryset(self):
-        qs = super().get_queryset()
-
-        user = self.request.user
-        if not isinstance(user, User):
-            qs = qs.published()
-            if isinstance(user, TigaUser):
-                qs |= super().get_queryset().filter(user=user)
-
-        return qs
+        return super().get_queryset().browsable(user=self.request.user)
 
     def perform_destroy(self, instance):
         instance.soft_delete()

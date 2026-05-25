@@ -18,7 +18,7 @@ stages:
   - type: ref
     id: anonymous_can_list_geo_published_only
   - type: ref
-    id: auth_without_perm_can_list_geo_all
+    id: auth_without_perm_can_list_geo_published_only
   - type: ref
     id: appuser_can_list_geo_published_and_owned
   # Creating a new appuser that does not own the object
@@ -28,6 +28,25 @@ stages:
     type: ref
   - type: ref
     id: new_appuser_can_list_geo_published_and_unowned
+
+---
+
+test_name: 'Common permission tests for breeding sites list user with perms (inherits from report)'
+
+includes:
+  - !include '../shared/reports/list_geo.yml'
+  - !include 'schema.yml'
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - published_object
+    - unpublished_object
+    - jwt_token_user_can_view
+
+stages:
+  - type: ref
+    id: auth_with_perm_can_list_geo_all
 
 ---
 

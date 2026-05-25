@@ -26,6 +26,11 @@ from django.db import models
 from django.db.models import Count
 from django.db.models.functions import Extract, Trunc
 
+from mosquito_alert.workspaces.models import (
+    WorkspaceMembership,
+    WorkspaceCollaborationGroup,
+)
+
 from .models import RankingData
 
 User = get_user_model()
@@ -273,20 +278,34 @@ def stats_user_ranking(request, page=1, user_uuid=None):
 def global_assignments(request):
     this_user = request.user
 
-    is_national_supervisor = this_user.userstat.is_national_supervisor()
-    is_super_expert = this_user.userstat.is_superexpert()
+    has_global_review_perm = this_user.has_perm(
+        "%(app_label)s.add_review"
+        % {
+            "app_label": IdentificationTask._meta.app_label,
+        }
+    )
 
-    if not (is_national_supervisor or is_super_expert):
+    countries_with_perm = EuropeCountry.objects.none()
+    if has_global_review_perm:
+        countries_with_perm = EuropeCountry.objects.all()
+    else:
+        countries_with_perm = EuropeCountry.objects.filter(
+            models.Q(
+                workspace__memberships__user=this_user,
+                workspace__memberships__role=WorkspaceMembership.Role.SUPERVISOR,
+            )
+            | models.Q(workspace__collaboration_groups__reviewers=this_user)
+        )
+
+    if not countries_with_perm.exists():
         return HttpResponse(
-            "You need to be logged in as superexpert or be a national supervisor to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
+            "You need to be logged in as reviewer or be a national supervisor to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
         )
 
     task_qs = IdentificationTask.objects
-    if is_national_supervisor:
-        # Only allow stats from its country
-        task_qs = task_qs.filter(
-            report__country=this_user.userstat.national_supervisor_of
-        )
+    if not has_global_review_perm:
+        # Only allow stats from countries with permissions
+        task_qs = task_qs.filter(report__country__in=countries_with_perm)
 
     n_unassigned = (
         task_qs.new()
@@ -347,12 +366,25 @@ def global_assignments(request):
             stats_country_data[country][fieldname] = entry["total_count"]
 
     country_info = list(
-        EuropeCountry.objects.values(
+        countries_with_perm.annotate(
+            supervisor_pk=models.Subquery(
+                WorkspaceMembership.objects.filter(
+                    workspace__country=models.OuterRef("pk"),
+                    role=WorkspaceMembership.Role.SUPERVISOR,
+                ).values("user__pk")[:1]
+            ),
+            supervisor_username=models.Subquery(
+                WorkspaceMembership.objects.filter(
+                    workspace__country=models.OuterRef("pk"),
+                    role=WorkspaceMembership.Role.SUPERVISOR,
+                ).values("user__username")[:1]
+            ),
+        ).values(
             "gid",
             "iso3_code",
             "name_engl",
-            "supervisors__user",
-            "supervisors__user__username",
+            "supervisor_pk",
+            "supervisor_username",
         )
     )
 
@@ -362,8 +394,8 @@ def global_assignments(request):
             "gid": "N/A",
             "iso3_code": "Other",
             "name_engl": "Other",
-            "supervisors__user": None,
-            "supervisors__user__username": None,
+            "supervisor_pk": None,
+            "supervisor_username": None,
         }
     )
 
@@ -372,8 +404,8 @@ def global_assignments(request):
         stats = stats_country_data.get(country["gid"])
         data.append(
             {
-                "ns_id": country["supervisors__user"],
-                "ns_username": country["supervisors__user__username"],
+                "ns_id": country["supervisor_pk"],
+                "ns_username": country["supervisor_username"],
                 "ns_country_id": country["gid"],
                 "ns_country_code": country["iso3_code"],
                 "ns_country_name": country["name_engl"],
@@ -397,6 +429,8 @@ def global_assignments(request):
         "encoded_data": json.dumps(data),
         "summary": summary,
         "days": settings.ENTOLAB_LOCK_PERIOD,
+        "is_reviewer": has_global_review_perm
+        or WorkspaceCollaborationGroup.objects.filter(reviewers=this_user).exists(),
     }
     return render(request, "stats/global_assignments.html", context)
 
@@ -461,12 +495,18 @@ def global_assignments_list(request, country_code=None, status=None):
 def workload_stats(request, country_id=None):
     this_user = request.user
     user_id_filter = settings.USERS_IN_STATS
-    if this_user.userstat and this_user.userstat.is_superexpert():
+
+    has_global_review_perm = this_user.has_perm(
+        "%(app_label)s.add_review"
+        % {
+            "app_label": IdentificationTask._meta.app_label,
+        }
+    )
+
+    if has_global_review_perm:
         if country_id is None:
-            users = (
-                User.objects.filter(groups__name="expert")
-                .filter(id__in=user_id_filter)
-                .order_by("first_name", "last_name")
+            users = User.objects.filter(id__in=user_id_filter).order_by(
+                "first_name", "last_name"
             )
             context = {
                 "users": users,
@@ -476,17 +516,15 @@ def workload_stats(request, country_id=None):
             return render(request, "stats/workload.html", context)
         else:
             user_id_filter = UserStat.objects.filter(
-                native_of__iso3_code=country_id
+                country__iso3_code=country_id
             ).values("user__id")
             country_name = "Unknown country??"
             try:
                 country_name = EuropeCountry.objects.get(iso3_code=country_id).name_engl
             except Exception:
                 pass
-            users = (
-                User.objects.filter(groups__name="expert")
-                .filter(id__in=user_id_filter)
-                .order_by("first_name", "last_name")
+            users = User.objects.filter(id__in=user_id_filter).order_by(
+                "first_name", "last_name"
             )
             context = {
                 "users": users,
@@ -496,7 +534,7 @@ def workload_stats(request, country_id=None):
             return render(request, "stats/workload.html", context)
     else:
         return HttpResponse(
-            "You need to be logged in as superexpert to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
+            "You need to be logged in as reviewer to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
         )
 
 

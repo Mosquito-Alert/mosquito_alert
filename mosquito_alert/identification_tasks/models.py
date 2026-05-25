@@ -19,9 +19,9 @@ from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, AFTER_CREATE
 from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged
 
 from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.workspaces.models import Workspace, WorkspaceMembership
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.users.models import UserStat
 
 from .managers import ExpertReportAnnotationManager, IdentificationTaskManager
 from .messages import (
@@ -372,7 +372,16 @@ class IdentificationTask(LifecycleModel):
 
     @cached_property
     def country(self) -> Optional[EuropeCountry]:
-        return self.report.country
+        try:
+            return self.report.country
+        except EuropeCountry.DoesNotExist:
+            return None
+
+    @cached_property
+    def workspace(self) -> Optional[Workspace]:
+        if not self.country:
+            return None
+        return Workspace.objects.filter(country=self.country).first()
 
     # LEGACY
     @property
@@ -383,10 +392,16 @@ class IdentificationTask(LifecycleModel):
 
     @cached_property
     def exclusivity_end(self) -> Optional[timezone.datetime]:
-        country = self.report.country
-        if country and UserStat.objects.filter(national_supervisor_of=country).exists():
+        workspace = self.workspace
+        if not workspace:
+            return None
+
+        supervisors_qs = WorkspaceMembership.objects.filter(
+            workspace=workspace, role=WorkspaceMembership.Role.SUPERVISOR
+        )
+        if supervisors_qs.exists():
             return self.report.server_upload_time + timedelta(
-                days=country.national_supervisor_report_expires_in
+                days=workspace.supervisor_exclusivity_days
             )
         return None
 
@@ -685,6 +700,7 @@ class IdentificationTask(LifecycleModel):
             return
         from .messaging import send_finished_identification_task_notification
 
+        # TODO: remove send from pk 25
         send_finished_identification_task_notification(
             identification_task=self, from_user=User.objects.filter(pk=25).first()
         )
@@ -881,12 +897,6 @@ class ExpertReportAnnotation(models.Model):
             ),
         ]
 
-    def is_superexpert(self):
-        return self.user.groups.filter(name="superexpert").exists()
-
-    def is_expert(self):
-        return self.user.groups.filter(name="expert").exists()
-
     @property
     def confidence_label(self):
         return get_confidence_label(value=self.confidence)
@@ -922,12 +932,13 @@ class ExpertReportAnnotation(models.Model):
             return False
 
         # If the user is the supervisor of that country -> False
-        if self.user.userstat.national_supervisor_of:
-            if (
-                self.user.userstat.national_supervisor_of
-                == self.identification_task.country
-            ):
-                return False
+        is_country_supervisor = WorkspaceMembership.objects.filter(
+            workspace__country=self.identification_task.country,
+            user=self.user,
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        ).exists()
+        if is_country_supervisor:
+            return False
 
         # Return False if no is_simplified found or if the objects to be
         # created is suposed to be the last.

@@ -126,11 +126,6 @@
                         <ul class="nav navbar-nav navbar-right">
                             {% block navbar_right_items %}
                             {% endblock %}
-                            {% if user.userstat.is_national_supervisor %}
-                            <li>
-                                <a href="{% url 'global_assignments' %}">Report queue</a>
-                            </li>
-                            {% endif %}
                             <li><p class="navbar-text">{{ request.user.username }}</p></li>
                             <li><a href="{% url "auth_logout" %}">logout</a></li>
                         </ul>

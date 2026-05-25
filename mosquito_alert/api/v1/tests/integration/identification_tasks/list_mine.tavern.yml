@@ -77,7 +77,7 @@ marks:
     - api_live_url
     - identification_task
     - another_identification_task
-    - user_with_role_annotator
+    - user_with_role_annotator_in_country
     - jwt_token_user
 
 stages:
@@ -107,7 +107,7 @@ marks:
     - annotation
     - identification_task
     - another_identification_task
-    - user_with_role_annotator
+    - user_with_role_annotator_in_country
     - jwt_token_user
 
 stages:
@@ -213,7 +213,34 @@ stages:
 
 ---
 
-test_name: Archived identification tasks will not be list.
+test_name: Archived identification tasks will not be listed if not annotated.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - archived_identification_task
+    - jwt_token_user
+
+stages:
+  - name: User with regular perm view can not retrieve archived identification task
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0
+
+---
+
+test_name: Archived identification tasks will be list if annotated.
 
 includes:
   - !include schema.yml
@@ -237,7 +264,10 @@ stages:
       strict:
         - json:off
       json:
-        count: 0
+        count: 1
+        results:
+          - observation:
+              uuid: "{archived_identification_task.report.pk}"
 
 ---
 

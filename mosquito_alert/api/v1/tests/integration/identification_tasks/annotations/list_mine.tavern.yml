@@ -78,7 +78,7 @@ marks:
     - me_endpoint
     - annotation
     - annotation_from_another_user
-    - user_with_role_annotator
+    - user_with_role_annotator_in_country
     - jwt_token_user
 
 stages:

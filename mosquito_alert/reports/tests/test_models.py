@@ -11,6 +11,7 @@ from django.utils import timezone
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.reports.utils import scrub_sensitive_exif
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
 import io
 from django.db.utils import IntegrityError
 import tempfile
@@ -386,6 +387,7 @@ class ReportModelTest(TestCase):
         tag_names = list(report.tags.values_list("name", flat=True))
         self.assertEqual(sorted(tag_names), ["tag1", "tag2"])
 
+    @pytest.mark.enable_report_location_masking
     def test_report_above_greenland_should_be_marked_as_masked(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -402,6 +404,7 @@ class ReportModelTest(TestCase):
 
         self.assertTrue(report.location_is_masked)
 
+    @pytest.mark.enable_report_location_masking
     def test_report_below_antartic_circle_should_be_marked_as_masked(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -418,6 +421,7 @@ class ReportModelTest(TestCase):
 
         self.assertTrue(report.location_is_masked)
 
+    @pytest.mark.enable_report_location_masking
     def test_report_in_the_ocean_should_be_marked_as_masked(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -434,6 +438,7 @@ class ReportModelTest(TestCase):
 
         self.assertTrue(report.location_is_masked)
 
+    @pytest.mark.enable_report_location_masking
     def test_report_in_land_should_not_be_marked_as_masked(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -646,8 +651,8 @@ class ReportModelTest(TestCase):
             iso3_code="RND",
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
-            reports_can_be_published=False,
         )
+        WorkspaceFactory(country=disabled_publish_country, is_public=False)
         point_on_surface = disabled_publish_country.geom.point_on_surface
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -712,8 +717,8 @@ class ReportModelTest(TestCase):
             iso3_code="RND",
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
-            reports_can_be_published=False,
         )
+        WorkspaceFactory(country=disabled_publish_country, is_public=False)
         point_on_surface = disabled_publish_country.geom.point_on_surface
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -754,8 +759,8 @@ class ReportModelTest(TestCase):
             iso3_code="RND",
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
-            reports_can_be_published=False,
         )
+        WorkspaceFactory(country=disabled_publish_country, is_public=False)
         point_on_surface = disabled_publish_country.geom.point_on_surface
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -865,6 +870,7 @@ class ReportModelTest(TestCase):
 
         self.assertEqual(report.published, False)
 
+    @pytest.mark.enable_report_location_masking
     def test_published_report_is_unpublished_if_location_is_masked(self):
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -931,6 +937,7 @@ class ReportModelTest(TestCase):
 
         assert report.lau_fk == lau
 
+    @pytest.mark.enable_report_location_masking
     def test_report_location_is_forced_if_missing(self):
         for t, _ in Report.TYPE_CHOICES:
             report = Report.objects.create(

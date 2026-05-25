@@ -1,7 +1,11 @@
+import pytest
+
 from django.test import TestCase
 
 from mosquito_alert.notifications.models import NotificationTopic, UserSubscription
-from mosquito_alert.users.models import TigaUser
+from mosquito_alert.users.models import TigaUser, UserStat
+
+from .factories import UserFactory
 
 
 class TigaUserModelTest(TestCase):
@@ -36,3 +40,10 @@ class TigaUserModelTest(TestCase):
         NotificationTopic.objects.filter(topic_code=locale).delete()
 
         _ = TigaUser.objects.create(locale=locale)
+
+
+@pytest.mark.django_db
+class TestUserModel:
+    def test_userstat_is_created_on_user_creation(self):
+        user = UserFactory()
+        assert UserStat.objects.filter(user=user).exists()
