@@ -9,7 +9,6 @@ from mosquito_alert.identification_tasks.models import IdentificationTask
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser
 from mosquito_alert.workspaces.models import WorkspaceMembership
-from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
 
 User = get_user_model()
 
@@ -70,7 +69,7 @@ def identification_task(adult_report):
 @pytest.fixture
 def user_national_supervisor(user, country):
     WorkspaceMembership.objects.create(
-        workspace=WorkspaceFactory(country=country),
+        workspace=country.workspace,
         user=user,
         role=WorkspaceMembership.Role.SUPERVISOR,
     )

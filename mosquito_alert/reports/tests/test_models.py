@@ -11,7 +11,6 @@ from django.utils import timezone
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.reports.utils import scrub_sensitive_exif
 from mosquito_alert.users.models import TigaUser
-from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
 import io
 from django.db.utils import IntegrityError
 import tempfile
@@ -652,7 +651,9 @@ class ReportModelTest(TestCase):
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
-        WorkspaceFactory(country=disabled_publish_country, is_public=False)
+        workspace = disabled_publish_country.workspace
+        workspace.is_public = False
+        workspace.save()
         point_on_surface = disabled_publish_country.geom.point_on_surface
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -718,7 +719,9 @@ class ReportModelTest(TestCase):
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
-        WorkspaceFactory(country=disabled_publish_country, is_public=False)
+        workspace = disabled_publish_country.workspace
+        workspace.is_public = False
+        workspace.save()
         point_on_surface = disabled_publish_country.geom.point_on_surface
         report = Report.objects.create(
             user=TigaUser.objects.create(),
@@ -760,7 +763,9 @@ class ReportModelTest(TestCase):
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
-        WorkspaceFactory(country=disabled_publish_country, is_public=False)
+        workspace = disabled_publish_country.workspace
+        workspace.is_public = False
+        workspace.save()
         point_on_surface = disabled_publish_country.geom.point_on_surface
         report = Report.objects.create(
             user=TigaUser.objects.create(),

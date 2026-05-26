@@ -12,13 +12,7 @@ def populate_workspace(apps, schema_editor):
     EuropeCountry = apps.get_model("geo", "EuropeCountry")
     UserStat = apps.get_model("users", "UserStat")
 
-    country_qs = EuropeCountry.objects.annotate(
-        num_members=models.Count("natives"),
-        num_supervisors=models.Count("supervisors")
-    ).filter(
-        models.Q(is_bounding_box=True) | models.Q(num_members__gt=0) | models.Q(num_supervisors__gt=0) | models.Q(reports_can_be_published=False)
-    )
-    for country in country_qs.all():
+    for country in EuropeCountry.objects.all().iterator():
         w = Workspace.objects.create(
             country=country,
             is_public=country.reports_can_be_published,

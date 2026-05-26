@@ -3,6 +3,7 @@ from factory.django import DjangoModelFactory
 from faker import Faker
 
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.db.models.signals import post_save
 
 from shapely import wkt
 from shapely.affinity import scale
@@ -48,6 +49,12 @@ class EuropeCountryFactory(DjangoModelFactory):
     iso3_code = factory.Sequence(lambda n: "%s" % n)
     geom = FuzzyMultiPolygon(srid=4326, polygon_klass=FuzzyGriddedPolygon)
 
+    class Meta:
+        model = EuropeCountry
+
+
+@factory.django.mute_signals(post_save)
+class EuropeCountryWithoutSignalFactoryFactory(EuropeCountryFactory):
     class Meta:
         model = EuropeCountry
 

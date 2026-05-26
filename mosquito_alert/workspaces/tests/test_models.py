@@ -45,6 +45,11 @@ class TestWorkspace:
     def test_supervisor_exclusivity_days_default(self):
         assert Workspace._meta.get_field("supervisor_exclusivity_days").default == 14
 
+    # signals
+    def test_workspace_is_created_on_country_creation(self):
+        country = EuropeCountryFactory()
+        assert country.workspace is not None
+
     # meta
     def test_unique_for_country(self):
         country = EuropeCountryFactory()

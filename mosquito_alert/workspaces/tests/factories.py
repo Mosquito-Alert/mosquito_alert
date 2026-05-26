@@ -9,7 +9,7 @@ class WorkspaceFactory(DjangoModelFactory):
         model = Workspace
 
     country = factory.SubFactory(
-        "mosquito_alert.geo.tests.factories.EuropeCountryFactory",
+        "mosquito_alert.geo.tests.factories.EuropeCountryWithoutSignalFactoryFactory",
     )
 
 
