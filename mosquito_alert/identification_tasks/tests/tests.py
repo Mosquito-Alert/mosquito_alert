@@ -912,7 +912,7 @@ class TestIdentificationTaskManager:
         """backlog(user) should exclude tasks already assigned to user."""
         # Create workspace membership for user
         WorkspaceMembership.objects.create(
-            workspace=WorkspaceFactory(country=country),
+            workspace=country.workspace,
             user=user,
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
@@ -957,7 +957,7 @@ class TestIdentificationTaskManager:
     ):
         """backlog() should return nothing for users without workspace memberships."""
         WorkspaceMembership.objects.create(
-            workspace=WorkspaceFactory(country=identification_task.report.country),
+            workspace=identification_task.report.country.workspace,
             user=user,
             role=WorkspaceMembership.Role.MEMBER,
         )
@@ -970,7 +970,7 @@ class TestIdentificationTaskManager:
         """backlog() should prioritize tasks from user's workspace."""
         # Create workspace membership
         WorkspaceMembership.objects.create(
-            workspace=WorkspaceFactory(country=country),
+            workspace=country.workspace,
             user=user,
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
@@ -990,7 +990,7 @@ class TestIdentificationTaskManager:
     def test_backlog_orders_by_upload_time_recent_first(self, country, user):
         """backlog() should order tasks by report upload time (newest first)."""
         WorkspaceMembership.objects.create(
-            workspace=WorkspaceFactory(country=country),
+            workspace=country.workspace,
             user=user,
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
@@ -1101,7 +1101,7 @@ class TestIdentificationTaskManager:
     def test_backlog_user_cannot_see_from_unknown_countries(self, user, country):
         """backlog() should not return tasks from unknown countries for users without workspace memberships."""
         WorkspaceMembership.objects.create(
-            workspace=WorkspaceFactory(country=country),
+            workspace=country.workspace,
             user=user,
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
@@ -1237,7 +1237,7 @@ class TestIdentificationTaskManager:
         WorkspaceCollaborationGroupFactory(
             workspaces=[
                 user_workspace,
-                WorkspaceFactory(country=country_without_workspace),
+                country_without_workspace.workspace,
             ]
         )
 
@@ -1527,7 +1527,7 @@ class TestIdentificationTaskManager:
         """browsable() should return tasks from countries where user has view permissions."""
         # Grant country-specific permission by making user a national supervisor
         WorkspaceMembership.objects.create(
-            workspace=WorkspaceFactory(country=country),
+            workspace=country.workspace,
             user=user,
             role=role,
         )

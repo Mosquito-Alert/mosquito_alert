@@ -454,7 +454,7 @@ class TestIdentificationTaskAPI:
     def test_identification_task_can_be_retrieved_by_workspace_member_if_done_and_not_annotator(
         self, api_client, user, identification_task
     ):
-        workspace = WorkspaceFactory(country=identification_task.country)
+        workspace = identification_task.country.workspace
         workspace.members.add(user)
 
         assert not identification_task.annotators.filter(pk=user.pk).exists()
@@ -1810,7 +1810,7 @@ class TestPermissionsApi:
     def test_countries_role_supervisor(self, api_client, user, me_endpoint, country):
         WorkspaceMembership.objects.create(
             user=user,
-            workspace=WorkspaceFactory(country=country),
+            workspace=country.workspace,
             role=WorkspaceMembership.Role.SUPERVISOR,
         )
 
@@ -1831,7 +1831,7 @@ class TestPermissionsApi:
     def test_countries_role_annotator(self, api_client, user, me_endpoint, country):
         WorkspaceMembership.objects.create(
             user=user,
-            workspace=WorkspaceFactory(country=country),
+            workspace=country.workspace,
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
 
