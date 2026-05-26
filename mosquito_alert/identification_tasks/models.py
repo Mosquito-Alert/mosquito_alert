@@ -378,8 +378,10 @@ class IdentificationTask(LifecycleModel):
             return None
 
     @cached_property
-    def workspace(self) -> Optional[Workspace]:
-        return Workspace.objects.filter(country=self.country).first()
+    def workspaces(self) -> models.QuerySet[Workspace]:
+        return Workspace.objects.filter(country=self.country).filter(
+            models.Q(geom__isnull=True) | models.Q(geom__contains=self.report.point)
+        )
 
     # LEGACY
     @property
@@ -390,17 +392,18 @@ class IdentificationTask(LifecycleModel):
 
     @cached_property
     def exclusivity_end(self) -> Optional[timezone.datetime]:
-        workspace = self.workspace
-        if not workspace:
+        workspaces = self.workspaces
+        if not workspaces:
             return None
 
         supervisors_qs = WorkspaceMembership.objects.filter(
-            workspace=workspace, role=WorkspaceMembership.Role.SUPERVISOR
+            workspace__in=workspaces, role=WorkspaceMembership.Role.SUPERVISOR
         )
         if supervisors_qs.exists():
-            return self.report.server_upload_time + timedelta(
-                days=workspace.supervisor_exclusivity_days
-            )
+            exclusivity_days = supervisors_qs.aggregate(
+                max_days=models.Max("workspace__supervisor_exclusivity_days")
+            )["max_days"]
+            return self.report.server_upload_time + timedelta(days=exclusivity_days)
         return None
 
     @property
@@ -929,14 +932,15 @@ class ExpertReportAnnotation(models.Model):
         if self.decision_level == self.DecisionLevel.FINAL:
             return False
 
-        # If the user is the supervisor of that country -> False
-        is_country_supervisor = WorkspaceMembership.objects.filter(
-            workspace__country=self.identification_task.country,
-            user=self.user,
-            role=WorkspaceMembership.Role.SUPERVISOR,
-        ).exists()
-        if is_country_supervisor:
-            return False
+        if workspaces := self.identification_task.workspaces:
+            # If the user is the supervisor -> False
+            is_supervisor = WorkspaceMembership.objects.filter(
+                workspace__in=workspaces,
+                user=self.user,
+                role=WorkspaceMembership.Role.SUPERVISOR,
+            ).exists()
+            if is_supervisor:
+                return False
 
         # Return False if no is_simplified found or if the objects to be
         # created is suposed to be the last.

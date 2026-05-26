@@ -301,7 +301,7 @@ def taxon_root():
 def user_with_role_annotator_in_country(user, es_country):
     WorkspaceMembership.objects.create(
         user=user,
-        workspace=es_country.workspace,
+        workspace=es_country.workspaces.first(),
         role=WorkspaceMembership.Role.ANNOTATOR,
     )
 
@@ -312,7 +312,7 @@ def user_with_role_annotator_in_country(user, es_country):
 def user_with_role_supervisor_in_country(user, es_country):
     WorkspaceMembership.objects.create(
         user=user,
-        workspace=es_country.workspace,
+        workspace=es_country.workspaces.first(),
         role=WorkspaceMembership.Role.SUPERVISOR,
     )
 

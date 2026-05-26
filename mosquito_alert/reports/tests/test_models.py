@@ -651,7 +651,7 @@ class ReportModelTest(TestCase):
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
-        workspace = disabled_publish_country.workspace
+        workspace = disabled_publish_country.workspaces.first()
         workspace.is_public = False
         workspace.save()
         point_on_surface = disabled_publish_country.geom.point_on_surface
@@ -719,7 +719,7 @@ class ReportModelTest(TestCase):
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
-        workspace = disabled_publish_country.workspace
+        workspace = disabled_publish_country.workspaces.first()
         workspace.is_public = False
         workspace.save()
         point_on_surface = disabled_publish_country.geom.point_on_surface
@@ -763,7 +763,7 @@ class ReportModelTest(TestCase):
             fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
-        workspace = disabled_publish_country.workspace
+        workspace = disabled_publish_country.workspaces.first()
         workspace.is_public = False
         workspace.save()
         point_on_surface = disabled_publish_country.geom.point_on_surface

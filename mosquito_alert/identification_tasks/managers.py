@@ -33,6 +33,28 @@ class IdentificationTaskQuerySet(models.QuerySet):
     - `done(state)`: Retrieves tasks marked as done, with the ability to toggle negation.
     """
 
+    @property
+    def _workspace_id_subquery(self) -> QuerySet[dict[str, int]]:
+        return (
+            Workspace.objects.annotate(
+                report_country_id=models.ExpressionWrapper(
+                    models.OuterRef(models.OuterRef("report__country")),
+                    output_field=models.IntegerField(),
+                )
+            )
+            .filter(
+                models.Q(country=models.F("report_country_id"))
+                | models.Q(country__isnull=True, report_country_id__isnull=True)
+            )
+            .filter(
+                models.Q(geom__isnull=True)
+                | models.Q(
+                    geom__contains=models.OuterRef(models.OuterRef("report__point"))
+                )
+            )
+            .values("pk")
+        )
+
     # STAGES QUERYSETS
     def new(self) -> QuerySet:
         """Never assigned, not yet in the annotation process."""
@@ -65,20 +87,6 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
         user_workspace_qs = Workspace.objects.filter(memberships__user=user)
 
-        workspace_id_subquery = (
-            Workspace.objects.annotate(
-                report_country_id=models.ExpressionWrapper(
-                    models.OuterRef(models.OuterRef("report__country")),
-                    output_field=models.IntegerField(),
-                )
-            )
-            .filter(
-                models.Q(country=models.F("report_country_id"))
-                | models.Q(country__isnull=True, report_country_id__isnull=True)
-            )
-            .values("pk")[:1]
-        )
-
         # Prioritize tasks by:
         # 1. Tasks from user's workspace where they have permissions (supervisor or annotator)
         # 2. Tasks from other workspaces but from the same identification pool.
@@ -97,18 +105,20 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     output_field=models.BooleanField(),
                 ),
                 in_user_workspace=models.Exists(
-                    user_workspace_qs.filter(pk=models.Subquery(workspace_id_subquery))
+                    user_workspace_qs.filter(
+                        pk__in=models.Subquery(self._workspace_id_subquery)
+                    )
                 ),
                 in_supervised_user_workspace=models.Exists(
                     WorkspaceMembership.objects.filter(
                         user=user,
                         role=WorkspaceMembership.Role.SUPERVISOR,
-                        workspace_id=models.Subquery(workspace_id_subquery),
+                        workspace_id__in=models.Subquery(self._workspace_id_subquery),
                     )
                 ),
                 in_user_workspace_collaboration_group=models.Exists(
                     WorkspaceCollaborationGroup.objects.filter(
-                        workspaces=models.Subquery(workspace_id_subquery)
+                        workspaces__pk__in=models.Subquery(self._workspace_id_subquery)
                     ).filter(
                         models.Q(workspaces__in=user_workspace_qs)
                         | models.Q(
@@ -206,15 +216,15 @@ class IdentificationTaskQuerySet(models.QuerySet):
         from .models import IdentificationTask
 
         return self.annotate(
-            country_has_supervisor=models.Exists(
+            workspace_has_supervisor=models.Exists(
                 WorkspaceMembership.objects.filter(
                     role=WorkspaceMembership.Role.SUPERVISOR,
-                    workspace__country=models.OuterRef("report__country"),
+                    workspace_id__in=models.Subquery(self._workspace_id_subquery),
                 )
             ),
             supervisor_has_annotated=models.Case(
                 models.When(
-                    country_has_supervisor=True,
+                    workspace_has_supervisor=True,
                     then=models.Exists(
                         IdentificationTask.objects.supervisor_has_annotated().filter(
                             pk=models.OuterRef("pk")
@@ -231,9 +241,15 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     then=models.ExpressionWrapper(
                         models.F("report__server_upload_time")
                         + Coalesce(
-                            # TODO: what if two workspaces? max or min?
-                            models.F(
-                                "report__country__workspace__supervisor_exclusivity_days"
+                            # Getting the max supervisor exclusivity days among the workspaces
+                            # related to the task report country.
+                            # If no workspace with supervisor, defaulting to 0 days.
+                            models.Subquery(
+                                Workspace.objects.filter(
+                                    pk__in=models.Subquery(self._workspace_id_subquery)
+                                )
+                                .order_by("-supervisor_exclusivity_days")
+                                .values("supervisor_exclusivity_days")[:1]
                             ),
                             models.Value(0),
                         )
@@ -246,7 +262,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
             ),
             # NOTE: using "_" not to raise error due to same name is used for a @property.
             _in_exclusivity_period=models.Q(
-                models.Q(country_has_supervisor=True)
+                models.Q(workspace_has_supervisor=True)
                 & models.Q(
                     _exclusivity_end__isnull=False, _exclusivity_end__gt=timezone.now()
                 )
@@ -265,12 +281,10 @@ class IdentificationTaskQuerySet(models.QuerySet):
                 ExpertReportAnnotation.objects.filter(
                     identification_task=models.OuterRef("pk"),
                     is_finished=True,
-                    user__in=WorkspaceMembership.objects.filter(
-                        role=WorkspaceMembership.Role.SUPERVISOR,
-                        workspace__country=models.OuterRef(
-                            "identification_task__report__country"
-                        ),
-                    ).values("user"),
+                    user__workspace_memberships__role=WorkspaceMembership.Role.SUPERVISOR,
+                    user__workspace_memberships__workspace_id__in=models.Subquery(
+                        self._workspace_id_subquery
+                    ),
                 )
             )
         ).filter(supervisor_has_annotated=state)
@@ -353,13 +367,30 @@ class IdentificationTaskQuerySet(models.QuerySet):
                 country_lookup |= models.Q(report__country__in=view_countries)
 
             country_workspace_member = EuropeCountry.objects.filter(
-                workspace__members=user
-            ).distinct()
+                workspaces__members=user, workspaces__geom__isnull=True
+            )
             if country_workspace_member:
                 country_lookup |= models.Q(
                     report__country__in=country_workspace_member,
                     status=IdentificationTask.Status.DONE,
                 )
+
+            supervisor_workspace_ids = user.workspace_memberships.filter(
+                role=WorkspaceMembership.Role.SUPERVISOR,
+            ).values_list("workspace_id", flat=True)
+
+            subregion_workspace = Workspace.objects.filter(
+                members=user, geom__isnull=False
+            )
+            for workspace in subregion_workspace:
+                q = models.Q(
+                    report__country=workspace.country,
+                    report__point__within=workspace.geom,
+                )
+                if workspace.pk not in supervisor_workspace_ids:
+                    q &= models.Q(status=IdentificationTask.Status.DONE)
+
+                country_lookup |= q
 
             if country_lookup:
                 result_qs |= qs.filter(country_lookup)

@@ -291,10 +291,10 @@ def global_assignments(request):
     else:
         countries_with_perm = EuropeCountry.objects.filter(
             models.Q(
-                workspace__memberships__user=this_user,
-                workspace__memberships__role=WorkspaceMembership.Role.SUPERVISOR,
+                workspaces__memberships__user=this_user,
+                workspaces__memberships__role=WorkspaceMembership.Role.SUPERVISOR,
             )
-            | models.Q(workspace__collaboration_groups__reviewers=this_user)
+            | models.Q(workspaces__collaboration_groups__reviewers=this_user)
         )
 
     if not countries_with_perm.exists():

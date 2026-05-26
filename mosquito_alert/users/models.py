@@ -98,8 +98,11 @@ class UserStat(UserRolePermissionMixin, models.Model):
 
         return list(
             qs.filter(
-                models.Q(workspace__memberships__user=self.user)
-                | models.Q(workspace__collaboration_groups__reviewers=self.user)
+                models.Q(
+                    workspaces__memberships__user=self.user,
+                    workspaces__geom__isnull=True,
+                )
+                | models.Q(workspaces__collaboration_groups__reviewers=self.user)
             ).distinct()
         )
 

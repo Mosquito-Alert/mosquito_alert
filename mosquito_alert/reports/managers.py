@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from mosquito_alert.geo.models import EuropeCountry
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.workspaces.models import Workspace
 
 
 class ReportQuerySet(models.QuerySet):
@@ -47,12 +48,25 @@ class ReportQuerySet(models.QuerySet):
                 return qs
 
             countries_in_workspace = EuropeCountry.objects.filter(
-                workspace__members=user
-            ).distinct()
-
-            return qs.filter(
-                published_lookup | models.Q(country__in=countries_in_workspace)
+                workspaces__members=user,
+                workspaces__geom__isnull=True,
             )
+
+            lookup = models.Q()
+            if countries_in_workspace.exists():
+                lookup |= models.Q(country__in=countries_in_workspace)
+
+            subregion_workspace = Workspace.objects.filter(
+                members=user, geom__isnull=False
+            )
+            for workspace in subregion_workspace:
+                lookup |= models.Q(
+                    country=workspace.country,
+                    point__within=workspace.geom,
+                )
+
+            if lookup:
+                return qs.filter(published_lookup | lookup)
 
         if isinstance(user, TigaUser):
             return qs.filter(published_lookup | models.Q(user=user))
