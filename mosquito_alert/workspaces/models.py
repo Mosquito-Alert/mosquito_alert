@@ -1,5 +1,6 @@
-from django.db import models
+from django.contrib.gis.db import models
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 from mosquito_alert.geo.models import EuropeCountry
 
@@ -7,12 +8,17 @@ User = get_user_model()
 
 
 class Workspace(models.Model):
-    country = models.OneToOneField(
+    country = models.ForeignKey(
         EuropeCountry,
         null=True,
         blank=True,
         on_delete=models.PROTECT,
-        related_name="workspace",
+        related_name="workspaces",
+    )
+    geom = models.MultiPolygonField(
+        null=True,
+        blank=True,
+        help_text="The geographical area covered by the workspace. If not specified, the workspace covers the entire country.",
     )
     members = models.ManyToManyField(
         User,
@@ -20,6 +26,8 @@ class Workspace(models.Model):
         related_name="workspaces",
         help_text="Users who can access the workspace.",
     )
+
+    name = models.CharField(max_length=255, null=True, blank=True)
 
     is_public = models.BooleanField(
         default=True,
@@ -33,11 +41,45 @@ class Workspace(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True, editable=False)
 
+    def clean(self):
+        super().clean()
+
+        if self.country and self.geom:
+            country_geom = self.country.geom
+
+            if not country_geom.covers(self.geom):
+                raise ValidationError(
+                    {"geom": ("Geometry must be fully inside the selected country.")}
+                )
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        return super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            # country must be unique ONLY when geom is null
+            models.UniqueConstraint(
+                fields=["country"],
+                condition=models.Q(geom__isnull=True),
+                name="unique_country_when_geom_is_null",
+            ),
+        ]
+
     def __str__(self):
-        name = "No country"
+        country_name = "No country"
         if self.country:
-            name = self.country.name_engl
-        return f"{name} workspace".format(name)
+            country_name = self.country.name_engl
+
+        result = [
+            country_name,
+        ]
+        if self.name:
+            result.append(f"({self.name})")
+
+        result.append("workspace")
+
+        return " ".join(result)
 
 
 class WorkspaceMembership(models.Model):

@@ -11,13 +11,19 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import MultiPolygon, Point
 from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
-from mosquito_alert.geo.tests.factories import EuropeCountryFactory, NutsEuropeFactory
+from mosquito_alert.geo.tests.factories import (
+    EuropeCountryFactory,
+    EuropeCountryWithoutSignalFactoryFactory,
+    NutsEuropeFactory,
+    scale_geom,
+)
+from mosquito_alert.geo.tests.fuzzy import FuzzyGriddedPolygon
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.identification_tasks.models import (
     ExpertReportAnnotation,
@@ -341,11 +347,41 @@ class TestIdentificationTaskModel:
         assert IdentificationTask._meta.get_field("updated_at").auto_now
 
     # properties
+    def test_workspaces_property(self):
+        area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
+        area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
+
+        assert not area1.intersects(area2)
+
+        country = EuropeCountryFactory(geom=MultiPolygon(area1, area2))
+        country_workspace = country.workspaces.first()
+
+        identification_task_area1 = IdentificationTaskFactory(
+            report__point=area1.point_on_surface
+        )
+
+        assert list(identification_task_area1.workspaces) == [country_workspace]
+
+        # Now adding a second workspace, from a subregion of the country
+        # Create subregion workspace for the country
+        subregion_workspace = WorkspaceFactory(
+            country=country, geom=MultiPolygon(area1)
+        )
+        # Adding a third workspace from same country but different subregion.
+        WorkspaceFactory(country=country, geom=MultiPolygon(area2))
+
+        # clear cached for workspaces @cached_property, requiring re-computation next time it's called
+        del identification_task_area1.workspaces
+
+        assert frozenset(identification_task_area1.workspaces) == frozenset(
+            [country_workspace, subregion_workspace]
+        )
+
     def test_exclusivity_end(
         self, identification_task, country, user_national_supervisor
     ):
         workspace = Workspace.objects.get(country=country)
-        assert identification_task.workspace == workspace
+        assert identification_task.workspaces.first() == workspace
         assert (
             identification_task.exclusivity_end
             == identification_task.report.server_upload_time
@@ -357,6 +393,52 @@ class TestIdentificationTaskModel:
         # clear cached for exclusivity_end @cached_property, requiring re-computation next time it's called
         del identification_task.exclusivity_end
         assert identification_task.exclusivity_end is None
+
+    def test_exclusivity_end_takes_maximum_from_multiple_workspaces(self):
+        area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
+        area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
+
+        assert not area1.intersects(area2)
+
+        country = EuropeCountryFactory(geom=MultiPolygon(area1, area2))
+
+        country_workspace = Workspace.objects.get(country=country)
+        country_workspace.supervisor_exclusivity_days = 1
+        country_workspace.save()
+
+        # Add supervisor
+        WorkspaceMembership.objects.create(
+            workspace=country_workspace,
+            user=UserFactory(),
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        )
+
+        identification_task = IdentificationTaskFactory(
+            report__point=area1.point_on_surface
+        )
+
+        assert (
+            identification_task.exclusivity_end
+            == identification_task.report.server_upload_time + timedelta(days=1)
+        )
+
+        # Now adding a second workspace with longer exclusivity period, from a subregion of the country
+        area1_workspace = WorkspaceFactory(
+            country=country, geom=MultiPolygon(area1), supervisor_exclusivity_days=3
+        )
+        # Add supervisor
+        WorkspaceMembership.objects.create(
+            workspace=area1_workspace,
+            user=UserFactory(),
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        )
+
+        # clear cached for exclusivity_end @cached_property, requiring re-computation next time it's called
+        del identification_task.exclusivity_end
+        assert (
+            identification_task.exclusivity_end
+            == identification_task.report.server_upload_time + timedelta(days=3)
+        )
 
     def test_in_exclusivity_period(self):
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
@@ -721,12 +803,35 @@ class TestIdentificationTaskManager:
             assert result.count() == 1
 
     # Test in_exclusivity_period() method
+    @pytest.mark.parametrize("workspace_is_subregion", [True, False])
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_in_exclusivity_period_returns_tasks_in_period(
-        self, identification_task, user_national_supervisor, country
+        self, workspace_is_subregion
     ):
         """in_exclusivity_period() should return tasks within exclusivity period."""
-        workspace = Workspace.objects.get(country=country)
+        area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
+        area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
+
+        country = EuropeCountryWithoutSignalFactoryFactory(
+            geom=MultiPolygon(area1, area2)
+        )
+        workspace = WorkspaceFactory(
+            country=country,
+            geom=MultiPolygon(area1) if workspace_is_subregion else None,
+        )
+        # Add a supervisor to the workspace
+        WorkspaceMembership.objects.create(
+            workspace=workspace,
+            user=UserFactory(),
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        )
+
+        identification_task = IdentificationTaskFactory(
+            report__point=workspace.geom.point_on_surface
+            if workspace.geom
+            else workspace.country.geom.point_on_surface
+        )
+
         identification_task.report.server_upload_time = timezone.now() - timedelta(
             days=workspace.supervisor_exclusivity_days - 1
         )
@@ -737,11 +842,23 @@ class TestIdentificationTaskManager:
         assert result.count() == 1
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
-    def test_in_exclusivity_period_excludes_expired_tasks(
-        self, identification_task, user_national_supervisor, country
-    ):
+    def test_in_exclusivity_period_excludes_expired_tasks(self):
         """in_exclusivity_period() should exclude tasks past exclusivity."""
+        area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
+        area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
+
+        country = EuropeCountryFactory(geom=MultiPolygon(area1, area2))
         workspace = Workspace.objects.get(country=country)
+        # Adding supervisor
+        WorkspaceMembership.objects.create(
+            workspace=workspace,
+            user=UserFactory(),
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        )
+
+        identification_task = IdentificationTaskFactory(
+            report__point=area1.point_on_surface
+        )
         identification_task.report.server_upload_time = timezone.now() - timedelta(
             days=workspace.supervisor_exclusivity_days + 1
         )
@@ -751,20 +868,62 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 0
 
+        # Now adding a subregion workspace with greater supervisor_exclusivity_days
+        subregion_workspace = WorkspaceFactory(
+            country=country,
+            geom=MultiPolygon(area1),
+            supervisor_exclusivity_days=workspace.supervisor_exclusivity_days + 5,
+        )
+        # Adding supervisor
+        WorkspaceMembership.objects.create(
+            workspace=subregion_workspace,
+            user=UserFactory(),
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        )
+
+        assert result.count() == 1
+
+    @pytest.mark.parametrize("workspace_is_subregion", [True, False])
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_in_exclusivity_period_excludes_if_supervisor_annotated(
-        self, identification_task, user_national_supervisor, country
+        self, workspace_is_subregion
     ):
         """in_exclusivity_period() should exclude tasks where supervisor annotated."""
-        workspace = Workspace.objects.get(country=country)
+
+        area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
+        area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
+
+        country = EuropeCountryWithoutSignalFactoryFactory(
+            geom=MultiPolygon(area1, area2)
+        )
+        workspace = WorkspaceFactory(
+            country=country,
+            geom=MultiPolygon(area1) if workspace_is_subregion else None,
+        )
+        user_supervisor = UserFactory()
+        # Add a supervisor to the workspace
+        WorkspaceMembership.objects.create(
+            workspace=workspace,
+            user=user_supervisor,
+            role=WorkspaceMembership.Role.SUPERVISOR,
+        )
+
+        identification_task = IdentificationTaskFactory(
+            report__point=workspace.geom.point_on_surface
+            if workspace.geom
+            else workspace.country.geom.point_on_surface
+        )
         identification_task.report.server_upload_time = timezone.now() - timedelta(
             days=workspace.supervisor_exclusivity_days - 1
         )
         identification_task.report.save()
 
+        result = IdentificationTask.objects.in_exclusivity_period()
+        assert result.count() == 1
+
         ExpertReportAnnotationFactory(
             identification_task=identification_task,
-            user=user_national_supervisor,
+            user=user_supervisor,
             is_finished=True,
         )
 
@@ -912,7 +1071,7 @@ class TestIdentificationTaskManager:
         """backlog(user) should exclude tasks already assigned to user."""
         # Create workspace membership for user
         WorkspaceMembership.objects.create(
-            workspace=country.workspace,
+            workspace=country.workspaces.first(),
             user=user,
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
@@ -957,7 +1116,7 @@ class TestIdentificationTaskManager:
     ):
         """backlog() should return nothing for users without workspace memberships."""
         WorkspaceMembership.objects.create(
-            workspace=identification_task.report.country.workspace,
+            workspace=identification_task.report.country.workspaces.first(),
             user=user,
             role=WorkspaceMembership.Role.MEMBER,
         )
@@ -966,17 +1125,31 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 1
 
-    def test_backlog_prioritizes_user_workspace(self, country, user):
+    @pytest.mark.parametrize("workspace_is_subregion", [True, False])
+    def test_backlog_prioritizes_user_workspace(self, workspace_is_subregion, user):
         """backlog() should prioritize tasks from user's workspace."""
         # Create workspace membership
+        area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
+        area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
+
+        country = EuropeCountryWithoutSignalFactoryFactory(
+            geom=MultiPolygon(area1, area2)
+        )
+        workspace = WorkspaceFactory(
+            country=country,
+            geom=MultiPolygon(area1) if workspace_is_subregion else None,
+        )
+
         WorkspaceMembership.objects.create(
-            workspace=country.workspace,
+            workspace=workspace,
             user=user,
-            role=WorkspaceMembership.Role.ANNOTATOR,
+            role=WorkspaceMembership.Role.MEMBER,
         )
 
         identification_task = IdentificationTaskFactory(
-            report__point=country.geom.point_on_surface
+            report__point=workspace.geom.point_on_surface
+            if workspace.geom
+            else workspace.country.geom.point_on_surface
         )
 
         IdentificationTaskFactory()
@@ -990,7 +1163,7 @@ class TestIdentificationTaskManager:
     def test_backlog_orders_by_upload_time_recent_first(self, country, user):
         """backlog() should order tasks by report upload time (newest first)."""
         WorkspaceMembership.objects.create(
-            workspace=country.workspace,
+            workspace=country.workspaces.first(),
             user=user,
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
@@ -1032,7 +1205,7 @@ class TestIdentificationTaskManager:
         annotator_user = UserFactory()
 
         WorkspaceMembership.objects.create(
-            workspace=country.workspace,
+            workspace=country.workspaces.first(),
             user=annotator_user,
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
@@ -1049,7 +1222,7 @@ class TestIdentificationTaskManager:
         annotator_user = UserFactory()
 
         WorkspaceMembership.objects.create(
-            workspace=country.workspace,
+            workspace=country.workspaces.first(),
             user=annotator_user,
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
@@ -1062,7 +1235,9 @@ class TestIdentificationTaskManager:
             assert not IdentificationTask.objects.backlog(user=annotator_user).exists()
 
             traveller.shift(
-                timedelta(days=country.workspace.supervisor_exclusivity_days + 1)
+                timedelta(
+                    days=country.workspaces.first().supervisor_exclusivity_days + 1
+                )
             )
 
             result = IdentificationTask.objects.backlog(user=annotator_user)
@@ -1076,7 +1251,7 @@ class TestIdentificationTaskManager:
         annotator_user = UserFactory()
 
         WorkspaceMembership.objects.create(
-            workspace=country.workspace,
+            workspace=country.workspaces.first(),
             user=annotator_user,
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
@@ -1101,7 +1276,7 @@ class TestIdentificationTaskManager:
     def test_backlog_user_cannot_see_from_unknown_countries(self, user, country):
         """backlog() should not return tasks from unknown countries for users without workspace memberships."""
         WorkspaceMembership.objects.create(
-            workspace=country.workspace,
+            workspace=country.workspaces.first(),
             user=user,
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
@@ -1237,7 +1412,7 @@ class TestIdentificationTaskManager:
         WorkspaceCollaborationGroupFactory(
             workspaces=[
                 user_workspace,
-                country_without_workspace.workspace,
+                country_without_workspace.workspaces.first(),
             ]
         )
 
@@ -1258,25 +1433,37 @@ class TestIdentificationTaskManager:
         task_workspace_null_country = IdentificationTaskFactory(
             report__point=Point(0, 0, srid=4326),
         )
-        assert task_workspace_null_country.workspace == workspace
+        assert task_workspace_null_country.workspaces.first() == workspace
 
         result = IdentificationTask.objects.backlog(user=user)
 
         assert result.exists() == is_member
 
-    def test_backlog_combined_priority_ordering(self):
+    @pytest.mark.parametrize("workspace_is_subregion", [False, True])
+    def test_backlog_combined_priority_ordering(self, workspace_is_subregion):
         """backlog() should correctly order tasks across all priority levels."""
         user = UserFactory()
 
+        area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
+        area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
+
         # Setup: user workspace (priority 2)
-        user_workspace = WorkspaceFactory()
+        country = EuropeCountryWithoutSignalFactoryFactory(
+            geom=MultiPolygon(area1, area2)
+        )
+        user_workspace = WorkspaceFactory(
+            country=country,
+            geom=MultiPolygon(area1) if workspace_is_subregion else None,
+        )
         WorkspaceMembership.objects.create(
             workspace=user_workspace, user=user, role=WorkspaceMembership.Role.ANNOTATOR
         )
 
         # Setup: NUTS2 region (priority 3 - highest)
         nuts2_region = NutsEuropeFactory(
-            levl_code=2, europecountry=user_workspace.country
+            levl_code=2,
+            europecountry=user_workspace.country,
+            geom=MultiPolygon(scale_geom(area1), srid=area1.srid),
         )
         user.userstat.nuts2_assignation = nuts2_region
         user.userstat.save()
@@ -1296,9 +1483,17 @@ class TestIdentificationTaskManager:
             report__point=nuts2_region.geom.point_on_surface,
         )
 
-        task_workspace = IdentificationTaskFactory(
-            report__point=user_workspace.country.geom[1].point_on_surface,
+        # Need to create a point inside the workspace but not inside NUTS2.
+        task_workspace_point = (
+            (
+                user_workspace.geom
+                if user_workspace.geom
+                else user_workspace.country.geom
+            )
+            .difference(nuts2_region.geom)
+            .point_on_surface
         )
+        task_workspace = IdentificationTaskFactory(report__point=task_workspace_point)
 
         task_collab = IdentificationTaskFactory(
             report__point=collab_workspace.country.geom[1].point_on_surface
@@ -1330,7 +1525,9 @@ class TestIdentificationTaskManager:
 
             # Create a task in exclusivity period
             traveller.shift(
-                timedelta(days=country.workspace.supervisor_exclusivity_days + 1)
+                timedelta(
+                    days=country.workspaces.first().supervisor_exclusivity_days + 1
+                )
             )
 
             task_in_exclusivity = IdentificationTaskFactory(
@@ -1519,20 +1716,35 @@ class TestIdentificationTaskManager:
     def test_browsable_with_country_specific_permissions(
         self,
         user,
-        country,
         status: IdentificationTask.Status,
         role: WorkspaceMembership.Role,
         expected_result: bool,
     ):
         """browsable() should return tasks from countries where user has view permissions."""
-        # Grant country-specific permission by making user a national supervisor
+        area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
+        area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
+
+        assert not area1.intersects(area2)
+
+        country = EuropeCountryFactory(geom=MultiPolygon(area1, area2))
+        country_workspace = Workspace.objects.get(country=country)
+
         WorkspaceMembership.objects.create(
-            workspace=country.workspace,
+            workspace=country_workspace,
             user=user,
             role=role,
         )
-        identification_task = IdentificationTaskFactory(
-            status=status, report__point=country.geom.point_on_surface
+
+        identification_task_country = IdentificationTaskFactory(
+            status=status, report__point=area2.point_on_surface
+        )
+
+        subregion_workspace = WorkspaceFactory(
+            country=country, geom=MultiPolygon(area1)
+        )
+
+        identification_task_subregion = IdentificationTaskFactory(
+            status=status, report__point=area1.point_on_surface
         )
 
         # Forcing finished task from other workspaces, that should not be visible for the user, even if it's done.
@@ -1544,8 +1756,24 @@ class TestIdentificationTaskManager:
 
         result = IdentificationTask.objects.browsable(user=user)
         if expected_result:
+            assert result.count() == 2
+            assert frozenset(result) == frozenset(
+                [identification_task_country, identification_task_subregion]
+            )
+        else:
+            assert result.count() == 0
+
+        user.workspace_memberships.all().delete()
+        # Only have subregion workspace memebership
+        WorkspaceMembership.objects.create(
+            workspace=subregion_workspace,
+            user=user,
+            role=role,
+        )
+        result = IdentificationTask.objects.browsable(user=user)
+        if expected_result:
             assert result.count() == 1
-            assert result.first() == identification_task
+            assert result.first() == identification_task_subregion
         else:
             assert result.count() == 0
 

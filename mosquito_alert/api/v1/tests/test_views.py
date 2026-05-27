@@ -8,7 +8,7 @@ import uuid
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, MultiPolygon
 from django.db import connection
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -28,6 +28,8 @@ from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
     PhotoPrediction,
 )
+from mosquito_alert.geo.tests.factories import EuropeCountryFactory
+from mosquito_alert.geo.tests.fuzzy import FuzzyGriddedPolygon
 from mosquito_alert.notifications.models import (
     Notification,
     UserSubscription,
@@ -335,6 +337,46 @@ class BaseReportTest:
             status.HTTP_200_OK if is_member else status.HTTP_404_NOT_FOUND
         )
 
+    def test_user_from_workspace_subregion_can_see_unpublished_only_in_subregion(
+        self, api_client, user
+    ):
+        area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
+        area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
+
+        assert not area1.intersects(area2)
+
+        country = EuropeCountryFactory(geom=MultiPolygon(area1, area2))
+
+        # Create subregion workspace for the country
+        subregion_workspace = WorkspaceFactory(
+            country=country, geom=MultiPolygon(area2)
+        )
+        subregion_workspace.members.add(user)
+
+        # Create report in country (area1)
+        obj_area1 = self.factory_cls(point=area1.point_on_surface)
+        obj_area1.published_at = None
+        obj_area1.save()
+
+        # Create report in country (area2) -> workspace subregion
+        obj_area2 = self.factory_cls(point=area2.point_on_surface)
+        obj_area2.published_at = None
+        obj_area2.save()
+
+        # Test list
+        response = api_client.get(self.endpoint)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["uuid"] == str(obj_area2.pk)
+
+        # Test retrieve for the object in the user's workspace
+        response = api_client.get(self.endpoint + f"{obj_area2.pk}/")
+        assert response.status_code == status.HTTP_200_OK
+
+        # Test retrieve for the object in the different workspace
+        response = api_client.get(self.endpoint + f"{obj_area1.pk}/")
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
 
 class TestBiteAPI(BaseReportTest):
     endpoint = "/api/v1/bites/"
@@ -454,7 +496,7 @@ class TestIdentificationTaskAPI:
     def test_identification_task_can_be_retrieved_by_workspace_member_if_done_and_not_annotator(
         self, api_client, user, identification_task
     ):
-        workspace = identification_task.country.workspace
+        workspace = identification_task.country.workspaces.first()
         workspace.members.add(user)
 
         assert not identification_task.annotators.filter(pk=user.pk).exists()
@@ -1810,7 +1852,7 @@ class TestPermissionsApi:
     def test_countries_role_supervisor(self, api_client, user, me_endpoint, country):
         WorkspaceMembership.objects.create(
             user=user,
-            workspace=country.workspace,
+            workspace=country.workspaces.first(),
             role=WorkspaceMembership.Role.SUPERVISOR,
         )
 
@@ -1831,7 +1873,7 @@ class TestPermissionsApi:
     def test_countries_role_annotator(self, api_client, user, me_endpoint, country):
         WorkspaceMembership.objects.create(
             user=user,
-            workspace=country.workspace,
+            workspace=country.workspaces.first(),
             role=WorkspaceMembership.Role.ANNOTATOR,
         )
 

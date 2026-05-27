@@ -3,6 +3,7 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
+import django.contrib.gis.db.models.fields
 
 from mosquito_alert.workspaces.models import WorkspaceMembership as WorkspaceMembershipModel
 
@@ -77,8 +78,14 @@ class Migration(migrations.Migration):
                 ('is_public', models.BooleanField(default=True, help_text='Whether the results of the workspace are visible to the public.')),
                 ('supervisor_exclusivity_days', models.IntegerField(default=14, help_text='Number of days that a identification tasks in the queue is exclusively available to the supervisors.')),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('country', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='workspace', to='geo.europecountry')),
+                ('country', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='workspaces', to='geo.europecountry')),
+                ('name', models.CharField(blank=True, max_length=255, null=True)),
+                ('geom', django.contrib.gis.db.models.fields.MultiPolygonField(blank=True, help_text='The geographical area covered by the workspace. If not specified, the workspace covers the entire country.', null=True, srid=4326)),
             ],
+        ),
+        migrations.AddConstraint(
+            model_name='workspace',
+            constraint=models.UniqueConstraint(condition=models.Q(('geom__isnull', True)), fields=('country',), name='unique_country_when_geom_is_null'),
         ),
         migrations.CreateModel(
             name='WorkspaceMembership',

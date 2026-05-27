@@ -948,18 +948,24 @@ class Report(TimeZoneModelMixin, models.Model):
 
             self.bite_count = sum(getattr(self, fname) for fname in bite_fieldnames)
 
-        country_workspace = None
-        try:
-            country_workspace = (
-                Workspace.objects.get(country=self.country) if self.country else None
+        country_workspace_is_private = False
+
+        if self.country is not None:
+            country_workspace_is_private = (
+                Workspace.objects.filter(
+                    is_public=False,
+                    country=self.country,
+                )
+                .filter(
+                    models.Q(geom__isnull=True) | models.Q(geom__contains=self.point)
+                )
+                .exists()
             )
-        except Workspace.DoesNotExist:
-            pass
 
         if (
             (self.type not in self.PUBLISHABLE_TYPES)
             or (not self.is_browsable)
-            or (country_workspace and not country_workspace.is_public)
+            or country_workspace_is_private
         ):
             self.published_at = None
 

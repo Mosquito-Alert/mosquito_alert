@@ -69,7 +69,7 @@ def identification_task(adult_report):
 @pytest.fixture
 def user_national_supervisor(user, country):
     WorkspaceMembership.objects.create(
-        workspace=country.workspace,
+        workspace=country.workspaces.first(),
         user=user,
         role=WorkspaceMembership.Role.SUPERVISOR,
     )
