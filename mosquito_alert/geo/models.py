@@ -9,6 +9,7 @@ from django.utils import timezone
 
 
 class Country(models.Model):
+    # See: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/
     name_engl = models.CharField(
         max_length=44, help_text="Full name of the country in English (e.g., Spain)."
     )
