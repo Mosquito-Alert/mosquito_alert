@@ -5,6 +5,7 @@ from django.db import migrations, models
 import django.db.models.deletion
 import django.contrib.gis.db.models.fields
 
+from mosquito_alert.geo.models import Continent
 from mosquito_alert.workspaces.models import WorkspaceMembership as WorkspaceMembershipModel
 
 def populate_workspace(apps, schema_editor):
@@ -59,7 +60,10 @@ def populate_workspace_collaboration(apps, schema_editor):
     collaboration_group = WorkspaceCollaborationGroup.objects.create(name="European Collaboration Group")
     if superexpert := User.objects.filter(pk=25).first():
         collaboration_group.reviewers.add(superexpert)
-    collaborating_workspaces = Workspace.objects.filter(country__is_bounding_box=False)
+    collaborating_workspaces = Workspace.objects.filter(
+        country__is_bounding_box=False,
+        country__subregion__continent=Continent.EUROPE
+    )
     collaboration_group.workspaces.set(collaborating_workspaces)
 
 class Migration(migrations.Migration):
@@ -68,7 +72,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('geo', '0004_populate_countries')
+        ('geo', '0005_add_subregion_model')
     ]
 
     operations = [

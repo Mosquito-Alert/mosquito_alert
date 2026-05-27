@@ -2,7 +2,8 @@
 
 from django.contrib.gis.gdal import DataSource
 from django.contrib.gis.geos import MultiPolygon
-from django.db import migrations
+from django.db import migrations, models
+import django.db.models.deletion
 
 from pathlib import Path
 
@@ -34,6 +35,8 @@ def populate_countries(apps, schema_editor):
             defaults={
                 'name_engl': feature.get('NAME_LONG'),
                 'geom': geom,
+                'subregion_name': feature.get('SUBREGION'),
+                'continent_name': feature.get('CONTINENT'),
             }
         )
 
@@ -45,6 +48,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name='country',
+            name='subregion_name',
+            field=models.CharField(max_length=50, null=True),
+        ),
+        migrations.AddField(
+            model_name='country',
+            name='continent_name',
+            field=models.CharField(max_length=30, null=True),
+        ),
         migrations.RunPython(
             populate_countries, reverse_code=migrations.RunPython.noop
         ),

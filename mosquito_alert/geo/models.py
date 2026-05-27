@@ -1,4 +1,5 @@
 from datetime import timedelta
+from difflib import SequenceMatcher
 from typing import Optional
 import uuid
 
@@ -8,8 +9,42 @@ from django.core.cache import cache
 from django.utils import timezone
 
 
+class Continent(models.TextChoices):
+    AFRICA = "africa", "Africa"
+    ANTARCTICA = "antarctica", "Antarctica"
+    ASIA = "asia", "Asia"
+    EUROPE = "europe", "Europe"
+    NORTH_AMERICA = "north_america", "North America"
+    OCEANIA = "oceania", "Oceania"
+    SOUTH_AMERICA = "south_america", "South America"
+    SEVEN_SEAS = "seven_seas", "Seven Seas (open ocean)"
+
+    @classmethod
+    def get_by_most_similar_name(cls, name: str) -> Optional["Continent"]:
+        if not name:
+            return None
+
+        return max(
+            cls,  # iterate enum members directly
+            key=lambda c: SequenceMatcher(None, name.lower(), c.label.lower()).ratio(),
+        )
+
+
+class Subregion(models.Model):
+    continent = models.CharField(max_length=30, choices=Continent.choices)
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+
 class Country(models.Model):
     # See: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/
+
+    subregion = models.ForeignKey(
+        Subregion, related_name="countries", on_delete=models.PROTECT, null=True
+    )
+
     name_engl = models.CharField(
         max_length=44, help_text="Full name of the country in English (e.g., Spain)."
     )

@@ -18,17 +18,17 @@ def populate_userstat_from_workspace_membership(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geo', '0005_remove_europecountry_is_bounding_box_and_more'),
+        ('geo', '0006_remove_europecountry_is_bounding_box_and_more'),
         ('users', '0003_tigauser'),
         ('workspaces', '0001_initial'),
     ]
 
     operations = [
+        migrations.RunPython(migrations.RunPython.noop, reverse_code=populate_userstat_from_workspace_membership),
         migrations.RemoveField(
             model_name='userstat',
             name='national_supervisor_of',
         ),
-        migrations.RunPython(migrations.RunPython.noop, reverse_code=populate_userstat_from_workspace_membership),
         migrations.RenameField(
             model_name='userstat',
             old_name='native_of',
