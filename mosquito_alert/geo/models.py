@@ -9,8 +9,6 @@ from django.utils import timezone
 
 
 class EuropeCountry(models.Model):
-    # TODO: keep only cntr_id or fid, not both.
-    cntr_id = models.CharField(max_length=2, blank=True)
     name_engl = models.CharField(
         max_length=44, help_text="Full name of the country in English (e.g., Spain)."
     )

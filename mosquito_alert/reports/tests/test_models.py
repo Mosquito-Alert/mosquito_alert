@@ -645,7 +645,6 @@ class ReportModelTest(TestCase):
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_bite_is_not_published_if_country_does_not_allow_public_on_create(self):
         disabled_publish_country = EuropeCountry.objects.create(
-            cntr_id="RD",
             name_engl="Random",
             iso3_code="RND",
             fid="RD",
@@ -713,7 +712,6 @@ class ReportModelTest(TestCase):
         self,
     ):
         disabled_publish_country = EuropeCountry.objects.create(
-            cntr_id="RD",
             name_engl="Random",
             iso3_code="RND",
             fid="RD",
@@ -757,7 +755,6 @@ class ReportModelTest(TestCase):
         self,
     ):
         disabled_publish_country = EuropeCountry.objects.create(
-            cntr_id="RD",
             name_engl="Random",
             iso3_code="RND",
             fid="RD",
