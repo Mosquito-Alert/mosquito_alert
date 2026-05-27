@@ -23,9 +23,7 @@ class Country(models.Model):
     class Meta:
         ordering = ["name_engl"]
         db_table = "europe_countries"
-
-    def __unicode__(self):
-        return self.name_engl
+        verbose_name_plural = "countries"
 
     def __str__(self):
         return self.name_engl

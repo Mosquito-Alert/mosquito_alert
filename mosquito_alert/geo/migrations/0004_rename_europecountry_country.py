@@ -18,4 +18,8 @@ class Migration(migrations.Migration):
             old_name='EuropeCountry',
             new_name='Country',
         ),
+        migrations.AlterModelOptions(
+            name='country',
+            options={'ordering': ['name_engl'], 'verbose_name_plural': 'countries'},
+        ),
     ]
