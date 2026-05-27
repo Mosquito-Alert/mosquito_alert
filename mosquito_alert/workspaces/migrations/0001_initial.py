@@ -13,7 +13,13 @@ def populate_workspace(apps, schema_editor):
     EuropeCountry = apps.get_model("geo", "EuropeCountry")
     UserStat = apps.get_model("users", "UserStat")
 
-    for country in EuropeCountry.objects.all().iterator():
+    qs = EuropeCountry.objects.all()
+    if qs.exists():
+        Workspace.objects.create(
+            country=None,
+        )
+
+    for country in qs.iterator():
         w = Workspace.objects.create(
             country=country,
             is_public=country.reports_can_be_published,
