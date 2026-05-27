@@ -367,6 +367,9 @@ class EuropeCountrySimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = EuropeCountry
         fields = ("gid", "name_engl")
+        extra_kwargs = {
+            "gid": {"source": "id", "read_only": True},
+        }
 
 
 class OWCampaignsSerializer(serializers.ModelSerializer):

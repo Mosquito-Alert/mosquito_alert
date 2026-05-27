@@ -380,7 +380,7 @@ def global_assignments(request):
                 ).values("user__username")[:1]
             ),
         ).values(
-            "gid",
+            "pk",
             "iso3_code",
             "name_engl",
             "supervisor_pk",
@@ -391,7 +391,7 @@ def global_assignments(request):
     # Append case when country is None
     country_info.append(
         {
-            "gid": "N/A",
+            "pk": "N/A",
             "iso3_code": "Other",
             "name_engl": "Other",
             "supervisor_pk": None,
@@ -401,12 +401,12 @@ def global_assignments(request):
 
     data = []
     for country in country_info:
-        stats = stats_country_data.get(country["gid"])
+        stats = stats_country_data.get(country["pk"])
         data.append(
             {
                 "ns_id": country["supervisor_pk"],
                 "ns_username": country["supervisor_username"],
-                "ns_country_id": country["gid"],
+                "ns_country_id": country["pk"],
                 "ns_country_code": country["iso3_code"],
                 "ns_country_name": country["name_engl"],
                 "unassigned": stats.get("unassigned", 0) if stats else 0,

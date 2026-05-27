@@ -74,7 +74,7 @@ class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = EuropeCountry
         fields = ("id", "name_en", "iso3_code")
-        extra_kwargs = {"id": {"source": "gid"}, "name_en": {"source": "name_engl"}}
+        extra_kwargs = {"name_en": {"source": "name_engl"}}
 
 
 class FixLocationSerializer(serializers.ModelSerializer):
