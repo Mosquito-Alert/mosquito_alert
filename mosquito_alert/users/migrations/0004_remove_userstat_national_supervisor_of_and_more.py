@@ -18,7 +18,7 @@ def populate_userstat_from_workspace_membership(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geo', '0002_remove_europecountry_is_bounding_box_and_more'),
+        ('geo', '0005_remove_europecountry_is_bounding_box_and_more'),
         ('users', '0003_tigauser'),
         ('workspaces', '0001_initial'),
     ]
@@ -37,6 +37,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='userstat',
             name='country',
-            field=models.ForeignKey(blank=True, help_text='Country in which the user operates.', null=True, on_delete=django.db.models.deletion.SET_NULL, to='geo.europecountry'),
+            field=models.ForeignKey(blank=True, help_text='Country in which the user operates.', null=True, on_delete=django.db.models.deletion.SET_NULL, to='geo.country'),
         ),
     ]

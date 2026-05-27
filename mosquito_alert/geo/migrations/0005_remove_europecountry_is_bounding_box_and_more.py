@@ -21,22 +21,22 @@ def populate_reports_can_be_published_from_workspace(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geo', '0001_initial'),
+        ('geo', '0004_populate_countries'),
         ('workspaces', '0001_initial'),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='europecountry',
+            model_name='country',
             name='is_bounding_box',
         ),
         migrations.RemoveField(
-            model_name='europecountry',
+            model_name='country',
             name='national_supervisor_report_expires_in',
         ),
         migrations.RunPython(migrations.RunPython.noop, reverse_code=populate_national_supervisor_report_expires_in_from_workspace),
         migrations.RemoveField(
-            model_name='europecountry',
+            model_name='country',
             name='reports_can_be_published',
         ),
         migrations.RunPython(migrations.RunPython.noop, reverse_code=populate_reports_can_be_published_from_workspace),

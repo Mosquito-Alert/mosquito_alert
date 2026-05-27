@@ -10,10 +10,10 @@ from mosquito_alert.workspaces.models import WorkspaceMembership as WorkspaceMem
 def populate_workspace(apps, schema_editor):
     Workspace = apps.get_model("workspaces", "Workspace")
     WorkspaceMembership = apps.get_model("workspaces", "WorkspaceMembership")
-    EuropeCountry = apps.get_model("geo", "EuropeCountry")
+    Country = apps.get_model("geo", "Country")
     UserStat = apps.get_model("users", "UserStat")
 
-    for country in EuropeCountry.objects.all().iterator():
+    for country in Country.objects.all().iterator():
         w = Workspace.objects.create(
             country=country,
             is_public=country.reports_can_be_published,
@@ -68,6 +68,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('geo', '0004_populate_countries')
     ]
 
     operations = [
@@ -78,7 +79,7 @@ class Migration(migrations.Migration):
                 ('is_public', models.BooleanField(default=True, help_text='Whether the results of the workspace are visible to the public.')),
                 ('supervisor_exclusivity_days', models.IntegerField(default=14, help_text='Number of days that a identification tasks in the queue is exclusively available to the supervisors.')),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('country', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='workspaces', to='geo.europecountry')),
+                ('country', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='workspaces', to='geo.country')),
                 ('name', models.CharField(blank=True, max_length=255, null=True)),
                 ('geom', django.contrib.gis.db.models.fields.MultiPolygonField(blank=True, help_text='The geographical area covered by the workspace. If not specified, the workspace covers the entire country.', null=True, srid=4326)),
             ],

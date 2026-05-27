@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geo', '0002_remove_europecountry_is_bounding_box_and_more'),
+        ('geo', '0001_initial'),
     ]
 
     operations = [

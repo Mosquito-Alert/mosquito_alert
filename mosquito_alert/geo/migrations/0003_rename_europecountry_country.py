@@ -6,11 +6,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('workspaces', '0001_initial'),
-        ('users', '0004_remove_userstat_national_supervisor_of_and_more'),
         ('campaigns', '0001_initial'),
         ('reports', '0001_initial'),
-        ('geo', '0003_remove_unecessary_fields'),
+        ('geo', '0002_remove_unecessary_fields'),
     ]
 
     operations = [

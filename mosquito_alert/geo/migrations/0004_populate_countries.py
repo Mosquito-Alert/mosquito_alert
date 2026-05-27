@@ -41,7 +41,7 @@ def populate_countries(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geo', '0004_rename_europecountry_country'),
+        ('geo', '0003_rename_europecountry_country'),
     ]
 
     operations = [
