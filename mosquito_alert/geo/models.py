@@ -16,8 +16,7 @@ class EuropeCountry(models.Model):
         max_length=3,
         help_text="ISO 3166-1 alpha-3 country code (3-letter code, e.g., ESP).",
     )
-    # TODO: do not allow geom to be null.
-    geom = models.MultiPolygonField(blank=True, null=True)
+    geom = models.MultiPolygonField()
 
     # TODO: these are not used. remove
     x_min = models.FloatField(blank=True, null=True)
