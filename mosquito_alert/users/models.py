@@ -21,7 +21,7 @@ from langcodes import (
 from numpyencoder import NumpyEncoder
 import pydenticon
 
-from mosquito_alert.geo.models import EuropeCountry, NutsEurope
+from mosquito_alert.geo.models import Country, NutsEurope
 from mosquito_alert.workspaces.models import (
     WorkspaceMembership,
     WorkspaceCollaborationGroup,
@@ -54,7 +54,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
         help_text="Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified",
     )
     country = models.ForeignKey(
-        EuropeCountry,
+        Country,
         blank=True,
         null=True,
         help_text="Country in which the user operates.",
@@ -90,8 +90,8 @@ class UserStat(UserRolePermissionMixin, models.Model):
         return self.pending_annotations.count()
 
     # NOTE: override UserRolePermissionMixin
-    def get_countries_with_roles(self) -> List[EuropeCountry]:
-        qs = EuropeCountry.objects.all()
+    def get_countries_with_roles(self) -> List[Country]:
+        qs = Country.objects.all()
 
         if self.get_role(country=None) in [Role.ADMIN, Role.REVIEWER, Role.ANNOTATOR]:
             return list(qs)
@@ -107,7 +107,7 @@ class UserStat(UserRolePermissionMixin, models.Model):
         )
 
     # NOTE: override UserRolePermissionMixin
-    def get_role(self, country: Optional[EuropeCountry] = None) -> Role:
+    def get_role(self, country: Optional[Country] = None) -> Role:
         from mosquito_alert.identification_tasks.models import (
             IdentificationTask,
             ExpertReportAnnotation,
@@ -358,10 +358,10 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
             f.close()
         return settings.MEDIA_URL + "identicons/" + str(self.user_UUID) + ".png"
 
-    def get_role(self, country: Optional[EuropeCountry] = None) -> Role:
+    def get_role(self, country: Optional[Country] = None) -> Role:
         return Role.BASE
 
-    def get_countries_with_roles(self) -> List[EuropeCountry]:
+    def get_countries_with_roles(self) -> List[Country]:
         return []
 
     def update_score(self, commit: bool = True) -> None:

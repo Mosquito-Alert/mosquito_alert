@@ -20,7 +20,7 @@ from mosquito_alert.identification_tasks.models import (
 from mosquito_alert.notifications.models import Notification, NotificationRecipient
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.geo.models import EuropeCountry, TemporaryBoundary
+from mosquito_alert.geo.models import Country, TemporaryBoundary
 from mosquito_alert.users.models import TigaUser
 
 
@@ -29,7 +29,7 @@ User = get_user_model()
 
 class CampaignFilter(filters.FilterSet):
     country_id = filters.ModelChoiceFilter(
-        field_name="country_id", queryset=EuropeCountry.objects.all()
+        field_name="country_id", queryset=Country.objects.all()
     )
     is_active = filters.BooleanFilter(method="filter_is_active")
 
@@ -317,7 +317,7 @@ class IdentificationTaskFilter(filters.FilterSet):
 
     observation_country_ids = filters.ModelMultipleChoiceFilter(
         field_name="report__country",
-        queryset=EuropeCountry.objects.all(),
+        queryset=Country.objects.all(),
     )
 
     result_taxon_ids = filters.ModelMultipleChoiceFilter(

@@ -18,8 +18,8 @@ from django.utils.translation import gettext as _
 
 from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
 from mosquito_alert.geo.tests.factories import (
-    EuropeCountryFactory,
-    EuropeCountryWithoutSignalFactoryFactory,
+    CountryFactory,
+    CountryWithoutSignalFactoryFactory,
     NutsEuropeFactory,
     scale_geom,
 )
@@ -353,7 +353,7 @@ class TestIdentificationTaskModel:
 
         assert not area1.intersects(area2)
 
-        country = EuropeCountryFactory(geom=MultiPolygon(area1, area2))
+        country = CountryFactory(geom=MultiPolygon(area1, area2))
         country_workspace = country.workspaces.first()
 
         identification_task_area1 = IdentificationTaskFactory(
@@ -400,7 +400,7 @@ class TestIdentificationTaskModel:
 
         assert not area1.intersects(area2)
 
-        country = EuropeCountryFactory(geom=MultiPolygon(area1, area2))
+        country = CountryFactory(geom=MultiPolygon(area1, area2))
 
         country_workspace = Workspace.objects.get(country=country)
         country_workspace.supervisor_exclusivity_days = 1
@@ -812,9 +812,7 @@ class TestIdentificationTaskManager:
         area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
         area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
 
-        country = EuropeCountryWithoutSignalFactoryFactory(
-            geom=MultiPolygon(area1, area2)
-        )
+        country = CountryWithoutSignalFactoryFactory(geom=MultiPolygon(area1, area2))
         workspace = WorkspaceFactory(
             country=country,
             geom=MultiPolygon(area1) if workspace_is_subregion else None,
@@ -847,7 +845,7 @@ class TestIdentificationTaskManager:
         area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
         area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
 
-        country = EuropeCountryFactory(geom=MultiPolygon(area1, area2))
+        country = CountryFactory(geom=MultiPolygon(area1, area2))
         workspace = Workspace.objects.get(country=country)
         # Adding supervisor
         WorkspaceMembership.objects.create(
@@ -893,9 +891,7 @@ class TestIdentificationTaskManager:
         area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
         area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
 
-        country = EuropeCountryWithoutSignalFactoryFactory(
-            geom=MultiPolygon(area1, area2)
-        )
+        country = CountryWithoutSignalFactoryFactory(geom=MultiPolygon(area1, area2))
         workspace = WorkspaceFactory(
             country=country,
             geom=MultiPolygon(area1) if workspace_is_subregion else None,
@@ -1132,9 +1128,7 @@ class TestIdentificationTaskManager:
         area1 = FuzzyGriddedPolygon(srid=4326).fuzz()
         area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
 
-        country = EuropeCountryWithoutSignalFactoryFactory(
-            geom=MultiPolygon(area1, area2)
-        )
+        country = CountryWithoutSignalFactoryFactory(geom=MultiPolygon(area1, area2))
         workspace = WorkspaceFactory(
             country=country,
             geom=MultiPolygon(area1) if workspace_is_subregion else None,
@@ -1396,7 +1390,7 @@ class TestIdentificationTaskManager:
         )
 
         # Create a country without a workspace
-        country_without_workspace = EuropeCountryFactory()
+        country_without_workspace = CountryFactory()
 
         IdentificationTaskFactory(
             report__point=country_without_workspace.geom.point_on_surface,
@@ -1448,9 +1442,7 @@ class TestIdentificationTaskManager:
         area2 = FuzzyGriddedPolygon(srid=4326).fuzz()
 
         # Setup: user workspace (priority 2)
-        country = EuropeCountryWithoutSignalFactoryFactory(
-            geom=MultiPolygon(area1, area2)
-        )
+        country = CountryWithoutSignalFactoryFactory(geom=MultiPolygon(area1, area2))
         user_workspace = WorkspaceFactory(
             country=country,
             geom=MultiPolygon(area1) if workspace_is_subregion else None,
@@ -1475,7 +1467,7 @@ class TestIdentificationTaskManager:
         )
 
         # Setup: country without workspace: filtered out
-        country_no_workspace = EuropeCountryFactory()
+        country_no_workspace = CountryFactory()
 
         # Setup: unknown country (prioritized)
         # Create tasks in all categories
@@ -1726,7 +1718,7 @@ class TestIdentificationTaskManager:
 
         assert not area1.intersects(area2)
 
-        country = EuropeCountryFactory(geom=MultiPolygon(area1, area2))
+        country = CountryFactory(geom=MultiPolygon(area1, area2))
         country_workspace = Workspace.objects.get(country=country)
 
         WorkspaceMembership.objects.create(

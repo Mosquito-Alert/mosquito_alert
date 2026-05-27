@@ -19,7 +19,7 @@ from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
 from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
 
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 from mosquito_alert.identification_tasks.models import IdentificationTask
 from mosquito_alert.notifications.models import (
     Notification,
@@ -139,13 +139,13 @@ def api_live_url(django_live_url):
 
 @pytest.fixture()
 def country():
-    obj, _ = EuropeCountry.objects.get_or_create(name_engl="Random", iso3_code="RND")
+    obj, _ = Country.objects.get_or_create(name_engl="Random", iso3_code="RND")
     return obj
 
 
 @pytest.fixture
 def es_country():
-    obj, _ = EuropeCountry.objects.get_or_create(
+    obj, _ = Country.objects.get_or_create(
         name_engl="Spain",
         iso3_code="ESP",
         geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
@@ -155,7 +155,7 @@ def es_country():
 
 @pytest.fixture
 def it_country():
-    obj, _ = EuropeCountry.objects.get_or_create(name_engl="Italy", iso3_code="ITA")
+    obj, _ = Country.objects.get_or_create(name_engl="Italy", iso3_code="ITA")
     return obj
 
 

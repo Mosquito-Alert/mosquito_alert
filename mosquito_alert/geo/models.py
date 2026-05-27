@@ -8,7 +8,7 @@ from django.core.cache import cache
 from django.utils import timezone
 
 
-class EuropeCountry(models.Model):
+class Country(models.Model):
     name_engl = models.CharField(
         max_length=44, help_text="Full name of the country in English (e.g., Spain)."
     )
@@ -45,7 +45,7 @@ class NutsEurope(models.Model):
     fid = models.CharField(max_length=5, unique=True)
     geom = models.MultiPolygonField(blank=True, null=True)
     europecountry = models.ForeignKey(
-        EuropeCountry,
+        Country,
         blank=True,
         null=True,
         related_name="nuts",

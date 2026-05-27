@@ -4,7 +4,7 @@ import uuid
 # Create your tests here.
 from django.test import override_settings
 from mosquito_alert.devices.models import Device, MobileApp
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 from django.utils import timezone
 from mosquito_alert.fixes.models import Fix
 from mosquito_alert.identification_tasks.models import (
@@ -956,7 +956,7 @@ class NotificationTestCase(APITestCase):
         self.regular_user = t
         non_naive_time = timezone.now()
         a = 1
-        for country in EuropeCountry.objects.all():
+        for country in Country.objects.all():
             point_on_surface = country.geom.point_on_surface
             r = Report(
                 version_UUID=str(a),

@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from django.db import models
 
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 
 
 class Role(models.TextChoices):
@@ -54,10 +54,10 @@ class Permissions:
 
 class UserRolePermissionMixin:
     @abstractmethod
-    def get_countries_with_roles(self) -> List[EuropeCountry]:
+    def get_countries_with_roles(self) -> List[Country]:
         raise NotImplementedError
 
-    def get_countries_with_permissions(self, action, model) -> List[EuropeCountry]:
+    def get_countries_with_permissions(self, action, model) -> List[Country]:
         countries = []
         for country in self.get_countries_with_roles():
             if self.has_role_permission_by_model(
@@ -67,7 +67,7 @@ class UserRolePermissionMixin:
         return countries
 
     @abstractmethod
-    def get_role(self, country: Optional[EuropeCountry] = None) -> Role:
+    def get_role(self, country: Optional[Country] = None) -> Role:
         raise NotImplementedError
 
     def get_role_permissions(self, role: Role) -> Permissions:
@@ -114,7 +114,7 @@ class UserRolePermissionMixin:
         )
 
     def _get_role_permission_by_model(
-        self, model, country: Optional[EuropeCountry] = None
+        self, model, country: Optional[Country] = None
     ) -> BasePermission:
         from mosquito_alert.identification_tasks.models import (
             ExpertReportAnnotation,
@@ -138,7 +138,7 @@ class UserRolePermissionMixin:
         return BasePermission(add=False, view=False, change=False, delete=False)
 
     def has_role_permission_by_model(
-        self, action, model, country: Optional[EuropeCountry] = None
+        self, action, model, country: Optional[Country] = None
     ) -> bool:
         countries = set([None, country])
         for country in countries:

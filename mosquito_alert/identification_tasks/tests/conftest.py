@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.utils import timezone
 
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 from mosquito_alert.identification_tasks.models import IdentificationTask
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser
@@ -25,7 +25,7 @@ def tiga_user(db):
 
 @pytest.fixture
 def country(db):
-    return EuropeCountry.objects.create(
+    return Country.objects.create(
         name_engl="test",
         iso3_code="123",
         geom=MultiPolygon(Polygon.from_bbox((0, 0, 1, 1))),

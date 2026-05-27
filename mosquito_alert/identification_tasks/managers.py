@@ -8,7 +8,7 @@ from django.db.models.functions import Coalesce
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 from mosquito_alert.users.models import TigaUser, UserStat
 from mosquito_alert.workspaces.models import (
     Workspace,
@@ -366,7 +366,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
             if view_countries:
                 country_lookup |= models.Q(report__country__in=view_countries)
 
-            country_workspace_member = EuropeCountry.objects.filter(
+            country_workspace_member = Country.objects.filter(
                 workspaces__members=user, workspaces__geom__isnull=True
             )
             if country_workspace_member:

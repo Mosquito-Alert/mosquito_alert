@@ -28,7 +28,7 @@ from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
     PhotoPrediction,
 )
-from mosquito_alert.geo.tests.factories import EuropeCountryFactory
+from mosquito_alert.geo.tests.factories import CountryFactory
 from mosquito_alert.geo.tests.fuzzy import FuzzyGriddedPolygon
 from mosquito_alert.notifications.models import (
     Notification,
@@ -345,7 +345,7 @@ class BaseReportTest:
 
         assert not area1.intersects(area2)
 
-        country = EuropeCountryFactory(geom=MultiPolygon(area1, area2))
+        country = CountryFactory(geom=MultiPolygon(area1, area2))
 
         # Create subregion workspace for the country
         subregion_workspace = WorkspaceFactory(

@@ -53,7 +53,7 @@ from rest_framework_simplejwt.tokens import Token
 from mosquito_alert.campaigns.models import OWCampaigns
 from mosquito_alert.devices.models import Device
 from mosquito_alert.fixes.models import Fix
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
     ExpertReportAnnotation,
@@ -171,7 +171,7 @@ class CampaignsViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
 
 
 class CountriesViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
-    queryset = EuropeCountry.objects.all()
+    queryset = Country.objects.all()
     serializer_class = CountrySerializer
     permission_classes = (CountriesPermissions,)
 
