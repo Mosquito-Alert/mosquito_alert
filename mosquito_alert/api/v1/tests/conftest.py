@@ -139,9 +139,7 @@ def api_live_url(django_live_url):
 
 @pytest.fixture()
 def country():
-    obj, _ = EuropeCountry.objects.get_or_create(
-        name_engl="Random", iso3_code="RND", fid="RD"
-    )
+    obj, _ = EuropeCountry.objects.get_or_create(name_engl="Random", iso3_code="RND")
     return obj
 
 
@@ -150,7 +148,6 @@ def es_country():
     obj, _ = EuropeCountry.objects.get_or_create(
         name_engl="Spain",
         iso3_code="ESP",
-        fid="ES",
         geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
     )
     return obj
@@ -158,9 +155,7 @@ def es_country():
 
 @pytest.fixture
 def it_country():
-    obj, _ = EuropeCountry.objects.get_or_create(
-        name_engl="Italy", iso3_code="ITA", fid="IT"
-    )
+    obj, _ = EuropeCountry.objects.get_or_create(name_engl="Italy", iso3_code="ITA")
     return obj
 
 

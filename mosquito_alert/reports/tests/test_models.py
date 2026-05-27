@@ -647,7 +647,6 @@ class ReportModelTest(TestCase):
         disabled_publish_country = EuropeCountry.objects.create(
             name_engl="Random",
             iso3_code="RND",
-            fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
         workspace = disabled_publish_country.workspaces.first()
@@ -714,7 +713,6 @@ class ReportModelTest(TestCase):
         disabled_publish_country = EuropeCountry.objects.create(
             name_engl="Random",
             iso3_code="RND",
-            fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
         workspace = disabled_publish_country.workspaces.first()
@@ -757,7 +755,6 @@ class ReportModelTest(TestCase):
         disabled_publish_country = EuropeCountry.objects.create(
             name_engl="Random",
             iso3_code="RND",
-            fid="RD",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
         workspace = disabled_publish_country.workspaces.first()

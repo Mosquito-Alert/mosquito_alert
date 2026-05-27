@@ -16,7 +16,6 @@ class EuropeCountry(models.Model):
         max_length=3,
         help_text="ISO 3166-1 alpha-3 country code (3-letter code, e.g., ESP).",
     )
-    fid = models.CharField(max_length=2, blank=True)
     # TODO: do not allow geom to be null.
     geom = models.MultiPolygonField(blank=True, null=True)
 

@@ -24,4 +24,8 @@ class Migration(migrations.Migration):
             model_name='europecountry',
             name='cntr_id',
         ),
+        migrations.RemoveField(
+            model_name='europecountry',
+            name='fid',
+        ),
     ]

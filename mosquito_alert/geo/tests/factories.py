@@ -39,7 +39,6 @@ def scale_geom(geom: GEOSGeometry, factor=0.1):
 
 
 class EuropeCountryFactory(DjangoModelFactory):
-    fid = factory.Sequence(lambda n: "%s" % n)
     name_engl = factory.LazyAttribute(
         lambda _: fake.country()[
             : EuropeCountry._meta.get_field("name_engl").max_length

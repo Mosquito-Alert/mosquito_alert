@@ -28,7 +28,6 @@ def country(db):
     return EuropeCountry.objects.create(
         name_engl="test",
         iso3_code="123",
-        fid="12",
         geom=MultiPolygon(Polygon.from_bbox((0, 0, 1, 1))),
     )
 
