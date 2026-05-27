@@ -39,4 +39,20 @@ class Migration(migrations.Migration):
             name='iso3_code',
             field=models.CharField(help_text='ISO 3166-1 alpha-3 country code (3-letter code, e.g., ESP).', max_length=3, unique=True),
         ),
+        migrations.RemoveField(
+            model_name='europecountry',
+            name='x_max',
+        ),
+        migrations.RemoveField(
+            model_name='europecountry',
+            name='x_min',
+        ),
+        migrations.RemoveField(
+            model_name='europecountry',
+            name='y_max',
+        ),
+        migrations.RemoveField(
+            model_name='europecountry',
+            name='y_min',
+        ),
     ]

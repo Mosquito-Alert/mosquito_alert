@@ -19,12 +19,6 @@ class EuropeCountry(models.Model):
     )
     geom = models.MultiPolygonField()
 
-    # TODO: these are not used. remove
-    x_min = models.FloatField(blank=True, null=True)
-    x_max = models.FloatField(blank=True, null=True)
-    y_min = models.FloatField(blank=True, null=True)
-    y_max = models.FloatField(blank=True, null=True)
-
     class Meta:
         ordering = ["name_engl"]
         db_table = "europe_countries"
