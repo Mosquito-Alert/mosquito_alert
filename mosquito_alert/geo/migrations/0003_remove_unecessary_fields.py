@@ -34,4 +34,9 @@ class Migration(migrations.Migration):
             name='geom',
             field=django.contrib.gis.db.models.fields.MultiPolygonField(srid=4326),
         ),
+        migrations.AlterField(
+            model_name='europecountry',
+            name='iso3_code',
+            field=models.CharField(help_text='ISO 3166-1 alpha-3 country code (3-letter code, e.g., ESP).', max_length=3, unique=True),
+        ),
     ]

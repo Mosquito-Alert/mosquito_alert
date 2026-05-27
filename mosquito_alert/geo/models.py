@@ -14,6 +14,7 @@ class EuropeCountry(models.Model):
     )
     iso3_code = models.CharField(
         max_length=3,
+        unique=True,
         help_text="ISO 3166-1 alpha-3 country code (3-letter code, e.g., ESP).",
     )
     geom = models.MultiPolygonField()
