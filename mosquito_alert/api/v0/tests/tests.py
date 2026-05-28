@@ -20,10 +20,14 @@ from mosquito_alert.notifications.models import (
     NotificationTopic,
     UserSubscription,
 )
-from mosquito_alert.reports.models import Report, ReportResponse, Photo
+from mosquito_alert.reports.models import Report, ReportResponse
+from mosquito_alert.reports.tests.factories import (
+    ObservationReportFactory,
+    BreedingSiteReportFactory,
+)
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import TigaUser
-from mosquito_alert.users.tests.factories import TigaUserFactory
+from mosquito_alert.users.tests.factories import TigaUserFactory, UserFactory
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APITransactionTestCase
@@ -1259,37 +1263,25 @@ class NotificationTestCase(APITestCase):
 
 class AnnotateCoarseTestCase(APITestCase):
     fixtures = [
-        "europe_countries.json",
-        "reports.json",
-        "photos.json",
-        "users.json",
-        "tigausers.json",
-        "movelab_like.json",
         "taxon.json",
     ]
 
-    @classmethod
-    def setUpTestData(cls):
-        cls.random_user = User.objects.create(
-            username="random_user", password="random_password"
-        )
-
     def test_annotate_taken(self):
-        u = User.objects.get(pk=25)
+        u = UserFactory()
         self.client.force_authenticate(user=u)
-        r = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
-        _ = Photo.objects.create(report=r)  # Needed to create an identification task
+
+        identification_task = IdentificationTaskFactory()
+
         annos = ExpertReportAnnotation.objects.filter(
-            identification_task=r.identification_task
+            identification_task=identification_task
         )
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Give report to one expert
-        _ = ExpertReportAnnotation.objects.create(
-            user=self.random_user, identification_task=r.identification_task
-        )
+        ExpertReportAnnotationFactory(identification_task=identification_task)
+
         # try to annotate
         data = {
-            "report_id": "00042354-ffd6-431e-af1e-cecf55e55364",
+            "report_id": identification_task.report.pk,
             "taxon_id": str(112),  # aedes albopictus
         }
         response = self.client.post("/api/annotate_coarse/", data=data)
@@ -1306,21 +1298,20 @@ class AnnotateCoarseTestCase(APITestCase):
         )
 
     def test_flip_taken(self):
-        u = User.objects.get(pk=25)
+        u = UserFactory()
         self.client.force_authenticate(user=u)
-        r_adult = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
-        _ = Photo.objects.create(
-            report=r_adult
-        )  # Needed to create an identification task
+
+        identification_task = IdentificationTaskFactory()
+
         annos = ExpertReportAnnotation.objects.filter(
-            identification_task=r_adult.identification_task
+            identification_task=identification_task
         )
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Give report to one expert
-        r_adult.identification_task.assign_to_user(self.random_user)
+        identification_task.assign_to_user(user=UserFactory())
         # try to annotate
         data = {
-            "report_id": r_adult.version_UUID,
+            "report_id": identification_task.report.pk,
             "flip_to_type": "site",
             "flip_to_subtype": "storm_drain_water",
         }
@@ -1338,19 +1329,19 @@ class AnnotateCoarseTestCase(APITestCase):
         )
 
     def test_annotate_coarse(self):
-        u = User.objects.get(pk=25)
+        u = UserFactory()
         self.client.force_authenticate(user=u)
-        r = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
-        _ = Photo.objects.create(report=r)  # Needed to create an identification task
-        r.refresh_from_db()
+
+        identification_task = IdentificationTaskFactory(report__user__locale="es")
+
         annos = ExpertReportAnnotation.objects.filter(
-            identification_task=r.identification_task
+            identification_task=identification_task
         )
         self.assertTrue(annos.count() == 0, "Report should not have any annotations")
         # Let's change that
         for t_id in [1, 10, 112]:
             data = {
-                "report_id": "00042354-ffd6-431e-af1e-cecf55e55364",
+                "report_id": identification_task.report.pk,
                 "taxon_id": str(t_id),
                 "confidence": ExpertReportAnnotation.ConfidenceCategory.PROBABLY,
             }
@@ -1360,12 +1351,11 @@ class AnnotateCoarseTestCase(APITestCase):
                 200,
                 "Response should be 200, is {0}".format(response.status_code),
             )
-            r.refresh_from_db()
-            self.assertEqual(r.identification_task.taxon_id, t_id)
-            self.assertEqual(
-                r.identification_task.confidence, float(data["confidence"])
-            )
-            notif = Notification.objects.get(report=r)
+
+            identification_task.refresh_from_db()
+            self.assertEqual(identification_task.taxon_id, t_id)
+            self.assertEqual(identification_task.confidence, float(data["confidence"]))
+            notif = Notification.objects.get(report=identification_task.report)
             notif_content = notif.notification_content
             if t_id == 1:  # other species
                 self.assertTrue(
@@ -1385,14 +1375,14 @@ class AnnotateCoarseTestCase(APITestCase):
                     "Report classified as albopictus associated notification should contain probably albopictus message, it does not",
                 )
                 #'Has conseguido que se pueda identificar perfectamente el mosquito tigre'
-            Notification.objects.filter(report=r).delete()
+            Notification.objects.filter(report=identification_task.report).delete()
             for annotation in ExpertReportAnnotation.objects.filter(
-                identification_task=r.identification_task
+                identification_task=identification_task
             ):
                 annotation.delete()
         # test also definitely albopictus
         data = {
-            "report_id": "00042354-ffd6-431e-af1e-cecf55e55364",
+            "report_id": identification_task.report.pk,
             "taxon_id": "112",
         }
         data["confidence"] = (
@@ -1404,30 +1394,27 @@ class AnnotateCoarseTestCase(APITestCase):
             200,
             "Response should be 200, is {0}".format(response.status_code),
         )
-        r.refresh_from_db()
-        self.assertEqual(r.identification_task.taxon_id, 112)
-        self.assertEqual(r.identification_task.confidence, float(data["confidence"]))
-        notif = Notification.objects.get(report=r)
+        identification_task.refresh_from_db()
+        self.assertEqual(identification_task.taxon_id, 112)
+        self.assertEqual(identification_task.confidence, float(data["confidence"]))
+        notif = Notification.objects.get(report=identification_task.report)
         notif_content = notif.notification_content
         self.assertTrue(
             albopictus_msg_dict["es"] in notif_content.body_html_es,
             "Report classified as albopictus associated notification should contain definitely albopictus message, it does not",
         )
-        Notification.objects.filter(report=r).delete()
+        Notification.objects.filter(report=identification_task.report).delete()
         ExpertReportAnnotation.objects.filter(
-            identification_task=r.identification_task
+            identification_task=identification_task
         ).delete()
 
     def test_flip_adult_to_adult(self):
-        u = User.objects.get(pk=25)
+        u = UserFactory()
         self.client.force_authenticate(user=u)
-        r_adult = Report.objects.get(pk="004D5A85-1D88-4170-A253-DABF30669EBE")
-        self.assertEqual(
-            r_adult.type,
-            "adult",
-            "Report type should be adult, is {0}".format(r_adult.type),
-        )
-        data = {"report_id": r_adult.version_UUID, "flip_to_type": "adult"}
+
+        r_adult = ObservationReportFactory()
+
+        data = {"report_id": r_adult.pk, "flip_to_type": "adult"}
         response = self.client.patch("/api/flip_report/", data=data)
         self.assertEqual(
             response.status_code,
@@ -1441,16 +1428,12 @@ class AnnotateCoarseTestCase(APITestCase):
         )
 
     def test_flip_site_to_site(self):
-        u = User.objects.get(pk=25)
+        u = UserFactory()
         self.client.force_authenticate(user=u)
-        r_site = Report.objects.get(pk="007106f1-6003-4cf5-b049-8f6533a90813")
-        self.assertEqual(
-            r_site.type,
-            "site",
-            "Report type should be site, is {0}".format(r_site.type),
-        )
+        r_site = BreedingSiteReportFactory()
+
         data = {
-            "report_id": r_site.version_UUID,
+            "report_id": r_site.pk,
             "flip_to_type": "site",
             "flip_to_subtype": "storm_drain_water",
         }
@@ -1460,51 +1443,34 @@ class AnnotateCoarseTestCase(APITestCase):
             200,
             "Response should be 200, is {0}".format(response.status_code),
         )
-        r_site_reloaded = Report.objects.get(pk="007106f1-6003-4cf5-b049-8f6533a90813")
-        n_responses = ReportResponse.objects.filter(report=r_site_reloaded).count()
+
+        r_site.refresh_from_db()
+
+        n_responses = ReportResponse.objects.filter(report=r_site).count()
         self.assertTrue(
             n_responses == 2,
             "Number of responses should be 2, is {0}".format(n_responses),
         )
-        self.assertEqual(r_site_reloaded.type, Report.TYPE_SITE)
-        self.assertTrue(r_site_reloaded.flipped, "Report should be marked as flipped")
+        self.assertEqual(r_site.type, Report.TYPE_SITE)
+        self.assertTrue(r_site.flipped, "Report should be marked as flipped")
         self.assertTrue(
-            r_site_reloaded.flipped_to == "site#site",
+            r_site.flipped_to == "site#site",
             "Report should be marked as flipped from site to site, field has value of {0}".format(
-                r_site_reloaded.flipped_to
+                r_site.flipped_to
             ),
         )
-        self.assertEqual(
-            r_site_reloaded.breeding_site_type, Report.BreedingSiteType.STORM_DRAIN
-        )
-        self.assertTrue(r_site_reloaded.breeding_site_has_water)
+        self.assertEqual(r_site.breeding_site_type, Report.BreedingSiteType.STORM_DRAIN)
+        self.assertTrue(r_site.breeding_site_has_water)
 
     def test_flip(self):
-        u = User.objects.get(pk=25)
+        u = UserFactory()
         self.client.force_authenticate(user=u)
-        r_adult = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
-        _ = Photo.objects.create(report=r_adult)
+        r_adult = ObservationReportFactory()
+        r_site = BreedingSiteReportFactory()
 
-        self.assertEqual(IdentificationTask.objects.filter(report=r_adult).count(), 1)
-
-        # Check report types
-        self.assertEqual(
-            r_adult.type,
-            "adult",
-            "Report type should be adult, is {0}".format(r_adult.type),
-        )
-        r_site = Report.objects.get(pk="00042fb1-408f-4da4-898d-4331a9ec3129")
-        _ = Photo.objects.create(report=r_site)
-
-        self.assertEqual(IdentificationTask.objects.filter(report=r_site).count(), 0)
-        self.assertEqual(
-            r_site.type,
-            "site",
-            "Report type should be site, is {0}".format(r_site.type),
-        )
         # flip adult to storm drain water
         data = {
-            "report_id": r_adult.version_UUID,
+            "report_id": r_adult.pk,
             "flip_to_type": "site",
             "flip_to_subtype": "storm_drain_water",
         }
@@ -1514,7 +1480,7 @@ class AnnotateCoarseTestCase(APITestCase):
             200,
             "Response should be 200, is {0}".format(response.status_code),
         )
-        adult_reloaded = Report.objects.get(pk=r_adult.version_UUID)
+        adult_reloaded = Report.objects.get(pk=r_adult.pk)
         self.assertTrue(
             adult_reloaded.type == Report.TYPE_SITE,
             "Report type should have changed to site, is {0}".format(
@@ -1585,24 +1551,24 @@ class AnnotateCoarseTestCase(APITestCase):
         self.assertEqual(IdentificationTask.objects.filter(report=r_site).count(), 1)
 
     def test_hide(self):
-        u = User.objects.get(pk=25)
+        u = UserFactory()
         self.client.force_authenticate(user=u)
-        r_adult = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
+        r_adult = ObservationReportFactory()
         self.assertTrue(not r_adult.hide, "Report should be visible, is not")
-        data = {"report_id": r_adult.version_UUID, "hide": "true"}
+        data = {"report_id": r_adult.pk, "hide": "true"}
         response = self.client.patch("/api/hide_report/", data=data)
         self.assertEqual(
             response.status_code,
             200,
             "Response should be 200, is {0}".format(response.status_code),
         )
-        r_adult_reloaded = Report.objects.get(pk="00042354-ffd6-431e-af1e-cecf55e55364")
+        r_adult_reloaded = Report.objects.get(pk=r_adult.pk)
         self.assertTrue(r_adult_reloaded.hide, "Report should be hidden, is not")
 
     def test_quick_upload(self):
-        u = User.objects.get(pk=25)
+        u = UserFactory()
         self.client.force_authenticate(user=u)
-        r_site = Report.objects.get(pk="00042fb1-408f-4da4-898d-4331a9ec3129")
+        r_site = BreedingSiteReportFactory()
         self.assertFalse(r_site.published)
 
         data = {"report_id": r_site.version_UUID}
