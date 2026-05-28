@@ -20,6 +20,7 @@ from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
 
 from mosquito_alert.geo.models import Country
+from mosquito_alert.geo.tests.factories import CountryFactory
 from mosquito_alert.identification_tasks.models import IdentificationTask
 from mosquito_alert.notifications.models import (
     Notification,
@@ -139,7 +140,10 @@ def api_live_url(django_live_url):
 
 @pytest.fixture()
 def country():
-    obj, _ = Country.objects.get_or_create(name_engl="Random", iso3_code="RND")
+    try:
+        obj = Country.objects.get(iso3_code="RND")
+    except Country.DoesNotExist:
+        obj = CountryFactory(iso3_code="RND", name_engl="Random")
     return obj
 
 

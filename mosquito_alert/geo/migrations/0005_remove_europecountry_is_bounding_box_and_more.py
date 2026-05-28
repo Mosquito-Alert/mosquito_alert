@@ -21,7 +21,7 @@ def populate_reports_can_be_published_from_workspace(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geo', '0005_add_subregion_model'),
+        ('geo', '0004_add_subregion_model'),
         ('workspaces', '0001_initial'),
     ]
 

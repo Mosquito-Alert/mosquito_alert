@@ -6,7 +6,6 @@ from django.db import migrations, models
 import django.db.models.deletion
 import django.contrib.gis.db.models.fields
 
-from mosquito_alert.geo.models import Continent
 from mosquito_alert.workspaces.models import WorkspaceMembership as WorkspaceMembershipModel
 
 def populate_workspace(apps, schema_editor):
@@ -23,9 +22,11 @@ def populate_workspace(apps, schema_editor):
             # Rapa nui -> Chile
             country_for_workspace = Country.objects.filter(iso3_code="CHL").first()
             workspace_name = "Rapa Nui"
-            geom = MultiPolygon(
-                country_for_workspace.geom.intersection(country.geom.buffer(0.01))
-            )
+            geom = country.geom
+            if country_for_workspace:
+                geom = MultiPolygon(
+                    country_for_workspace.geom.intersection(country.geom.buffer(0.01))
+                )
         elif country.iso3_code == "STL":
             # Saint Louis, Missouri -> USA
             country_for_workspace = Country.objects.filter(iso3_code="USA").first()
@@ -74,27 +75,13 @@ def populate_workspace(apps, schema_editor):
         )
 
 
-def populate_workspace_collaboration(apps, schema_editor):
-    Workspace = apps.get_model("workspaces", "Workspace")
-    WorkspaceCollaborationGroup = apps.get_model("workspaces", "WorkspaceCollaborationGroup")
-    User = apps.get_model(settings.AUTH_USER_MODEL)
-
-    collaboration_group = WorkspaceCollaborationGroup.objects.create(name="European Collaboration Group")
-    if superexpert := User.objects.filter(pk=25).first():
-        collaboration_group.reviewers.add(superexpert)
-    collaborating_workspaces = Workspace.objects.filter(
-        country__is_bounding_box=False,
-        country__subregion__continent=Continent.EUROPE
-    )
-    collaboration_group.workspaces.set(collaborating_workspaces)
-
 class Migration(migrations.Migration):
 
     initial = True
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('geo', '0005_add_subregion_model')
+        ('geo', '0004_add_subregion_model')
     ]
 
     operations = [
@@ -145,5 +132,4 @@ class Migration(migrations.Migration):
                 ('workspaces', models.ManyToManyField(help_text='Workspaces that can collaborate with each other within this group.', related_name='collaboration_groups', to='workspaces.workspace')),
             ],
         ),
-        migrations.RunPython(populate_workspace_collaboration, reverse_code=migrations.RunPython.noop),
     ]

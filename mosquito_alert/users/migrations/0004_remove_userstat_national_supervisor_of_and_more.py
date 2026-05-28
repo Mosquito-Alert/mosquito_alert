@@ -18,7 +18,7 @@ def populate_userstat_from_workspace_membership(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geo', '0006_remove_europecountry_is_bounding_box_and_more'),
+        ('geo', '0005_remove_europecountry_is_bounding_box_and_more'),
         ('users', '0003_tigauser'),
         ('workspaces', '0001_initial'),
     ]
