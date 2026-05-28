@@ -4,12 +4,15 @@ import uuid
 # Create your tests here.
 from django.test import override_settings
 from mosquito_alert.devices.models import Device, MobileApp
-from mosquito_alert.geo.models import Country
 from django.utils import timezone
 from mosquito_alert.fixes.models import Fix
 from mosquito_alert.identification_tasks.models import (
     ExpertReportAnnotation,
     IdentificationTask,
+)
+from mosquito_alert.identification_tasks.tests.factories import (
+    IdentificationTaskFactory,
+    ExpertReportAnnotationFactory,
 )
 from mosquito_alert.notifications.models import (
     Notification,
@@ -20,6 +23,7 @@ from mosquito_alert.notifications.models import (
 from mosquito_alert.reports.models import Report, ReportResponse, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.users.tests.factories import TigaUserFactory
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase, APITransactionTestCase
@@ -938,14 +942,11 @@ class FixEndpointTestCase(APITestCase):
 class NotificationTestCase(APITestCase):
     fixtures = [
         "reritja_like.json",
-        "awardcategory.json",
-        "europe_countries.json",
-        "nuts_europe.json",
         "taxon.json",
     ]
 
     def setUp(self):
-        t = TigaUser.objects.create(user_UUID="00000000-0000-0000-0000-000000000000")
+        t = TigaUserFactory()
         Device.objects.create(
             user=t,
             active=True,
@@ -954,27 +955,6 @@ class NotificationTestCase(APITestCase):
         )
 
         self.regular_user = t
-        non_naive_time = timezone.now()
-        a = 1
-        for country in Country.objects.all():
-            point_on_surface = country.geom.point_on_surface
-            r = Report(
-                version_UUID=str(a),
-                version_number=0,
-                user_id="00000000-0000-0000-0000-000000000000",
-                phone_upload_time=non_naive_time,
-                server_upload_time=non_naive_time,
-                creation_time=non_naive_time,
-                version_time=non_naive_time,
-                location_choice="current",
-                current_location_lon=point_on_surface.x,
-                current_location_lat=point_on_surface.y,
-                type="adult",
-            )
-            r.save()
-            p = Photo.objects.create(report=r, photo="./testdata/splash.png")
-            p.save()
-            a = a + 1
         self.reritja_user = User.objects.get(pk=25)
 
         t1 = NotificationTopic(
@@ -990,20 +970,17 @@ class NotificationTestCase(APITestCase):
         self.some_topic = t2
 
     def test_auto_notification_report_is_issued_and_readable_via_api(self):
-        r = Report.objects.get(pk="1")
-        _ = Photo.objects.create(report=r, photo="./testdata/splash.png")
-        identification_task = r.identification_task
+        identification_task = IdentificationTaskFactory()
 
         # this should cause send_finished_identification_task_notification to be called
         aedes_albopictus = Taxon.objects.get(pk=112)
-        anno_reritja = ExpertReportAnnotation.objects.create(
+        ExpertReportAnnotationFactory(
             user=self.reritja_user,
-            identification_task=identification_task,
             taxon=aedes_albopictus,
+            identification_task=identification_task,
             decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
             confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
         )
-        anno_reritja.save()
 
         # there should be a new Notification
         self.assertEqual(Notification.objects.all().count(), 1)
@@ -1012,7 +989,9 @@ class NotificationTestCase(APITestCase):
 
         self.client.force_authenticate(user=self.reritja_user)
         response = self.client.get(
-            "/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000"
+            "/api/user_notifications/?user_id={}".format(
+                identification_task.report.user.pk
+            )
         )
         self.client.logout()
         # response should be ok
@@ -1021,24 +1000,23 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
 
     def test_ack_notification(self):
-        r = Report.objects.get(pk="1")
-        _ = Photo.objects.create(report=r, photo="./testdata/splash.png")
-        identification_task = r.identification_task
+        identification_task = IdentificationTaskFactory()
 
         # this should cause send_finished_identification_task_notification to be called
         aedes_albopictus = Taxon.objects.get(pk=112)
-        anno_reritja = ExpertReportAnnotation.objects.create(
+        ExpertReportAnnotationFactory(
             user=self.reritja_user,
             identification_task=identification_task,
             taxon=aedes_albopictus,
             decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
             confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
         )
-        anno_reritja.save()
 
         self.client.force_authenticate(user=self.reritja_user)
         response = self.client.get(
-            "/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000"
+            "/api/user_notifications/?user_id={}".format(
+                identification_task.report.user.pk
+            )
         )
         # response should be ok
         self.assertEqual(response.status_code, 200)
@@ -1047,14 +1025,18 @@ class NotificationTestCase(APITestCase):
         # mark it as read
         notification_id = response.data[0]["id"]
         response = self.client.delete(
-            "/api/mark_notif_as_ack/?user=00000000-0000-0000-0000-000000000000&notif="
+            "/api/mark_notif_as_ack/?user={}&notif=".format(
+                identification_task.report.user.pk
+            )
             + str(notification_id)
         )
         # should respond no content
         self.assertEqual(response.status_code, 204)
         # try again
         response = self.client.get(
-            "/api/user_notifications/?user_id=00000000-0000-0000-0000-000000000000"
+            "/api/user_notifications/?user_id={}".format(
+                identification_task.report.user.pk
+            )
         )
         # response should be ok
         self.assertEqual(response.status_code, 200)
@@ -1065,9 +1047,9 @@ class NotificationTestCase(APITestCase):
     def test_subscribe_user_to_topic(self):
         self.client.force_authenticate(user=self.reritja_user)
         code = self.some_topic.topic_code
-        user = self.regular_user.user_UUID
+        user = self.regular_user
         response = self.client.post(
-            "/api/subscribe_to_topic/?code=" + code + "&user=" + user
+            "/api/subscribe_to_topic/?code=" + code + "&user=" + str(user.pk)
         )
         # should respond created
         self.assertEqual(response.status_code, 201)
@@ -1079,7 +1061,7 @@ class NotificationTestCase(APITestCase):
         try:
             with transaction.atomic():
                 response = self.client.post(
-                    "/api/subscribe_to_topic/?code=" + code + "&user=" + user
+                    "/api/subscribe_to_topic/?code=" + code + "&user=" + str(user.pk)
                 )
         except IntegrityError:
             pass
@@ -1089,7 +1071,7 @@ class NotificationTestCase(APITestCase):
 
     def test_list_user_subscriptions(self):
         self.client.force_authenticate(user=self.reritja_user)
-        user = self.regular_user.user_UUID
+        user = self.regular_user
         # we make up some topics
         n1 = NotificationTopic(
             topic_code="ru", topic_description="This is a test topic"
@@ -1106,12 +1088,15 @@ class NotificationTestCase(APITestCase):
         topics = [n1, n2, n3]
         for t in topics:
             response = self.client.post(
-                "/api/subscribe_to_topic/?code=" + t.topic_code + "&user=" + user
+                "/api/subscribe_to_topic/?code="
+                + t.topic_code
+                + "&user="
+                + str(user.pk)
             )
             # should respond created
             self.assertEqual(response.status_code, 201)
 
-        response = self.client.get("/api/topics_subscribed/?user=" + user)
+        response = self.client.get("/api/topics_subscribed/?user=" + str(user.pk))
         # response should be ok
         self.assertEqual(response.status_code, 200)
         # should be subscribed to t, n1, n2 and n3
@@ -1138,7 +1123,7 @@ class NotificationTestCase(APITestCase):
         some_user = self.regular_user
         self.client.force_authenticate(user=self.reritja_user)
         response = self.client.get(
-            "/api/user_notifications/?user_id=" + some_user.user_UUID
+            "/api/user_notifications/?user_id=" + str(some_user.pk)
         )
         # response should be ok
         self.assertEqual(response.status_code, 200)
@@ -1146,14 +1131,13 @@ class NotificationTestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
         # acknowledge the notification
         response = self.client.delete(
-            "/api/mark_notif_as_ack/?user=00000000-0000-0000-0000-000000000000&notif="
-            + str(n.id)
+            "/api/mark_notif_as_ack/?user={}&notif=".format(some_user.pk) + str(n.id)
         )
         # should respond no content
         self.assertEqual(response.status_code, 204)
         # now the notification should be acknowledged
         response = self.client.get(
-            "/api/user_notifications/?user_id=" + some_user.user_UUID
+            "/api/user_notifications/?user_id=" + str(some_user.pk)
         )
         # response should be ok
         self.assertEqual(response.status_code, 200)
@@ -1178,7 +1162,7 @@ class NotificationTestCase(APITestCase):
             "/api/subscribe_to_topic/?code="
             + self.some_topic.topic_code
             + "&user="
-            + self.regular_user.user_UUID
+            + str(self.regular_user.pk)
         )
         # should respond created
         self.assertEqual(response.status_code, 201)
@@ -1188,7 +1172,7 @@ class NotificationTestCase(APITestCase):
 
         # list notifications for regular user again
         response = self.client.get(
-            "/api/user_notifications/?user_id=" + self.regular_user.user_UUID
+            "/api/user_notifications/?user_id=" + str(self.regular_user.pk)
         )
         # response should be ok
         self.assertEqual(response.status_code, 200)
@@ -1200,14 +1184,14 @@ class NotificationTestCase(APITestCase):
             "/api/unsub_from_topic/?code="
             + self.some_topic.topic_code
             + "&user="
-            + self.regular_user.user_UUID
+            + str(self.regular_user.pk)
         )
         # response should be no content
         self.assertEqual(response.status_code, 204)
 
         # list notifications for regular user again!
         response = self.client.get(
-            "/api/user_notifications/?user_id=" + self.regular_user.user_UUID
+            "/api/user_notifications/?user_id=" + str(self.regular_user.pk)
         )
         # response should be ok
         self.assertEqual(response.status_code, 200)
@@ -1254,7 +1238,7 @@ class NotificationTestCase(APITestCase):
 
         self.client.force_authenticate(user=self.reritja_user)
         response = self.client.get(
-            "/api/user_notifications/?user_id=" + some_user.user_UUID
+            "/api/user_notifications/?user_id=" + str(some_user.pk)
         )
         # response should be ok
         self.assertEqual(response.status_code, 200)
