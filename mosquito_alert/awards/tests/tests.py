@@ -12,126 +12,79 @@ from mosquito_alert.awards.utils import (
 )
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
-from mosquito_alert.reports.models import Report, Photo
+from mosquito_alert.identification_tasks.tests.factories import (
+    ExpertReportAnnotationFactory,
+)
+from mosquito_alert.reports.models import Report
+from mosquito_alert.reports.tests.factories import (
+    ObservationReportFactory,
+    ObservationReportWithoutSignalFactory,
+)
 from mosquito_alert.notifications.models import Notification
 from mosquito_alert.awards.xp_scoring import compute_user_score_in_xp_v2
-from mosquito_alert.users.models import TigaUser
+from mosquito_alert.users.tests.factories import TigaUserFactory
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-import random
 from django.template.loader import render_to_string
-from django.contrib.auth.models import User
-import string
 
 
 class ScoringTestCase(TestCase):
     fixtures = [
         "awardcategory.json",
-        "tigausers.json",
-        "reritja_like.json",
-        "europe_countries.json",
         "granter_user.json",
         "taxon.json",
     ]
 
-    def create_single_report(
-        self,
-        day,
-        month,
-        year,
-        user,
-        id,
-        hour=None,
-        minute=None,
-        second=None,
-        report_app_language="es",
-    ):
-        if hour is None:
-            hour = 0
-        if minute is None:
-            minute = 0
-        if second is None:
-            second = 0
-        ld = datetime(year, month, day, hour, minute, second, tzinfo=ZoneInfo("UTC"))
-        value_x = random.random()
-        value_y = random.random()
-        long = -180 + (value_x * (360))
-        lat = -90 + (value_y * (180))
-        r = Report(
-            version_UUID=id,
-            version_number=0,
-            report_id="".join(
-                random.choices(string.ascii_letters + string.digits, k=4)
-            ),
-            user_id=user.user_UUID,
-            phone_upload_time=ld,
-            server_upload_time=ld,
-            creation_time=ld,
-            version_time=ld,
-            location_choice="current",
-            current_location_lon=long,
-            current_location_lat=lat,
-            type="adult",
-            app_language=report_app_language,
-            package_version=32,  # This is important for notifications: no notifs issued for null or <32 package version numbers
-        )
-        return r
-
     def test_compute_score_for_new_user(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        retval = compute_user_score_in_xp_v2(user_id)
+        user = TigaUserFactory()
+        retval = compute_user_score_in_xp_v2(user.pk)
         self.assertEqual(retval["total_score"], 0)
 
     def test_score_non_validated_adult_report(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
-        report_in_season = self.create_single_report(
-            settings.SEASON_START_DAY,
-            settings.SEASON_START_MONTH,
-            2020,
-            user,
-            "00000000-0000-0000-0000-000000000002",
+        user = TigaUserFactory()
+
+        # Report in season
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(
+                2020,
+                settings.SEASON_START_MONTH,
+                settings.SEASON_START_DAY,
+                tzinfo=ZoneInfo("UTC"),
+            ),
         )
-        report_in_season.save()
-        _ = Photo.objects.create(
-            report=report_in_season,
-            photo="mosquito_alert/identification_tasks/tests/testdata/splash.png",
-        )
-        report_in_season.refresh_from_db()
-        retval = compute_user_score_in_xp_v2(user_id)
+
+        retval = compute_user_score_in_xp_v2(user.pk)
         # 6 points first of season
         # 6 points first of day
         # no awards for mosquito. not yet classified
         self.assertEqual(retval["total_score"], 12)
 
     def test_score_for_aedes_adult_report(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
-        report_in_season = self.create_single_report(
-            settings.SEASON_START_DAY,
-            settings.SEASON_START_MONTH,
-            2020,
-            user,
-            "00000000-0000-0000-0000-000000000002",
+        user = TigaUserFactory()
+
+        report_in_season = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(
+                2020,
+                settings.SEASON_START_MONTH,
+                settings.SEASON_START_DAY,
+                tzinfo=ZoneInfo("UTC"),
+            ),
         )
-        report_in_season.save()
-        _ = Photo.objects.create(
-            report=report_in_season,
-            photo="mosquito_alert/identification_tasks/tests/testdata/splash.png",
-        )
+
         identification_task = report_in_season.identification_task
+
         report_in_season.refresh_from_db()
-        reritja_user = User.objects.get(pk=25)
         aedes_albopictus = Taxon.objects.get(pk=112)
-        _ = ExpertReportAnnotation.objects.create(
-            user=reritja_user,
+        _ = ExpertReportAnnotationFactory(
             identification_task=identification_task,
             taxon=aedes_albopictus,
             decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
             confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
         )
-        retval = compute_user_score_in_xp_v2(user_id)
+        retval = compute_user_score_in_xp_v2(user.pk)
         # 6 points first of season
         # 6 points first of day
         # 6 points geolocated
@@ -140,75 +93,77 @@ class ScoringTestCase(TestCase):
         # we hide the report, it does not yield any points
         report_in_season.hide = True
         report_in_season.save()
-        retval = compute_user_score_in_xp_v2(user_id)
+        retval = compute_user_score_in_xp_v2(user.pk)
         self.assertEqual(retval["total_score"], 0)
 
     def test_first_of_season_awarded(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
         day_before_start_of_season = settings.SEASON_START_DAY - 1
         month_before_start_of_season = settings.SEASON_START_MONTH - 1
-        user = TigaUser.objects.get(pk=user_id)
+        user = TigaUserFactory()
 
-        # should not be granted
-        report_before_season = self.create_single_report(
-            day_before_start_of_season,
-            month_before_start_of_season,
-            2018,
-            user,
-            "00000000-0000-0000-0000-000000000001",
+        # should not be granted: report_before_season
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(
+                2018,
+                month_before_start_of_season,
+                day_before_start_of_season,
+                tzinfo=ZoneInfo("UTC"),
+            ),
         )
-        report_before_season.save()
+
         self.assertEqual(
-            Award.objects.filter(category__id=1)
-            .filter(given_to__user_UUID=user_id)
-            .count(),
+            Award.objects.filter(category__id=1).filter(given_to=user).count(),
             0,
         )
 
         # should be granted for season 2020
-        report_in_season = self.create_single_report(
-            settings.SEASON_START_DAY,
-            settings.SEASON_START_MONTH,
-            2020,
-            user,
-            "00000000-0000-0000-0000-000000000002",
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(
+                2020,
+                settings.SEASON_START_MONTH,
+                settings.SEASON_START_DAY,
+                tzinfo=ZoneInfo("UTC"),
+            ),
         )
-        report_in_season.save()
+
         self.assertEqual(
             Award.objects.filter(category__id=1)
-            .filter(given_to__user_UUID=user_id)
+            .filter(given_to=user)
             .filter(report__creation_time__year=2020)
             .count(),
             1,
         )
 
         # should be granted for season 2018
-        report_in_other_season = self.create_single_report(
-            settings.SEASON_START_DAY,
-            settings.SEASON_START_MONTH,
-            2018,
-            user,
-            "00000000-0000-0000-0000-000000000003",
+        report_in_other_season = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(
+                2018,
+                settings.SEASON_START_MONTH,
+                settings.SEASON_START_DAY,
+                tzinfo=ZoneInfo("UTC"),
+            ),
         )
-        report_in_other_season.report_id = "AAAA"
-        report_in_other_season.save()
+
         self.assertEqual(
             Award.objects.filter(category__id=1)
-            .filter(given_to__user_UUID=user_id)
+            .filter(given_to=user)
             .filter(report__creation_time__year=2018)
             .count(),
             1,
         )
 
         # Creating a new version
-        report_in_other_season.location_choice = "current"
-        report_in_other_season.type = "adult"
+        report_in_other_season.location_choice = Report.LOCATION_CURRENT
+        report_in_other_season.type = Report.TYPE_ADULT
         report_in_other_season.save()
 
         # award should be kept
         self.assertEqual(
             Award.objects.filter(category__id=1)
-            .filter(given_to__user_UUID=user_id)
+            .filter(given_to=user)
             .filter(report__creation_time__year=2018)
             .count(),
             1,
@@ -221,90 +176,101 @@ class ScoringTestCase(TestCase):
         )
 
     def test_first_of_day(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
+        user = TigaUserFactory()
         day = 1
         month = 1
         year = 2015
         hour_1 = 1
         hour_2 = 2
         hour_3 = 3
-        first_report_of_day = self.create_single_report(
-            day, month, year, user, "00000000-0000-0000-0000-000000000001", hour_1
+
+        first_report_of_day = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(
+                year, month, day, hour_1, tzinfo=ZoneInfo("UTC")
+            ),
         )
-        first_report_of_day.save()
-        second_report_of_day = self.create_single_report(
-            day, month, year, user, "00000000-0000-0000-0000-000000000002", hour_2
+
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(
+                year, month, day, hour_2, tzinfo=ZoneInfo("UTC")
+            ),
         )
-        second_report_of_day.save()
-        third_report_of_day = self.create_single_report(
-            day, month, year, user, "00000000-0000-0000-0000-000000000003", hour_3
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(
+                year, month, day, hour_3, tzinfo=ZoneInfo("UTC")
+            ),
         )
-        third_report_of_day.save()
         # just one first of day was granted
         self.assertEqual(Award.objects.filter(category__id=2).count(), 1)
         # it was granted to first_report_of_day
         self.assertEqual(
-            Award.objects.get(category__id=2).report.version_UUID,
-            first_report_of_day.version_UUID,
+            Award.objects.get(category__id=2).report,
+            first_report_of_day,
         )
 
     def test_two_day_streak(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
+        user = TigaUserFactory()
         day_1 = 1
         day_2 = 2
         day_3 = 3
         month = 1
         year = 2015
-        report_of_day_1 = self.create_single_report(
-            day_1, month, year, user, "00000000-0000-0000-0000-000000000001"
+
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_1, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_1.save()
-        report_of_day_2 = self.create_single_report(
-            day_2, month, year, user, "00000000-0000-0000-0000-000000000002"
+
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_2, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_2.save()
-        report_of_day_3 = self.create_single_report(
-            day_3, month, year, user, "00000000-0000-0000-0000-000000000003"
+
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_3, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_3.save()
+
         self.assertEqual(Award.objects.filter(category__id=3).count(), 1)
 
-    def three_day_streak(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
+    def test_three_day_streak(self):
+        user = TigaUserFactory()
         day_1 = 1
         day_2 = 2
         day_3 = 3  # --> 3 streak
         day_4 = 4
         month = 1
         year = 2015
-        report_of_day_1 = self.create_single_report(
-            day_1, month, year, user, "00000000-0000-0000-0000-000000000001"
+
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_1, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_1.save()
-        report_of_day_2 = self.create_single_report(
-            day_2, month, year, user, "00000000-0000-0000-0000-000000000002"
+
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_2, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_2.save()
-        report_of_day_3 = self.create_single_report(
-            day_3, month, year, user, "00000000-0000-0000-0000-000000000003"
+        report_of_day_3 = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_3, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_3.save()
-        report_of_day_4 = self.create_single_report(
-            day_4, month, year, user, "00000000-0000-0000-0000-000000000004"
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_4, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_4.save()
         self.assertEqual(Award.objects.filter(category__id=4).count(), 1)
         self.assertEqual(
-            Award.objects.get(category__id=4).report.version_UUID,
-            report_of_day_3.version_UUID,
+            Award.objects.get(category__id=4).report,
+            report_of_day_3,
         )
 
     def test_three_and_two_combined(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
+
+        user = TigaUserFactory()
         # All days are in the same week
         day_1 = 5
         day_2 = 6  # --> 2 streak
@@ -315,71 +281,62 @@ class ScoringTestCase(TestCase):
         day_7 = 11
         month = 1
         year = 2015
-        report_of_day_1 = self.create_single_report(
-            day_1, month, year, user, "00000000-0000-0000-0000-000000000001"
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_1, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_1.save()
 
-        report_of_day_2 = self.create_single_report(
-            day_2, month, year, user, "00000000-0000-0000-0000-000000000002"
+        report_of_day_2 = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_2, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_2.save()
 
-        report_of_day_3 = self.create_single_report(
-            day_3, month, year, user, "00000000-0000-0000-0000-000000000003"
+        report_of_day_3 = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_3, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_3.save()
 
-        report_of_day_4 = self.create_single_report(
-            day_4, month, year, user, "00000000-0000-0000-0000-000000000004"
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_4, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_4.save()
 
-        report_of_day_5 = self.create_single_report(
-            day_5, month, year, user, "00000000-0000-0000-0000-000000000005"
+        report_of_day_5 = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_5, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_5.save()
 
-        report_of_day_6 = self.create_single_report(
-            day_6, month, year, user, "00000000-0000-0000-0000-000000000006"
+        report_of_day_6 = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_6, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_6.save()
 
-        report_of_day_7 = self.create_single_report(
-            day_7, month, year, user, "00000000-0000-0000-0000-000000000007"
+        ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month, day_7, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_7.save()
 
         self.assertEqual(Award.objects.filter(category__id=4).count(), 2)
         self.assertEqual(
-            Award.objects.filter(category__id=4)
-            .filter(report__version_UUID=report_of_day_3.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=4).filter(report=report_of_day_3).count(),
             1,
         )
         self.assertEqual(
-            Award.objects.filter(category__id=4)
-            .filter(report__version_UUID=report_of_day_6.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=4).filter(report=report_of_day_6).count(),
             1,
         )
         self.assertEqual(Award.objects.filter(category__id=3).count(), 2)
         self.assertEqual(
-            Award.objects.filter(category__id=3)
-            .filter(report__version_UUID=report_of_day_2.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=3).filter(report=report_of_day_2).count(),
             1,
         )
         self.assertEqual(
-            Award.objects.filter(category__id=3)
-            .filter(report__version_UUID=report_of_day_5.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=3).filter(report=report_of_day_5).count(),
             1,
         )
 
     def test_corner_cases_daily_participation_midnight(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
+        user = TigaUserFactory()
 
         day_1 = 5  # --> Daily participation
         day_2 = 6  # --> Daily participation, 2 streak
@@ -388,15 +345,19 @@ class ScoringTestCase(TestCase):
         hour_2 = 0
         year = 2015
 
-        report_of_day_1 = self.create_single_report(
-            day_1, month, year, user, "00000000-0000-0000-0000-000000000001", hour_1
+        report_of_day_1 = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(
+                year, month, day_1, hour_1, tzinfo=ZoneInfo("UTC")
+            ),
         )
-        report_of_day_1.save()
 
-        report_of_day_2 = self.create_single_report(
-            day_2, month, year, user, "00000000-0000-0000-0000-000000000002", hour_2
+        report_of_day_2 = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(
+                year, month, day_2, hour_2, tzinfo=ZoneInfo("UTC")
+            ),
         )
-        report_of_day_2.save()
 
         self.assertEqual(
             Award.objects.filter(category__id=2).count(), 2
@@ -405,27 +366,20 @@ class ScoringTestCase(TestCase):
             Award.objects.filter(category__id=3).count(), 1
         )  # Two day streak given to one of the reports
         self.assertEqual(
-            Award.objects.filter(category__id=2)
-            .filter(report__version_UUID=report_of_day_1.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=2).filter(report=report_of_day_1).count(),
             1,
         )  # Check each of the reports has first day
         self.assertEqual(
-            Award.objects.filter(category__id=2)
-            .filter(report__version_UUID=report_of_day_2.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=2).filter(report=report_of_day_2).count(),
             1,
         )
         self.assertEqual(
-            Award.objects.filter(category__id=3)
-            .filter(report__version_UUID=report_of_day_2.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=3).filter(report=report_of_day_2).count(),
             1,
         )  # Check second report has 2 day streak
 
     def test_corner_cases_daily_participation_different_months(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
+        user = TigaUserFactory()
 
         day_1 = 30  # --> Daily participation
         day_2 = 1  # --> Daily participation, 2 streak
@@ -433,15 +387,15 @@ class ScoringTestCase(TestCase):
         month_2 = 5
         year = 2020
 
-        report_of_day_1 = self.create_single_report(
-            day_1, month_1, year, user, "00000000-0000-0000-0000-000000000001"
+        report_of_day_1 = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month_1, day_1, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_1.save()
 
-        report_of_day_2 = self.create_single_report(
-            day_2, month_2, year, user, "00000000-0000-0000-0000-000000000002"
+        report_of_day_2 = ObservationReportFactory(
+            user=user,
+            phone_upload_time=datetime(year, month_2, day_2, tzinfo=ZoneInfo("UTC")),
         )
-        report_of_day_2.save()
 
         self.assertEqual(
             Award.objects.filter(category__id=2).count(), 2
@@ -450,21 +404,15 @@ class ScoringTestCase(TestCase):
             Award.objects.filter(category__id=3).count(), 1
         )  # Two day streak given to one of the reports
         self.assertEqual(
-            Award.objects.filter(category__id=2)
-            .filter(report__version_UUID=report_of_day_1.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=2).filter(report=report_of_day_1).count(),
             1,
         )  # Check each of the reports has first day
         self.assertEqual(
-            Award.objects.filter(category__id=2)
-            .filter(report__version_UUID=report_of_day_2.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=2).filter(report=report_of_day_2).count(),
             1,
         )
         self.assertEqual(
-            Award.objects.filter(category__id=3)
-            .filter(report__version_UUID=report_of_day_2.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=3).filter(report=report_of_day_2).count(),
             1,
         )  # Check second report has 2 day streak
 
@@ -495,17 +443,17 @@ class ScoringTestCase(TestCase):
         )
 
     def test_10_report_achievement(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
+        user = TigaUserFactory()
 
         month_1 = 1
         year = 2020
 
-        for i in range(1, 11, 1):
-            r = self.create_single_report(
-                i, month_1, year, user, "00000000-0000-0000-0000-0000000000" + str(i)
-            )
-            r.save()
+        ObservationReportWithoutSignalFactory.create_batch(
+            10,
+            user=user,
+            phone_upload_time=datetime(year, month_1, 1, tzinfo=ZoneInfo("UTC")),
+        )
+
         self.assertEqual(
             Award.objects.filter(special_award_text="achievement_10_reports").count(), 1
         )  # Ten report achievement granted
@@ -522,17 +470,17 @@ class ScoringTestCase(TestCase):
             )
 
     def test_20_report_achievement(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
+        user = TigaUserFactory()
 
         month_1 = 1
         year = 2020
 
-        for i in range(1, 21, 1):
-            r = self.create_single_report(
-                i, month_1, year, user, "00000000-0000-0000-0000-0000000000" + str(i)
-            )
-            r.save()
+        ObservationReportWithoutSignalFactory.create_batch(
+            20,
+            user=user,
+            phone_upload_time=datetime(year, month_1, 1, tzinfo=ZoneInfo("UTC")),
+        )
+
         self.assertEqual(
             Award.objects.filter(special_award_text="achievement_10_reports").count(), 1
         )  # Ten report achievement granted
@@ -562,21 +510,16 @@ class ScoringTestCase(TestCase):
             )
 
     def test_50_report_achievement(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
+        user = TigaUserFactory()
 
         year = 2020
 
-        for i in range(1, 3, 1):
-            for j in range(1, 27, 1):
-                r = self.create_single_report(
-                    j,
-                    i,
-                    year,
-                    user,
-                    "00000000-0000-0000-0000-000000000" + str(j) + str(i),
-                )
-                r.save()
+        ObservationReportWithoutSignalFactory.create_batch(
+            50,
+            user=user,
+            phone_upload_time=datetime(year, 1, 1, tzinfo=ZoneInfo("UTC")),
+        )
+
         self.assertEqual(
             Award.objects.filter(special_award_text="achievement_10_reports").count(), 1
         )  # Ten report achievement granted
@@ -618,24 +561,22 @@ class ScoringTestCase(TestCase):
             )
 
     def test_corner_cases_first_of_season_different_users(self):
-        user_id_1 = "00000000-0000-0000-0000-000000000000"
-        user_id_2 = "00000000-0000-0000-0000-000000000001"
+        user_1 = TigaUserFactory()
+        user_2 = TigaUserFactory()
 
         day_1 = 30  # --> Daily participation, first of season
         month_1 = 4
         year = 2020
 
-        user_1 = TigaUser.objects.get(pk=user_id_1)
-        user_2 = TigaUser.objects.get(pk=user_id_2)
+        report_1_user_1 = ObservationReportFactory(
+            user=user_1,
+            phone_upload_time=datetime(year, month_1, day_1, tzinfo=ZoneInfo("UTC")),
+        )
 
-        report_1_user_1 = self.create_single_report(
-            day_1, month_1, year, user_1, "00000000-0000-0000-0000-000000000001"
+        report_1_user_2 = ObservationReportFactory(
+            user=user_2,
+            phone_upload_time=datetime(year, month_1, day_1, tzinfo=ZoneInfo("UTC")),
         )
-        report_1_user_1.save()
-        report_1_user_2 = self.create_single_report(
-            day_1, month_1, year, user_2, "00000000-0000-0000-0000-000000000002"
-        )
-        report_1_user_2.save()
 
         self.assertEqual(
             Award.objects.filter(category__id=1).count(), 2
@@ -644,35 +585,26 @@ class ScoringTestCase(TestCase):
             Award.objects.filter(category__id=2).count(), 2
         )  # First of season given to each of the reports
         self.assertEqual(
-            Award.objects.filter(category__id=1)
-            .filter(report__version_UUID=report_1_user_1.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=1).filter(report=report_1_user_1).count(),
             1,
         )
         self.assertEqual(
-            Award.objects.filter(category__id=1)
-            .filter(report__version_UUID=report_1_user_2.version_UUID)
-            .count(),
+            Award.objects.filter(category__id=1).filter(report=report_1_user_2).count(),
             1,
         )
 
     def test_10_day_achievement_for_sq_locale(self):
-        user_id = "00000000-0000-0000-0000-000000000000"
-        user = TigaUser.objects.get(pk=user_id)
+        user = TigaUserFactory(locale="sq")
 
         month_1 = 1
         year = 2020
 
-        for i in range(1, 11, 1):
-            r = self.create_single_report(
-                i,
-                month_1,
-                year,
-                user,
-                "00000000-0000-0000-0000-0000000000" + str(i),
-                report_app_language="sq",
-            )
-            r.save()
+        ObservationReportWithoutSignalFactory.create_batch(
+            10,
+            user=user,
+            phone_upload_time=datetime(year, month_1, 1, tzinfo=ZoneInfo("UTC")),
+        )
+
         self.assertEqual(
             Award.objects.filter(special_award_text="achievement_10_reports").count(), 1
         )  # Ten report achievement granted
