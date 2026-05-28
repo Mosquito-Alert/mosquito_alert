@@ -49,6 +49,7 @@ class Command(BaseCommand):
         rapa_nui_workspace.geom = MultiPolygon(
             chile.geom.intersection(rapa_nui_workspace.geom.buffer(0.01))
         )
+        rapa_nui_workspace.save()
 
         # Ensure Workspace with country=None exists
         Workspace.objects.get_or_create(country=None, geom=None)
