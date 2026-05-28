@@ -14,10 +14,11 @@ class WorkspaceAdmin(admin.ModelAdmin):
     form = WorkspaceAdminForm
 
     list_display = ("id", "__str__", "is_public", "updated_at")
-    list_filter = ["country__name_engl", "is_public"]
+    list_filter = ["is_public"]
     ordering = [
         "country__name_engl",
     ]
+    search_fields = ["name", "country__name_engl"]
 
     readonly_fields = ("updated_at", "country")
 
