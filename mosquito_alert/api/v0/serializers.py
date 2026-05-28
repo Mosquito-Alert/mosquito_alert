@@ -4,7 +4,7 @@ from rest_framework import serializers
 from mosquito_alert.tigaserver_app.models import Session
 from mosquito_alert.campaigns.models import OWCampaigns
 from mosquito_alert.fixes.models import Fix
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 from mosquito_alert.notifications.models import (
     NotificationRecipient,
     UserSubscription,
@@ -363,14 +363,17 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
         fields = ("id", "user", "topic", "topic_code")
 
 
-class EuropeCountrySimpleSerializer(serializers.ModelSerializer):
+class CountrySimpleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EuropeCountry
+        model = Country
         fields = ("gid", "name_engl")
+        extra_kwargs = {
+            "gid": {"source": "id", "read_only": True},
+        }
 
 
 class OWCampaignsSerializer(serializers.ModelSerializer):
-    country = EuropeCountrySimpleSerializer(many=False)
+    country = CountrySimpleSerializer(many=False)
 
     class Meta:
         model = OWCampaigns
@@ -416,7 +419,7 @@ class CoarseReportSerializer(serializers.ModelSerializer):
     user_id = serializers.SerializerMethodField(method_name="get_user_id")
     type = serializers.ReadOnlyField()
     note = serializers.ReadOnlyField()
-    country = EuropeCountrySimpleSerializer(many=False)
+    country = CountrySimpleSerializer(many=False)
     site_cat = serializers.SerializerMethodField(method_name="get_site_cat")
     insect_confidence = serializers.SerializerMethodField()
     hide = serializers.ReadOnlyField()

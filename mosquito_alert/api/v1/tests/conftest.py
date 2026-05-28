@@ -19,7 +19,8 @@ from rest_framework_simplejwt.settings import api_settings as simplejwt_settings
 from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
 
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
+from mosquito_alert.geo.tests.factories import CountryFactory
 from mosquito_alert.identification_tasks.models import IdentificationTask
 from mosquito_alert.notifications.models import (
     Notification,
@@ -139,19 +140,19 @@ def api_live_url(django_live_url):
 
 @pytest.fixture()
 def country():
-    obj, _ = EuropeCountry.objects.get_or_create(
-        cntr_id="RD", name_engl="Random", iso3_code="RND", fid="RD"
-    )
+    try:
+        obj = Country.objects.get(iso3_code="RND")
+    except Country.DoesNotExist:
+        obj = CountryFactory(iso3_code="RND", name_engl="Random")
     return obj
 
 
 @pytest.fixture
 def es_country():
-    obj, _ = EuropeCountry.objects.get_or_create(
-        cntr_id="ES",
+    obj, _ = Country.objects.get_or_create(
         name_engl="Spain",
         iso3_code="ESP",
-        fid="ES",
+        wikidata_id="Q29",
         geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
     )
     return obj
@@ -159,8 +160,11 @@ def es_country():
 
 @pytest.fixture
 def it_country():
-    obj, _ = EuropeCountry.objects.get_or_create(
-        cntr_id="IT", name_engl="Italy", iso3_code="ITA", fid="IT"
+    obj, _ = Country.objects.get_or_create(
+        name_engl="Italy",
+        iso3_code="ITA",
+        wikidata_id="Q38",
+        geom=MultiPolygon(Polygon.from_bbox((6.0, 36.0, 19.0, 47.0))),
     )
     return obj
 

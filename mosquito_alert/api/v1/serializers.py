@@ -25,7 +25,7 @@ from mosquito_alert.campaigns.models import OWCampaigns
 from mosquito_alert.devices.models import Device, MobileApp
 from mosquito_alert.fixes.models import Fix
 from mosquito_alert.geo.models import (
-    EuropeCountry,
+    Country,
     LauEurope,
     NutsEurope,
     TemporaryBoundary,
@@ -72,9 +72,9 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
-        model = EuropeCountry
+        model = Country
         fields = ("id", "name_en", "iso3_code")
-        extra_kwargs = {"id": {"source": "gid"}, "name_en": {"source": "name_engl"}}
+        extra_kwargs = {"name_en": {"source": "name_engl"}}
 
 
 class FixLocationSerializer(serializers.ModelSerializer):

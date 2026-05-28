@@ -2,14 +2,14 @@ from django.contrib.gis.db import models
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 
 User = get_user_model()
 
 
 class Workspace(models.Model):
     country = models.ForeignKey(
-        EuropeCountry,
+        Country,
         null=True,
         blank=True,
         on_delete=models.PROTECT,

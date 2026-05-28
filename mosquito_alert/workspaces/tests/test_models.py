@@ -6,8 +6,8 @@ from django.db import models
 from django.db.utils import IntegrityError
 
 from mosquito_alert.geo.tests.factories import (
-    EuropeCountryFactory,
-    EuropeCountryWithoutSignalFactoryFactory,
+    CountryFactory,
+    CountryWithoutSignalFactoryFactory,
 )
 from mosquito_alert.users.tests.factories import create_regular_user
 
@@ -63,7 +63,7 @@ class TestWorkspace:
         assert Workspace._meta.get_field("supervisor_exclusivity_days").default == 14
 
     def test_geom_is_validated_on_save(self):
-        country = EuropeCountryWithoutSignalFactoryFactory()
+        country = CountryWithoutSignalFactoryFactory()
         workspace = WorkspaceFactory(country=country, geom=country.geom)
         workspace.save()  # should not raise
 
@@ -78,7 +78,7 @@ class TestWorkspace:
             workspace.save()
 
     def test_multiple_workspaces_with_geom_is_allowed_for_same_country(self):
-        country = EuropeCountryWithoutSignalFactoryFactory()
+        country = CountryWithoutSignalFactoryFactory()
         # create first workspace with same geom as country
         WorkspaceFactory(country=country, geom=country.geom)
 
@@ -93,12 +93,12 @@ class TestWorkspace:
 
     # signals
     def test_workspace_is_created_on_country_creation(self):
-        country = EuropeCountryFactory()
+        country = CountryFactory()
         assert country.workspaces.first() is not None
 
     # meta
     def test_unique_for_country_when_geom_is_null(self):
-        country = EuropeCountryWithoutSignalFactoryFactory()
+        country = CountryWithoutSignalFactoryFactory()
         with pytest.raises(IntegrityError, match=r"unique_country_when_geom_is_null"):
             _ = WorkspaceFactory.create_batch(
                 size=2,

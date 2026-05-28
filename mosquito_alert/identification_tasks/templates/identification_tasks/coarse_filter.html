@@ -391,7 +391,7 @@
                                 <select id="country_select" class="selectpicker show-tick form-control">
                                     <option value="all">Show All</option>
                                     {% for country in countries %}
-                                    <option value="{{ country.gid }}">{{ country.name_engl }}</option>
+                                    <option value="{{ country.pk }}">{{ country.name_engl }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -402,7 +402,7 @@
                                 <select id="country_select_exclude" class="selectpicker show-tick form-control">
                                     <option value="">------</option>
                                     {% for country in countries %}
-                                    <option value="{{ country.gid }}">{{ country.name_engl }}</option>
+                                    <option value="{{ country.pk }}">{{ country.name_engl }}</option>
                                     {% endfor %}
                                 </select>
                             </div>

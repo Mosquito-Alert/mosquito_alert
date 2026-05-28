@@ -31,7 +31,7 @@ from timezone_field import TimeZoneField
 from taggit.managers import TaggableManager
 
 from mosquito_alert.devices.models import Device, MobileApp
-from mosquito_alert.geo.models import EuropeCountry, NutsEurope, LauEurope
+from mosquito_alert.geo.models import Country, NutsEurope, LauEurope
 from mosquito_alert.tigaserver_app.models import Session
 from mosquito_alert.users.models import TigaUser
 from mosquito_alert.utils.models import UUIDTaggedItem
@@ -88,7 +88,7 @@ class Report(TimeZoneModelMixin, models.Model):
         help_text="user_UUID for the user sending this report. Must be exactly 36 characters (32 hex digits plus 4 hyphens) and user must have already registered this ID.",
     )
     country = models.ForeignKey(
-        EuropeCountry, on_delete=models.PROTECT, blank=True, null=True
+        Country, on_delete=models.PROTECT, blank=True, null=True
     )
     session = models.ForeignKey(
         Session,
@@ -697,7 +697,7 @@ class Report(TimeZoneModelMixin, models.Model):
             else self.current_location_lon
         )
 
-    def _get_country_is_in(self) -> Optional[EuropeCountry]:
+    def _get_country_is_in(self) -> Optional[Country]:
         logger_report_geolocation.debug(
             "retrieving country for report with id {0}".format(self.pk)
         )
@@ -710,9 +710,7 @@ class Report(TimeZoneModelMixin, models.Model):
 
         max_distance = DistanceMeasure(km=11.1)  # 0.1 degrees
         country = (
-            EuropeCountry.objects.annotate(
-                distance=DistanceFunction("geom", self.point)
-            )
+            Country.objects.annotate(distance=DistanceFunction("geom", self.point))
             .filter(distance__lt=max_distance)
             .order_by("distance")
             .first()

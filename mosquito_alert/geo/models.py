@@ -1,40 +1,75 @@
 from datetime import timedelta
+from difflib import SequenceMatcher
 from typing import Optional
 import uuid
 
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
 from django.core.cache import cache
+from django.core.validators import RegexValidator
 from django.utils import timezone
 
 
-class EuropeCountry(models.Model):
-    gid = models.AutoField(primary_key=True)
-    # TODO: keep only cntr_id or fid, not both.
-    cntr_id = models.CharField(max_length=2, blank=True)
+class Continent(models.TextChoices):
+    AFRICA = "africa", "Africa"
+    ANTARCTICA = "antarctica", "Antarctica"
+    ASIA = "asia", "Asia"
+    EUROPE = "europe", "Europe"
+    NORTH_AMERICA = "north_america", "North America"
+    OCEANIA = "oceania", "Oceania"
+    SOUTH_AMERICA = "south_america", "South America"
+    SEVEN_SEAS = "seven_seas", "Seven Seas (open ocean)"
+
+    @classmethod
+    def get_by_most_similar_name(cls, name: str) -> Optional["Continent"]:
+        if not name:
+            return None
+
+        return max(
+            cls,  # iterate enum members directly
+            key=lambda c: SequenceMatcher(None, name.lower(), c.label.lower()).ratio(),
+        )
+
+
+class Subregion(models.Model):
+    continent = models.CharField(max_length=30, choices=Continent.choices)
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+
+class Country(models.Model):
+    # See: https://www.naturalearthdata.com/downloads/10m-cultural-vectors/
+
+    subregion = models.ForeignKey(
+        Subregion, related_name="countries", on_delete=models.PROTECT, null=True
+    )
+
     name_engl = models.CharField(
         max_length=44, help_text="Full name of the country in English (e.g., Spain)."
     )
     iso3_code = models.CharField(
         max_length=3,
+        unique=True,
         help_text="ISO 3166-1 alpha-3 country code (3-letter code, e.g., ESP).",
     )
-    fid = models.CharField(max_length=2, blank=True)
-    # TODO: do not allow geom to be null.
-    geom = models.MultiPolygonField(blank=True, null=True)
-
-    # TODO: these are not used. remove
-    x_min = models.FloatField(blank=True, null=True)
-    x_max = models.FloatField(blank=True, null=True)
-    y_min = models.FloatField(blank=True, null=True)
-    y_max = models.FloatField(blank=True, null=True)
+    wikidata_id = models.CharField(
+        max_length=16,
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=r"^Q\d+$",
+                message="Wikidata ID must start with 'Q' followed by digits (e.g., Q29).",
+            )
+        ],
+    )
+    geom = models.MultiPolygonField()
 
     class Meta:
         ordering = ["name_engl"]
         db_table = "europe_countries"
-
-    def __unicode__(self):
-        return self.name_engl
+        verbose_name_plural = "countries"
 
     def __str__(self):
         return self.name_engl
@@ -55,7 +90,7 @@ class NutsEurope(models.Model):
     fid = models.CharField(max_length=5, unique=True)
     geom = models.MultiPolygonField(blank=True, null=True)
     europecountry = models.ForeignKey(
-        EuropeCountry,
+        Country,
         blank=True,
         null=True,
         related_name="nuts",

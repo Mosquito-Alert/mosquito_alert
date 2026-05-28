@@ -1,6 +1,6 @@
 from django.db import models
 
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 
 
 class OWCampaigns(models.Model):
@@ -10,7 +10,7 @@ class OWCampaigns(models.Model):
     """
 
     country = models.ForeignKey(
-        EuropeCountry,
+        Country,
         related_name="campaigns",
         help_text="Country in which the campaign is taking place",
         on_delete=models.PROTECT,

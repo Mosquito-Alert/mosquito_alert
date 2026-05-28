@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
 
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 from mosquito_alert.identification_tasks.models import (
     ExpertReportAnnotation,
     IdentificationTask,
@@ -285,11 +285,11 @@ def global_assignments(request):
         }
     )
 
-    countries_with_perm = EuropeCountry.objects.none()
+    countries_with_perm = Country.objects.none()
     if has_global_review_perm:
-        countries_with_perm = EuropeCountry.objects.all()
+        countries_with_perm = Country.objects.all()
     else:
-        countries_with_perm = EuropeCountry.objects.filter(
+        countries_with_perm = Country.objects.filter(
             models.Q(
                 workspaces__memberships__user=this_user,
                 workspaces__memberships__role=WorkspaceMembership.Role.SUPERVISOR,
@@ -380,7 +380,7 @@ def global_assignments(request):
                 ).values("user__username")[:1]
             ),
         ).values(
-            "gid",
+            "pk",
             "iso3_code",
             "name_engl",
             "supervisor_pk",
@@ -391,7 +391,7 @@ def global_assignments(request):
     # Append case when country is None
     country_info.append(
         {
-            "gid": "N/A",
+            "pk": "N/A",
             "iso3_code": "Other",
             "name_engl": "Other",
             "supervisor_pk": None,
@@ -401,12 +401,12 @@ def global_assignments(request):
 
     data = []
     for country in country_info:
-        stats = stats_country_data.get(country["gid"])
+        stats = stats_country_data.get(country["pk"])
         data.append(
             {
                 "ns_id": country["supervisor_pk"],
                 "ns_username": country["supervisor_username"],
-                "ns_country_id": country["gid"],
+                "ns_country_id": country["pk"],
                 "ns_country_code": country["iso3_code"],
                 "ns_country_name": country["name_engl"],
                 "unassigned": stats.get("unassigned", 0) if stats else 0,
@@ -441,7 +441,7 @@ def global_assignments_list(request, country_code=None, status=None):
         country = None
         countryName = "Others"
     else:
-        country = get_object_or_404(EuropeCountry, iso3_code=country_code)
+        country = get_object_or_404(Country, iso3_code=country_code)
         countryName = country.name_engl
 
     qs = IdentificationTask.objects.filter(report__country=country)
@@ -520,7 +520,7 @@ def workload_stats(request, country_id=None):
             ).values("user__id")
             country_name = "Unknown country??"
             try:
-                country_name = EuropeCountry.objects.get(iso3_code=country_id).name_engl
+                country_name = Country.objects.get(iso3_code=country_id).name_engl
             except Exception:
                 pass
             users = User.objects.filter(id__in=user_id_filter).order_by(

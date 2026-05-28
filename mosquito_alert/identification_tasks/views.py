@@ -12,7 +12,7 @@ from django.utils import timezone
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 from mosquito_alert.workspaces.models import Workspace
 from .models import IdentificationTask, ExpertReportAnnotation
 
@@ -27,7 +27,7 @@ def report_expiration(request, country_id=None):
             "app_label": IdentificationTask._meta.app_label,
         }
     )
-    reviewer_countries = EuropeCountry.objects.filter(
+    reviewer_countries = Country.objects.filter(
         workspace__collaboration_groups__reviewers=this_user
     )
 
@@ -180,7 +180,7 @@ def coarse_filter(request):
         range_list = [n for n in range(10, 101, 10)]
         context = {
             "tasks_per_page_choices": range_list + [200, 300],
-            "countries": EuropeCountry.objects.all().order_by("name_engl"),
+            "countries": Country.objects.all().order_by("name_engl"),
         }
         return render(request, "identification_tasks/coarse_filter.html", context)
     else:

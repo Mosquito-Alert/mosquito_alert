@@ -18,7 +18,7 @@ from taggit.managers import TaggableManager
 from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, AFTER_CREATE
 from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged
 
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 from mosquito_alert.workspaces.models import Workspace, WorkspaceMembership
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
@@ -371,10 +371,10 @@ class IdentificationTask(LifecycleModel):
         return get_confidence_label(value=self.confidence)
 
     @cached_property
-    def country(self) -> Optional[EuropeCountry]:
+    def country(self) -> Optional[Country]:
         try:
             return self.report.country
-        except EuropeCountry.DoesNotExist:
+        except Country.DoesNotExist:
             return None
 
     @cached_property

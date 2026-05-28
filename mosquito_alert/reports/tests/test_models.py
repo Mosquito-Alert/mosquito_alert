@@ -3,7 +3,7 @@ from datetime import timedelta
 # Create your tests here.
 from django.test import TestCase, override_settings
 from mosquito_alert.devices.models import Device, MobileApp
-from mosquito_alert.geo.models import EuropeCountry, LauEurope
+from mosquito_alert.geo.models import Country, LauEurope
 from PIL import Image, ExifTags
 import os
 from django.contrib.gis.geos import Polygon, MultiPolygon, Point
@@ -644,11 +644,10 @@ class ReportModelTest(TestCase):
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_bite_is_not_published_if_country_does_not_allow_public_on_create(self):
-        disabled_publish_country = EuropeCountry.objects.create(
-            cntr_id="RD",
+        disabled_publish_country = Country.objects.create(
             name_engl="Random",
             iso3_code="RND",
-            fid="RD",
+            wikidata_id="Q12345",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
         workspace = disabled_publish_country.workspaces.first()
@@ -712,11 +711,10 @@ class ReportModelTest(TestCase):
     def test_breeding_site_without_picture_is_not_published_if_country_does_not_allow_public_on_create(
         self,
     ):
-        disabled_publish_country = EuropeCountry.objects.create(
-            cntr_id="RD",
+        disabled_publish_country = Country.objects.create(
             name_engl="Random",
             iso3_code="RND",
-            fid="RD",
+            wikidata_id="Q12345",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
         workspace = disabled_publish_country.workspaces.first()
@@ -756,11 +754,10 @@ class ReportModelTest(TestCase):
     def test_adult_without_picture_is_not_published_if_country_does_not_allow_public_on_create(
         self,
     ):
-        disabled_publish_country = EuropeCountry.objects.create(
-            cntr_id="RD",
+        disabled_publish_country = Country.objects.create(
             name_engl="Random",
             iso3_code="RND",
-            fid="RD",
+            wikidata_id="Q12345",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
         )
         workspace = disabled_publish_country.workspaces.first()

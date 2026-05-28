@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
-from mosquito_alert.geo.models import EuropeCountry
+from mosquito_alert.geo.models import Country
 from mosquito_alert.users.models import TigaUser
 from mosquito_alert.workspaces.models import Workspace
 
@@ -47,7 +47,7 @@ class ReportQuerySet(models.QuerySet):
             if has_view_perm:
                 return qs
 
-            countries_in_workspace = EuropeCountry.objects.filter(
+            countries_in_workspace = Country.objects.filter(
                 workspaces__members=user,
                 workspaces__geom__isnull=True,
             )

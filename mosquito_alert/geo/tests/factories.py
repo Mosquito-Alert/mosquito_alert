@@ -8,7 +8,7 @@ from django.db.models.signals import post_save
 from shapely import wkt
 from shapely.affinity import scale
 
-from ..models import EuropeCountry, NutsEurope
+from ..models import Country, NutsEurope
 
 from .fuzzy import FuzzyMultiPolygon, FuzzyGriddedPolygon
 
@@ -38,25 +38,22 @@ def scale_geom(geom: GEOSGeometry, factor=0.1):
     return GEOSGeometry(scaled.wkt, srid=geom.srid)
 
 
-class EuropeCountryFactory(DjangoModelFactory):
-    fid = factory.Sequence(lambda n: "%s" % n)
-    cntr_id = factory.Sequence(lambda n: "%s" % n)
+class CountryFactory(DjangoModelFactory):
     name_engl = factory.LazyAttribute(
-        lambda _: fake.country()[
-            : EuropeCountry._meta.get_field("name_engl").max_length
-        ]
+        lambda _: fake.country()[: Country._meta.get_field("name_engl").max_length]
     )
     iso3_code = factory.Sequence(lambda n: "%s" % n)
+    wikidata_id = factory.Sequence(lambda n: "Q%s" % n)
     geom = FuzzyMultiPolygon(srid=4326, polygon_klass=FuzzyGriddedPolygon)
 
     class Meta:
-        model = EuropeCountry
+        model = Country
 
 
 @factory.django.mute_signals(post_save)
-class EuropeCountryWithoutSignalFactoryFactory(EuropeCountryFactory):
+class CountryWithoutSignalFactoryFactory(CountryFactory):
     class Meta:
-        model = EuropeCountry
+        model = Country
 
 
 class NutsEuropeFactory(DjangoModelFactory):
@@ -65,7 +62,7 @@ class NutsEuropeFactory(DjangoModelFactory):
     cntr_code = factory.Sequence(lambda n: "%s" % n)
     name_latn = factory.Faker("province", locale="en_CA")
     nuts_name = factory.Faker("province", locale="en_CA")
-    europecountry = factory.SubFactory(EuropeCountryFactory)
+    europecountry = factory.SubFactory(CountryFactory)
 
     geom = factory.LazyAttribute(
         lambda obj: (

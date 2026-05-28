@@ -476,7 +476,7 @@ class OWCampaignsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         if country_id is not None:
             try:
                 country_int = int(country_id)
-                qs = qs.filter(country__gid=country_int)
+                qs = qs.filter(country__pk=country_int)
             except ValueError:
                 return None
         return qs
@@ -789,11 +789,11 @@ def coarse_filter_reports(request):
             )
         if country and country != "" and country != "all":
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.filter(
-                country__gid=int(country)
+                country__pk=int(country)
             )
         elif country == "all" and country_exclude != "":
             new_reports_unfiltered_qs = new_reports_unfiltered_qs.exclude(
-                country__gid=int(country_exclude)
+                country__pk=int(country_exclude)
             )
 
         results = (
