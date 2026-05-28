@@ -41,6 +41,7 @@ class Command(BaseCommand):
                 defaults={
                     "subregion": subregion,
                     "name_engl": feature.get("NAME_LONG"),
+                    "wikidata_id": feature.get("WIKIDATAID"),
                     "geom": geom,
                 },
             )

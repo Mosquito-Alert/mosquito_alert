@@ -5,16 +5,16 @@ from .models import Country, Subregion
 
 @admin.register(Country)
 class CountryAdmin(admin.ModelAdmin):
-    list_display = ("name_engl", "iso3_code")
+    list_display = ("name_engl", "iso3_code", "wikidata_id")
     ordering = ["name_engl"]
-    search_fields = ["name_engl", "iso3_code"]
+    search_fields = ["name_engl", "iso3_code", "wikidata_id"]
 
 
 class CountryAdminInline(admin.TabularInline):
     model = Country
     extra = 0
-    fields = ("name_engl", "iso3_code")
-    readonly_fields = ("name_engl", "iso3_code")
+    fields = ("name_engl", "iso3_code", "wikidata_id")
+    readonly_fields = ("name_engl", "iso3_code", "wikidata_id")
     can_delete = False
     show_change_link = True
 

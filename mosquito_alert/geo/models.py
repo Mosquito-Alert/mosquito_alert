@@ -6,6 +6,7 @@ import uuid
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
 from django.core.cache import cache
+from django.core.validators import RegexValidator
 from django.utils import timezone
 
 
@@ -52,6 +53,16 @@ class Country(models.Model):
         max_length=3,
         unique=True,
         help_text="ISO 3166-1 alpha-3 country code (3-letter code, e.g., ESP).",
+    )
+    wikidata_id = models.CharField(
+        max_length=16,
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=r"^Q\d+$",
+                message="Wikidata ID must start with 'Q' followed by digits (e.g., Q29).",
+            )
+        ],
     )
     geom = models.MultiPolygonField()
 
