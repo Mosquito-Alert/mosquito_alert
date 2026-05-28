@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('geo', '0006_country_wikidata_id'),
+        ('users', '0004_remove_userstat_national_supervisor_of_and_more')
     ]
 
     operations = [
