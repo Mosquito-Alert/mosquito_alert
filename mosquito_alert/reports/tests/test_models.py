@@ -646,6 +646,7 @@ class ReportModelTest(TestCase):
     def test_bite_is_not_published_if_country_does_not_allow_public_on_create(self):
         disabled_publish_country = Country.objects.create(
             name_engl="Random",
+            iso2_code="RD",
             iso3_code="RND",
             wikidata_id="Q12345",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
@@ -713,6 +714,7 @@ class ReportModelTest(TestCase):
     ):
         disabled_publish_country = Country.objects.create(
             name_engl="Random",
+            iso2_code="RD",
             iso3_code="RND",
             wikidata_id="Q12345",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
@@ -756,6 +758,7 @@ class ReportModelTest(TestCase):
     ):
         disabled_publish_country = Country.objects.create(
             name_engl="Random",
+            iso2_code="RD",
             iso3_code="RND",
             wikidata_id="Q12345",
             geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),

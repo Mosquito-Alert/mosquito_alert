@@ -143,7 +143,7 @@ def country():
     try:
         obj = Country.objects.get(iso3_code="RND")
     except Country.DoesNotExist:
-        obj = CountryFactory(iso3_code="RND", name_engl="Random")
+        obj = CountryFactory(iso3_code="RND", iso2_code="RD", name_engl="Random")
     return obj
 
 
@@ -151,6 +151,7 @@ def country():
 def es_country():
     obj, _ = Country.objects.get_or_create(
         name_engl="Spain",
+        iso2_code="ES",
         iso3_code="ESP",
         wikidata_id="Q29",
         geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
@@ -162,6 +163,7 @@ def es_country():
 def it_country():
     obj, _ = Country.objects.get_or_create(
         name_engl="Italy",
+        iso2_code="IT",
         iso3_code="ITA",
         wikidata_id="Q38",
         geom=MultiPolygon(Polygon.from_bbox((6.0, 36.0, 19.0, 47.0))),

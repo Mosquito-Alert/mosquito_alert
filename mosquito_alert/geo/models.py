@@ -49,6 +49,11 @@ class Country(models.Model):
     name_engl = models.CharField(
         max_length=44, help_text="Full name of the country in English (e.g., Spain)."
     )
+    iso2_code = models.CharField(
+        max_length=2,
+        null=True,
+        help_text="ISO 3166-1 alpha-2 country code (2-letter code, e.g., ES).",
+    )
     iso3_code = models.CharField(
         max_length=3,
         unique=True,
@@ -70,6 +75,13 @@ class Country(models.Model):
         ordering = ["name_engl"]
         db_table = "europe_countries"
         verbose_name_plural = "countries"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["iso2_code"],
+                name="unique_iso2_code",
+                condition=~models.Q(iso2_code__isnull=True),
+            )
+        ]
 
     def __str__(self):
         return self.name_engl
