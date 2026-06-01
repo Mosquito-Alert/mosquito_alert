@@ -962,9 +962,6 @@ class ExpertReportAnnotation(models.Model):
 
         # On create only
         if self._state.adding:
-            _userstat = self.user.userstat
-            _userstat.grabbed_reports += 1
-            _userstat.save()
             if not self.is_finished:
                 self.is_simplified = self._can_be_simplified()
 

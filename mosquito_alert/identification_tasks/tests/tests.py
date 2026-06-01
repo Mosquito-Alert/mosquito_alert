@@ -87,20 +87,6 @@ class TestExpertReportAnnotationModel:
         obj = ExpertReportAnnotation(confidence=confidence_value)
         assert obj.confidence_label == expected_result
 
-    def test_userstat_grabbed_reports_is_incremented_on_create(
-        self, user, identification_task
-    ):
-        userstat = user.userstat
-        assert userstat.grabbed_reports == 0
-
-        _ = ExpertReportAnnotation.objects.create(
-            user=user, identification_task=identification_task
-        )
-
-        userstat.refresh_from_db()
-
-        assert userstat.grabbed_reports == 1
-
     def test_identification_task_is_called_to_refresh_on_create(
         self, user, identification_task
     ):
