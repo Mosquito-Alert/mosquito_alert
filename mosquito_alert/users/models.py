@@ -48,11 +48,6 @@ class UserStat(UserRolePermissionMixin, models.Model):
         primary_key=True,
         on_delete=models.CASCADE,
     )
-    grabbed_reports = models.IntegerField(
-        "Grabbed reports",
-        default=0,
-        help_text="Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified",
-    )
     country = models.ForeignKey(
         Country,
         blank=True,
