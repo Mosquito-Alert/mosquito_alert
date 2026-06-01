@@ -34,7 +34,7 @@ class Workspace(models.Model):
         help_text="Whether the results of the workspace are visible to the public.",
     )
 
-    supervisor_exclusivity_days = models.IntegerField(
+    supervisor_exclusivity_days = models.PositiveSmallIntegerField(
         default=14,
         help_text="Number of days that a identification tasks in the queue is exclusively available to the supervisors.",
     )

@@ -1,0 +1,117 @@
+---
+
+test_name: Workspace collaboration can not be retrieved by users without permission.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - workspace_collaboration
+
+stages:
+  - name: Retrieve is not allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/{workspace_collaboration.pk}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: Non auth user can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{workspace_collaboration.pk}/"
+      method: "GET"
+    response:
+      status_code: 401
+
+---
+
+test_name: Workspace collaboration can be retrieved by users that are members and have no view permissions
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - workspace_collaboration
+    - workspace_collaboration_user_reviewer
+    - another_workspace_collaboration
+    - jwt_token_user
+
+stages:
+  - name: User without perm view can retrieve workspace_collaboration where is a member
+    request:
+      url: "{api_live_url}/{endpoint}/{workspace_collaboration.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
+  - name: User without perm view can retrieve workspace_collaboration where is a reviewer
+    request:
+      url: "{api_live_url}/{endpoint}/{workspace_collaboration_user_reviewer.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
+  - name: User without perm view cannot retrieve workspace_collaboration where is not a member
+    request:
+      url: "{api_live_url}/{endpoint}/{another_workspace_collaboration.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 404
+
+---
+
+test_name: Workspace collaboration can be retrieved by users that have view permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - workspace_collaboration
+    - workspace_collaboration_user_reviewer
+    - another_workspace_collaboration
+    - jwt_token_user_can_view
+
+stages:
+  - name: User with perm view can retrieve workspace_collaboration where is a member
+    request:
+      url: "{api_live_url}/{endpoint}/{workspace_collaboration.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
+  - name: User with perm view can retrieve workspace_collaboration where is a reviewer
+    request:
+      url: "{api_live_url}/{endpoint}/{workspace_collaboration_user_reviewer.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"
+  - name: User with perm view can retrieve workspace_collaboration where is not a member
+    request:
+      url: "{api_live_url}/{endpoint}/{another_workspace_collaboration.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_data_validation}"

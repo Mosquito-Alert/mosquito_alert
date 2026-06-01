@@ -43,6 +43,10 @@ from .views import (
     MessageViewSet,
     MySentMessageViewSet,
     MessageTopicViewSet,
+    WorkspaceViewSet,
+    MyWorkspaceViewSet,
+    WorkspaceCollaboratoratorViewSet,
+    MyWorkspaceCollaboratoratorViewSet,
 )
 
 
@@ -87,6 +91,12 @@ router.register(r"partners", PartnersViewSet)
 router.register(r"photos", PhotoViewSet)
 router.register(r"taxa", TaxaViewSet)
 router.register(r"users", UserViewSet)
+router.register(
+    r"workspaces/collaborations",
+    WorkspaceCollaboratoratorViewSet,
+    basename="workspace-collaborations",
+)
+router.register(r"workspaces", WorkspaceViewSet, basename="workspaces")
 
 token_obtain_view = TokenObtainPairView.as_view()
 token_obtain_view = extend_schema_view(
@@ -148,6 +158,16 @@ api_urlpatterns += [
         "me/identification-tasks/",
         MyIdentificationTaskViewSet.as_view({"get": "list"}),
         name="my-identification-tasks",
+    ),
+    path(
+        "me/workspaces/",
+        MyWorkspaceViewSet.as_view({"get": "list"}),
+        name="my-workspaces",
+    ),
+    path(
+        "me/workspaces/collaborations/",
+        MyWorkspaceCollaboratoratorViewSet.as_view({"get": "list"}),
+        name="my-workspace-collaborations",
     ),
 ]
 
