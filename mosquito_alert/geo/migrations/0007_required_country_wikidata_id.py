@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geo', '0006_country_wikidata_id'),
+        ('geo', '0006_country_wikidata_id_and_iso2_code'),
         ('users', '0004_remove_userstat_national_supervisor_of_and_more')
     ]
 

@@ -16,4 +16,13 @@ class Migration(migrations.Migration):
             name='wikidata_id',
             field=models.CharField(max_length=16, null=True, unique=True, validators=[django.core.validators.RegexValidator(message="Wikidata ID must start with 'Q' followed by digits (e.g., Q29).", regex='^Q\\d+$')]),
         ),
+        migrations.AddField(
+            model_name='country',
+            name='iso2_code',
+            field=models.CharField(help_text='ISO 3166-1 alpha-2 country code (2-letter code, e.g., ES).', max_length=2, null=True),
+        ),
+        migrations.AddConstraint(
+            model_name='country',
+            constraint=models.UniqueConstraint(condition=models.Q(('iso2_code__isnull', True), _negated=True), fields=('iso2_code',), name='unique_iso2_code'),
+        ),
     ]

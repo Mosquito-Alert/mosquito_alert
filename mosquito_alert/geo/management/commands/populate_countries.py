@@ -75,6 +75,7 @@ class Command(BaseCommand):
                     "subregion": subregion,
                     "name_engl": main_feature.get("NAME_LONG"),
                     "wikidata_id": main_feature.get("WIKIDATAID"),
+                    "iso2_code": iso2,
                     "geom": self._convert_to_multi(geom),
                 },
             )

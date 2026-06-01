@@ -27,6 +27,7 @@ def tiga_user(db):
 def country(db):
     return Country.objects.create(
         name_engl="test",
+        iso2_code="12",
         iso3_code="123",
         wikidata_id="Q123",
         geom=MultiPolygon(Polygon.from_bbox((0, 0, 1, 1))),
