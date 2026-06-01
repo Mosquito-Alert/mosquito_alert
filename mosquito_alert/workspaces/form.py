@@ -26,3 +26,8 @@ class WorkspaceAdminForm(forms.ModelForm):
 
             if geom:
                 self.initial["geom"] = geom
+
+    def clean_geom(self):
+        if self.instance.pk:
+            return self.instance.geom  # always keep original
+        return self.cleaned_data["geom"]
