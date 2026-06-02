@@ -43,7 +43,6 @@ class CountryFactory(DjangoModelFactory):
         lambda _: fake.country()[: Country._meta.get_field("name_engl").max_length]
     )
     iso3_code = factory.Sequence(lambda n: "%s" % n)
-    iso2_code = factory.Sequence(lambda n: "%s" % n)
     wikidata_id = factory.Sequence(lambda n: "Q%s" % n)
     geom = FuzzyMultiPolygon(srid=4326, polygon_klass=FuzzyGriddedPolygon)
 
