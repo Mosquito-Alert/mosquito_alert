@@ -1531,19 +1531,24 @@ class TestIdentificationTaskReviewApi:
         return f"/api/v1/identification-tasks/{identification_task.report.pk}/review/"
 
     @pytest.fixture
-    def api_client(self, user_with_role_reviewer):
+    def api_client(self, user_with_role_reviewer_in_country):
         api_client = APIClient()
-        api_client.force_login(user=user_with_role_reviewer)
+        api_client.force_login(user=user_with_role_reviewer_in_country)
 
         return api_client
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_agree_review(
-        self, api_client, endpoint, user_with_role_reviewer, identification_task
+        self,
+        api_client,
+        endpoint,
+        user_with_role_reviewer_in_country,
+        identification_task,
     ):
         assert (
             ExpertReportAnnotation.objects.filter(
-                identification_task=identification_task, user=user_with_role_reviewer
+                identification_task=identification_task,
+                user=user_with_role_reviewer_in_country,
             ).count()
             == 0
         )
@@ -1558,7 +1563,8 @@ class TestIdentificationTaskReviewApi:
         # Not expert report annotation created
         assert (
             ExpertReportAnnotation.objects.filter(
-                identification_task=identification_task, user=user_with_role_reviewer
+                identification_task=identification_task,
+                user=user_with_role_reviewer_in_country,
             ).count()
             == 0
         )
@@ -1566,21 +1572,22 @@ class TestIdentificationTaskReviewApi:
         identification_task.refresh_from_db()
         assert identification_task.review_type == IdentificationTask.Review.AGREE
         assert identification_task.reviewed_at == timezone.now()
-        assert identification_task.reviewed_by == user_with_role_reviewer
+        assert identification_task.reviewed_by == user_with_role_reviewer_in_country
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_overwrite_review_create_expertreportannotation(
         self,
         api_client,
         endpoint,
-        user_with_role_reviewer,
+        user_with_role_reviewer_in_country,
         identification_task,
         taxon_root,
         dummy_image,
     ):
         assert (
             ExpertReportAnnotation.objects.filter(
-                identification_task=identification_task, user=user_with_role_reviewer
+                identification_task=identification_task,
+                user=user_with_role_reviewer_in_country,
             ).count()
             == 0
         )
@@ -1607,7 +1614,8 @@ class TestIdentificationTaskReviewApi:
         assert response.status_code == status.HTTP_201_CREATED
 
         annotation = ExpertReportAnnotation.objects.get(
-            identification_task=identification_task, user=user_with_role_reviewer
+            identification_task=identification_task,
+            user=user_with_role_reviewer_in_country,
         )
         assert annotation.decision_level == ExpertReportAnnotation.DecisionLevel.FINAL
         assert annotation.status == ExpertReportAnnotation.Status.PUBLIC
@@ -1618,7 +1626,7 @@ class TestIdentificationTaskReviewApi:
         identification_task.refresh_from_db()
         assert identification_task.review_type == IdentificationTask.Review.OVERWRITE
         assert identification_task.reviewed_at == timezone.now()
-        assert identification_task.reviewed_by == user_with_role_reviewer
+        assert identification_task.reviewed_by == user_with_role_reviewer_in_country
         assert identification_task.is_safe
         assert identification_task.public_note == "new test public note"
         assert identification_task.taxon == taxon_root
@@ -1699,7 +1707,7 @@ class TestIdentificationTaskReviewApi:
         self,
         api_client,
         endpoint,
-        user_with_role_reviewer,
+        user_with_role_reviewer_in_country,
         identification_task,
         dummy_image,
         taxon,
@@ -1710,7 +1718,8 @@ class TestIdentificationTaskReviewApi:
     ):
         assert (
             ExpertReportAnnotation.objects.filter(
-                identification_task=identification_task, user=user_with_role_reviewer
+                identification_task=identification_task,
+                user=user_with_role_reviewer_in_country,
             ).count()
             == 0
         )
@@ -1742,7 +1751,8 @@ class TestIdentificationTaskReviewApi:
         assert response.status_code == expected_status_code
         if expected_status_code == status.HTTP_201_CREATED:
             annotation = ExpertReportAnnotation.objects.get(
-                identification_task=identification_task, user=user_with_role_reviewer
+                identification_task=identification_task,
+                user=user_with_role_reviewer_in_country,
             )
             assert annotation.sex == sex
             assert annotation.is_blood_fed == is_blood_fed
@@ -1757,7 +1767,7 @@ class TestIdentificationTaskReviewApi:
         self,
         api_client,
         endpoint,
-        user_with_role_reviewer,
+        user_with_role_reviewer_in_country,
         dummy_image,
         identification_task,
         taxon_root,
@@ -1765,7 +1775,7 @@ class TestIdentificationTaskReviewApi:
         # Create a review with characteristics
         review = create_review(
             identification_task=identification_task,
-            user=user_with_role_reviewer,
+            user=user_with_role_reviewer_in_country,
             taxon=taxon_root,
             confidence=1.0,
             sex="female",
@@ -1817,7 +1827,6 @@ class TestPermissionsApi:
     def test_general_role_base(self, api_client, me_endpoint):
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "base"
 
     def test_general_role_reviewer(self, api_client, user, me_endpoint):
         grant_permission_to_user(
@@ -1826,7 +1835,6 @@ class TestPermissionsApi:
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "reviewer"  # TODO: remove
         assert response.data["general"]["permissions"]["review"]["add"]
         assert response.data["general"]["permissions"]["review"]["view"]
         assert response.data["general"]["permissions"]["message"]["add"]
@@ -1838,16 +1846,6 @@ class TestPermissionsApi:
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "admin"
-
-    @pytest.mark.parametrize("is_staff", [True, False])
-    def test_general_is_staff(self, user, api_client, me_endpoint, is_staff):
-        user.is_staff = is_staff
-        user.save()
-
-        response = api_client.get(me_endpoint, format="json")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["is_staff"] == is_staff
 
     def test_countries_role_supervisor(self, api_client, user, me_endpoint, country):
         WorkspaceMembership.objects.create(
@@ -1858,9 +1856,7 @@ class TestPermissionsApi:
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "base"  # TODO: remove
         assert response.data["countries"][0]["country"]["id"] == country.pk
-        assert response.data["countries"][0]["role"] == "supervisor"
         assert response.data["countries"][0]["permissions"]["annotation"][
             "mark_as_executive"
         ]
@@ -1879,8 +1875,6 @@ class TestPermissionsApi:
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["role"] == "base"  # TODO: remove
-        assert response.data["countries"][0]["role"] == "annotator"
         assert response.data["countries"][0]["country"]["id"] == country.pk
         assert not response.data["countries"][0]["permissions"]["annotation"][
             "mark_as_executive"

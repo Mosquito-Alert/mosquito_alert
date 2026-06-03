@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from datetime import datetime
 from typing import Literal, Optional, Union
 from uuid import UUID
@@ -16,7 +15,6 @@ from rest_framework import serializers
 from drf_extra_fields.geo_fields import PointField
 import minify_html
 from rest_framework_csv.renderers import CSVStreamingRenderer
-from rest_framework_dataclasses.serializers import DataclassSerializer
 from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from taggit.serializers import TaggitSerializer, TagListSerializerField
@@ -45,7 +43,7 @@ from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import UserStat, TigaUser
-from mosquito_alert.users.permissions import Permissions, Role
+from mosquito_alert.workspaces.models import Workspace, WorkspaceMembership
 
 from .base_serializers import LocalizedModelSerializerMixin
 from .fields import (
@@ -127,89 +125,84 @@ class FixSerializer(serializers.ModelSerializer):
         }
 
 
-class PermissionsSerializer(DataclassSerializer):
-    class Meta:
-        dataclass = Permissions
+class BaseCRUDPermissionSerializer(serializers.Serializer):
+    add = serializers.BooleanField()
+    change = serializers.BooleanField()
+    view = serializers.BooleanField()
+    delete = serializers.BooleanField()
 
 
-class BaseRolePermissionSerializer(serializers.Serializer):
-    role = serializers.SerializerMethodField()  # TODO: remove here, only to countries
-    permissions = serializers.SerializerMethodField()
+class PermissionsSerializer(serializers.Serializer):
+    class AnnotationPermissionSerializer(BaseCRUDPermissionSerializer):
+        pass
 
-    @abstractmethod
-    def _get_role(self, obj: Union[User, TigaUser]) -> Role:
-        raise NotImplementedError
+    class IdentificationTaskPermissionSerializer(BaseCRUDPermissionSerializer):
+        pass
 
-    def get_role(self, obj: Union[User, TigaUser]) -> Role:
-        if isinstance(obj, User):
-            try:
-                obj = obj.userstat
-            except UserStat.DoesNotExist:
-                obj = None
+    class ReviewPermissionSerializer(BaseCRUDPermissionSerializer):
+        pass
 
-        if not obj:
-            obj = TigaUser()
-        return self._get_role(obj=obj)
+    class MessagePermissionSerializer(BaseCRUDPermissionSerializer):
+        pass
 
-    @extend_schema_field(PermissionsSerializer)
-    def get_permissions(self, obj: Union[User, TigaUser]):
-        if isinstance(obj, User):
-            try:
-                obj = obj.userstat
-            except UserStat.DoesNotExist:
-                obj = None
+    annotation = AnnotationPermissionSerializer()
+    identification_task = IdentificationTaskPermissionSerializer()
+    review = ReviewPermissionSerializer()
+    message = MessagePermissionSerializer()
 
-        if not obj:
-            obj = TigaUser()
+    @classmethod
+    def from_user(cls, user):
+        def crud_perms(app_label: str, model_name: str):
+            return {
+                action: user.has_perm(f"{app_label}.{action}_{model_name}")
+                for action in ("add", "change", "view", "delete")
+            }
 
-        permissions = obj.get_role_permissions(role=self.get_role(obj=obj))
-        return PermissionsSerializer(permissions).data
+        has_add_review_perm = user.has_perm(
+            "%(app_label)s.add_review"
+            % {"app_label": IdentificationTask._meta.app_label}
+        )
+
+        return cls(
+            {
+                "annotation": crud_perms(
+                    ExpertReportAnnotation._meta.app_label,
+                    ExpertReportAnnotation._meta.model_name,
+                ),
+                "identification_task": crud_perms(
+                    IdentificationTask._meta.app_label,
+                    IdentificationTask._meta.model_name,
+                ),
+                "review": {
+                    "add": has_add_review_perm,
+                    "change": has_add_review_perm,
+                    "view": has_add_review_perm,
+                    "delete": False,
+                },
+                "message": crud_perms(
+                    Notification._meta.app_label,
+                    Notification._meta.model_name,
+                ),
+            }
+        )
 
 
 class UserPermissionSerializer(serializers.Serializer):
-    class GeneralPermissionSerializer(BaseRolePermissionSerializer):
-        is_staff = serializers.BooleanField()  # TODO: remove
+    class GeneralPermissionSerializer(serializers.Serializer):
+        permissions = serializers.SerializerMethodField()
 
-        def _get_role(self, obj: Union[User, TigaUser]) -> Role:
-            return obj.get_role()
+        @extend_schema_field(PermissionsSerializer)
+        def get_permissions(self, obj: Union[User, TigaUser]):
+            if not isinstance(obj, User):
+                return None
 
-    class CountryPermissionSerializer(BaseRolePermissionSerializer):
-        def __init__(self, *args, **kwargs):
-            self.country = kwargs.pop("country", None)
-            super().__init__(*args, **kwargs)
-
-        country = serializers.SerializerMethodField()
-
-        def _get_role(self, obj: Union[User, TigaUser]) -> Role:
-            return obj.get_role(country=self.country)
-
-        @extend_schema_field(CountrySerializer)
-        def get_country(self, obj: Union[User, TigaUser]):
-            return CountrySerializer(self.country).data
+            return PermissionsSerializer.from_user(obj).data
 
     general = serializers.SerializerMethodField()
-    countries = serializers.SerializerMethodField()
 
     @extend_schema_field(GeneralPermissionSerializer)
     def get_general(self, obj: Union[User, TigaUser]):
         return self.GeneralPermissionSerializer(obj).data
-
-    @extend_schema_field(CountryPermissionSerializer(many=True))
-    def get_countries(self, obj: Union[User, TigaUser]):
-        if isinstance(obj, User):
-            try:
-                obj = obj.userstat
-            except UserStat.DoesNotExist:
-                obj = None
-        if not obj:
-            return self.CountryPermissionSerializer(many=True).data
-
-        result = []
-        for country in obj.get_countries_with_roles():
-            result.append(
-                self.CountryPermissionSerializer(instance=obj, country=country).data
-            )
-        return result
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -1194,19 +1187,16 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
             if data.pop("is_executive", False)
             else ExpertReportAnnotation.DecisionLevel.NORMAL
         )
-        user_role = data["user"]
-        if isinstance(user_role, User):
-            try:
-                user_role = user_role.userstat
-            except UserStat.DoesNotExist:
-                user_role = None
-        can_set_is_executive = False
-        if user_role:
-            can_set_is_executive = user_role.has_role_permission_by_model(
-                action="mark_as_executive",
-                model=ExpertReportAnnotation,
-                country=data["identification_task"].report.country,
+
+        can_set_is_executive = (
+            Workspace.objects.filter(country=data["identification_task"].report.country)
+            .filter(
+                memberships__user=data["user"],
+                memberships__role=WorkspaceMembership.Role.SUPERVISOR,
             )
+            .exists()
+        )
+
         if not can_set_is_executive:
             data["decision_level"] = ExpertReportAnnotation.DecisionLevel.NORMAL
         return data

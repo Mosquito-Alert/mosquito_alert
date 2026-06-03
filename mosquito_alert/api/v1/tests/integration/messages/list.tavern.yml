@@ -50,8 +50,8 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
+    - user_message_sent_by_other_user
     - jwt_token_user_can_view
-    - user_message
 
 stages:
   - name: User with perm can list
@@ -67,7 +67,7 @@ stages:
       json:
         count: 1
         results:
-          - id: !int "{user_message.pk}"
+          - id: !int "{user_message_sent_by_other_user.pk}"
 
 ---
 

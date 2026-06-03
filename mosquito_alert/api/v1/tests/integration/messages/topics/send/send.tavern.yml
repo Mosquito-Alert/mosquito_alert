@@ -149,7 +149,7 @@ stages:
 
 ---
 
-test_name: Users with role reviewer can create messages
+test_name: Collaboration reviewer can create messages
 
 includes:
   - !include schema.yml
@@ -158,7 +158,7 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
-    - user_with_role_reviewer
+    - user_with_role_reviewer_in_country
     - topic
     - jwt_token_user
 

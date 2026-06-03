@@ -7,7 +7,6 @@ variables:
   endpoint: "permissions"
   response_data_validation:
     general:
-      role: !anystr
       permissions: &retrieve_validation
         annotation:
           add: !anybool
@@ -30,7 +29,6 @@ variables:
           change: !anybool
           view: !anybool
           delete: !anybool
-      is_staff: !anybool
     countries:
       country:
         id: !anyint
