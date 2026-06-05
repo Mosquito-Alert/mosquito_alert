@@ -1135,11 +1135,24 @@ class IdentificationTaskViewSet(
             return result
 
         def create(self, request, *args, **kwargs):
+            identification_task = self.get_identification_task_obj()
+            # # Check user has permissions to create an annotation for that observation
+            can_create = request.user.has_perm(
+                "%(app_label)s.add_%(model_name)s"
+                % {
+                    "app_label": ExpertReportAnnotation._meta.app_label,
+                    "model_name": ExpertReportAnnotation._meta.model_name,
+                },
+                obj=identification_task,
+            )
+            if not can_create:
+                self.permission_denied(request)
+
             # Check if it was assigned only (not completed)
             pending_annotation = (
                 ExpertReportAnnotation.objects.completed(False)
                 .filter(
-                    identification_task_id=self.kwargs["observation_uuid"],
+                    identification_task=identification_task,
                     user=request.user,
                 )
                 .first()

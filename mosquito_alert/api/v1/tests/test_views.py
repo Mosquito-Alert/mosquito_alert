@@ -28,6 +28,9 @@ from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
     PhotoPrediction,
 )
+from mosquito_alert.identification_tasks.tests.factories import (
+    IdentificationTaskFactory,
+)
 from mosquito_alert.geo.tests.factories import CountryFactory
 from mosquito_alert.geo.tests.fuzzy import FuzzyGriddedPolygon
 from mosquito_alert.notifications.models import (
@@ -43,7 +46,10 @@ from mosquito_alert.reports.tests.factories import (
 )
 from mosquito_alert.users.models import TigaUser
 from mosquito_alert.workspaces.models import WorkspaceMembership
-from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
+from mosquito_alert.workspaces.tests.factories import (
+    WorkspaceFactory,
+    WorkspaceCollaborationGroupFactory,
+)
 
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
 from mosquito_alert.api.v1.tests.integration.observations.factories import (
@@ -1196,11 +1202,13 @@ class TestDeviceAPI:
 @pytest.mark.django_db
 @pytest.mark.usefixtures("taxa")
 class TestIdentificationTaskAnnotationsApi:
+    @staticmethod
+    def build_url(identification_task: IdentificationTask):
+        return f"/api/v1/identification-tasks/{identification_task.pk}/annotations/"
+
     @pytest.fixture
     def endpoint(self, identification_task):
-        return (
-            f"/api/v1/identification-tasks/{identification_task.report.pk}/annotations/"
-        )
+        return self.build_url(identification_task)
 
     @pytest.fixture
     def api_client(self, user):
@@ -1521,6 +1529,32 @@ class TestIdentificationTaskAnnotationsApi:
         annotation = ExpertReportAnnotation.objects.get(pk=response.data["id"])
         assert annotation.status == ExpertReportAnnotation.Status.HIDDEN
         assert annotation.taxon is None
+
+    @pytest.mark.parametrize("in_workspace_collaboration", [True, False])
+    def test_annotate_to_workspace_without_perms_should_return_403(
+        self, api_client, user, common_post_data, in_workspace_collaboration
+    ):
+        workspace = WorkspaceFactory()
+        WorkspaceMembership.objects.create(
+            workspace=workspace, user=user, role=WorkspaceMembership.Role.ANNOTATOR
+        )
+        another_workspace = WorkspaceFactory()
+        if in_workspace_collaboration:
+            WorkspaceCollaborationGroupFactory(
+                workspaces=[workspace, another_workspace],
+            )
+
+        identification_task = IdentificationTaskFactory(
+            report__point=another_workspace.country.geom.point_on_surface
+        )
+
+        endpoint = self.build_url(identification_task)
+        response = api_client.post(endpoint, data=common_post_data, format="json")
+        assert response.status_code == (
+            status.HTTP_201_CREATED
+            if in_workspace_collaboration
+            else status.HTTP_403_FORBIDDEN
+        )
 
 
 @pytest.mark.django_db

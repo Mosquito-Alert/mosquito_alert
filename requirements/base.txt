@@ -33,6 +33,7 @@ django-taggit==4.0.0
 django-treebeard==4.7.1
 django-modeltranslation==0.18.12
 fcm-django==2.3.1
+rules==3.5
 
 # Django Admin
 django-admin-numeric-filter==0.1.9

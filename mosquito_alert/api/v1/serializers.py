@@ -17,6 +17,7 @@ import minify_html
 from rest_framework_csv.renderers import CSVStreamingRenderer
 from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
+import rules
 from taggit.serializers import TaggitSerializer, TagListSerializerField
 
 from mosquito_alert.campaigns.models import OWCampaigns
@@ -43,7 +44,6 @@ from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import UserStat, TigaUser
-from mosquito_alert.workspaces.models import Workspace, WorkspaceMembership
 
 from .base_serializers import LocalizedModelSerializerMixin
 from .fields import (
@@ -1188,13 +1188,8 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
             else ExpertReportAnnotation.DecisionLevel.NORMAL
         )
 
-        can_set_is_executive = (
-            Workspace.objects.filter(country=data["identification_task"].report.country)
-            .filter(
-                memberships__user=data["user"],
-                memberships__role=WorkspaceMembership.Role.SUPERVISOR,
-            )
-            .exists()
+        can_set_is_executive = rules.test_rule(
+            "can_set_executive_annotation", data["user"], data["identification_task"]
         )
 
         if not can_set_is_executive:

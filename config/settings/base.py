@@ -117,6 +117,7 @@ THIRD_PARTY_APPS = [
     "drf_standardized_errors",
     "treebeard",
     "django_lifecycle_checks",
+    "rules.apps.AutodiscoverRulesConfig",
 ]
 LOCAL_APPS = [
     "mosquito_alert.api",
@@ -144,6 +145,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
+    "rules.permissions.ObjectPermissionBackend",
     "django.contrib.auth.backends.ModelBackend",
     "mosquito_alert.users.backends.AppUserBackend",
 ]

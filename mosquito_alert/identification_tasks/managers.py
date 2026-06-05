@@ -63,21 +63,14 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
     def backlog(self, user: User) -> QuerySet:
         """Awaiting assignment but part of the annotation cycle for this user."""
-        from .models import IdentificationTask
+        from .rules import has_global_identification_task_permission
 
         qs = self._assignable()
 
         if not isinstance(user, User):
             return qs.none()
 
-        has_role_view_perm = user.has_perm(
-            "%(app_label)s.view_%(model_name)s"
-            % {
-                "app_label": IdentificationTask._meta.app_label,
-                "model_name": IdentificationTask._meta.model_name,
-            }
-        )
-        if has_role_view_perm:
+        if has_global_identification_task_permission(type="view")(user=user):
             # Has global view permission, can see all tasks.
             return qs
 
@@ -331,6 +324,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
     # OTHER QUERYSETS
     def browsable(self, user: Union[User, TigaUser]) -> QuerySet:
         from .models import IdentificationTask
+        from .rules import has_global_identification_task_permission
 
         qs = self
 
@@ -344,14 +338,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
         if not user.has_perm(view_archived_perm):
             qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
 
-        has_role_view_perm = user.has_perm(
-            "%(app_label)s.view_%(model_name)s"
-            % {
-                "app_label": IdentificationTask._meta.app_label,
-                "model_name": IdentificationTask._meta.model_name,
-            }
-        )
-        if has_role_view_perm:
+        if has_global_identification_task_permission(type="view")(user=user):
             # Has global view permission, can see all tasks.
             return qs
 

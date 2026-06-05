@@ -1,16 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import MultipleObjectsReturned
-from django.db import models
 
 from rest_framework import permissions
 
-from mosquito_alert.identification_tasks.models import (
-    IdentificationTask,
-    ExpertReportAnnotation,
-)
+from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
 from mosquito_alert.notifications.models import Notification, NotificationRecipient
 from mosquito_alert.users.models import TigaUser
-from mosquito_alert.workspaces.models import Workspace, WorkspaceMembership
 
 from .utils import get_fk_fieldnames
 
@@ -40,6 +35,23 @@ class DjangoRegularUserModelPermissions(permissions.DjangoModelPermissions):
 
 
 class FullDjangoModelPermissions(DjangoRegularUserModelPermissions):
+    perms_map = {
+        **permissions.DjangoObjectPermissions.perms_map,
+        "GET": ["%(app_label)s.view_%(model_name)s"],
+    }
+
+
+class DjangoRegularUserObjectPermissions(permissions.DjangoObjectPermissions):
+    def has_permission(self, request, view):
+        return isinstance(request.user, User) and super().has_permission(request, view)
+
+    def has_object_permission(self, request, view, obj):
+        return isinstance(request.user, User) and super().has_object_permission(
+            request, view, obj
+        )
+
+
+class FullDjangoObjectPermissions(DjangoRegularUserObjectPermissions):
     perms_map = {
         **permissions.DjangoObjectPermissions.perms_map,
         "GET": ["%(app_label)s.view_%(model_name)s"],
@@ -106,28 +118,6 @@ class UserPermissions(FullDjangoModelPermissions):
 
         perms = self.get_required_permissions(request.method, obj._meta.model)
         return request.user.has_perms(perms)
-
-
-class IsWorkspaceUser(FullDjangoModelPermissions):
-    def has_permission(self, request, view):
-        if not isinstance(request.user, User):
-            return False
-
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        result = super().has_permission(request, view)
-        if not result and view.action in ["list", "retrieve", "list_mine"]:
-            result = (
-                request.user
-                and request.user.is_authenticated
-                and Workspace.objects.filter(
-                    models.Q(members=request.user)
-                    | models.Q(collaboration_groups__reviewers=request.user)
-                ).exists()
-            )
-
-        return result
 
 
 class NotificationObjectPermissions(UserObjectPermissions):
@@ -217,53 +207,8 @@ class MyReportPermissions(ReportPermissions):
         return False
 
 
-class BaseIdentificationTaskPermissions(IsWorkspaceUser):
-    def _check_is_annotator(self, request, view, obj) -> bool:
-        if isinstance(request.user, TigaUser):
-            return False
-
-        if isinstance(obj, IdentificationTask):
-            task = obj
-        else:
-            inferred_fieldnames = get_fk_fieldnames(
-                model=obj._meta.model, related_model=IdentificationTask
-            )
-            if len(inferred_fieldnames) > 1:
-                raise MultipleObjectsReturned(
-                    f"Model {obj._meta.model} has {len(inferred_fieldnames)} relation to model {TigaUser}."
-                )
-            task_fname = inferred_fieldnames[0]
-            if not hasattr(obj, task_fname):
-                return False
-            task = getattr(obj, task_fname)
-        return task.annotators.filter(pk=request.user.pk).exists()
-
-    def has_object_permission(self, request, view, obj):
-        if not super().has_object_permission(request, view, obj):
-            return False
-
-        result = super().has_permission(request, view)
-
-        if not result and view.action == "retrieve":
-            if self._check_is_annotator(request, view, obj):
-                result = True
-
-        return result
-
-
-class IdentificationTaskPermissions(BaseIdentificationTaskPermissions):
-    def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        role_perm = False
-        if request.method == "GET" and isinstance(request.user, User):
-            role_perm = (
-                request.user.workspace_memberships.all().exists()
-                or request.user.collaboration_groups_as_reviewer.all().exists()
-            )
-
-        return super().has_permission(request, view) or role_perm
+class IdentificationTaskPermissions(FullDjangoObjectPermissions):
+    pass
 
 
 class MyIdentificationTaskPermissions(DjangoRegularUserModelPermissions):
@@ -275,82 +220,35 @@ class IdentificationTaskAssignmentPermissions(IsRegularUser):
         if not super().has_permission(request, view):
             return False
 
-        return (
-            request.user.has_perm(
+        if view.action == "assign_next":
+            # Only people who can add annotations.
+            return request.user.has_perm(
                 "%(app_label)s.add_%(model_name)s"
                 % {
                     "app_label": ExpertReportAnnotation._meta.app_label,
                     "model_name": ExpertReportAnnotation._meta.model_name,
                 }
             )
-            or request.user.collaboration_groups_as_reviewer.all().exists()
-            or request.user.workspace_memberships.filter(
-                role__in=[
-                    WorkspaceMembership.Role.ANNOTATOR,
-                    WorkspaceMembership.Role.SUPERVISOR,
-                ]
-            ).exists()
-        )
+
+        return False
 
 
-class IdentificationTaskReviewPermissions(IsRegularUser):
-    def has_permission(self, request, view):
-        if not super().has_permission(request, view):
-            return False
-
-        has_review_permissions = request.user.has_perm(
-            "%(app_label)s.add_review"
-            % {"app_label": IdentificationTask._meta.app_label}
-        )
-
-        return (
-            has_review_permissions
-            or request.user.collaboration_groups_as_reviewer.all().exists()
-        )
+class IdentificationTaskReviewPermissions(DjangoRegularUserObjectPermissions):
+    perms_map = {
+        **DjangoRegularUserObjectPermissions.perms_map,
+        "POST": ["%(app_label)s.add_review"],
+    }
 
 
-class BaseIdentificationTaskAttributePermissions(BaseIdentificationTaskPermissions):
+class AnnotationPermissions(FullDjangoObjectPermissions):
     pass
-
-
-class AnnotationPermissions(BaseIdentificationTaskAttributePermissions):
-    def has_permission(self, request, view):
-        if not isinstance(request.user, User):
-            return False
-
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        result = super().has_permission(request, view)
-        if not result and view.action in ["create"]:
-            # Only annotators, supervisors or reviewers can create annotations.
-            result = Workspace.objects.filter(
-                models.Q(
-                    memberships__user=request.user,
-                    memberships__role__in=[
-                        WorkspaceMembership.Role.ANNOTATOR,
-                        WorkspaceMembership.Role.SUPERVISOR,
-                    ],
-                )
-                | models.Q(collaboration_groups__reviewers=request.user)
-            ).exists()
-
-        return result
-
-    # Always allow retrieve owned attributes
-    def has_object_permission(self, request, view, obj):
-        # Allow retrieve if user is the owner
-        if view.action == "retrieve":
-            if obj.user == request.user:
-                return True
-        return super().has_object_permission(request, view, obj)
 
 
 class MyAnnotationPermissions(DjangoRegularUserModelPermissions):
     pass
 
 
-class PhotoPredictionPermissions(BaseIdentificationTaskAttributePermissions):
+class PhotoPredictionPermissions(FullDjangoModelPermissions):
     pass
 
 
