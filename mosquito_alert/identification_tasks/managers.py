@@ -8,7 +8,6 @@ from django.db.models.functions import Coalesce
 from django.db.models.query import QuerySet
 from django.utils import timezone
 
-from mosquito_alert.geo.models import Country
 from mosquito_alert.users.models import TigaUser, UserStat
 from mosquito_alert.workspaces.models import (
     Workspace,
@@ -64,28 +63,26 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
     def backlog(self, user: User) -> QuerySet:
         """Awaiting assignment but part of the annotation cycle for this user."""
-        from .models import IdentificationTask
+        from .rules import has_global_identification_task_permission
 
         qs = self._assignable()
 
         if not isinstance(user, User):
             return qs.none()
 
-        userstat: Optional[UserStat] = None
-        try:
-            userstat = user.userstat
-        except UserStat.DoesNotExist:
-            pass
-        has_role_view_perm = userstat and userstat.has_role_permission_by_model(
-            action="view", model=IdentificationTask, country=None
-        )
-        if has_role_view_perm:
+        if has_global_identification_task_permission(type="view")(user=user):
             # Has global view permission, can see all tasks.
             return qs
 
         qs = qs.exclude(assignees=user)
 
         user_workspace_qs = Workspace.objects.filter(memberships__user=user)
+
+        userstat: Optional[UserStat] = None
+        try:
+            userstat = user.userstat
+        except UserStat.DoesNotExist:
+            pass
 
         # Prioritize tasks by:
         # 1. Tasks from user's workspace where they have permissions (supervisor or annotator)
@@ -327,6 +324,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
     # OTHER QUERYSETS
     def browsable(self, user: Union[User, TigaUser]) -> QuerySet:
         from .models import IdentificationTask
+        from .rules import has_global_identification_task_permission
 
         qs = self
 
@@ -340,60 +338,44 @@ class IdentificationTaskQuerySet(models.QuerySet):
         if not user.has_perm(view_archived_perm):
             qs = qs.exclude(status=IdentificationTask.Status.ARCHIVED)
 
-        userstat: Optional[UserStat] = None
-        try:
-            userstat = user.userstat
-        except UserStat.DoesNotExist:
-            pass
-        has_role_view_perm = userstat and userstat.has_role_permission_by_model(
-            action="view", model=IdentificationTask, country=None
-        )
-        if has_role_view_perm:
+        if has_global_identification_task_permission(type="view")(user=user):
             # Has global view permission, can see all tasks.
             return qs
 
         result_qs = self.annotated_by(users=[user])
-        # Filter by countries if user has region-specific permissions
-        if userstat:
-            country_lookup = models.Q()
-            view_countries = (
-                userstat.get_countries_with_permissions(
-                    action="view", model=IdentificationTask
+
+        # Filter by workspaces depending on the permissions
+        lookup = models.Q()
+        workspaces = Workspace.objects.filter(
+            models.Q(members=user) | models.Q(collaboration_groups__reviewers=user)
+        ).annotate(
+            is_supervisor=models.Exists(
+                WorkspaceMembership.objects.filter(
+                    user=user,
+                    role=WorkspaceMembership.Role.SUPERVISOR,
+                    workspace_id=models.OuterRef("pk"),
                 )
-                if userstat
-                else []
-            )
-            if view_countries:
-                country_lookup |= models.Q(report__country__in=view_countries)
-
-            country_workspace_member = Country.objects.filter(
-                workspaces__members=user, workspaces__geom__isnull=True
-            )
-            if country_workspace_member:
-                country_lookup |= models.Q(
-                    report__country__in=country_workspace_member,
-                    status=IdentificationTask.Status.DONE,
+            ),
+            is_reviewer=models.Exists(
+                WorkspaceCollaborationGroup.objects.filter(
+                    workspaces__pk=models.OuterRef("pk"), reviewers=user
                 )
-
-            supervisor_workspace_ids = user.workspace_memberships.filter(
-                role=WorkspaceMembership.Role.SUPERVISOR,
-            ).values_list("workspace_id", flat=True)
-
-            subregion_workspace = Workspace.objects.filter(
-                members=user, geom__isnull=False
+            ),
+        )
+        for workspace in workspaces.iterator():
+            q = models.Q(
+                report__country=workspace.country,
             )
-            for workspace in subregion_workspace:
-                q = models.Q(
-                    report__country=workspace.country,
-                    report__point__within=workspace.geom,
-                )
-                if workspace.pk not in supervisor_workspace_ids:
-                    q &= models.Q(status=IdentificationTask.Status.DONE)
+            if workspace.geom:
+                q &= models.Q(report__point__within=workspace.geom)
 
-                country_lookup |= q
+            if not workspace.is_supervisor and not workspace.is_reviewer:
+                q &= models.Q(status=IdentificationTask.Status.DONE)
 
-            if country_lookup:
-                result_qs |= qs.filter(country_lookup)
+            lookup |= q
+
+        if lookup:
+            result_qs |= qs.filter(lookup)
 
         return result_qs
 

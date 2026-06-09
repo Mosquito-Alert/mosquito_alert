@@ -46,13 +46,13 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - user_message
+    - user_message_sent_by_other_user
     - jwt_token_user_can_view
 
 stages:
   - name: User with perm can retrieve
     request:
-      url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      url: "{api_live_url}/{endpoint}/{user_message_sent_by_other_user.pk}/"
       method: "GET"
       headers:
         Authorization: "Bearer {jwt_token_user_can_view:s}"
@@ -112,7 +112,7 @@ stages:
 
 ---
 
-test_name: Users with role reviewer can retrieve messages
+test_name: Collaboration reviewer can retrieve messages
 
 includes:
   - !include schema.yml
@@ -121,14 +121,23 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
-    - user_with_role_reviewer
+    - user_with_role_reviewer_in_country
     - user_message
+    - user_message_sent_by_other_user
     - jwt_token_user
 
 stages:
-  - name: Reviewer user can retrieve message
+  - name: Collaboration reviewer can retrieve message
     request:
       url: "{api_live_url}/{endpoint}/{user_message.pk}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+    response:
+      status_code: 200
+  - name: Collaboration reviewer can retrieve message
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message_sent_by_other_user.pk}/"
       method: "GET"
       headers:
         Authorization: "Bearer {jwt_token_user}"

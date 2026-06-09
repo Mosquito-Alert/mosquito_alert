@@ -47,7 +47,7 @@ marks:
   - usefixtures:
     - api_live_url
     - endpoint
-    - user_with_role_reviewer
+    - user_with_role_reviewer_in_country
     - jwt_token_user
 
 stages:
@@ -77,7 +77,7 @@ marks:
   - usefixtures:
     - api_live_url
     - endpoint
-    - user_with_role_reviewer
+    - user_with_role_reviewer_in_country
     - jwt_token_user
 
 stages:

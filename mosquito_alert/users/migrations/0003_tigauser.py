@@ -5,7 +5,6 @@ import django.contrib.gis.db.models.fields
 from django.db import migrations, models
 import langcodes
 import mosquito_alert.users.models
-import mosquito_alert.users.permissions
 import numpyencoder.numpyencoder
 import uuid
 

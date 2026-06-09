@@ -30,6 +30,7 @@ from mosquito_alert.notifications.models import (
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.workspaces.models import WorkspaceMembership
+from mosquito_alert.workspaces.tests.factories import WorkspaceCollaborationGroupFactory
 from mosquito_alert.users.tests.factories import create_mobile_user, create_regular_user
 
 User = get_user_model()
@@ -304,6 +305,17 @@ def taxon_root():
 
 
 @pytest.fixture
+def user_with_role_member_in_country(user, es_country):
+    WorkspaceMembership.objects.create(
+        user=user,
+        workspace=es_country.workspaces.first(),
+        role=WorkspaceMembership.Role.MEMBER,
+    )
+
+    return user
+
+
+@pytest.fixture
 def user_with_role_annotator_in_country(user, es_country):
     WorkspaceMembership.objects.create(
         user=user,
@@ -326,10 +338,12 @@ def user_with_role_supervisor_in_country(user, es_country):
 
 
 @pytest.fixture
-def user_with_role_reviewer(user):
-    grant_permission_to_user(
-        codename="add_review", model_class=IdentificationTask, user=user
+def user_with_role_reviewer_in_country(user, es_country):
+    WorkspaceCollaborationGroupFactory(
+        reviewers=[user],
+        workspaces=[es_country.workspaces.first()],
     )
+
     return user
 
 

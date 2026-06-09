@@ -27,6 +27,7 @@ from rest_framework.decorators import (
     authentication_classes,
 )
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import get_object_or_404
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -108,7 +109,7 @@ from .serializers import (
     TaxonTreeNodeSerializer,
     PhotoPredictionSerializer,
     CreatePhotoPredictionSerializer,
-    UserPermissionSerializer,
+    PermissionsSerializer,
     CreateAgreeReviewSerializer,
     CreateOverwriteReviewSerializer,
     TemporaryBoundarySerializer,
@@ -122,7 +123,6 @@ from .serializers import (
     CreateUserMessageSerializer,
 )
 from .permissions import (
-    UserRolePermission,
     UserPermissions,
     NotificationObjectPermissions,
     MyNotificationPermissions,
@@ -298,10 +298,11 @@ class MessageTopicViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
         detail=True,
         methods=["POST"],
         serializer_class=CreateTopicMessageSerializer,
-        permission_classes=[MessagePermissions],
     )
     def send(self, request, code=None):
-        topic = self.get_object()
+        filter_kwargs = {self.lookup_field: code}
+        topic = get_object_or_404(self.get_queryset(), **filter_kwargs)
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.context["topic"] = topic
@@ -780,7 +781,7 @@ class MyUserViewSet(UserViewSet):
 )
 class MyPermissionViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = None
-    serializer_class = UserPermissionSerializer
+    serializer_class = PermissionsSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_object(self):
@@ -922,7 +923,7 @@ class IdentificationTaskViewSet(
     filterset_class = IdentificationTaskFilter
     filter_backends = (DjangoFilterBackend, SearchFilter)
     search_fields = ("report__report_id", "report__version_UUID")
-    permission_classes = (IdentificationTaskPermissions | UserRolePermission,)
+    permission_classes = (IdentificationTaskPermissions,)
 
     lookup_field = "pk"
     lookup_url_kwarg = IDENTIFICATION_TASK_VIEW_LOOKUP_FIELD
@@ -1121,7 +1122,7 @@ class IdentificationTaskViewSet(
         filter_backends = (DjangoFilterBackend, SearchFilter)
         filterset_class = AnnotationFilter
         search_fields = ("identification_task__report__version_UUID",)
-        permission_classes = (AnnotationPermissions | UserRolePermission,)
+        permission_classes = (AnnotationPermissions,)
 
         parent_lookup_kwargs = {"observation_uuid": "identification_task__pk"}
 
@@ -1134,11 +1135,24 @@ class IdentificationTaskViewSet(
             return result
 
         def create(self, request, *args, **kwargs):
+            identification_task = self.get_identification_task_obj()
+            # # Check user has permissions to create an annotation for that observation
+            can_create = request.user.has_perm(
+                "%(app_label)s.add_%(model_name)s"
+                % {
+                    "app_label": ExpertReportAnnotation._meta.app_label,
+                    "model_name": ExpertReportAnnotation._meta.model_name,
+                },
+                obj=identification_task,
+            )
+            if not can_create:
+                self.permission_denied(request)
+
             # Check if it was assigned only (not completed)
             pending_annotation = (
                 ExpertReportAnnotation.objects.completed(False)
                 .filter(
-                    identification_task_id=self.kwargs["observation_uuid"],
+                    identification_task=identification_task,
                     user=request.user,
                 )
                 .first()

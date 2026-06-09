@@ -1,19 +1,11 @@
-from typing import Union
-
 from django.contrib.auth import get_user_model
 from django.core.exceptions import MultipleObjectsReturned
-from django.db import models
 
 from rest_framework import permissions
 
-from mosquito_alert.identification_tasks.models import (
-    IdentificationTask,
-    ExpertReportAnnotation,
-)
+from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
 from mosquito_alert.notifications.models import Notification, NotificationRecipient
-from mosquito_alert.users.models import UserStat, TigaUser
-from mosquito_alert.users.permissions import ReviewPermission
-from mosquito_alert.workspaces.models import Workspace
+from mosquito_alert.users.models import TigaUser
 
 from .utils import get_fk_fieldnames
 
@@ -43,6 +35,23 @@ class DjangoRegularUserModelPermissions(permissions.DjangoModelPermissions):
 
 
 class FullDjangoModelPermissions(DjangoRegularUserModelPermissions):
+    perms_map = {
+        **permissions.DjangoObjectPermissions.perms_map,
+        "GET": ["%(app_label)s.view_%(model_name)s"],
+    }
+
+
+class DjangoRegularUserObjectPermissions(permissions.DjangoObjectPermissions):
+    def has_permission(self, request, view):
+        return isinstance(request.user, User) and super().has_permission(request, view)
+
+    def has_object_permission(self, request, view, obj):
+        return isinstance(request.user, User) and super().has_object_permission(
+            request, view, obj
+        )
+
+
+class FullDjangoObjectPermissions(DjangoRegularUserObjectPermissions):
     perms_map = {
         **permissions.DjangoObjectPermissions.perms_map,
         "GET": ["%(app_label)s.view_%(model_name)s"],
@@ -127,46 +136,31 @@ class MyNotificationPermissions(NotificationObjectPermissions):
     pass
 
 
-class MessagePermissions(FullDjangoModelPermissions):
-    def has_permission(self, request, view):
-        role_perm = False
-        if request.method == "POST":
-            # Allow only User Model to create
-            if not isinstance(request.user, User):
-                return False
-
-            role_perm = UserRolePermission.check_permissions(
-                user=request.user, action="add", obj_or_klass=Notification
-            )
-        elif request.method == "GET" and isinstance(request.user, User):
-            role_perm = UserRolePermission.check_permissions(
-                user=request.user, action="view", obj_or_klass=Notification
-            )
-
-        return super().has_permission(request, view) or role_perm
-
-    def has_object_permission(self, request, view, obj):
-        if view.action == "recipients":
-            if isinstance(request.user, User):
-                return self.has_permission(request, view) or obj.expert == request.user
-            return False
-
-        return super().has_object_permission(request, view, obj)
+class MessagePermissions(FullDjangoObjectPermissions):
+    pass
 
 
 class MyMessagePermissions(MessagePermissions):
     pass
 
 
-class MessageTopicPermissions(FullDjangoModelPermissions):
+class MessageTopicPermissions(FullDjangoObjectPermissions):
     def has_permission(self, request, view):
-        role_perm = False
-        if request.method == "GET" and isinstance(request.user, User):
-            role_perm = UserRolePermission.check_permissions(
-                user=request.user, action="view", obj_or_klass=Notification
-            )
+        if isinstance(request.user, TigaUser):
+            return False
 
-        return super().has_permission(request, view) or role_perm
+        can_send_messages = False
+        if view.action == "send":
+            if request.user.is_authenticated:
+                can_send_messages = request.user.has_perm(
+                    "%(app_label)s.add_%(model_name)s"
+                    % {
+                        "app_label": Notification._meta.app_label,
+                        "model_name": Notification._meta.model_name,
+                    }
+                )
+
+        return super().has_permission(request, view) | can_send_messages
 
 
 class ReportPermissions(UserObjectPermissions):
@@ -187,114 +181,8 @@ class MyReportPermissions(ReportPermissions):
         return False
 
 
-class UserRolePermission(permissions.BasePermission):
-    ACTION_TO_PERMISSION = {
-        "retrieve": "view",
-        "list": "view",
-        "update": "change",
-        "create": "add",
-        "destroy": "delete",
-    }
-
-    @staticmethod
-    def check_permissions(user: Union[TigaUser, "User"], action, obj_or_klass):
-        if isinstance(user, User):
-            user = UserStat.objects.filter(user=user).first()
-            if not user:
-                return False
-
-        return (
-            user.has_role_permission(action=action, obj_or_klass=obj_or_klass)
-            if action is not None
-            else False
-        )
-
-    def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        if not view.action:
-            return False
-
-        return self.check_permissions(
-            user=request.user,
-            action=self.ACTION_TO_PERMISSION.get(view.action),
-            obj_or_klass=view.get_queryset().model,
-        )
-
-    def has_object_permission(self, request, view, obj):
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        if not view.action:
-            return False
-
-        return self.check_permissions(
-            user=request.user,
-            action=self.ACTION_TO_PERMISSION.get(view.action),
-            obj_or_klass=obj,
-        )
-
-
-class BaseIdentificationTaskPermissions(FullDjangoModelPermissions):
-    def _check_is_annotator(self, request, view, obj) -> bool:
-        if isinstance(request.user, TigaUser):
-            return False
-
-        if isinstance(obj, IdentificationTask):
-            task = obj
-        else:
-            inferred_fieldnames = get_fk_fieldnames(
-                model=obj._meta.model, related_model=IdentificationTask
-            )
-            if len(inferred_fieldnames) > 1:
-                raise MultipleObjectsReturned(
-                    "Model {obj._meta.model} has {len(inferred_fieldnames)} relation to model {TigaUser}."
-                )
-            task_fname = inferred_fieldnames[0]
-            if not hasattr(obj, task_fname):
-                return False
-            task = getattr(obj, task_fname)
-        return task.annotators.filter(pk=request.user.pk).exists()
-
-    def has_permission(self, request, view):
-        if isinstance(request.user, TigaUser):
-            return False
-        if request.user and request.user.is_authenticated:
-            if view.action == "retrieve":
-                return True
-        return super().has_permission(request, view)
-
-    def has_object_permission(self, request, view, obj):
-        if not super().has_object_permission(request, view, obj):
-            return False
-
-        can_view = (
-            self._check_is_annotator(request, view, obj)
-            or Workspace.objects.filter(
-                models.Q(members=request.user)
-                | models.Q(collaboration_groups__reviewers=request.user)
-            ).exists()
-        )
-        if view.action == "retrieve" and can_view:
-            return True
-
-        perms = self.get_required_permissions(request.method, obj._meta.model)
-        return request.user.has_perms(perms)
-
-
-class IdentificationTaskPermissions(BaseIdentificationTaskPermissions):
-    def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        role_perm = False
-        if view.action == "list":
-            role_perm = UserRolePermission.check_permissions(
-                user=request.user, action="add", obj_or_klass=ExpertReportAnnotation
-            )
-
-        return super().has_permission(request, view) or role_perm
+class IdentificationTaskPermissions(FullDjangoObjectPermissions):
+    pass
 
 
 class MyIdentificationTaskPermissions(DjangoRegularUserModelPermissions):
@@ -306,46 +194,35 @@ class IdentificationTaskAssignmentPermissions(IsRegularUser):
         if not super().has_permission(request, view):
             return False
 
-        return request.user.has_perm(
-            "%(app_label)s.add_%(model_name)s"
-            % {
-                "app_label": ExpertReportAnnotation._meta.app_label,
-                "model_name": ExpertReportAnnotation._meta.model_name,
-            }
-        ) or UserRolePermission.check_permissions(
-            user=request.user, action="add", obj_or_klass=ExpertReportAnnotation
-        )
+        if view.action == "assign_next":
+            # Only people who can add annotations.
+            return request.user.has_perm(
+                "%(app_label)s.add_%(model_name)s"
+                % {
+                    "app_label": ExpertReportAnnotation._meta.app_label,
+                    "model_name": ExpertReportAnnotation._meta.model_name,
+                }
+            )
+
+        return False
 
 
-class IdentificationTaskReviewPermissions(IsRegularUser):
-    def has_permission(self, request, view):
-        if not super().has_permission(request, view):
-            return False
-
-        return UserRolePermission.check_permissions(
-            user=request.user, action="add", obj_or_klass=ReviewPermission
-        )
+class IdentificationTaskReviewPermissions(DjangoRegularUserObjectPermissions):
+    perms_map = {
+        **DjangoRegularUserObjectPermissions.perms_map,
+        "POST": ["%(app_label)s.add_review"],
+    }
 
 
-class BaseIdentificationTaskAttributePermissions(BaseIdentificationTaskPermissions):
+class AnnotationPermissions(FullDjangoObjectPermissions):
     pass
-
-
-class AnnotationPermissions(BaseIdentificationTaskAttributePermissions):
-    # Always allow retrieve owned attributes
-    def has_object_permission(self, request, view, obj):
-        # Allow retrieve if user is the owner
-        if view.action == "retrieve":
-            if obj.user == request.user:
-                return True
-        return super().has_object_permission(request, view, obj)
 
 
 class MyAnnotationPermissions(DjangoRegularUserModelPermissions):
     pass
 
 
-class PhotoPredictionPermissions(BaseIdentificationTaskAttributePermissions):
+class PhotoPredictionPermissions(FullDjangoModelPermissions):
     pass
 
 

@@ -90,7 +90,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - user_with_role_reviewer
+    - user_with_role_reviewer_in_country
     - jwt_token_user
 
 stages:

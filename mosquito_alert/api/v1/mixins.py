@@ -1,6 +1,5 @@
 from typing import Optional
 
-from rest_framework.exceptions import APIException
 from rest_framework import serializers
 from rest_framework_gis.fields import GeometryField
 
@@ -15,35 +14,22 @@ class IdentificationTaskNestedAttribute:
         if task_id := self.kwargs.get(self.get_parent_lookup_url_kwarg(), None):
             return IdentificationTask.objects.get(pk=task_id)
 
-    def check_parent_permissions(self, request) -> bool:
-        from .views import IdentificationTaskViewSet
-
-        if self.action in ["list", "retrieve"]:
-            parent_view = IdentificationTaskViewSet()
-            parent_view.action = "retrieve"
-            parent_view.request = request
-            parent_view.kwargs = self.kwargs
-
-            identification_task_obj = self.get_identification_task_obj()
-
-            try:
-                parent_view.check_object_permissions(request, identification_task_obj)
-            except APIException:
-                pass
-            else:
-                return True
-        return False
-
     def check_permissions(self, request):
-        if self.check_parent_permissions(request):
-            return
+        if request.method == "GET":
+            # If user can see identification task, can also see their nested attributes.
+            can_view_identification_task = request.user.has_perm(
+                "%(app_label)s.view_%(model_name)s"
+                % {
+                    "app_label": IdentificationTask._meta.app_label,
+                    "model_name": IdentificationTask._meta.model_name,
+                },
+                self.get_identification_task_obj(),
+            )
+            if can_view_identification_task:
+                return
+
         # If parent permissions are not checked or failed, check the current view's permissions
         super().check_permissions(request)
-
-    def check_object_permissions(self, request, obj):
-        if self.check_parent_permissions(request):
-            return
-        super().check_object_permissions(request, obj)
 
 
 class ReportGeoJsonModelSerializerMixin(serializers.Serializer):

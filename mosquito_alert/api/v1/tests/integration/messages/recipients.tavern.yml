@@ -48,6 +48,7 @@ marks:
     - api_live_url
     - app_user
     - seen_user_message
+    - user_message_sent_by_other_user
     - jwt_token_user_can_view
 
 stages:
@@ -64,6 +65,19 @@ stages:
             uuid: "{app_user.pk}"
             locale: "{app_user.locale}"
           has_read: true
+  - name: User with perm can retrieve recipients even they have not send the message
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message_sent_by_other_user.pk}/recipients/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      json:
+        - user:
+            uuid: "{app_user.pk}"
+            locale: "{app_user.locale}"
+          has_read: false
 
 
 ---
@@ -127,7 +141,7 @@ stages:
 
 ---
 
-test_name: Users with role reviewer can retrieve messages recipients even they have not send the message
+test_name: Collaboration reviewer can retrieve messages recipients even they have not send the message
 
 includes:
   - !include schema.yml
@@ -136,7 +150,7 @@ marks:
   - usefixtures:
     - api_live_url
     - app_user
-    - user_with_role_reviewer
+    - user_with_role_reviewer_in_country
     - user_message_sent_by_other_user
     - jwt_token_user
 

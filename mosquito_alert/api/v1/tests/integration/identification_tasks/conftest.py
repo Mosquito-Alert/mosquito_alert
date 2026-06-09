@@ -31,7 +31,7 @@ def annotation_from_another_user(identification_task, another_user):
 
 
 @pytest.fixture
-def another_identification_task(app_user, dummy_image):
+def another_identification_task(app_user, dummy_image, es_country):
     observation = create_observation_object(user=app_user)
     _ = Photo.objects.create(
         photo=dummy_image,
@@ -61,7 +61,7 @@ def another_identification_task_another_country(app_user, dummy_image, country):
 
 
 @pytest.fixture
-def identification_task_fully_predicted(app_user, dummy_image):
+def identification_task_fully_predicted(app_user, dummy_image, es_country):
     observation = create_observation_object(user=app_user)
     photo = Photo.objects.create(
         photo=dummy_image,
@@ -73,7 +73,7 @@ def identification_task_fully_predicted(app_user, dummy_image):
 
 
 @pytest.fixture
-def identification_task_with_pending_predictions(app_user, dummy_image):
+def identification_task_with_pending_predictions(app_user, dummy_image, es_country):
     observation = create_observation_object(user=app_user)
     photo = Photo.objects.create(
         photo=dummy_image,

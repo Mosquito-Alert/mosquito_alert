@@ -1,4 +1,4 @@
-from typing import List, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 import uuid
 import os
 
@@ -22,19 +22,6 @@ from numpyencoder import NumpyEncoder
 import pydenticon
 
 from mosquito_alert.geo.models import Country, NutsEurope
-from mosquito_alert.workspaces.models import (
-    WorkspaceMembership,
-    WorkspaceCollaborationGroup,
-)
-
-from .permissions import (
-    UserRolePermissionMixin,
-    Role,
-    AnnotationPermission,
-    IdentificationTaskPermission,
-    BasePermission,
-    MessagePermission,
-)
 
 if TYPE_CHECKING:
     from mosquito_alert.devices.models import Device
@@ -42,7 +29,7 @@ if TYPE_CHECKING:
 User = get_user_model()
 
 
-class UserStat(UserRolePermissionMixin, models.Model):
+class UserStat(models.Model):
     user = models.OneToOneField(
         User,
         primary_key=True,
@@ -84,112 +71,6 @@ class UserStat(UserRolePermissionMixin, models.Model):
     def num_pending_annotations(self) -> int:
         return self.pending_annotations.count()
 
-    # NOTE: override UserRolePermissionMixin
-    def get_countries_with_roles(self) -> List[Country]:
-        qs = Country.objects.all()
-
-        if self.get_role(country=None) in [Role.ADMIN, Role.REVIEWER, Role.ANNOTATOR]:
-            return list(qs)
-
-        return list(
-            qs.filter(
-                models.Q(
-                    workspaces__memberships__user=self.user,
-                    workspaces__geom__isnull=True,
-                )
-                | models.Q(workspaces__collaboration_groups__reviewers=self.user)
-            ).distinct()
-        )
-
-    # NOTE: override UserRolePermissionMixin
-    def get_role(self, country: Optional[Country] = None) -> Role:
-        from mosquito_alert.identification_tasks.models import (
-            IdentificationTask,
-            ExpertReportAnnotation,
-        )
-
-        if self.user.is_superuser:
-            return Role.ADMIN
-
-        if country is not None:
-            if WorkspaceCollaborationGroup.objects.filter(
-                reviewers=self.user, workspaces__country=country
-            ).exists():
-                return Role.REVIEWER
-            user_workspace_qs = WorkspaceMembership.objects.filter(
-                user=self.user, workspace__country=country
-            )
-            if user_workspace_qs.filter(
-                role=WorkspaceMembership.Role.SUPERVISOR
-            ).exists():
-                return Role.SUPERVISOR
-            elif user_workspace_qs.filter(
-                role=WorkspaceMembership.Role.ANNOTATOR
-            ).exists():
-                return Role.ANNOTATOR
-
-        if self.user.has_perm(
-            "%(app_label)s.add_review"
-            % {
-                "app_label": IdentificationTask._meta.app_label,
-            }
-        ):
-            return Role.REVIEWER
-        if self.user.has_perm(
-            "%(app_label)s.add_%(model_name)s"
-            % {
-                "app_label": ExpertReportAnnotation._meta.app_label,
-                "model_name": ExpertReportAnnotation._meta.model_name,
-            }
-        ):
-            return Role.ANNOTATOR
-
-        return Role.BASE
-
-    def _update_permissions_from_django_perms(
-        self,
-        perm_obj: BasePermission,
-        model_class: models.Model,
-        allow_staff_view: bool = True,
-    ):
-        app_label = model_class._meta.app_label
-        model_name = model_class._meta.model_name
-        perm_template = f"{app_label}.{{action}}_{model_name}"
-
-        for action in ["add", "view", "change", "delete"]:
-            if self.user.has_perm(perm_template.format(action=action)):
-                setattr(perm_obj, action, True)
-
-        if allow_staff_view and self.user.is_staff:
-            setattr(perm_obj, "view", True)
-
-        return perm_obj
-
-    # NOTE: override UserRolePermissionMixin
-    def get_role_annotation_permission(self, role: Role) -> AnnotationPermission:
-        from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
-
-        perm = super().get_role_annotation_permission(role=role)
-        return self._update_permissions_from_django_perms(perm, ExpertReportAnnotation)
-
-    # NOTE: override UserRolePermissionMixin
-    def get_role_identification_task_permission(
-        self, role: Role
-    ) -> IdentificationTaskPermission:
-        from mosquito_alert.identification_tasks.models import IdentificationTask
-
-        perm = super().get_role_identification_task_permission(role=role)
-        return self._update_permissions_from_django_perms(perm, IdentificationTask)
-
-    # NOTE: override UserRolePermissionMixin
-    def get_role_message_permission(self, role: Role) -> MessagePermission:
-        from mosquito_alert.notifications.models import Notification
-
-        perm = super().get_role_message_permission(role=role)
-        return self._update_permissions_from_django_perms(
-            perm, Notification, allow_staff_view=False
-        )
-
     # this method returns the username, changing any '.' character to a '_'. This is used to avoid usernames used
     # as id or class names in views to break jquery selector queries
     @property
@@ -219,7 +100,7 @@ def get_default_password_hash():
     return make_password(settings.DEFAULT_TIGAUSER_PASSWORD)
 
 
-class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
+class TigaUser(AbstractBaseUser, AnonymousUser):
     AVAILABLE_LANGUAGES = [
         (standarize_language_tag(code), Language.get(code).autonym().title())
         for code, _ in settings.LANGUAGES
@@ -352,12 +233,6 @@ class TigaUser(UserRolePermissionMixin, AbstractBaseUser, AnonymousUser):
             f.write(identicon_png)
             f.close()
         return settings.MEDIA_URL + "identicons/" + str(self.user_UUID) + ".png"
-
-    def get_role(self, country: Optional[Country] = None) -> Role:
-        return Role.BASE
-
-    def get_countries_with_roles(self) -> List[Country]:
-        return []
 
     def update_score(self, commit: bool = True) -> None:
         # NOTE: placing import here due to circular import
