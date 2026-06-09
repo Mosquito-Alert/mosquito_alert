@@ -1,10 +1,8 @@
 import rules
 from typing import Optional, Union
 
-from django.contrib.auth.backends import ModelBackend
-
 from mosquito_alert.users.models import User, TigaUser
-
+from mosquito_alert.utils.rules import has_global_permission
 from mosquito_alert.workspaces.rules import (
     is_workspace_member,
     is_workspace_reviewer,
@@ -14,24 +12,6 @@ from mosquito_alert.workspaces.rules import (
 from mosquito_alert.workspaces.models import WorkspaceMembership
 
 from .models import IdentificationTask, ExpertReportAnnotation, PhotoPrediction
-
-
-model_backend = ModelBackend()
-
-
-def has_global_permission(
-    klass, type: Optional[str] = None, name: Optional[str] = None
-) -> bool:
-    perm = "%(app_label)s.%(name)s" % {
-        "app_label": klass._meta.app_label,
-        "name": name or f"{type}_{klass._meta.model_name}",
-    }
-
-    @rules.predicate
-    def user_has_global_permission(user: User):
-        return model_backend.has_perm(user, perm)
-
-    return user_has_global_permission
 
 
 def has_global_identification_task_permission(

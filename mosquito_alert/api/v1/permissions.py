@@ -136,57 +136,31 @@ class MyNotificationPermissions(NotificationObjectPermissions):
     pass
 
 
-class MessagePermissions(FullDjangoModelPermissions):
-    def has_permission(self, request, view):
-        if not isinstance(request.user, User):
-            return False
-
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        role_perm = False
-        if request.method in ["GET", "POST"]:
-            role_perm = request.user.collaboration_groups_as_reviewer.all().exists()
-
-        return role_perm or super().has_permission(request, view)
-
-    def has_object_permission(self, request, view, obj):
-        if view.action == "recipients":
-            if isinstance(request.user, User):
-                return self.has_permission(request, view) or obj.expert == request.user
-            return False
-
-        return super().has_object_permission(request, view, obj)
+class MessagePermissions(FullDjangoObjectPermissions):
+    pass
 
 
 class MyMessagePermissions(MessagePermissions):
     pass
 
 
-class MessageTopicPermissions(FullDjangoModelPermissions):
+class MessageTopicPermissions(FullDjangoObjectPermissions):
     def has_permission(self, request, view):
-        if not isinstance(request.user, User):
+        if isinstance(request.user, TigaUser):
             return False
 
-        if not request.user or not request.user.is_authenticated:
-            return False
-
-        role_perm = False
-        is_reviewer = request.user.collaboration_groups_as_reviewer.all().exists()
-        if request.method == "GET":
-            role_perm = is_reviewer
-
+        can_send_messages = False
         if view.action == "send":
-            # Workaround to ensure DjangoModelPermissions are not applied
-            # to the root view when using DefaultRouter.
-            if getattr(view, "_ignore_model_permissions", False):
-                return True
+            if request.user.is_authenticated:
+                can_send_messages = request.user.has_perm(
+                    "%(app_label)s.add_%(model_name)s"
+                    % {
+                        "app_label": Notification._meta.app_label,
+                        "model_name": Notification._meta.model_name,
+                    }
+                )
 
-            perms = self.get_required_permissions(request.method, Notification)
-
-            role_perm = is_reviewer or request.user.has_perms(perms)
-
-        return role_perm or super().has_permission(request, view)
+        return super().has_permission(request, view) | can_send_messages
 
 
 class ReportPermissions(UserObjectPermissions):
