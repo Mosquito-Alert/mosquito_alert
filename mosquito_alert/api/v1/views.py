@@ -69,6 +69,7 @@ from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.utils.rules import has_global_permission
 from mosquito_alert.workspaces.models import Workspace, WorkspaceCollaborationGroup
 
 from .filters import (
@@ -143,6 +144,7 @@ from .permissions import (
     MyMessagePermissions,
     MessageTopicPermissions,
     DjangoRegularUserModelPermissions,
+    FullDjangoObjectPermissions,
 )
 from .utils import get_serializer_field_paths_for_csv
 from .viewsets import (
@@ -1278,22 +1280,15 @@ class WorkspaceViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
         .prefetch_related("memberships", "memberships__user")
     )
     serializer_class = WorkspaceSerializer
-    permission_classes = (DjangoRegularUserModelPermissions,)
+    permission_classes = (FullDjangoObjectPermissions,)
 
     def get_queryset(self):
         qs = super().get_queryset()
 
-        has_view_perm = self.request.user.has_perm(
-            "%(app_label)s.view_%(model_name)s"
-            % {
-                "app_label": Workspace._meta.app_label,
-                "model_name": Workspace._meta.model_name,
-            }
-        )
-        if has_view_perm:
+        if has_global_permission(Workspace, type="view")(user=self.request.user):
             return qs
 
-        return qs.filter(memberships__user=self.request.user)
+        return qs.filter(members=self.request.user)
 
 
 @extend_schema_view(
@@ -1305,12 +1300,7 @@ class WorkspaceViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
 )
 class MyWorkspaceViewSet(WorkspaceViewSet):
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(memberships__user=self.request.user)
-            .distinct()
-        )
+        return super().get_queryset().filter(members=self.request.user)
 
 
 class WorkspaceCollaboratoratorViewSet(
@@ -1325,15 +1315,9 @@ class WorkspaceCollaboratoratorViewSet(
     def get_queryset(self):
         qs = super().get_queryset()
 
-        has_view_perm = self.request.user.has_perm(
-            "%(app_label)s.view_%(model_name)s"
-            % {
-                "app_label": WorkspaceCollaborationGroup._meta.app_label,
-                "model_name": WorkspaceCollaborationGroup._meta.model_name,
-            }
-        )
-
-        if has_view_perm:
+        if has_global_permission(WorkspaceCollaborationGroup, type="view")(
+            user=self.request.user
+        ):
             return qs
 
         return qs.filter(
