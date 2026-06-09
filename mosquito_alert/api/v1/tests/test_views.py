@@ -1858,92 +1858,296 @@ class TestPermissionsApi:
 
         return api_client
 
-    def test_general_role_base(self, api_client, me_endpoint):
+    def test_unauthenticated_user_gets_401(self):
+        client = APIClient()
+        response = client.get("/api/v1/me/permissions/", format="json")
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    def test_response_structure_for_user_without_permissions(
+        self, api_client, me_endpoint
+    ):
+        """Test that the response has the correct structure with all permission groups."""
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
 
-    def test_general_role_reviewer(self, api_client, user, me_endpoint):
+        # Check all top-level keys are present
+        assert "annotation" in response.data
+        assert "identification_task" in response.data
+        assert "review" in response.data
+        assert "message" in response.data
+
+        # Check each permission group has CRUD keys
+        for permission_group in [
+            "annotation",
+            "identification_task",
+            "review",
+            "message",
+        ]:
+            assert "add" in response.data[permission_group]
+            assert "change" in response.data[permission_group]
+            assert "view" in response.data[permission_group]
+            assert "delete" in response.data[permission_group]
+
+        # All should be False for a user without permissions
+        assert not response.data["annotation"]["add"]
+        assert not response.data["annotation"]["change"]
+        assert not response.data["annotation"]["view"]
+        assert not response.data["annotation"]["delete"]
+
+        assert not response.data["identification_task"]["add"]
+        assert not response.data["identification_task"]["change"]
+        assert not response.data["identification_task"]["view"]
+        assert not response.data["identification_task"]["delete"]
+
+        assert not response.data["review"]["add"]
+        assert not response.data["review"]["change"]
+        assert not response.data["review"]["view"]
+        assert not response.data["review"]["delete"]
+
+        assert not response.data["message"]["add"]
+        assert not response.data["message"]["change"]
+        assert not response.data["message"]["view"]
+        assert not response.data["message"]["delete"]
+
+    # Annotation Permission Tests
+    def test_annotation_add_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(
+            type="add", model_class=ExpertReportAnnotation, user=user
+        )
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["annotation"]["add"]
+        assert not response.data["annotation"]["change"]
+        assert not response.data["annotation"]["view"]
+        assert not response.data["annotation"]["delete"]
+
+    def test_annotation_change_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(
+            type="change", model_class=ExpertReportAnnotation, user=user
+        )
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert not response.data["annotation"]["add"]
+        assert response.data["annotation"]["change"]
+        assert not response.data["annotation"]["view"]
+        assert not response.data["annotation"]["delete"]
+
+    def test_annotation_view_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(
+            type="view", model_class=ExpertReportAnnotation, user=user
+        )
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert not response.data["annotation"]["add"]
+        assert not response.data["annotation"]["change"]
+        assert response.data["annotation"]["view"]
+        assert not response.data["annotation"]["delete"]
+
+    def test_annotation_delete_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(
+            type="delete", model_class=ExpertReportAnnotation, user=user
+        )
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert not response.data["annotation"]["add"]
+        assert not response.data["annotation"]["change"]
+        assert not response.data["annotation"]["view"]
+        assert response.data["annotation"]["delete"]
+
+    def test_annotation_all_permissions(self, api_client, user, me_endpoint):
+        for permission_type in ["add", "change", "view", "delete"]:
+            grant_permission_to_user(
+                type=permission_type, model_class=ExpertReportAnnotation, user=user
+            )
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["annotation"]["add"]
+        assert response.data["annotation"]["change"]
+        assert response.data["annotation"]["view"]
+        assert response.data["annotation"]["delete"]
+
+    # Identification Task Permission Tests
+    def test_identification_task_add_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(type="add", model_class=IdentificationTask, user=user)
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["identification_task"]["add"]
+        assert not response.data["identification_task"]["change"]
+        assert not response.data["identification_task"]["view"]
+        assert not response.data["identification_task"]["delete"]
+
+    def test_identification_task_change_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(
+            type="change", model_class=IdentificationTask, user=user
+        )
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert not response.data["identification_task"]["add"]
+        assert response.data["identification_task"]["change"]
+        assert not response.data["identification_task"]["view"]
+        assert not response.data["identification_task"]["delete"]
+
+    def test_identification_task_view_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(type="view", model_class=IdentificationTask, user=user)
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert not response.data["identification_task"]["add"]
+        assert not response.data["identification_task"]["change"]
+        assert response.data["identification_task"]["view"]
+        assert not response.data["identification_task"]["delete"]
+
+    def test_identification_task_delete_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(
+            type="delete", model_class=IdentificationTask, user=user
+        )
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert not response.data["identification_task"]["add"]
+        assert not response.data["identification_task"]["change"]
+        assert not response.data["identification_task"]["view"]
+        assert response.data["identification_task"]["delete"]
+
+    def test_identification_task_all_permissions(self, api_client, user, me_endpoint):
+        for permission_type in ["add", "change", "view", "delete"]:
+            grant_permission_to_user(
+                type=permission_type, model_class=IdentificationTask, user=user
+            )
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["identification_task"]["add"]
+        assert response.data["identification_task"]["change"]
+        assert response.data["identification_task"]["view"]
+        assert response.data["identification_task"]["delete"]
+
+    # Review Permission Tests (special handling)
+    def test_review_add_permission_grants_add_change_view(
+        self, api_client, user, me_endpoint
+    ):
+        """Review permissions are special: add_review grants add, change, and view."""
         grant_permission_to_user(
             codename="add_review", model_class=IdentificationTask, user=user
         )
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["permissions"]["review"]["add"]
-        assert response.data["general"]["permissions"]["review"]["view"]
-        assert response.data["general"]["permissions"]["message"]["add"]
-        assert response.data["general"]["permissions"]["message"]["view"]
+        assert response.data["review"]["add"]
+        assert response.data["review"]["change"]
+        assert response.data["review"]["view"]
+        assert not response.data["review"]["delete"]
 
-    def test_general_role_admin(self, api_client, user, me_endpoint):
+    def test_review_permissions_without_add_review(self, api_client, user, me_endpoint):
+        """Without add_review permission, all review permissions should be False."""
+        # Grant some other permission to ensure we're testing review specifically
+        grant_permission_to_user(
+            type="view", model_class=ExpertReportAnnotation, user=user
+        )
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert not response.data["review"]["add"]
+        assert not response.data["review"]["change"]
+        assert not response.data["review"]["view"]
+        assert not response.data["review"]["delete"]
+
+    # Message Permission Tests
+    def test_message_add_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(type="add", model_class=Notification, user=user)
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["message"]["add"]
+        assert not response.data["message"]["change"]
+        assert not response.data["message"]["view"]
+        assert not response.data["message"]["delete"]
+
+    def test_message_change_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(type="change", model_class=Notification, user=user)
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert not response.data["message"]["add"]
+        assert response.data["message"]["change"]
+        assert not response.data["message"]["view"]
+        assert not response.data["message"]["delete"]
+
+    def test_message_view_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(type="view", model_class=Notification, user=user)
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert not response.data["message"]["add"]
+        assert not response.data["message"]["change"]
+        assert response.data["message"]["view"]
+        assert not response.data["message"]["delete"]
+
+    def test_message_delete_permission(self, api_client, user, me_endpoint):
+        grant_permission_to_user(type="delete", model_class=Notification, user=user)
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert not response.data["message"]["add"]
+        assert not response.data["message"]["change"]
+        assert not response.data["message"]["view"]
+        assert response.data["message"]["delete"]
+
+    def test_message_add_and_view_permissions(self, api_client, user, me_endpoint):
+        """Test combination of add and view permissions for messages."""
+        grant_permission_to_user(type="add", model_class=Notification, user=user)
+        grant_permission_to_user(type="view", model_class=Notification, user=user)
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["message"]["add"]
+        assert not response.data["message"]["change"]
+        assert response.data["message"]["view"]
+        assert not response.data["message"]["delete"]
+
+    def test_message_all_permissions(self, api_client, user, me_endpoint):
+        for permission_type in ["add", "change", "view", "delete"]:
+            grant_permission_to_user(
+                type=permission_type, model_class=Notification, user=user
+            )
+
+        response = api_client.get(me_endpoint, format="json")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["message"]["add"]
+        assert response.data["message"]["change"]
+        assert response.data["message"]["view"]
+        assert response.data["message"]["delete"]
+
+    # Superuser Tests
+    def test_superuser_has_all_permissions(self, api_client, user, me_endpoint):
         user.is_superuser = True
         user.save()
 
         response = api_client.get(me_endpoint, format="json")
         assert response.status_code == status.HTTP_200_OK
 
-    def test_countries_role_supervisor(self, api_client, user, me_endpoint, country):
-        WorkspaceMembership.objects.create(
-            user=user,
-            workspace=country.workspaces.first(),
-            role=WorkspaceMembership.Role.SUPERVISOR,
-        )
-
-        response = api_client.get(me_endpoint, format="json")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["countries"][0]["country"]["id"] == country.pk
-        assert response.data["countries"][0]["permissions"]["annotation"][
-            "mark_as_executive"
-        ]
-        assert response.data["countries"][0]["permissions"]["identification_task"][
-            "view"
-        ]
-        assert not response.data["countries"][0]["permissions"]["review"]["add"]
-        assert not response.data["countries"][0]["permissions"]["review"]["view"]
-
-    def test_countries_role_annotator(self, api_client, user, me_endpoint, country):
-        WorkspaceMembership.objects.create(
-            user=user,
-            workspace=country.workspaces.first(),
-            role=WorkspaceMembership.Role.ANNOTATOR,
-        )
-
-        response = api_client.get(me_endpoint, format="json")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["countries"][0]["country"]["id"] == country.pk
-        assert not response.data["countries"][0]["permissions"]["annotation"][
-            "mark_as_executive"
-        ]
-        assert not response.data["countries"][0]["permissions"]["identification_task"][
-            "view"
-        ]
-        assert not response.data["countries"][0]["permissions"]["review"]["add"]
-        assert not response.data["countries"][0]["permissions"]["review"]["view"]
-
-    def test_message_permissions_enabled_on_user_has_add_permission(
-        self, api_client, user, me_endpoint
-    ):
-        response = api_client.get(me_endpoint, format="json")
-        assert response.status_code == status.HTTP_200_OK
-        assert not response.data["general"]["permissions"]["message"]["add"]
-        assert not response.data["general"]["permissions"]["message"]["view"]
-
-        grant_permission_to_user(
-            codename="add_notification", model_class=Notification, user=user
-        )
-
-        response = api_client.get(me_endpoint, format="json")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["permissions"]["message"]["add"]
-        assert not response.data["general"]["permissions"]["message"]["view"]
-
-        grant_permission_to_user(
-            codename="view_notification", model_class=Notification, user=user
-        )
-
-        response = api_client.get(me_endpoint, format="json")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["general"]["permissions"]["message"]["add"]
-        assert response.data["general"]["permissions"]["message"]["view"]
+        # Superuser should have all permissions
+        for permission_group in [
+            "annotation",
+            "identification_task",
+            "review",
+            "message",
+        ]:
+            assert response.data[permission_group]["add"]
+            assert response.data[permission_group]["change"]
+            assert response.data[permission_group]["view"]
+            # Review delete is always False, even for superuser
+            if permission_group == "review":
+                assert not response.data[permission_group]["delete"]
+            else:
+                assert response.data[permission_group]["delete"]
 
 
 @pytest.mark.django_db

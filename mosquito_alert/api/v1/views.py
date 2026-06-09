@@ -109,7 +109,7 @@ from .serializers import (
     TaxonTreeNodeSerializer,
     PhotoPredictionSerializer,
     CreatePhotoPredictionSerializer,
-    UserPermissionSerializer,
+    PermissionsSerializer,
     CreateAgreeReviewSerializer,
     CreateOverwriteReviewSerializer,
     TemporaryBoundarySerializer,
@@ -781,7 +781,7 @@ class MyUserViewSet(UserViewSet):
 )
 class MyPermissionViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = None
-    serializer_class = UserPermissionSerializer
+    serializer_class = PermissionsSerializer
     permission_classes = (IsAuthenticated,)
 
     def get_object(self):

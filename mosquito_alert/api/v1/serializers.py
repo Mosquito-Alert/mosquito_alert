@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 from uuid import UUID
 
 from django.contrib.auth import get_user_model
@@ -131,78 +131,53 @@ class BaseCRUDPermissionSerializer(serializers.Serializer):
     view = serializers.BooleanField()
     delete = serializers.BooleanField()
 
+    model = None
+
+    def to_representation(self, instance):
+        user = self.context["request"].user
+
+        return {
+            action: user.has_perm(
+                "%(app_label)s.%(action)s_%(model_name)s"
+                % {
+                    "app_label": self.model._meta.app_label,
+                    "model_name": self.model._meta.model_name,
+                    "action": action,
+                }
+            )
+            for action in ("add", "change", "view", "delete")
+        }
+
 
 class PermissionsSerializer(serializers.Serializer):
     class AnnotationPermissionSerializer(BaseCRUDPermissionSerializer):
-        pass
+        model = ExpertReportAnnotation
 
     class IdentificationTaskPermissionSerializer(BaseCRUDPermissionSerializer):
-        pass
+        model = IdentificationTask
 
     class ReviewPermissionSerializer(BaseCRUDPermissionSerializer):
-        pass
+        def to_representation(self, instance):
+            user = self.context["request"].user
+
+            has_add_review_perm = user.has_perm(
+                f"{IdentificationTask._meta.app_label}.add_review"
+            )
+
+            return {
+                "add": has_add_review_perm,
+                "change": has_add_review_perm,
+                "view": has_add_review_perm,
+                "delete": False,
+            }
 
     class MessagePermissionSerializer(BaseCRUDPermissionSerializer):
-        pass
+        model = Notification
 
-    annotation = AnnotationPermissionSerializer()
-    identification_task = IdentificationTaskPermissionSerializer()
-    review = ReviewPermissionSerializer()
-    message = MessagePermissionSerializer()
-
-    @classmethod
-    def from_user(cls, user):
-        def crud_perms(app_label: str, model_name: str):
-            return {
-                action: user.has_perm(f"{app_label}.{action}_{model_name}")
-                for action in ("add", "change", "view", "delete")
-            }
-
-        has_add_review_perm = user.has_perm(
-            "%(app_label)s.add_review"
-            % {"app_label": IdentificationTask._meta.app_label}
-        )
-
-        return cls(
-            {
-                "annotation": crud_perms(
-                    ExpertReportAnnotation._meta.app_label,
-                    ExpertReportAnnotation._meta.model_name,
-                ),
-                "identification_task": crud_perms(
-                    IdentificationTask._meta.app_label,
-                    IdentificationTask._meta.model_name,
-                ),
-                "review": {
-                    "add": has_add_review_perm,
-                    "change": has_add_review_perm,
-                    "view": has_add_review_perm,
-                    "delete": False,
-                },
-                "message": crud_perms(
-                    Notification._meta.app_label,
-                    Notification._meta.model_name,
-                ),
-            }
-        )
-
-
-class UserPermissionSerializer(serializers.Serializer):
-    class GeneralPermissionSerializer(serializers.Serializer):
-        permissions = serializers.SerializerMethodField()
-
-        @extend_schema_field(PermissionsSerializer)
-        def get_permissions(self, obj: Union[User, TigaUser]):
-            if not isinstance(obj, User):
-                return None
-
-            return PermissionsSerializer.from_user(obj).data
-
-    general = serializers.SerializerMethodField()
-
-    @extend_schema_field(GeneralPermissionSerializer)
-    def get_general(self, obj: Union[User, TigaUser]):
-        return self.GeneralPermissionSerializer(obj).data
+    annotation = AnnotationPermissionSerializer(source="*")
+    identification_task = IdentificationTaskPermissionSerializer(source="*")
+    review = ReviewPermissionSerializer(source="*")
+    message = MessagePermissionSerializer(source="*")
 
 
 class UserSerializer(serializers.ModelSerializer):

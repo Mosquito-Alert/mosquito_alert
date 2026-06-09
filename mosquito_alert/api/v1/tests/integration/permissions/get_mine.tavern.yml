@@ -40,30 +40,26 @@ stages:
     response:
       status_code: 200
       json:
-        general:
-          permissions:
-            annotation:
-              add: false
-              change: false
-              view: false
-              delete: false
-              mark_as_executive: false
-            identification_task:
-              add: false
-              change: false
-              view: false
-              delete: false
-            review:
-              add: false
-              change: false
-              view: false
-              delete: false
-            message:
-              add: false
-              change: false
-              view: false
-              delete: false
-        countries: []
+        annotation:
+          add: false
+          change: false
+          view: false
+          delete: false
+        identification_task:
+          add: false
+          change: false
+          view: false
+          delete: false
+        review:
+          add: false
+          change: false
+          view: false
+          delete: false
+        message:
+          add: false
+          change: false
+          view: false
+          delete: false
 
 ---
 
@@ -88,27 +84,23 @@ stages:
     response:
       status_code: 200
       json:
-        general:
-          permissions:
-            annotation:
-              add: false
-              change: false
-              view: false
-              delete: false
-              mark_as_executive: false
-            identification_task:
-              add: false
-              change: false
-              view: false
-              delete: false
-            review:
-              add: false
-              change: false
-              view: false
-              delete: false
-            message:
-              add: false
-              change: false
-              view: false
-              delete: false
-        countries: []
+        annotation:
+          add: false
+          change: false
+          view: false
+          delete: false
+        identification_task:
+          add: false
+          change: false
+          view: false
+          delete: false
+        review:
+          add: false
+          change: false
+          view: false
+          delete: false
+        message:
+          add: false
+          change: false
+          view: false
+          delete: false
