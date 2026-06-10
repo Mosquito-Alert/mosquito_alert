@@ -226,5 +226,9 @@ class PhotoPredictionPermissions(FullDjangoModelPermissions):
     pass
 
 
+class IdentificationTaskCapabilitiesPermissions(FullDjangoModelPermissions):
+    pass
+
+
 class CountriesPermissions(UserObjectPermissions):
     perms_map = permissions.DjangoModelPermissions.perms_map

@@ -1,0 +1,11 @@
+---
+
+name: Capabilities test information
+description: Capabilities endpoint schema
+
+variables:
+  endpoint: "identification-tasks"
+  response_capabilities_validation: &capabilities_validation
+    review: !anybool
+    annotate: !anybool
+    annotate_executive: !anybool

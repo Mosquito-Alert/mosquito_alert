@@ -1,0 +1,167 @@
+---
+
+test_name: Capabilities cannot be accessed by unauthenticated or mobile users.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - app_user_token
+    - jwt_token_user
+
+stages:
+  - name: Capabilities not allowed for mobile users
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/capabilities/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: Non auth user cannot retrieve capabilities
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/capabilities/"
+      method: "GET"
+    response:
+      status_code: 401
+  - name: User without permission cannot retrieve capabilities
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/capabilities/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Capabilities can be retrieved by authenticated users with view permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - another_identification_task_another_country
+    - jwt_token_user_can_view
+
+stages:
+  - name: User with view permission can retrieve capabilities
+    request:
+      url: "{api_live_url}/{endpoint}/{another_identification_task_another_country.report.pk}/capabilities/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_capabilities_validation}"
+
+---
+
+test_name: Supervisor role can annotate and set executive annotations.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - user_with_role_supervisor_in_country
+    - jwt_token_user
+
+stages:
+  - name: Supervisor can view capabilities with annotate and executive permissions
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/capabilities/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      json:
+        review: false
+        annotate: true
+        annotate_executive: true
+
+---
+
+test_name: Admin user has all capabilities.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - user_with_role_admin
+    - jwt_token_user
+
+stages:
+  - name: Admin has all capabilities
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/capabilities/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      json:
+        review: true
+        annotate: true
+        annotate_executive: true
+
+---
+
+test_name: User with annotation for the task can view capabilities.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - identification_task
+    - annotation
+    - user_with_role_member_in_country
+    - jwt_token_user
+
+stages:
+  - name: User who has annotated the task can view capabilities
+    request:
+      url: "{api_live_url}/{endpoint}/{identification_task.report.pk}/capabilities/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      json: !force_format_include "{response_capabilities_validation}"
+
+---
+
+test_name: Capabilities for identification tasks in different countries.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - another_identification_task_another_country
+    - user_with_role_annotator_in_country
+    - jwt_token_user
+
+stages:
+  - name: Annotator from different country cannot access capabilities
+    request:
+      url: "{api_live_url}/{endpoint}/{another_identification_task_another_country.report.pk}/capabilities/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 404

@@ -136,6 +136,7 @@ from .permissions import (
     MyIdentificationTaskPermissions,
     IdentificationTaskAssignmentPermissions,
     IdentificationTaskReviewPermissions,
+    IdentificationTaskCapabilitiesPermissions,
     AnnotationPermissions,
     MyAnnotationPermissions,
     PhotoPredictionPermissions,
@@ -935,7 +936,13 @@ class IdentificationTaskViewSet(
     lookup_url_kwarg = IDENTIFICATION_TASK_VIEW_LOOKUP_FIELD
 
     def get_queryset(self):
-        return super().get_queryset().browsable(user=self.request.user)
+        return (
+            super()
+            .get_queryset()
+            .browsable(
+                user=self.request.user, include_assigned=self.action == "capabilities"
+            )
+        )
 
     @extend_schema(
         request=None,
@@ -1050,6 +1057,17 @@ class IdentificationTaskViewSet(
         return Response(
             response_serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        serializer_class=IdentificationTaskSerializer.IdentificationTaskCapabilitiesSerializer,
+        permission_classes=[IdentificationTaskCapabilitiesPermissions],
+    )
+    def capabilities(self, request, *args, **kwargs):
+        task = self.get_object()
+        serializer = self.get_serializer(task)
+        return Response(serializer.data)
 
     def _get_location_header(self, data):
         try:

@@ -1248,6 +1248,38 @@ class AssignmentSerializer(BaseAssignmentSerializer):
 
 
 class IdentificationTaskSerializer(serializers.ModelSerializer):
+    class IdentificationTaskCapabilitiesSerializer(serializers.ModelSerializer):
+        review = serializers.SerializerMethodField()
+        annotate = serializers.SerializerMethodField()
+        annotate_executive = serializers.SerializerMethodField()
+
+        def get_review(self, obj: IdentificationTask) -> bool:
+            user = self.context["request"].user
+
+            return user.has_perm(
+                f"{IdentificationTask._meta.app_label}.add_review", obj
+            )
+
+        def get_annotate(self, obj: IdentificationTask) -> bool:
+            user = self.context["request"].user
+
+            return user.has_perm(
+                "%(app_label)s.add_%(model_name)s"
+                % {
+                    "app_label": ExpertReportAnnotation._meta.app_label,
+                    "model_name": ExpertReportAnnotation._meta.model_name,
+                },
+                obj,
+            )
+
+        def get_annotate_executive(self, obj: IdentificationTask) -> bool:
+            user = self.context["request"].user
+            return rules.test_rule("can_set_executive_annotation", user, obj)
+
+        class Meta:
+            model = IdentificationTask
+            fields = ("review", "annotate", "annotate_executive")
+
     class IdentificationTaskReviewSerializer(serializers.ModelSerializer):
         action = serializers.ChoiceField(
             source="review_type", choices=IdentificationTask.Review.choices
