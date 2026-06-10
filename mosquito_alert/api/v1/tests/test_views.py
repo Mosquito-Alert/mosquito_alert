@@ -587,6 +587,93 @@ class TestIdentificationTaskPredictionAPI:
 
 
 @pytest.mark.django_db
+class TestIdentificationTaskCapabilitiesAPI:
+    @classmethod
+    def build_url(cls, identification_task: IdentificationTask):
+        return f"/api/v1/identification-tasks/{identification_task.pk}/capabilities/"
+
+    @pytest.fixture
+    def api_client(self, user):
+        api_client = APIClient()
+        api_client.force_login(user=user)
+        return api_client
+
+    def test_member_role_has_limited_capabilities(
+        self, api_client, user, identification_task
+    ):
+        """Member can view capabilities but has no special permissions."""
+        workspace = identification_task.country.workspaces.first()
+        WorkspaceMembership.objects.create(
+            user=user,
+            workspace=workspace,
+            role=WorkspaceMembership.Role.MEMBER,
+        )
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task), format="json"
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+        # Not mark identification task as done, so workspace members can see it but have no permissions.
+        identification_task.status = IdentificationTask.Status.DONE
+        identification_task.save()
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task), format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["review"] is False
+        assert response.data["annotate"] is False
+        assert response.data["annotate_executive"] is False
+
+    def test_annotator_role_can_annotate_identification_tasks(
+        self, api_client, user, identification_task
+    ):
+        """Annotator can view capabilities and has annotate permission."""
+        workspace = identification_task.country.workspaces.first()
+        WorkspaceMembership.objects.create(
+            user=user,
+            workspace=workspace,
+            role=WorkspaceMembership.Role.ANNOTATOR,
+        )
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task), format="json"
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+        # Assign identification task to the annotator, so they can see it and have annotate permission.
+        identification_task.assign_to_user(user)
+        identification_task.save()
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task), format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["review"] is False
+        assert response.data["annotate"] is True
+        assert response.data["annotate_executive"] is False
+
+    def test_reviewer_role_can_review_and_annotate(
+        self, api_client, user, identification_task
+    ):
+        """Reviewer can view capabilities with review and annotate permissions."""
+        workspace = identification_task.country.workspaces.first()
+        WorkspaceCollaborationGroupFactory(
+            reviewers=[user],
+            workspaces=[workspace],
+        )
+
+        response = api_client.get(
+            self.build_url(identification_task=identification_task), format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["review"] is True
+        assert response.data["annotate"] is True
+        assert response.data["annotate_executive"] is True
+
+
+@pytest.mark.django_db
 class TestTokenAPI:
     endpoint = "/api/v1/auth/token/"
     endpoint_refresh = endpoint + "refresh/"

@@ -322,7 +322,9 @@ class IdentificationTaskQuerySet(models.QuerySet):
         )
 
     # OTHER QUERYSETS
-    def browsable(self, user: Union[User, TigaUser]) -> QuerySet:
+    def browsable(
+        self, user: Union[User, TigaUser], include_assigned: bool = True
+    ) -> QuerySet:
         from .models import IdentificationTask
         from .rules import has_global_identification_task_permission
 
@@ -343,6 +345,8 @@ class IdentificationTaskQuerySet(models.QuerySet):
             return qs
 
         result_qs = self.annotated_by(users=[user])
+        if include_assigned:
+            result_qs = result_qs | self.assigned_to(users=[user])
 
         # Filter by workspaces depending on the permissions
         lookup = models.Q()
