@@ -189,7 +189,11 @@ rules.add_perm(
     },
     can_view_photo_prediction | has_global_permission(PhotoPrediction, type="view"),
 )
-rules.add_rule("can_set_executive_annotation", can_set_executive_annotation)
+rules.add_rule(
+    "can_set_executive_annotation",
+    (can_add_annotation & can_set_executive_annotation)
+    | has_global_permission(ExpertReportAnnotation, type="add"),
+)
 rules.add_perm(
     "%(app_label)s.add_review" % {"app_label": IdentificationTask._meta.app_label},
     can_review_identification_task
