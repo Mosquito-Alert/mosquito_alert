@@ -8,6 +8,7 @@ from mosquito_alert.workspaces.models import (
     WorkspaceCollaborationGroup,
 )
 from mosquito_alert.users.models import User, TigaUser
+from mosquito_alert.utils.rules import has_global_permission
 
 
 @rules.predicate
@@ -111,5 +112,7 @@ rules.add_perm(
         "app_label": Workspace._meta.app_label,
         "model_name": Workspace._meta.model_name,
     },
-    is_workspace_member | is_workspace_reviewer,
+    is_workspace_member
+    | is_workspace_reviewer
+    | has_global_permission(Workspace, type="view"),
 )

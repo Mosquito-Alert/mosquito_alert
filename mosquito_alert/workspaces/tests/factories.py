@@ -1,7 +1,7 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from ..models import Workspace, WorkspaceCollaborationGroup
+from ..models import Workspace, WorkspaceCollaborationGroup, WorkspaceMembership
 
 
 class WorkspaceFactory(DjangoModelFactory):
@@ -11,6 +11,15 @@ class WorkspaceFactory(DjangoModelFactory):
     country = factory.SubFactory(
         "mosquito_alert.geo.tests.factories.CountryWithoutSignalFactoryFactory",
     )
+
+    @factory.post_generation
+    def members(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for user in extracted:
+                WorkspaceMembership.objects.create(workspace=self, user=user)
 
 
 class WorkspaceCollaborationGroupFactory(DjangoModelFactory):

@@ -1,0 +1,91 @@
+---
+
+test_name: My workspaces cannot be listed anonymous or unauthorized users.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - workspace
+    - jwt_token_user
+
+stages:
+  - name: List is allowed for mobile users
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: Non auth user can list
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+    response:
+      status_code: 401
+
+---
+
+test_name: My workspaces can be listed by users that are members and have no view permissions
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - workspace
+    - another_workspace
+    - jwt_token_user
+
+stages:
+  - name: User without perm view can list workspace where is a member
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{workspace.pk}"
+
+---
+
+test_name: My workspace will only be displayed even if users that have view permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - workspace
+    - another_workspace
+    - jwt_token_user_can_view
+
+stages:
+  - name: User with perm view can list workspace where is a member
+    request:
+      url: "{api_live_url}/me/{endpoint}/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - id: !int "{workspace.pk}"

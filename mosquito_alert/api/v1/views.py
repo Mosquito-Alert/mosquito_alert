@@ -69,6 +69,8 @@ from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.utils.rules import has_global_permission
+from mosquito_alert.workspaces.models import Workspace, WorkspaceCollaborationGroup
 
 from .filters import (
     NotificationFilter,
@@ -115,6 +117,8 @@ from .serializers import (
     TemporaryBoundarySerializer,
     NotificationSerializer,
     MessageTopicSerializer,
+    WorkspaceSerializer,
+    WorkspaceCollaborationGroupSerializer,
 )
 from .serializers import (
     MessageSerializer,
@@ -139,6 +143,8 @@ from .permissions import (
     MessagePermissions,
     MyMessagePermissions,
     MessageTopicPermissions,
+    DjangoRegularUserModelPermissions,
+    FullDjangoObjectPermissions,
 )
 from .utils import get_serializer_field_paths_for_csv
 from .viewsets import (
@@ -1265,3 +1271,76 @@ class BoundaryViewSet(CreateModelMixin, GenericViewSet):
 
     parser_classes = (JSONParser,)
     permission_classes = (AllowAny,)
+
+
+class WorkspaceViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
+    queryset = (
+        Workspace.objects.all()
+        .select_related("country")
+        .prefetch_related("memberships", "memberships__user")
+    )
+    serializer_class = WorkspaceSerializer
+    permission_classes = (FullDjangoObjectPermissions,)
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        if has_global_permission(Workspace, type="view")(user=self.request.user):
+            return qs
+
+        return qs.filter(members=self.request.user)
+
+
+@extend_schema_view(
+    list=extend_schema(
+        tags=["workspaces"],
+        operation_id="workspaces_list_mine",
+        description="Get Current User's Workspaces",
+    )
+)
+class MyWorkspaceViewSet(WorkspaceViewSet):
+    def get_queryset(self):
+        return super().get_queryset().filter(members=self.request.user)
+
+
+class WorkspaceCollaboratoratorViewSet(
+    ListModelMixin, RetrieveModelMixin, GenericViewSet
+):
+    queryset = WorkspaceCollaborationGroup.objects.all().prefetch_related(
+        "workspaces", "workspaces__country", "reviewers"
+    )
+    serializer_class = WorkspaceCollaborationGroupSerializer
+    permission_classes = (DjangoRegularUserModelPermissions,)
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        if has_global_permission(WorkspaceCollaborationGroup, type="view")(
+            user=self.request.user
+        ):
+            return qs
+
+        return qs.filter(
+            models.Q(workspaces__members=self.request.user)
+            | models.Q(reviewers=self.request.user)
+        )
+
+
+@extend_schema_view(
+    list=extend_schema(
+        tags=["workspaces"],
+        operation_id="workspaces_collaborations_list_mine",
+        description="Get Current User's Workspace Collaborations",
+    )
+)
+class MyWorkspaceCollaboratoratorViewSet(WorkspaceCollaboratoratorViewSet):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                models.Q(workspaces__members=self.request.user)
+                | models.Q(reviewers=self.request.user)
+            )
+            .distinct()
+        )
