@@ -177,6 +177,8 @@ class CampaignsViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     filterset_class = CampaignFilter
 
 
+@method_decorator(cache_page(12 * 60 * 60), name="list")  # cache for 12 hours
+@method_decorator(cache_page(12 * 60 * 60), name="retrieve")  # cache for 12 hours
 class CountriesViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
@@ -1291,6 +1293,12 @@ class BoundaryViewSet(CreateModelMixin, GenericViewSet):
     permission_classes = (AllowAny,)
 
 
+@method_decorator(
+    [vary_on_headers("Authorization"), cache_page(6 * 60 * 60)], name="list"
+)
+@method_decorator(
+    [vary_on_headers("Authorization"), cache_page(6 * 60 * 60)], name="retrieve"
+)
 class WorkspaceViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     queryset = (
         Workspace.objects.all()
@@ -1321,6 +1329,12 @@ class MyWorkspaceViewSet(WorkspaceViewSet):
         return super().get_queryset().filter(members=self.request.user)
 
 
+@method_decorator(
+    [vary_on_headers("Authorization"), cache_page(6 * 60 * 60)], name="list"
+)
+@method_decorator(
+    [vary_on_headers("Authorization"), cache_page(6 * 60 * 60)], name="retrieve"
+)
 class WorkspaceCollaboratoratorViewSet(
     ListModelMixin, RetrieveModelMixin, GenericViewSet
 ):
