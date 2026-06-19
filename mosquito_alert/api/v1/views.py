@@ -930,13 +930,18 @@ class IdentificationTaskViewSet(
     lookup_url_kwarg = IDENTIFICATION_TASK_VIEW_LOOKUP_FIELD
 
     def get_queryset(self):
-        return (
+        is_capabilities = self.action == "capabilities"
+
+        qs = (
             super()
             .get_queryset()
-            .browsable(
-                user=self.request.user, include_assigned=self.action == "capabilities"
-            )
+            .browsable(user=self.request.user, include_assigned=is_capabilities)
         )
+
+        if is_capabilities:
+            qs = qs.select_related(None).prefetch_related(None).order_by()
+
+        return qs
 
     @extend_schema(
         request=None,
