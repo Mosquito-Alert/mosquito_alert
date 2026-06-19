@@ -907,18 +907,10 @@ class IdentificationTaskViewSet(
             "report__lau_fk",
         )
         .prefetch_related(
+            # NOTE: used in serializers for 'assignments' field.
             models.Prefetch(
-                "assignees",
-                queryset=User.objects.filter(
-                    models.Exists(
-                        ExpertReportAnnotation.objects.filter(
-                            user=models.OuterRef("pk"),
-                            identification_task_id=models.OuterRef(
-                                models.OuterRef("identificationtask")
-                            ),
-                        )
-                    )
-                ),
+                "expert_report_annotations",
+                queryset=ExpertReportAnnotation.objects.all().select_related("user"),
             ),
             models.Prefetch(
                 "report__photos",
