@@ -7,7 +7,6 @@ from django.contrib.gis import admin
 
 from django.conf import settings
 from django.conf.urls.static import static
-from mosquito_alert.tigacrafting.views import aimalog_datatable, aimalog
 from django.views.i18n import JavaScriptCatalog
 from django.urls import include, path
 from django.contrib.auth import views as auth_views
@@ -157,8 +156,6 @@ urlpatterns += i18n_patterns(
     ),
     path("experts/status/people/", expert_status, name="expert_status"),
     path("coarse_filter/", coarse_filter, name="coarse_filter"),
-    path("aimalog/", aimalog, name="aimalog"),
-    path("aimalog/apilist/", aimalog_datatable, name="aimalog_datatable"),
     path("accounts/login/", auth_views.LoginView.as_view(), name="login"),
     path(
         "logout/",
