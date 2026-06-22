@@ -107,7 +107,6 @@ def send_new_award_notification(award: "Award") -> None:
 
     notification = Notification.objects.create(
         report=report,
-        expert=User.objects.get(pk=24),
         notification_content=notification_content,
     )
     notification.send_to_user(user=user)

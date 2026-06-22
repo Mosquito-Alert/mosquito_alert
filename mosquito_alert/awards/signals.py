@@ -27,7 +27,6 @@ def maybe_give_awards(sender, instance, created, **kwargs):
     # only for adults and sites
     if created:
         try:
-            super_movelab = User.objects.get(pk=24)
             n_reports = (
                 Report.objects.filter(user=instance.user)
                 .exclude(type=Report.TYPE_BITE)
@@ -35,11 +34,11 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                 .count()
             )
             if n_reports == 10:
-                grant_10_reports_achievement(instance, super_movelab)
+                grant_10_reports_achievement(instance)
             if n_reports == 20:
-                grant_20_reports_achievement(instance, super_movelab)
+                grant_20_reports_achievement(instance)
             if n_reports == 50:
-                grant_50_reports_achievement(instance, super_movelab)
+                grant_50_reports_achievement(instance)
             if instance.type == Report.TYPE_ADULT or instance.type == Report.TYPE_SITE:
                 # check award for first of season
                 current_year = instance.creation_time.year
@@ -54,7 +53,7 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                         instance.creation_time.month >= settings.SEASON_START_MONTH
                         and instance.creation_time.day >= settings.SEASON_START_DAY
                     ):
-                        grant_first_of_season(instance, super_movelab)
+                        grant_first_of_season(instance)
 
                 report_day = instance.creation_time.day
                 report_month = instance.creation_time.month
@@ -68,7 +67,7 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                     .order_by("report__creation_time")
                 )  # first is oldest
                 if awards.count() == 0:  # not yet awarded
-                    grant_first_of_day(instance, super_movelab)
+                    grant_first_of_day(instance)
 
                 date_1_day_before_report = instance.creation_time - timedelta(days=1)
                 date_1_day_before_report_adjusted = date_1_day_before_report.replace(
@@ -94,7 +93,7 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                         .count()
                         == 0
                     ):
-                        grant_two_consecutive_days_sending(instance, super_movelab)
+                        grant_two_consecutive_days_sending(instance)
                     else:
                         if (
                             Award.objects.filter(report=report_before_this_one)
@@ -102,8 +101,6 @@ def maybe_give_awards(sender, instance, created, **kwargs):
                             .count()
                             == 1
                         ):
-                            grant_three_consecutive_days_sending(
-                                instance, super_movelab
-                            )
+                            grant_three_consecutive_days_sending(instance)
         except User.DoesNotExist:
             pass

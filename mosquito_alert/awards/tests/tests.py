@@ -32,7 +32,6 @@ from django.template.loader import render_to_string
 class ScoringTestCase(TestCase):
     fixtures = [
         "awardcategory.json",
-        "granter_user.json",
         "taxon.json",
     ]
 
