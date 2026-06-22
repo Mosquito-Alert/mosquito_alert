@@ -17,7 +17,7 @@
     <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
 
     <script>
-        var data = JSON.parse('{{ encoded_data|safe }}');
+        var data = JSON.parse('{{ encoded_data|escapejs }}');
     </script>
     <script src="{% static 'stats/global_assignments.js' %}"></script>
     <style>
