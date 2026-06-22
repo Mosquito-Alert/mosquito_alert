@@ -22,6 +22,8 @@ import piexif
 from pillow_heif import HeifFile
 import pytest
 
+from .factories import PhotoWithoutSignalFactory
+
 
 def get_full_exif_dict(exif) -> dict:
     if not exif:
@@ -156,19 +158,6 @@ def test_scrub_sensitive_exif_function(photo_path, expected_exif):
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
 class PhotoModelTest(TestCase):
-    def setUp(self):
-        self.report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=0,
-            current_location_lat=0,
-        )
-
     @classmethod
     def create_image_file(cls, name, size, format) -> SimpleUploadedFile:
         # Helper to create an image in memory and return as SimpleUploadedFile
@@ -243,44 +232,36 @@ class PhotoModelTest(TestCase):
 
     def test_photo_processing_with_jpeg(self):
         # Test the processing of a standard JPEG image
-        photo_instance = Photo.objects.create(
+        photo_instance = PhotoWithoutSignalFactory(
             photo=self.create_image_file("test.jpg", (3000, 4000), format="JPEG"),
-            report=self.report,
         )
         self.assert_image_properties(photo_instance)
 
     def test_photo_processing_with_png(self):
         # Test the processing of a standard JPEG image
-        photo_instance = Photo.objects.create(
+        photo_instance = PhotoWithoutSignalFactory(
             photo=self.create_image_file("test.png", (3000, 4000), format="PNG"),
-            report=self.report,
         )
         self.assert_image_properties(photo_instance)
 
     def test_photo_processing_with_heic(self):
-        photo_instance = Photo.objects.create(
+        photo_instance = PhotoWithoutSignalFactory(
             photo=self.create_image_file("test.heic", (3000, 4000), format="HEIF"),
-            report=self.report,
         )
         self.assert_image_properties(photo_instance)
 
     def test_small_photo_doest_not_upscale(self):
-        photo_instance = Photo.objects.create(
+        photo_instance = PhotoWithoutSignalFactory(
             photo=self.create_image_file("test.heic", (300, 400), format="HEIF"),
-            report=self.report,
         )
         self.assert_image_properties(photo_instance, expected_heigt=400)
 
     def test_photo_processing_with_dng(self):
-        photo_instance = Photo.objects.create(
-            photo=self.create_dng_file(), report=self.report
-        )
+        photo_instance = PhotoWithoutSignalFactory(photo=self.create_dng_file())
         self.assert_image_properties(photo_instance)
 
     def test_photo_processing_with_arw(self):
-        photo_instance = Photo.objects.create(
-            photo=self.create_arw_file(), report=self.report
-        )
+        photo_instance = PhotoWithoutSignalFactory(photo=self.create_arw_file())
         self.assert_image_properties(photo_instance)
 
     def assert_image_properties(self, photo_instance, expected_heigt=2160):
@@ -300,11 +281,10 @@ class PhotoModelTest(TestCase):
         img.close()
         img_bytes.seek(0)
 
-        photo_instance = Photo.objects.create(
+        photo_instance = PhotoWithoutSignalFactory(
             photo=SimpleUploadedFile(
                 "test_no_exif.jpg", img_bytes.read(), content_type="image/jpeg"
             ),
-            report=self.report,
         )
         photo_instance.refresh_from_db()
 
@@ -316,11 +296,10 @@ class PhotoModelTest(TestCase):
         original_img_bytes = self.create_image_with_exif()
 
         # Step 2: Process the image
-        photo_instance = Photo.objects.create(
+        photo_instance = PhotoWithoutSignalFactory(
             photo=SimpleUploadedFile(
                 "test_exif.jpg", original_img_bytes.read(), content_type="image/jpeg"
             ),
-            report=self.report,
         )
         photo_instance.refresh_from_db()
 
