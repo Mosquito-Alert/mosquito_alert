@@ -21,6 +21,7 @@ In this repository there is the backend infrastructure powering the Mosquito Ale
     - [Prerequisites](#prerequisites)
     - [Installation](#installation)
     - [Configuration](#configuration)
+    - [Web Server Configuration for Image Uploads](#web-server-configuration-for-image-uploads)
   - [💻 Usage](#-usage)
     - [Running the Application](#running-the-application)
     - [Available Commands](#available-commands)
@@ -107,6 +108,20 @@ Environment variables can be set for:
 - Secret keys
 - Email configuration
 - Storage backends
+
+### Web Server Configuration for Image Uploads
+
+**Important**: Some API endpoints require attaching pictures in the request body. This can be sensitive for web servers like **nginx** (but not Apache2), as they have default file upload size limits.
+
+If you're deploying behind nginx, you must increase the [maximum allowed body size](https://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size) to **25M** to handle image uploads properly:
+
+```nginx
+server {
+   [...]
+    client_max_body_size 25M;
+}
+```
+Without this configuration, image upload requests will fail with `413 Request Entity Too Large` errors.
 
 ## 💻 Usage
 
