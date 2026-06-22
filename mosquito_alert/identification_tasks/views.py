@@ -28,13 +28,16 @@ def report_expiration(request, country_id=None):
         }
     )
     reviewer_countries = Country.objects.filter(
-        workspace__collaboration_groups__reviewers=this_user
+        workspaces__collaboration_groups__reviewers=this_user
     )
 
     if not (has_global_review_perm or reviewer_countries.exists()):
         return HttpResponse(
             "You need to be logged in as reviewer to view this page. If you have have been recruited as an expert and have lost your log-in credentials, please contact MoveLab."
         )
+
+    if has_global_review_perm:
+        reviewer_countries = Country.objects.all()
 
     qs = ExpertReportAnnotation.objects.blocking()
 
