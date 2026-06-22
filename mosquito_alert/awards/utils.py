@@ -27,64 +27,60 @@ def one_day_between_and_same_week(r1_date_less_recent, r2_date_most_recent):
     )
 
 
-def grant_10_reports_achievement(report, granter):
+def grant_10_reports_achievement(report):
     grant_special_award(
         None,
         report.creation_time,
         report.user,
-        granter,
         ACHIEVEMENT_10_REPORTS,
         ACHIEVEMENT_10_REPORTS_XP,
     )
 
 
-def grant_20_reports_achievement(report, granter):
+def grant_20_reports_achievement(report):
     grant_special_award(
         None,
         report.creation_time,
         report.user,
-        granter,
         ACHIEVEMENT_20_REPORTS,
         ACHIEVEMENT_20_REPORTS_XP,
     )
 
 
-def grant_50_reports_achievement(report, granter):
+def grant_50_reports_achievement(report):
     grant_special_award(
         None,
         report.creation_time,
         report.user,
-        granter,
         ACHIEVEMENT_50_REPORTS,
         ACHIEVEMENT_50_REPORTS_XP,
     )
 
 
-def grant_first_of_season(report, granter):
+def grant_first_of_season(report):
     if c := AwardCategory.objects.filter(category_label=START_OF_SEASON).first():
-        grant_award(report, report.creation_time, report.user, granter, c)
+        grant_award(report, report.creation_time, report.user, c)
 
 
-def grant_first_of_day(report, granter):
+def grant_first_of_day(report):
     if c := AwardCategory.objects.filter(category_label=DAILY_PARTICIPATION).first():
-        grant_award(report, report.creation_time, report.user, granter, c)
+        grant_award(report, report.creation_time, report.user, c)
 
 
-def grant_two_consecutive_days_sending(report, granter):
+def grant_two_consecutive_days_sending(report):
     if c := AwardCategory.objects.filter(category_label=FIDELITY_DAY_2).first():
-        grant_award(report, report.creation_time, report.user, granter, c)
+        grant_award(report, report.creation_time, report.user, c)
 
 
-def grant_three_consecutive_days_sending(report, granter):
+def grant_three_consecutive_days_sending(report):
     if c := AwardCategory.objects.filter(category_label=FIDELITY_DAY_3).first():
-        grant_award(report, report.creation_time, report.user, granter, c)
+        grant_award(report, report.creation_time, report.user, c)
 
 
 def grant_special_award(
     for_report,
     awarded_on_date,
     awarded_to_tigauser,
-    awarded_by_expert,
     special_award_label,
     special_award_xp,
 ):
@@ -92,7 +88,6 @@ def grant_special_award(
     :param for_report: Optional
     :param awarded_on_date: Mandatory
     :param awarded_to_tigauser: Mandatory
-    :param awarded_by_expert: Mandatory
     :param special_award_label: Mandatory
     :param special_award_xp: Mandatory
     :return:
@@ -101,22 +96,17 @@ def grant_special_award(
     a.report = for_report
     a.date_given = awarded_on_date
     a.given_to = awarded_to_tigauser
-    if awarded_by_expert is not None:
-        a.expert = awarded_by_expert
     a.special_award_text = special_award_label
     a.special_award_xp = special_award_xp
     a.save()
 
 
-def grant_award(
-    for_report, awarded_on_date, awarded_to_tigauser, awarded_by_expert, award_category
-):
+def grant_award(for_report, awarded_on_date, awarded_to_tigauser, award_category):
     """
 
     :param for_report: Report for which the award is given
     :param awarded_on_date: Date on which the award was granted (usually same as report_creation)
     :param awarded_to_tigauser: User to which it was awarded (usually report owner)
-    :param awarded_by_expert: Expert which awarded the report
     :param award_category: Category of the award
     :return:
     """
@@ -124,8 +114,6 @@ def grant_award(
     a.report = for_report
     a.date_given = awarded_on_date
     a.given_to = awarded_to_tigauser
-    if awarded_by_expert is not None:
-        a.expert = awarded_by_expert
     if award_category is not None:
         a.category = award_category
     a.save()
