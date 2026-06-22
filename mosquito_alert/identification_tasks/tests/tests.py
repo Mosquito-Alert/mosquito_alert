@@ -6,11 +6,9 @@ import pytest
 from scipy.stats import entropy
 import time_machine
 from unittest.mock import PropertyMock, patch, MagicMock
-import uuid
 
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Point
 from django.db import IntegrityError
 from django.utils import timezone
@@ -30,8 +28,14 @@ from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
 )
 from mosquito_alert.notifications.models import Notification
-from mosquito_alert.reports.models import Report, Photo
-from mosquito_alert.users.tests.factories import UserFactory
+from mosquito_alert.reports.tests.factories import (
+    ObservationReportFactory,
+    ObservationReportWithoutSignalFactory,
+    PhotoFactory,
+    BiteReportFactory,
+    BreedingSiteReportFactory,
+)
+from mosquito_alert.users.tests.factories import UserFactory, TigaUserFactory
 from mosquito_alert.workspaces.models import Workspace, WorkspaceMembership
 from mosquito_alert.workspaces.tests.factories import (
     WorkspaceFactory,
@@ -59,12 +63,9 @@ class TestExpertReportAnnotationModel:
             (1.1, pytest.raises(IntegrityError)),
         ],
     )
-    def test_confidence_raise_if_not_between_0_and_1(
-        self, user, identification_task, value, expected_raise
-    ):
-        obj = ExpertReportAnnotation.objects.create(
-            user=user, identification_task=identification_task
-        )
+    def test_confidence_raise_if_not_between_0_and_1(self, value, expected_raise):
+
+        obj = ExpertReportAnnotationFactory()
 
         # Need to force update, because save() sets the confidence automatically
         with expected_raise:
@@ -87,45 +88,31 @@ class TestExpertReportAnnotationModel:
         obj = ExpertReportAnnotation(confidence=confidence_value)
         assert obj.confidence_label == expected_result
 
-    def test_identification_task_is_called_to_refresh_on_create(
-        self, user, identification_task
-    ):
+    def test_identification_task_is_called_to_refresh_on_create(self):
         with patch.object(IdentificationTask, "refresh") as mocked_refresh:
-            _ = ExpertReportAnnotation.objects.create(
-                user=user, identification_task=identification_task
-            )
+            _ = ExpertReportAnnotationFactory()
 
             # Check if refresh() was called
             mocked_refresh.assert_called_once()
 
-    def test_identification_task_is_called_to_refresh_on_save(
-        self, user, identification_task
-    ):
-        obj = ExpertReportAnnotation.objects.create(
-            user=user, identification_task=identification_task
-        )
+    def test_identification_task_is_called_to_refresh_on_save(self):
+        obj = ExpertReportAnnotationFactory()
 
         with patch.object(obj.identification_task, "refresh") as mocked_refresh:
             obj.save()
 
             mocked_refresh.assert_called_once()
 
-    def test_identification_task_is_called_to_refresh_on_delete(
-        self, user, identification_task
-    ):
-        obj = ExpertReportAnnotation.objects.create(
-            user=user, identification_task=identification_task
-        )
+    def test_identification_task_is_called_to_refresh_on_delete(self):
+        obj = ExpertReportAnnotationFactory()
 
         with patch.object(obj.identification_task, "refresh") as mocked_refresh:
             obj.delete()
 
             mocked_refresh.assert_called_once()
 
-    def test_confidence_set_to_0_if_not_taxon(self, user, identification_task):
-        obj = ExpertReportAnnotation.objects.create(
-            user=user,
-            identification_task=identification_task,
+    def test_confidence_set_to_0_if_not_taxon(self):
+        obj = ExpertReportAnnotationFactory(
             taxon=None,
             confidence=0.5,
         )
@@ -188,46 +175,43 @@ class TestExpertReportAnnotationModel:
 
 @pytest.mark.django_db
 class TestIdentificationTaskModel:
-    # classmethods
-    @pytest.mark.parametrize("report_type", [Report.TYPE_BITE, Report.TYPE_SITE])
-    def test_get_or_create_for_report_should_return_None_if_not_adult_report(
-        self, _report, report_type
-    ):
-        report = _report
-        report.type = report_type
-        report.save()
-
-        result, created = IdentificationTask.get_or_create_for_report(report=report)
+    def test_get_or_create_for_report_should_return_None_if_not_adult_report(self):
+        # Case Bite report
+        result, created = IdentificationTask.get_or_create_for_report(
+            report=BiteReportFactory()
+        )
         assert result is None
         assert not created
 
-    def test_get_or_create_for_report_should_return_None_if_report_has_no_photos(
-        self, adult_report
-    ):
-        assert frozenset(adult_report.photos.all()) is frozenset([])
-
+        # Case Breeding site report
         result, created = IdentificationTask.get_or_create_for_report(
-            report=adult_report
+            report=BreedingSiteReportFactory()
         )
+        assert result is None
+        assert not created
+
+    def test_get_or_create_for_report_should_return_None_if_report_has_no_photos(self):
+        report_obj = ObservationReportWithoutSignalFactory(
+            photos=None, identification_task=None
+        )
+
+        result, created = IdentificationTask.get_or_create_for_report(report=report_obj)
         assert result is None
         assert not created
 
     def test_get_or_create_for_report_in_supervised_country_should_return_task_with_exclusivity_end_date(
-        self, user_national_supervisor, country, adult_report
+        self, user_national_supervisor, country
     ):
-        assert adult_report.country == country
 
-        # Creating a photo will auto create a new IdentificationTask. Delete it and force manual.
-        _ = Photo.objects.create(report=adult_report, photo="./testdata/splash.png")
-        IdentificationTask.objects.filter(report=adult_report).delete()
+        report_obj = ObservationReportWithoutSignalFactory(
+            point=country.geom.point_on_surface, identification_task=None
+        )
 
-        obj, created = IdentificationTask.get_or_create_for_report(report=adult_report)
+        obj, created = IdentificationTask.get_or_create_for_report(report=report_obj)
 
         assert obj is not None
         assert created
-        assert obj.exclusivity_end == adult_report.server_upload_time + timedelta(
-            days=14
-        )
+        assert obj.exclusivity_end == report_obj.server_upload_time + timedelta(days=14)
 
     def test_get_taxon_consensus_empty_annotations(self):
         result = IdentificationTask.get_taxon_consensus([], min_confidence=0.5)
@@ -1085,11 +1069,9 @@ class TestIdentificationTaskManager:
         assert result.count() == 1
         assert result.first() == identification_task
 
-    def test_backlog_returns_none_for_non_user_types(
-        self, identification_task, tiga_user
-    ):
+    def test_backlog_returns_none_for_non_user_types(self, identification_task):
         """backlog() should return empty queryset for TigaUser."""
-        result = IdentificationTask.objects.backlog(user=tiga_user)
+        result = IdentificationTask.objects.backlog(user=TigaUserFactory())
 
         assert result.count() == 0
 
@@ -1600,11 +1582,9 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 0
 
-    def test_browsable_returns_none_for_non_user_types(
-        self, identification_task, tiga_user
-    ):
+    def test_browsable_returns_none_for_non_user_types(self, identification_task):
         """browsable() should return empty queryset for TigaUser."""
-        result = IdentificationTask.objects.browsable(user=tiga_user)
+        result = IdentificationTask.objects.browsable(user=TigaUserFactory())
 
         assert result.count() == 0
 
@@ -1786,21 +1766,6 @@ class TestIdentificationTaskManager:
 
 @pytest.mark.django_db
 class TestIdentificationTaskFlow:
-    def _add_annotation(
-        self,
-        identification_task: IdentificationTask,
-        is_finished: bool = True,
-        **kwargs,
-    ) -> ExpertReportAnnotation:
-        user_expert = User.objects.create(username=str(uuid.uuid4()))
-
-        return ExpertReportAnnotation.objects.create(
-            identification_task=identification_task,
-            user=user_expert,
-            is_finished=is_finished,
-            **kwargs,
-        )
-
     def _add_review(
         self,
         identification_task: IdentificationTask,
@@ -1808,7 +1773,7 @@ class TestIdentificationTaskFlow:
         is_finished: bool = True,
         **kwargs,
     ) -> ExpertReportAnnotation:
-        user_expert = User.objects.create(username=str(uuid.uuid4()))
+        user_expert = UserFactory()
 
         if not overwrite:
             identification_task.review_type = IdentificationTask.Review.AGREE
@@ -1816,7 +1781,7 @@ class TestIdentificationTaskFlow:
             identification_task.reviewed_by = user_expert
             identification_task.save()
         else:
-            return ExpertReportAnnotation.objects.create(
+            return ExpertReportAnnotationFactory(
                 identification_task=identification_task,
                 user=user_expert,
                 decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
@@ -1825,14 +1790,10 @@ class TestIdentificationTaskFlow:
             )
 
     # triggers from Report
-    def test_identification_task_is_created_on_adult_report_creation_with_photos(
-        self, adult_report
-    ):
-        identification_task_qs = IdentificationTask.objects.filter(report=adult_report)
-        assert identification_task_qs.count() == 0
+    def test_identification_task_is_created_on_adult_report_creation_with_photos(self):
+        report_obj = ObservationReportFactory()
 
-        # Creating photo for the report
-        _ = Photo.objects.create(report=adult_report, photo="./testdata/splash.png")
+        identification_task_qs = IdentificationTask.objects.filter(report=report_obj)
         assert identification_task_qs.count() == 1
 
     def test_identification_task_status_should_be_archive_after_report_is_hidden(
@@ -1897,7 +1858,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.status == IdentificationTask.Status.OPEN
         assert identification_task.assignees.count() == 0
 
-        self._add_annotation(identification_task=identification_task)
+        ExpertReportAnnotationFactory(identification_task=identification_task)
 
         assert frozenset(IdentificationTask.objects.ongoing()) == frozenset(
             [identification_task]
@@ -1908,7 +1869,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.assignees.count() == 0
 
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
-            self._add_annotation(
+            ExpertReportAnnotationFactory(
                 identification_task=identification_task, is_finished=False
             )
 
@@ -1917,10 +1878,10 @@ class TestIdentificationTaskFlow:
             # Still assignable, not blocked yet.
             assert IdentificationTask.objects.blocked(days=15).count() == 0
 
-            self._add_annotation(
+            ExpertReportAnnotationFactory(
                 identification_task=identification_task, is_finished=True
             )
-            self._add_annotation(
+            ExpertReportAnnotationFactory(
                 identification_task=identification_task, is_finished=True
             )
 
@@ -1933,7 +1894,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.status == IdentificationTask.Status.OPEN
         assert identification_task.assignees.count() == 0
 
-        annotation = self._add_annotation(
+        annotation = ExpertReportAnnotationFactory(
             identification_task=identification_task, is_finished=False
         )
 
@@ -1951,7 +1912,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.assignees.count() == 0
 
         for _ in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT):  # noqa: F402
-            self._add_annotation(identification_task=identification_task)
+            ExpertReportAnnotationFactory(identification_task=identification_task)
 
         assert frozenset(IdentificationTask.objects.to_review()) == frozenset(
             [identification_task]
@@ -1971,7 +1932,7 @@ class TestIdentificationTaskFlow:
         assert identification_task.assignees.count() == 0
 
         for _ in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT):  # noqa: F402
-            self._add_annotation(identification_task=identification_task)
+            ExpertReportAnnotationFactory(identification_task=identification_task)
 
         self._add_review(
             identification_task=identification_task, overwrite=is_overwrite
@@ -1996,7 +1957,7 @@ class TestIdentificationTaskFlow:
     ):
         assert identification_task.total_annotations == 0
 
-        _ = self._add_annotation(
+        _ = ExpertReportAnnotationFactory(
             identification_task=identification_task, is_finished=is_finished
         )
 
@@ -2027,7 +1988,7 @@ class TestIdentificationTaskFlow:
     ):
         assert identification_task.total_finished_annotations == 0
 
-        self._add_annotation(
+        ExpertReportAnnotationFactory(
             identification_task=identification_task, is_finished=is_finished
         )
 
@@ -2038,7 +1999,7 @@ class TestIdentificationTaskFlow:
     def test_assignees(self, identification_task):
         assert identification_task.assignees.count() == 0
 
-        _ = self._add_annotation(identification_task=identification_task)
+        _ = ExpertReportAnnotationFactory(identification_task=identification_task)
         assert identification_task.assignees.count() == 1
 
         self._add_review(identification_task=identification_task, overwrite=False)
@@ -2072,7 +2033,7 @@ class TestIdentificationTaskFlow:
             taxa.append(t)
 
         for taxon in taxa:
-            self._add_annotation(
+            ExpertReportAnnotationFactory(
                 identification_task=identification_task,
                 taxon=taxon,
                 confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
@@ -2092,7 +2053,7 @@ class TestIdentificationTaskFlow:
         _ = genus.add_child(name="specie 2", rank=Taxon.TaxonomicRank.SPECIES)
 
         for _ in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1):
-            self._add_annotation(
+            ExpertReportAnnotationFactory(
                 identification_task=identification_task,
                 taxon=specie_1,
                 confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
@@ -2100,7 +2061,7 @@ class TestIdentificationTaskFlow:
             )
 
         # Mark as flagged
-        self._add_annotation(
+        ExpertReportAnnotationFactory(
             identification_task=identification_task,
             taxon=specie_1,
             confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
@@ -2120,7 +2081,7 @@ class TestIdentificationTaskFlow:
 
     def test_one_flagged_annotation_sets_status_to_review(self, identification_task):
         # Mark as flagged
-        self._add_annotation(
+        ExpertReportAnnotationFactory(
             identification_task=identification_task,
             status=ExpertReportAnnotation.Status.FLAGGED,
         )
@@ -2139,12 +2100,10 @@ class TestIdentificationTaskFlow:
         specie_2 = genus.add_child(name="specie 2", rank=Taxon.TaxonomicRank.SPECIES)
 
         first_photo = identification_task.report.photos.first()
-        another_photo = Photo.objects.create(
-            report=identification_task.report, photo="./testdata/splash.png"
-        )
+        another_photo = PhotoFactory(report=identification_task.report)
 
         for _ in range(settings.MAX_N_OF_EXPERTS_ASSIGNED_PER_REPORT - 1):  # noqa: F402
-            self._add_annotation(
+            ExpertReportAnnotationFactory(
                 identification_task=identification_task,
                 taxon=specie_1,
                 confidence=ExpertReportAnnotation.ConfidenceCategory.DEFINITELY,
@@ -2155,7 +2114,7 @@ class TestIdentificationTaskFlow:
             )
 
         # Disagree with others
-        self._add_annotation(
+        ExpertReportAnnotationFactory(
             identification_task=identification_task,
             taxon=specie_2,
             confidence=ExpertReportAnnotation.ConfidenceCategory.PROBABLY,
@@ -2237,12 +2196,10 @@ class TestIdentificationTaskFlow:
         _ = genus.add_child(name="specie 2", rank=Taxon.TaxonomicRank.SPECIES)
 
         _ = identification_task.report.photos.first()
-        another_photo = Photo.objects.create(
-            report=identification_task.report, photo="./testdata/splash.png"
-        )
+        another_photo = PhotoFactory(report=identification_task.report)
 
         # Executive annotation
-        annotation = self._add_annotation(
+        annotation = ExpertReportAnnotationFactory(
             identification_task=identification_task,
             taxon=specie_1,
             confidence=ExpertReportAnnotation.ConfidenceCategory.PROBABLY,
