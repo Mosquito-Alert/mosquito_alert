@@ -33,7 +33,7 @@
     {% for workspace in workspaces %}
         <div class="row" >
             <div class="col-md-12" style="background-color: #99ff99">
-                <h2>{{ workspace.country.name_engl | capfirst }}</h2>
+                <h2>{{ workspace.country.name_engl | capfirst }}{% if workspace.name %} - {{ workspace.name }}{% endif %}</h2>
             </div>
         </div>
         {% for membership in workspace.memberships.all %}

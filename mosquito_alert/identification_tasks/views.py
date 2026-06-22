@@ -127,7 +127,7 @@ def expert_status(request):
     return render(
         request,
         "identification_tasks/expert_status.html",
-        {"workspaces": workspaces_qs.order_by("country__name_engl")},
+        {"workspaces": workspaces_qs.distinct().order_by("country__name_engl")},
     )
 
 
