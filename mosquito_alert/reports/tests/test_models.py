@@ -1,26 +1,25 @@
 from datetime import timedelta
-
-# Create your tests here.
-from django.test import TestCase, override_settings
-from mosquito_alert.devices.models import Device, MobileApp
-from mosquito_alert.geo.models import Country, LauEurope
-from PIL import Image, ExifTags
-import os
-from django.contrib.gis.geos import Polygon, MultiPolygon, Point
-from django.utils import timezone
-from mosquito_alert.reports.models import Report, Photo
-from mosquito_alert.reports.utils import scrub_sensitive_exif
-from mosquito_alert.users.models import TigaUser
 import io
-from django.db.utils import IntegrityError
-import tempfile
-from django.core.files.uploadedfile import SimpleUploadedFile
-import time_machine
-import semantic_version
-
+import os
+from PIL import Image, ExifTags
 import piexif
 from pillow_heif import HeifFile
 import pytest
+import tempfile
+import time_machine
+import semantic_version
+
+from django.contrib.gis.geos import Polygon, MultiPolygon, Point
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.utils import IntegrityError
+from django.test import TestCase, override_settings
+from django.utils import timezone
+
+from mosquito_alert.devices.models import Device, MobileApp
+from mosquito_alert.geo.models import Country, LauEurope
+from mosquito_alert.reports.models import Report, Photo
+from mosquito_alert.reports.utils import scrub_sensitive_exif
+from mosquito_alert.users.models import TigaUser
 
 from .factories import PhotoWithoutSignalFactory
 
