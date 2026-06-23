@@ -16,10 +16,18 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from mosquito_alert.devices.models import Device, MobileApp
-from mosquito_alert.geo.models import Country, LauEurope
-from mosquito_alert.reports.models import Report, Photo
+from mosquito_alert.geo.models import LauEurope
+from mosquito_alert.reports.models import Report
+from mosquito_alert.reports.tests.factories import (
+    ReportFactory,
+    BiteReportFactory,
+    BreedingSiteReportFactory,
+    ObservationReportFactory,
+)
 from mosquito_alert.reports.utils import scrub_sensitive_exif
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.users.tests.factories import TigaUserFactory
+from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
 
 from .factories import PhotoWithoutSignalFactory
 
@@ -325,40 +333,16 @@ class PhotoModelTest(TestCase):
 
 class ReportModelTest(TestCase):
     def test_tags_are_set_from_note_on_create(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=0,
-            current_location_lat=0,
-            note="this a dummy note #tag1, with differents #tag2 tags.",
+        report = ReportFactory(
+            note="this a dummy note #tag1, with differents #tag2 tags."
         )
-
-        report.refresh_from_db()
 
         # Check if tags are correctly set by comparing tag names
         tag_names = list(report.tags.values_list("name", flat=True))
         self.assertEqual(sorted(tag_names), ["tag1", "tag2"])
 
     def test_tags_from_note_are_unique(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=0,
-            current_location_lat=0,
-            note="this is a repeated tag #tag1 #tag1 #tag2",
-        )
-
-        report.refresh_from_db()
+        report = ReportFactory(note="this is a repeated tag #tag1 #tag1 #tag2")
 
         # Check if tags are correctly set by comparing tag names
         tag_names = list(report.tags.values_list("name", flat=True))
@@ -366,91 +350,39 @@ class ReportModelTest(TestCase):
 
     @pytest.mark.enable_report_location_masking
     def test_report_above_greenland_should_be_marked_as_masked(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=0,
-            current_location_lat=84,
-        )
-        report.refresh_from_db()
+        report = ReportFactory(point=Point(x=0, y=84, srid=4326))
 
         self.assertTrue(report.location_is_masked)
 
     @pytest.mark.enable_report_location_masking
     def test_report_below_antartic_circle_should_be_marked_as_masked(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=-63,
-            current_location_lat=-67,
-        )
-        report.refresh_from_db()
-
+        report = ReportFactory(point=Point(x=-63, y=-67, srid=4326))
         self.assertTrue(report.location_is_masked)
 
     @pytest.mark.enable_report_location_masking
     def test_report_in_the_ocean_should_be_marked_as_masked(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=0,
-            current_location_lat=0,
-        )
-        report.refresh_from_db()
+        report = ReportFactory(point=Point(x=0, y=0, srid=4326))
 
         self.assertTrue(report.location_is_masked)
 
     @pytest.mark.enable_report_location_masking
     def test_report_in_land_should_not_be_marked_as_masked(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
-        )
-        report.refresh_from_db()
+        report = ReportFactory(point=Point(x=41, y=2, srid=4326))
 
         self.assertFalse(report.location_is_masked)
 
     def test_device_is_deleted_on_save_failure(self):
         self.assertEqual(Device.objects.all().count(), 0)
-        user = TigaUser.objects.create()
-        report = Report.objects.create(
+        user = TigaUserFactory()
+        report = ReportFactory(
             user=user,
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
             device_manufacturer="test_make",
             device_model="test_model",
             os="testOs",
             os_version="testVersion",
             os_language="es-ES",
         )
+
         self.assertEqual(Device.objects.all().count(), 1)
 
         device = Device.objects.get(user=user)
@@ -458,17 +390,9 @@ class ReportModelTest(TestCase):
 
         with self.assertRaises(IntegrityError):
             # Trying to create a new report with the same PK, which will raise.
-            _ = Report.objects.create(
+            _ = ReportFactory(
                 pk=report.pk,
                 user=user,
-                report_id="1235",
-                phone_upload_time=timezone.now(),
-                creation_time=timezone.now(),
-                version_time=timezone.now(),
-                type=Report.TYPE_ADULT,
-                location_choice=Report.LOCATION_CURRENT,
-                current_location_lon=41,
-                current_location_lat=2,
                 device_manufacturer=report.device_manufacturer,
                 device_model=report.device_model,
                 os=report.os,
@@ -482,17 +406,9 @@ class ReportModelTest(TestCase):
 
     def test_mobile_app_is_deleted_on_save_failure(self):
         self.assertEqual(MobileApp.objects.all().count(), 0)
-        user = TigaUser.objects.create()
-        report = Report.objects.create(
+        user = TigaUserFactory()
+        report = ReportFactory(
             user=user,
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
             package_name="testapp",
             package_version="100",
         )
@@ -507,17 +423,9 @@ class ReportModelTest(TestCase):
 
         with self.assertRaises(IntegrityError):
             # Trying to create a new report with the same PK, which will raise.
-            _ = Report.objects.create(
+            _ = ReportFactory(
                 pk=report.pk,
                 user=user,
-                report_id="1235",
-                phone_upload_time=timezone.now(),
-                creation_time=timezone.now(),
-                version_time=timezone.now(),
-                type=Report.TYPE_ADULT,
-                location_choice=Report.LOCATION_CURRENT,
-                current_location_lon=41,
-                current_location_lat=2,
                 package_name=report.package_name,
                 package_version="101",
             )
@@ -527,7 +435,7 @@ class ReportModelTest(TestCase):
 
     def test_device_is_updated_if_previous_model_exist_and_new_model_None_also(self):
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
-            user = TigaUser.objects.create()
+            user = TigaUserFactory()
             device = Device.objects.create(
                 user=user,
                 model="test_model",
@@ -536,16 +444,8 @@ class ReportModelTest(TestCase):
                 active_session=True,
                 last_login=timezone.now() - timedelta(days=1),
             )
-            _ = Report.objects.create(
+            _ = ReportFactory(
                 user=user,
-                report_id="1234",
-                phone_upload_time=timezone.now(),
-                creation_time=timezone.now(),
-                version_time=timezone.now(),
-                type=Report.TYPE_ADULT,
-                location_choice=Report.LOCATION_CURRENT,
-                current_location_lon=41,
-                current_location_lat=2,
                 device_manufacturer="test_make",
                 device_model="test_model",
                 os="testOs",
@@ -579,16 +479,8 @@ class ReportModelTest(TestCase):
             )
 
             # Creating a new report with the same previous model
-            _ = Report.objects.create(
+            _ = ReportFactory(
                 user=user,
-                report_id="1235",
-                phone_upload_time=timezone.now(),
-                creation_time=timezone.now(),
-                version_time=timezone.now(),
-                type=Report.TYPE_ADULT,
-                location_choice=Report.LOCATION_CURRENT,
-                current_location_lon=41,
-                current_location_lat=2,
                 device_manufacturer="test_make",
                 device_model="test_model",
                 os="testOs",
@@ -606,63 +498,24 @@ class ReportModelTest(TestCase):
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_bite_is_published_on_create(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_BITE,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
-        )
+        report = BiteReportFactory()
         self.assertEqual(report.published_at, timezone.now())
         self.assertEqual(report.published, True)
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
-    def test_bite_is_not_published_if_country_does_not_allow_public_on_create(self):
-        disabled_publish_country = Country.objects.create(
-            name_engl="Random",
-            iso2_code="RD",
-            iso3_code="RND",
-            wikidata_id="Q12345",
-            geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
+    def test_bite_is_not_published_if_workspace_does_not_allow_public_on_create(self):
+        workspace = WorkspaceFactory(is_public=False)
+        report = BiteReportFactory(
+            point=workspace.country.geom.point_on_surface,
         )
-        workspace = disabled_publish_country.workspaces.first()
-        workspace.is_public = False
-        workspace.save()
-        point_on_surface = disabled_publish_country.geom.point_on_surface
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_BITE,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=point_on_surface.x,
-            current_location_lat=point_on_surface.y,
-        )
-        self.assertEqual(report.country, disabled_publish_country)
+        self.assertEqual(report.country, workspace.country)
         self.assertIsNone(report.published_at)
         self.assertEqual(report.published, False)
 
     def test_breeding_site_with_picture_is_published_in_two_days_on_create(self):
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
-            report = Report.objects.create(
-                user=TigaUser.objects.create(),
-                report_id="1234",
-                phone_upload_time=timezone.now(),
-                creation_time=timezone.now(),
-                version_time=timezone.now(),
-                type=Report.TYPE_SITE,
-                location_choice=Report.LOCATION_CURRENT,
-                current_location_lon=41,
-                current_location_lat=2,
-            )
-            _ = Photo.objects.create(report=report, photo="./testdata/splash.png")
-            report.refresh_from_db()
+            report = BreedingSiteReportFactory()
+
             self.assertEqual(report.published_at, timezone.now() + timedelta(days=2))
             self.assertEqual(report.published, False)
 
@@ -672,136 +525,52 @@ class ReportModelTest(TestCase):
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_breeding_site_without_picture_is_published_on_create(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_SITE,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
-        )
+        report = BreedingSiteReportFactory(photos=[])
         self.assertEqual(report.published_at, timezone.now())
         self.assertEqual(report.published, True)
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
-    def test_breeding_site_without_picture_is_not_published_if_country_does_not_allow_public_on_create(
+    def test_breeding_site_without_picture_is_not_published_if_workspace_does_not_allow_public_on_create(
         self,
     ):
-        disabled_publish_country = Country.objects.create(
-            name_engl="Random",
-            iso2_code="RD",
-            iso3_code="RND",
-            wikidata_id="Q12345",
-            geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
+        workspace = WorkspaceFactory(is_public=False)
+        report = BreedingSiteReportFactory(
+            point=workspace.country.geom.point_on_surface,
         )
-        workspace = disabled_publish_country.workspaces.first()
-        workspace.is_public = False
-        workspace.save()
-        point_on_surface = disabled_publish_country.geom.point_on_surface
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_SITE,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=point_on_surface.x,
-            current_location_lat=point_on_surface.y,
-        )
-        self.assertEqual(report.country, disabled_publish_country)
+
+        self.assertEqual(report.country, workspace.country)
         self.assertIsNone(report.published_at)
         self.assertEqual(report.published, False)
 
     def test_adult_without_picture_is_published_on_create(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
-        )
+        report = ObservationReportFactory(photos=[])
         self.assertEqual(report.published, True)
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
-    def test_adult_without_picture_is_not_published_if_country_does_not_allow_public_on_create(
+    def test_adult_without_picture_is_not_published_if_workspace_does_not_allow_public_on_create(
         self,
     ):
-        disabled_publish_country = Country.objects.create(
-            name_engl="Random",
-            iso2_code="RD",
-            iso3_code="RND",
-            wikidata_id="Q12345",
-            geom=MultiPolygon(Polygon.from_bbox((-10.0, 35.0, 3.5, 44.0))),
+        workspace = WorkspaceFactory(is_public=False)
+        report = ObservationReportFactory(
+            point=workspace.country.geom.point_on_surface,
         )
-        workspace = disabled_publish_country.workspaces.first()
-        workspace.is_public = False
-        workspace.save()
-        point_on_surface = disabled_publish_country.geom.point_on_surface
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=point_on_surface.x,
-            current_location_lat=point_on_surface.y,
-        )
-        self.assertEqual(report.country, disabled_publish_country)
+
+        self.assertEqual(report.country, workspace.country)
         self.assertIsNone(report.published_at)
         self.assertEqual(report.published, False)
 
     def test_adult_with_picture_is_not_published_on_create(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
-        )
-        _ = Photo.objects.create(report=report, photo="./testdata/splash.png")
-        report.refresh_from_db()
+        report = ObservationReportFactory()
         self.assertEqual(report.published, False)
 
     def test_mission_is_not_published_on_create(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
+        report = ReportFactory(
             type=Report.TYPE_MISSION,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
         )
         self.assertEqual(report.published, False)
 
     def test_published_report_is_unpublished_if_hide(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
-        )
+        report = ObservationReportFactory()
         report.published_at = timezone.now()
         report.save()
 
@@ -813,17 +582,7 @@ class ReportModelTest(TestCase):
         self.assertEqual(report.published, False)
 
     def test_published_report_is_unpublished_if_tag_345(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_BITE,
-            published_at=timezone.now(),
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
+        report = BiteReportFactory(
             note="#345",
         )
 
@@ -833,19 +592,9 @@ class ReportModelTest(TestCase):
         self.assertEqual(report.published, False)
 
     def test_published_report_is_unpublished_if_soft_deleted(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
+        report = BiteReportFactory(
+            published_at=timezone.now(),
         )
-        report.published_at = timezone.now()
-        report.save()
 
         self.assertEqual(report.published, True)
 
@@ -855,19 +604,7 @@ class ReportModelTest(TestCase):
 
     @pytest.mark.enable_report_location_masking
     def test_published_report_is_unpublished_if_location_is_masked(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_BITE,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
-        )
-        report.published_at = timezone.now()
-        report.save()
+        report = BiteReportFactory(published_at=timezone.now())
 
         self.assertEqual(report.published, True)
 
@@ -879,17 +616,7 @@ class ReportModelTest(TestCase):
         self.assertEqual(report.published, False)
 
     def test_published_and_hide_raise_IntegrityError(self):
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice=Report.LOCATION_CURRENT,
-            current_location_lon=41,
-            current_location_lat=2,
-        )
+        report = ReportFactory()
 
         with self.assertRaises(IntegrityError):
             Report.objects.filter(pk=report.pk).update(
@@ -904,19 +631,7 @@ class ReportModelTest(TestCase):
             geom=MultiPolygon(Polygon.from_bbox((-10, 40, 10, 60))),
         )
 
-        point = lau.geom.point_on_surface
-
-        report = Report.objects.create(
-            user=TigaUser.objects.create(),
-            report_id="1234",
-            phone_upload_time=timezone.now(),
-            creation_time=timezone.now(),
-            version_time=timezone.now(),
-            type=Report.TYPE_ADULT,
-            location_choice="current",
-            current_location_lon=point.x,
-            current_location_lat=point.y,
-        )
+        report = ReportFactory(point=lau.geom.point_on_surface)
 
         assert report.lau_fk == lau
 
@@ -946,22 +661,10 @@ class ReportModelTest(TestCase):
 
     def test_report_location_is_used_on_user_last_location(self):
         with time_machine.travel("2024-01-01 00:00:00", tick=False) as traveller:
-            user = TigaUser.objects.create(
-                last_location=None, last_location_update=None
-            )
+            user = TigaUserFactory(last_location=None, last_location_update=None)
 
             report_point = Point(x=10, y=10, srid=4326)
-            report = Report.objects.create(
-                user=user,
-                report_id="1234",
-                phone_upload_time=timezone.now(),
-                creation_time=timezone.now(),
-                version_time=timezone.now(),
-                type=Report.TYPE_ADULT,
-                location_choice="current",
-                current_location_lon=report_point.x,
-                current_location_lat=report_point.y,
-            )
+            report = ReportFactory(user=user, point=report_point)
 
             user.refresh_from_db()
             self.assertEqual(user.last_location, report_point)
@@ -970,17 +673,7 @@ class ReportModelTest(TestCase):
             traveller.shift(timedelta(days=1))
 
             new_report_point = Point(x=5, y=5, srid=4326)
-            new_report = Report.objects.create(
-                user=user,
-                report_id="1235",
-                phone_upload_time=timezone.now(),
-                creation_time=timezone.now(),
-                version_time=timezone.now(),
-                type=Report.TYPE_ADULT,
-                location_choice="current",
-                current_location_lon=new_report_point.x,
-                current_location_lat=new_report_point.y,
-            )
+            new_report = ReportFactory(user=user, point=new_report_point)
 
             user.refresh_from_db()
             self.assertEqual(user.last_location, new_report_point)

@@ -781,7 +781,7 @@ class Report(TimeZoneModelMixin, models.Model):
         _old_point = self.point
         self.point = self._get_point()
         self.timezone = self.get_timezone_from_coordinates()
-        if _old_point != self.point:
+        if _old_point != self.point or self._state.adding:
             _last_location_update = self.user.last_location_update
             _report_upload_time = self.server_upload_time or timezone.now()
             if _last_location_update is None or (
