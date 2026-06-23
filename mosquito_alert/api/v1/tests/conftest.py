@@ -10,7 +10,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Polygon, MultiPolygon
-from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.module_loading import import_string
 
@@ -27,7 +26,7 @@ from mosquito_alert.notifications.models import (
     NotificationTopic,
     NotificationContent,
 )
-from mosquito_alert.reports.models import Report, Photo
+from mosquito_alert.reports.tests.factories import ObservationReportFactory
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.workspaces.models import WorkspaceMembership
 from mosquito_alert.workspaces.tests.factories import WorkspaceCollaborationGroupFactory
@@ -70,6 +69,7 @@ def jwt_token_user(user):
     )
 
 
+# TODO: replace to factory_boy (faker) to generate random data
 @pytest.fixture
 def dummy_image():
     # Prepare a fake image file
@@ -89,27 +89,11 @@ def dummy_image():
 
 
 @pytest.fixture
-def adult_report(app_user, es_country, dummy_image):
-    point_on_surface = es_country.geom.point_on_surface
-    r = Report.objects.create(
+def adult_report(app_user, es_country):
+    return ObservationReportFactory(
         user=app_user,
-        report_id=1234,  # TODO: change
-        phone_upload_time=timezone.now(),
-        creation_time=timezone.now(),
-        version_time=timezone.now(),
-        type=Report.TYPE_ADULT,
-        location_choice=Report.LOCATION_CURRENT,
-        current_location_lon=point_on_surface.x,
-        current_location_lat=point_on_surface.y,
-        note="This is a test report note.",
+        point=es_country.geom.point_on_surface,
     )
-
-    _ = Photo.objects.create(
-        photo=dummy_image,
-        report=r,
-    )
-
-    return r
 
 
 @pytest.fixture

@@ -52,19 +52,11 @@ from mosquito_alert.workspaces.tests.factories import (
 )
 
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
-from mosquito_alert.api.v1.tests.integration.observations.factories import (
-    create_observation_object,
-)
-from mosquito_alert.api.v1.tests.integration.breeding_sites.factories import (
-    create_breeding_site_object,
-)
-from mosquito_alert.api.v1.tests.integration.bites.factories import create_bite_object
 from mosquito_alert.api.v1.tests.integration.identification_tasks.factories import (
     create_annotation,
     create_review,
 )
 from mosquito_alert.api.v1.tests.factories import (
-    create_report_object,
     create_boundary_contains_point,
 )
 from mosquito_alert.api.v1.tests.integration.identification_tasks.predictions.factories import (
@@ -393,7 +385,7 @@ class TestBiteAPI(BaseReportTest):
 
     @pytest.fixture
     def report_object(self, app_user):
-        return create_bite_object(user=app_user)
+        return self.factory_cls(user=app_user)
 
 
 class TestBreedingSiteAPI(BaseReportTest):
@@ -404,7 +396,7 @@ class TestBreedingSiteAPI(BaseReportTest):
 
     @pytest.fixture
     def report_object(self, app_user):
-        return create_breeding_site_object(user=app_user)
+        return self.factory_cls(user=app_user)
 
 
 class TestObservationAPI(BaseReportTest):
@@ -415,7 +407,7 @@ class TestObservationAPI(BaseReportTest):
 
     @pytest.fixture
     def report_object(self, app_user):
-        return create_observation_object(user=app_user)
+        return self.factory_cls(user=app_user)
 
     @pytest.mark.parametrize("is_published", [True, False])
     def test_observation_has_identification_only_if_published(
@@ -1102,14 +1094,14 @@ class TestDeviceAPI:
 
     def test_device_without_device_id_is_updated_on_create(self, app_user):
         # The legacy API create devices from Report model, which does not set the device_id
-        report = create_report_object(user=app_user)
-        report.type = Report.TYPE_BITE
-        report.device_manufacturer = "test_make"
-        report.device_model = "test_model"
-        report.os = "iOs"
-        report.os_version = "testv123"
-        report.os_language = "es"
-        report.save()
+        report = BiteReportFactory(
+            user=app_user,
+            device_manufacturer="test_make",
+            device_model="test_model",
+            os="iOs",
+            os_version="testv123",
+            os_language="es",
+        )
 
         device = report.device
         assert device
@@ -1240,10 +1232,7 @@ class TestDeviceAPI:
         )
         assert not first_device_created_from_report.active
 
-        first_report = create_report_object(user=app_user)
-        first_report.type = Report.TYPE_BITE
-        first_report.device_model = "test_model"
-        first_report.save()
+        first_report = BiteReportFactory(user=app_user, device_model="test_model")
         assert first_report.device == first_device_created_from_report
 
         second_device_created_from_token_api_v0 = Device.objects.create(
@@ -1253,9 +1242,7 @@ class TestDeviceAPI:
             active_session=True,
             last_login=timezone.now(),
         )
-        second_report = create_report_object(user=app_user)
-        second_report.type = Report.TYPE_BITE
-        second_report.save()
+        second_report = BiteReportFactory(user=app_user)
         assert second_report.device == second_device_created_from_token_api_v0
 
         response = app_api_client.post(
