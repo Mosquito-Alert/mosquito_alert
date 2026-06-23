@@ -3,9 +3,9 @@ import pytest
 from django.test import TestCase
 
 from mosquito_alert.notifications.models import NotificationTopic, UserSubscription
-from mosquito_alert.users.models import TigaUser, UserStat
+from mosquito_alert.users.models import UserStat
 
-from .factories import UserFactory
+from .factories import UserFactory, TigaUserFactory
 
 
 class TigaUserModelTest(TestCase):
@@ -14,7 +14,7 @@ class TigaUserModelTest(TestCase):
         cls.global_topic = NotificationTopic.objects.create(topic_code="global")
 
     def test_create_new_user_subscribe_to_global_topic(self):
-        tiga_user = TigaUser.objects.create()
+        tiga_user = TigaUserFactory()
 
         subscription_to_global_topic = UserSubscription.objects.filter(
             user=tiga_user, topic=self.global_topic
@@ -25,7 +25,7 @@ class TigaUserModelTest(TestCase):
     def test_create_new_user_subscribe_to_locale_topic(self):
         locale = "es"
         spanish_topic = NotificationTopic.objects.create(topic_code=locale)
-        tiga_user = TigaUser.objects.create(locale=locale)
+        tiga_user = TigaUserFactory(locale=locale)
 
         subscription_to_spanish_topic = UserSubscription.objects.filter(
             user=tiga_user, topic=spanish_topic
@@ -39,7 +39,7 @@ class TigaUserModelTest(TestCase):
         # Ensure Notification topic for locale does not exist
         NotificationTopic.objects.filter(topic_code=locale).delete()
 
-        _ = TigaUser.objects.create(locale=locale)
+        _ = TigaUserFactory(locale=locale)
 
 
 @pytest.mark.django_db
