@@ -42,11 +42,3 @@ class TigaUserFactory(DjangoModelFactory):
     def password(self, create: bool, extracted: Sequence[Any], **kwargs):
         if extracted:
             self.set_password(extracted)
-
-
-def create_regular_user(password: str = "testpassword123_tmp") -> User:
-    return UserFactory(password=password)
-
-
-def create_mobile_user(password: str = "testpassword123_tmp") -> TigaUser:
-    return TigaUserFactory(password=password)

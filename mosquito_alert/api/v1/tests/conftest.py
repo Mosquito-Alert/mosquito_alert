@@ -31,7 +31,7 @@ from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.workspaces.models import WorkspaceMembership
 from mosquito_alert.workspaces.tests.factories import WorkspaceCollaborationGroupFactory
-from mosquito_alert.users.tests.factories import create_mobile_user, create_regular_user
+from mosquito_alert.users.tests.factories import TigaUserFactory, UserFactory
 
 User = get_user_model()
 TEST_DATA_PATH = Path(Path(__file__).parent.absolute(), "test_data/")
@@ -49,7 +49,7 @@ def user_password():
 
 @pytest.fixture
 def app_user(user_password):
-    return create_mobile_user(password=user_password)
+    return TigaUserFactory(password=user_password)
 
 
 @pytest.fixture
@@ -174,12 +174,12 @@ def it_country():
 
 @pytest.fixture
 def user(user_password):
-    return create_regular_user(password=user_password)
+    return UserFactory(password=user_password)
 
 
 @pytest.fixture
 def another_user():
-    return User.objects.create_user(
+    return UserFactory(
         username=f"user_{random.randint(1, 1000)}",
         password=get_random_string(length=10),
         first_name="Test Another FirstName",

@@ -9,7 +9,7 @@ from mosquito_alert.geo.tests.factories import (
     CountryFactory,
     CountryWithoutSignalFactoryFactory,
 )
-from mosquito_alert.users.tests.factories import create_regular_user
+from mosquito_alert.users.tests.factories import UserFactory
 
 from ..models import Workspace, WorkspaceMembership, WorkspaceCollaborationGroup
 
@@ -165,7 +165,7 @@ class TestWorkspaceMembership:
     # meta
     def test_unique_user_workspace(self):
         workspace = WorkspaceFactory()
-        user = create_regular_user()
+        user = UserFactory()
         workspace.members.add(user)
         with pytest.raises(IntegrityError, match=r"unique constraint"):
             _ = WorkspaceMembership.objects.create(workspace=workspace, user=user)
