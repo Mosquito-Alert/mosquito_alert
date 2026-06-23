@@ -45,7 +45,7 @@ import semantic_version
 
 class ReportEndpointTestCase(APITestCase):
     def setUp(self):
-        t = TigaUser.objects.create(user_UUID="00000000-0000-0000-0000-000000000000")
+        t = TigaUserFactory(user_UUID="00000000-0000-0000-0000-000000000000")
         Device.objects.create(
             user=t,
             active=True,
@@ -458,7 +458,7 @@ class ReportEndpointTestCase(APITestCase):
         )
 
     def test_user_locale_is_updated_according_to_app_language(self):
-        user = TigaUser.objects.create(locale="en")
+        user = TigaUserFactory(locale="en")
         response = self.client.post(
             "/api/reports/",
             {
@@ -534,7 +534,7 @@ class ReportEndpointTestCase(APITestCase):
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_device_is_created_if_not_exist_on_new_report(self):
-        user = TigaUser.objects.create(locale="en")
+        user = TigaUserFactory(locale="en")
 
         self.assertEqual(Device.objects.filter(user=user).count(), 0)
         response = self.client.post(
@@ -573,7 +573,7 @@ class ReportEndpointTestCase(APITestCase):
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_device_with_model_null_is_updated_on_new_report(self):
-        user = TigaUser.objects.create(locale="en")
+        user = TigaUserFactory(locale="en")
         fcm_token = "fcm_random_token"
         # This is a device that was created using /api/token/ endpoint
         device = Device.objects.create(
@@ -622,7 +622,7 @@ class ReportEndpointTestCase(APITestCase):
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_device_with_model_is_updated_on_new_report(self):
-        user = TigaUser.objects.create(locale="en")
+        user = TigaUserFactory(locale="en")
         device = Device.objects.create(
             registration_id="fcm_random_token",
             user=user,
@@ -1589,7 +1589,7 @@ class ApiTokenViewTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.mobile_user = User.objects.create_user(username="mobile_test")
-        cls.tiga_user = TigaUser.objects.create()
+        cls.tiga_user = TigaUserFactory()
 
     @time_machine.travel("2024-01-01 00:00:00", tick=False)
     def test_post_fcm_token_creates_new_device_if_no_device_exist(self):
@@ -1730,7 +1730,7 @@ class ApiUsersViewTest(APITransactionTestCase):
     def test_GET_list_users_with_filter(self):
         self.client.force_authenticate(user=self.mobile_user)
 
-        tigauser = TigaUser.objects.create()
+        tigauser = TigaUserFactory()
         filter_params = {"user_UUID": str(tigauser.pk)[:10]}
         response = self.client.get(
             self.ENDPOINT,
