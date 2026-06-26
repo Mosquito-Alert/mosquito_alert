@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.AddField(
             model_name='award',
             name='report',
             field=models.ForeignKey(blank=True, default=None, help_text='Report which the award refers to. Can be blank for arbitrary awards', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='report_award', to='reports.report'),

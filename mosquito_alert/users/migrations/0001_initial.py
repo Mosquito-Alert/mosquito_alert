@@ -11,28 +11,19 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('auth', '0012_alter_user_first_name_max_length'),
-        ('tigaserver_app', '0094_alter_tigauser_locale'),
         ('tigacrafting', '0058_remove_identificationtask_assignees_and_more'),
     ]
 
     operations = [
-        migrations.SeparateDatabaseAndState(
-            database_operations=[],
-            state_operations=[
-                migrations.CreateModel(
-                    name='UserStat',
-                    fields=[
-                        ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
-                        ('grabbed_reports', models.IntegerField(default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified', verbose_name='Grabbed reports')),
-                        ('license_accepted', models.BooleanField(default=False, verbose_name='Value is true if user has accepted the license terms of EntoLab')),
-                        ('national_supervisor_of', models.ForeignKey(blank=True, help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', null=True, on_delete=django.db.models.deletion.PROTECT, related_name='supervisors', to='tigaserver_app.europecountry')),
-                        ('native_of', models.ForeignKey(blank=True, help_text='Country in which the user operates. Used mainly for filtering purposes', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='natives', to='tigaserver_app.europecountry')),
-                        ('nuts2_assignation', models.ForeignKey(blank=True, help_text='Nuts2 division in which the user operates. Influences the priority of report assignation', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='nuts2_assigned', to='tigaserver_app.nutseurope')),
-                    ],
-                    options={
-                        'db_table': 'tigacrafting_userstat',
-                    },
-                ),
+        migrations.CreateModel(
+            name='UserStat',
+            fields=[
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
+                ('grabbed_reports', models.IntegerField(default=0, help_text='Number of reports grabbed since implementation of simplified reports. For each 3 reports grabbed, one is simplified', verbose_name='Grabbed reports')),
+                ('license_accepted', models.BooleanField(default=False, verbose_name='Value is true if user has accepted the license terms of EntoLab')),
             ],
-        )
+            options={
+                'db_table': 'tigacrafting_userstat',
+            },
+        ),
     ]

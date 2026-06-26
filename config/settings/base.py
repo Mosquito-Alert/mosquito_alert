@@ -133,7 +133,6 @@ LOCAL_APPS = [
     "mosquito_alert.stats",
     "mosquito_alert.taxa",
     "mosquito_alert.tigacrafting",
-    "mosquito_alert.tigaserver_app",
     "mosquito_alert.users",
     "mosquito_alert.utils",
     "mosquito_alert.workspaces",

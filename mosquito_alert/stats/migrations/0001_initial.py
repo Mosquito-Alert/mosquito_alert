@@ -11,22 +11,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.SeparateDatabaseAndState(
-            database_operations=[],
-            state_operations=[
-                migrations.CreateModel(
-                    name='RankingData',
-                    fields=[
-                        ('user_uuid', models.CharField(help_text='User identifier uuid', max_length=36, primary_key=True, serialize=False)),
-                        ('class_value', models.CharField(max_length=60)),
-                        ('rank', models.IntegerField()),
-                        ('score_v2', models.IntegerField()),
-                        ('last_update', models.DateTimeField(blank=True, help_text='Last time ranking data was updated', null=True)),
-                    ],
-                    options={
-                        'db_table': 'tigaserver_app_rankingdata',
-                    },
-                ),
-            ]
-        )
+        migrations.CreateModel(
+            name='RankingData',
+            fields=[
+                ('user_uuid', models.CharField(help_text='User identifier uuid', max_length=36, primary_key=True, serialize=False)),
+                ('class_value', models.CharField(max_length=60)),
+                ('rank', models.IntegerField()),
+                ('score_v2', models.IntegerField()),
+                ('last_update', models.DateTimeField(blank=True, help_text='Last time ranking data was updated', null=True)),
+            ],
+            options={
+                'db_table': 'tigaserver_app_rankingdata',
+            },
+        ),
     ]

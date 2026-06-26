@@ -414,7 +414,7 @@ def send_unblock_email(name, email):
     send_to = (settings.ADDITIONAL_EMAIL_RECIPIENTS or []) + [email]
 
     subject = "MOSQUITO ALERT - blocked report release warning"
-    plaintext = get_template("tigaserver_app/report_release/report_release_template")
+    plaintext = get_template("identification_tasks/report_release_template")
     context = {"name": name, "n_days": settings.ENTOLAB_LOCK_PERIOD}
     text_content = plaintext.render(context)
     email = EmailMessage(subject, text_content, to=send_to)
