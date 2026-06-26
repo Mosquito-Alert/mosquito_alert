@@ -32,8 +32,7 @@ from taggit.managers import TaggableManager
 
 from mosquito_alert.devices.models import Device, MobileApp
 from mosquito_alert.geo.models import Country, NutsEurope, LauEurope
-from mosquito_alert.tigaserver_app.models import Session
-from mosquito_alert.users.models import TigaUser
+from mosquito_alert.users.models import TigaUser, Session
 from mosquito_alert.utils.models import UUIDTaggedItem
 from mosquito_alert.utils.mixins import TimeZoneModelMixin
 from mosquito_alert.workspaces.models import Workspace
