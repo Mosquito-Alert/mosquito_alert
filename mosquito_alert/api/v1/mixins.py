@@ -1,6 +1,7 @@
 from typing import Optional
 
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 from rest_framework_gis.fields import GeometryField
 
 from mosquito_alert.identification_tasks.models import IdentificationTask
@@ -12,7 +13,7 @@ class IdentificationTaskNestedAttribute:
 
     def get_identification_task_obj(self) -> Optional[IdentificationTask]:
         if task_id := self.kwargs.get(self.get_parent_lookup_url_kwarg(), None):
-            return IdentificationTask.objects.get(pk=task_id)
+            return get_object_or_404(IdentificationTask, pk=task_id)
 
     def check_permissions(self, request):
         if request.method == "GET":
