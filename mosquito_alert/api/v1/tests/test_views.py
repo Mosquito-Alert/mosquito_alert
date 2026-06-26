@@ -30,6 +30,7 @@ from mosquito_alert.identification_tasks.models import (
 )
 from mosquito_alert.identification_tasks.tests.factories import (
     IdentificationTaskFactory,
+    ExpertReportAnnotationFactory,
 )
 from mosquito_alert.geo.tests.factories import CountryFactory
 from mosquito_alert.geo.tests.fuzzy import FuzzyGriddedPolygon
@@ -52,10 +53,6 @@ from mosquito_alert.workspaces.tests.factories import (
 )
 
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
-from mosquito_alert.api.v1.tests.integration.identification_tasks.factories import (
-    create_annotation,
-    create_review,
-)
 from mosquito_alert.api.v1.tests.factories import (
     create_boundary_contains_point,
 )
@@ -1368,7 +1365,7 @@ class TestIdentificationTaskAnnotationsApi:
     def test_is_flagged_representation(
         self, identification_task, user, api_client, endpoint, status, expected_result
     ):
-        obj = create_annotation(
+        obj = ExpertReportAnnotationFactory(
             identification_task=identification_task, user=user, status=status
         )
 
@@ -1881,7 +1878,9 @@ class TestIdentificationTaskReviewApi:
         taxon_root,
     ):
         # Create a review with characteristics
-        review = create_review(
+        review = ExpertReportAnnotationFactory(
+            # decision_level FINAL means review.
+            decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
             identification_task=identification_task,
             user=user_with_role_reviewer_in_country,
             taxon=taxon_root,

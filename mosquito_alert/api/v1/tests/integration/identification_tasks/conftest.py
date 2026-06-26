@@ -6,6 +6,7 @@ from mosquito_alert.identification_tasks.models import (
 )
 from mosquito_alert.identification_tasks.tests.factories import (
     IdentificationTaskFactory,
+    ExpertReportAnnotationFactory,
 )
 from mosquito_alert.reports.tests.factories import PhotoFactory
 from mosquito_alert.users.models import UserStat
@@ -13,7 +14,6 @@ from mosquito_alert.users.models import UserStat
 from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
 
 from .predictions.factories import create_photo_prediction
-from .factories import create_annotation
 
 
 # NOTE: needed for token with perms fixture
@@ -24,12 +24,16 @@ def model_class():
 
 @pytest.fixture
 def annotation(identification_task, user):
-    return create_annotation(identification_task=identification_task, user=user)
+    return ExpertReportAnnotationFactory(
+        identification_task=identification_task, user=user
+    )
 
 
 @pytest.fixture
 def annotation_from_another_user(identification_task, another_user):
-    return create_annotation(identification_task=identification_task, user=another_user)
+    return ExpertReportAnnotationFactory(
+        identification_task=identification_task, user=another_user
+    )
 
 
 @pytest.fixture
@@ -41,7 +45,7 @@ def another_identification_task(es_country):
 def annotation_from_another_user_another_identification_task(
     another_identification_task, another_user
 ):
-    return create_annotation(
+    return ExpertReportAnnotationFactory(
         identification_task=another_identification_task, user=another_user
     )
 
