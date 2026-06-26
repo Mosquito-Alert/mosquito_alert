@@ -16,7 +16,6 @@ class Migration(migrations.Migration):
         ('taxa', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('reports', '0001_initial'),
-        ('tigacrafting', '0058_remove_identificationtask_assignees_and_more'),
         ('taggit', '0005_auto_20220424_2025'),
     ]
 
