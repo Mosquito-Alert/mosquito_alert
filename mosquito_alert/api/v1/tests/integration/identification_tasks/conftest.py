@@ -4,14 +4,16 @@ from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
     ExpertReportAnnotation,
 )
-from mosquito_alert.reports.models import Photo, Report
+from mosquito_alert.identification_tasks.tests.factories import (
+    IdentificationTaskFactory,
+    ExpertReportAnnotationFactory,
+)
+from mosquito_alert.reports.tests.factories import PhotoFactory
 from mosquito_alert.users.models import UserStat
 
 from mosquito_alert.api.v1.tests.utils import grant_permission_to_user
 
-from ..observations.factories import create_observation_object
 from .predictions.factories import create_photo_prediction
-from .factories import create_annotation
 
 
 # NOTE: needed for token with perms fixture
@@ -22,70 +24,57 @@ def model_class():
 
 @pytest.fixture
 def annotation(identification_task, user):
-    return create_annotation(identification_task=identification_task, user=user)
+    return ExpertReportAnnotationFactory(
+        identification_task=identification_task, user=user
+    )
 
 
 @pytest.fixture
 def annotation_from_another_user(identification_task, another_user):
-    return create_annotation(identification_task=identification_task, user=another_user)
+    return ExpertReportAnnotationFactory(
+        identification_task=identification_task, user=another_user
+    )
 
 
 @pytest.fixture
-def another_identification_task(app_user, dummy_image, es_country):
-    observation = create_observation_object(user=app_user)
-    _ = Photo.objects.create(
-        photo=dummy_image,
-        report=observation,
-    )
-    return observation.identification_task
+def another_identification_task(es_country):
+    return IdentificationTaskFactory(report__point=es_country.geom.point_on_surface)
 
 
 @pytest.fixture
 def annotation_from_another_user_another_identification_task(
     another_identification_task, another_user
 ):
-    return create_annotation(
+    return ExpertReportAnnotationFactory(
         identification_task=another_identification_task, user=another_user
     )
 
 
 @pytest.fixture
-def another_identification_task_another_country(app_user, dummy_image, country):
-    observation = create_observation_object(user=app_user)
-    _ = Photo.objects.create(
-        photo=dummy_image,
-        report=observation,
-    )
-    Report.objects.filter(pk=observation.pk).update(country=country)
-    return observation.identification_task
+def another_identification_task_another_country(country):
+    return IdentificationTaskFactory(report__point=country.geom.point_on_surface)
 
 
 @pytest.fixture
-def identification_task_fully_predicted(app_user, dummy_image, es_country):
-    observation = create_observation_object(user=app_user)
-    photo = Photo.objects.create(
-        photo=dummy_image,
-        report=observation,
-    )
-    create_photo_prediction(photo=photo)
+def identification_task_fully_predicted(db):
+    identification_task = IdentificationTaskFactory()
 
-    return observation.identification_task
+    for photo in identification_task.report.photos.all():
+        create_photo_prediction(photo=photo)
+
+    return identification_task
 
 
 @pytest.fixture
-def identification_task_with_pending_predictions(app_user, dummy_image, es_country):
-    observation = create_observation_object(user=app_user)
-    photo = Photo.objects.create(
-        photo=dummy_image,
-        report=observation,
-    )
-    create_photo_prediction(photo=photo)
-    _ = Photo.objects.create(
-        photo=dummy_image,
-        report=observation,
-    )
+def identification_task_with_pending_predictions(db):
+    identification_task = IdentificationTaskFactory()
 
-    return observation.identification_task
+    for photo in identification_task.report.photos.all():
+        create_photo_prediction(photo=photo)
+
+    PhotoFactory(report=identification_task.report)
+
+    return identification_task
 
 
 @pytest.fixture

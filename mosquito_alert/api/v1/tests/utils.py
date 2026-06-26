@@ -15,6 +15,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.users.tests.factories import TigaUserFactory
 
 User = get_user_model()
 
@@ -90,7 +91,7 @@ class AppUserAuthenticableGenericViewMixin(_AuthenticableGenericViewMixin):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.app_user = TigaUser.objects.create()
+        cls.app_user = TigaUserFactory()
         super().setUpTestData()
 
     @property

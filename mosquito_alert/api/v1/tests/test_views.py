@@ -30,6 +30,7 @@ from mosquito_alert.identification_tasks.models import (
 )
 from mosquito_alert.identification_tasks.tests.factories import (
     IdentificationTaskFactory,
+    ExpertReportAnnotationFactory,
 )
 from mosquito_alert.geo.tests.factories import CountryFactory
 from mosquito_alert.geo.tests.fuzzy import FuzzyGriddedPolygon
@@ -38,13 +39,15 @@ from mosquito_alert.notifications.models import (
     UserSubscription,
     NotificationRecipient,
 )
-from mosquito_alert.reports.models import Report, Photo
+from mosquito_alert.reports.models import Report
 from mosquito_alert.reports.tests.factories import (
     ObservationReportFactory,
     BiteReportFactory,
     BreedingSiteReportFactory,
+    PhotoFactory,
 )
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.users.tests.factories import TigaUserFactory
 from mosquito_alert.workspaces.models import WorkspaceMembership
 from mosquito_alert.workspaces.tests.factories import (
     WorkspaceFactory,
@@ -52,19 +55,7 @@ from mosquito_alert.workspaces.tests.factories import (
 )
 
 from mosquito_alert.api.v1.tests.clients import AppAPIClient
-from mosquito_alert.api.v1.tests.integration.observations.factories import (
-    create_observation_object,
-)
-from mosquito_alert.api.v1.tests.integration.breeding_sites.factories import (
-    create_breeding_site_object,
-)
-from mosquito_alert.api.v1.tests.integration.bites.factories import create_bite_object
-from mosquito_alert.api.v1.tests.integration.identification_tasks.factories import (
-    create_annotation,
-    create_review,
-)
 from mosquito_alert.api.v1.tests.factories import (
-    create_report_object,
     create_boundary_contains_point,
 )
 from mosquito_alert.api.v1.tests.integration.identification_tasks.predictions.factories import (
@@ -206,7 +197,7 @@ class BaseReportTest:
         if is_owner:
             report_object.user = app_user
         else:
-            another_app_user = TigaUser.objects.create()
+            another_app_user = TigaUserFactory()
             report_object.user = another_app_user
             report_object.published_at = report_object.server_upload_time
         report_object.save()
@@ -393,7 +384,7 @@ class TestBiteAPI(BaseReportTest):
 
     @pytest.fixture
     def report_object(self, app_user):
-        return create_bite_object(user=app_user)
+        return self.factory_cls(user=app_user)
 
 
 class TestBreedingSiteAPI(BaseReportTest):
@@ -404,7 +395,7 @@ class TestBreedingSiteAPI(BaseReportTest):
 
     @pytest.fixture
     def report_object(self, app_user):
-        return create_breeding_site_object(user=app_user)
+        return self.factory_cls(user=app_user)
 
 
 class TestObservationAPI(BaseReportTest):
@@ -415,7 +406,7 @@ class TestObservationAPI(BaseReportTest):
 
     @pytest.fixture
     def report_object(self, app_user):
-        return create_observation_object(user=app_user)
+        return self.factory_cls(user=app_user)
 
     @pytest.mark.parametrize("is_published", [True, False])
     def test_observation_has_identification_only_if_published(
@@ -980,7 +971,7 @@ class TestTokenAPI:
     def test_device_is_set_to_not_logged_in_if_login_with_duplicated_device_id(
         self, app_user, user_password, client
     ):
-        dummy_user = TigaUser.objects.create()
+        dummy_user = TigaUserFactory()
         device = Device.objects.create(
             user=dummy_user,
             device_id="unique_id_for_device",
@@ -1047,7 +1038,7 @@ class TestDeviceAPI:
     def test_device_is_set_to_inactive_if_new_duplicated_device_is_created(
         self, app_api_client
     ):
-        dummy_user = TigaUser.objects.create()
+        dummy_user = TigaUserFactory()
         device = Device.objects.create(
             device_id="unique_id",
             registration_id="fcm_unique_token",
@@ -1102,14 +1093,14 @@ class TestDeviceAPI:
 
     def test_device_without_device_id_is_updated_on_create(self, app_user):
         # The legacy API create devices from Report model, which does not set the device_id
-        report = create_report_object(user=app_user)
-        report.type = Report.TYPE_BITE
-        report.device_manufacturer = "test_make"
-        report.device_model = "test_model"
-        report.os = "iOs"
-        report.os_version = "testv123"
-        report.os_language = "es"
-        report.save()
+        report = BiteReportFactory(
+            user=app_user,
+            device_manufacturer="test_make",
+            device_model="test_model",
+            os="iOs",
+            os_version="testv123",
+            os_language="es",
+        )
 
         device = report.device
         assert device
@@ -1240,10 +1231,7 @@ class TestDeviceAPI:
         )
         assert not first_device_created_from_report.active
 
-        first_report = create_report_object(user=app_user)
-        first_report.type = Report.TYPE_BITE
-        first_report.device_model = "test_model"
-        first_report.save()
+        first_report = BiteReportFactory(user=app_user, device_model="test_model")
         assert first_report.device == first_device_created_from_report
 
         second_device_created_from_token_api_v0 = Device.objects.create(
@@ -1253,9 +1241,7 @@ class TestDeviceAPI:
             active_session=True,
             last_login=timezone.now(),
         )
-        second_report = create_report_object(user=app_user)
-        second_report.type = Report.TYPE_BITE
-        second_report.save()
+        second_report = BiteReportFactory(user=app_user)
         assert second_report.device == second_device_created_from_token_api_v0
 
         response = app_api_client.post(
@@ -1381,7 +1367,7 @@ class TestIdentificationTaskAnnotationsApi:
     def test_is_flagged_representation(
         self, identification_task, user, api_client, endpoint, status, expected_result
     ):
-        obj = create_annotation(
+        obj = ExpertReportAnnotationFactory(
             identification_task=identification_task, user=user, status=status
         )
 
@@ -1703,7 +1689,6 @@ class TestIdentificationTaskReviewApi:
         user_with_role_reviewer_in_country,
         identification_task,
         taxon_root,
-        dummy_image,
     ):
         assert (
             ExpertReportAnnotation.objects.filter(
@@ -1713,10 +1698,7 @@ class TestIdentificationTaskReviewApi:
             == 0
         )
 
-        another_photo = Photo.objects.create(
-            photo=dummy_image,
-            report=identification_task.report,
-        )
+        another_photo = PhotoFactory(report=identification_task.report)
 
         response = api_client.post(
             endpoint,
@@ -1830,7 +1812,6 @@ class TestIdentificationTaskReviewApi:
         endpoint,
         user_with_role_reviewer_in_country,
         identification_task,
-        dummy_image,
         taxon,
         sex,
         is_blood_fed,
@@ -1845,10 +1826,7 @@ class TestIdentificationTaskReviewApi:
             == 0
         )
 
-        another_photo = Photo.objects.create(
-            photo=dummy_image,
-            report=identification_task.report,
-        )
+        another_photo = PhotoFactory(report=identification_task.report)
 
         post_data = {
             "action": "overwrite",
@@ -1889,12 +1867,13 @@ class TestIdentificationTaskReviewApi:
         api_client,
         endpoint,
         user_with_role_reviewer_in_country,
-        dummy_image,
         identification_task,
         taxon_root,
     ):
         # Create a review with characteristics
-        review = create_review(
+        review = ExpertReportAnnotationFactory(
+            # decision_level FINAL means review.
+            decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
             identification_task=identification_task,
             user=user_with_role_reviewer_in_country,
             taxon=taxon_root,
@@ -1903,10 +1882,7 @@ class TestIdentificationTaskReviewApi:
             is_blood_fed=True,
             is_gravid=True,
         )
-        another_photo = Photo.objects.create(
-            photo=dummy_image,
-            report=identification_task.report,
-        )
+        another_photo = PhotoFactory(report=identification_task.report)
 
         post_data = {
             "action": "overwrite",

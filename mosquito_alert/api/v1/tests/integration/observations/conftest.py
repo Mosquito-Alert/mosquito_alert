@@ -1,9 +1,11 @@
 from datetime import timedelta
 import pytest
 
-from mosquito_alert.reports.models import Report, Photo
-
-from .factories import create_observation_object
+from mosquito_alert.reports.models import Report
+from mosquito_alert.reports.tests.factories import (
+    ObservationReportFactory,
+    PhotoFactory,
+)
 
 
 # NOTE: needed for token with perms fixture
@@ -14,70 +16,89 @@ def model_class():
 
 @pytest.fixture()
 def object(app_user):
-    return create_observation_object(user=app_user)
+    return ObservationReportFactory(user=app_user)
 
 
 @pytest.fixture
 def published_object(app_user):
-    return create_observation_object(user=app_user, is_published=True)
-
-
-@pytest.fixture
-def published_object_30_days_ago(app_user):
-    observation_obj = create_observation_object(user=app_user)
+    observation_obj = ObservationReportFactory(user=app_user)
     observation_obj.published_at = observation_obj.server_upload_time
-    observation_obj.creation_time = observation_obj.creation_time - timedelta(days=30)
     observation_obj.save()
-
     return observation_obj
 
 
 @pytest.fixture
-def published_object_in_10km(app_user):
-    observation_obj = create_observation_object(user=app_user, is_published=True)
-    observation_obj.current_location_lon += 0.09  # ~10km east of the default location
+def published_object_30_days_ago(app_user, published_object):
+    observation_obj = ObservationReportFactory(
+        user=app_user,
+        creation_time=published_object.creation_time - timedelta(days=30),
+    )
+    observation_obj.published_at = observation_obj.server_upload_time
     observation_obj.save()
-
     return observation_obj
 
 
 @pytest.fixture
-def published_object_in_100km(app_user):
-    observation_obj = create_observation_object(user=app_user, is_published=True)
-    observation_obj.current_location_lon += 0.9  # ~100km east of the default location
-    observation_obj.save()
+def published_object_in_10km(app_user, published_object):
+    p = published_object.point.clone()
+    p.transform(3857)  # transform to meters
+    p.x += 10_000  # ~10km east of the default location
+    p.transform(4326)  # transform back to lat/lon
 
+    observation_obj = ObservationReportFactory(user=app_user, point=p)
+    observation_obj.published_at = observation_obj.server_upload_time
+    observation_obj.save()
+    return observation_obj
+
+
+@pytest.fixture
+def published_object_in_100km(app_user, published_object):
+    p = published_object.point.clone()
+    p.transform(3857)  # transform to meters
+    p.x += 100_000  # ~100km east of the default location
+    p.transform(4326)  # transform back to lat/lon
+
+    observation_obj = ObservationReportFactory(
+        user=app_user,
+        point=p,
+    )
+    observation_obj.published_at = observation_obj.server_upload_time
+    observation_obj.save()
     return observation_obj
 
 
 @pytest.fixture
 def unpublished_object(app_user):
-    return create_observation_object(user=app_user, is_published=False)
+    return ObservationReportFactory(user=app_user, published_at=None)
 
 
 @pytest.fixture
 def soft_deleted_object(app_user):
-    observation_obj = create_observation_object(user=app_user)
+    observation_obj = ObservationReportFactory(user=app_user)
     observation_obj.soft_delete()
 
     return observation_obj
 
 
 @pytest.fixture
-def published_observation_with_photo(app_user, dummy_image):
-    observation_obj = create_observation_object(user=app_user, is_published=True)
-
-    _ = Photo.objects.create(
-        photo=dummy_image,
-        report=observation_obj,
-    )
-
+def published_observation_with_photo(app_user):
+    observation_obj = ObservationReportFactory(user=app_user)
+    observation_obj.published_at = observation_obj.server_upload_time
+    observation_obj.save()
     return observation_obj
 
 
 @pytest.fixture
-def hidden_photo(dummy_image):
-    return Photo(photo=dummy_image, hide=True)
+def published_observation_without_photo(app_user):
+    observation_obj = ObservationReportFactory(user=app_user, photos=[])
+    observation_obj.published_at = observation_obj.server_upload_time
+    observation_obj.save()
+    return observation_obj
+
+
+@pytest.fixture
+def hidden_photo():
+    return PhotoFactory.build(hide=True)
 
 
 @pytest.fixture

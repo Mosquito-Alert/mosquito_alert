@@ -25,7 +25,6 @@ from mosquito_alert.reports.tests.factories import (
     ObservationReportFactory,
 )
 from mosquito_alert.reports.utils import scrub_sensitive_exif
-from mosquito_alert.users.models import TigaUser
 from mosquito_alert.users.tests.factories import TigaUserFactory
 from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
 
@@ -639,7 +638,7 @@ class ReportModelTest(TestCase):
     def test_report_location_is_forced_if_missing(self):
         for t, _ in Report.TYPE_CHOICES:
             report = Report.objects.create(
-                user=TigaUser.objects.create(),
+                user=TigaUserFactory(),
                 report_id="1234",
                 phone_upload_time=timezone.now(),
                 creation_time=timezone.now(),

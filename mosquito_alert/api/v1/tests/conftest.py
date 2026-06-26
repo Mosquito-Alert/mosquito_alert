@@ -1,16 +1,12 @@
-import io
 from pathlib import Path
-from PIL import Image
 import pytest
 import random
 
 from rest_framework.authtoken.models import Token
 
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Polygon, MultiPolygon
-from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.module_loading import import_string
 
@@ -27,7 +23,7 @@ from mosquito_alert.notifications.models import (
     NotificationTopic,
     NotificationContent,
 )
-from mosquito_alert.reports.models import Report, Photo
+from mosquito_alert.reports.tests.factories import ObservationReportFactory
 from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.workspaces.models import WorkspaceMembership
 from mosquito_alert.workspaces.tests.factories import WorkspaceCollaborationGroupFactory
@@ -71,45 +67,11 @@ def jwt_token_user(user):
 
 
 @pytest.fixture
-def dummy_image():
-    # Prepare a fake image file
-    # Create a simple image using Pillow
-    img = Image.new(
-        "RGB", (100, 100), color=(73, 109, 137)
-    )  # Create a 100x100 image with a specific color
-    img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format="JPEG")  # Save the image in JPEG format
-    img_byte_arr.seek(0)  # Move to the beginning of the BytesIO buffer
-
-    test_image = SimpleUploadedFile(
-        "test_image.jpg", img_byte_arr.read(), content_type="image/jpeg"
-    )
-
-    return test_image
-
-
-@pytest.fixture
-def adult_report(app_user, es_country, dummy_image):
-    point_on_surface = es_country.geom.point_on_surface
-    r = Report.objects.create(
+def adult_report(app_user, es_country):
+    return ObservationReportFactory(
         user=app_user,
-        report_id=1234,  # TODO: change
-        phone_upload_time=timezone.now(),
-        creation_time=timezone.now(),
-        version_time=timezone.now(),
-        type=Report.TYPE_ADULT,
-        location_choice=Report.LOCATION_CURRENT,
-        current_location_lon=point_on_surface.x,
-        current_location_lat=point_on_surface.y,
-        note="This is a test report note.",
+        point=es_country.geom.point_on_surface,
     )
-
-    _ = Photo.objects.create(
-        photo=dummy_image,
-        report=r,
-    )
-
-    return r
 
 
 @pytest.fixture
