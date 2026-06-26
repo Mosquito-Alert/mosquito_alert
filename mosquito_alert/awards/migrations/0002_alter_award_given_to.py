@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.AddField(
             model_name='award',
             name='given_to',
             field=models.ForeignKey(help_text='User to which the notification was awarded. Usually this is the user that uploaded the report, but the report can be blank for special awards', on_delete=django.db.models.deletion.CASCADE, related_name='user_awards', to='users.tigauser'),

@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.AddField(
             model_name='notification',
             name='report',
             field=models.ForeignKey(blank=True, help_text='Report regarding the current notification', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='report_notifications', to='reports.report'),

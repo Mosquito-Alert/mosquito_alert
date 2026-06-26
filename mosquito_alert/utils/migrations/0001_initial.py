@@ -14,22 +14,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.SeparateDatabaseAndState(
-            database_operations=[],
-            state_operations=[
-                migrations.CreateModel(
-                    name='UUIDTaggedItem',
-                    fields=[
-                        ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                        ('object_id', models.CharField(db_index=True, max_length=36, verbose_name='object ID')),
-                        ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='%(app_label)s_%(class)s_tagged_items', to='contenttypes.contenttype', verbose_name='content type')),
-                        ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='%(app_label)s_%(class)s_items', to='taggit.tag')),
-                    ],
-                    options={
-                        'db_table': 'tigaserver_app_uuidtaggeditem',
-                        'abstract': False,
-                    },
-                ),
-            ]
-        )
+        migrations.CreateModel(
+            name='UUIDTaggedItem',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('object_id', models.CharField(db_index=True, max_length=36, verbose_name='object ID')),
+                ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='%(app_label)s_%(class)s_tagged_items', to='contenttypes.contenttype', verbose_name='content type')),
+                ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='%(app_label)s_%(class)s_items', to='taggit.tag')),
+            ],
+            options={
+                'db_table': 'tigaserver_app_uuidtaggeditem',
+                'abstract': False,
+            },
+        ),
     ]

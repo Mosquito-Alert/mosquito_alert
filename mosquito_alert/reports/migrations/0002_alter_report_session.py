@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.AddField(
             model_name='report',
             name='session',
             field=models.ForeignKey(blank=True, help_text='Session ID for session in which this report was created', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='session_reports', to='users.session'),

@@ -94,7 +94,7 @@ input[type=checkbox]
 }
 
 .progress{
-    background-image: url("/static/tigacrafting/media/default_red.gif");
+    background-image: url("/static/identification_tasks/media/default_red.gif");
     background-repeat: no-repeat;
     background-position: 36%;
 }

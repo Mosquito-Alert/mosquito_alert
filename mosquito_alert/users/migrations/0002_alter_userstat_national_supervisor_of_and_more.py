@@ -12,17 +12,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.AddField(
             model_name='userstat',
             name='national_supervisor_of',
             field=models.ForeignKey(blank=True, help_text='Country of which the user is national supervisor. It means that the user will receive all the reports in his country', null=True, on_delete=django.db.models.deletion.PROTECT, related_name='supervisors', to='geo.europecountry'),
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='userstat',
             name='native_of',
             field=models.ForeignKey(blank=True, help_text='Country in which the user operates. Used mainly for filtering purposes', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='natives', to='geo.europecountry'),
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='userstat',
             name='nuts2_assignation',
             field=models.ForeignKey(blank=True, help_text='Nuts2 division in which the user operates. Influences the priority of report assignation', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='nuts2_assigned', to='geo.nutseurope'),
