@@ -43,7 +43,6 @@ class Migration(migrations.Migration):
                 ('is_gravid', models.BooleanField(blank=True, default=None, editable=False, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('assignees', models.ManyToManyField(through='identification_tasks.ExpertReportAnnotation', to=settings.AUTH_USER_MODEL)),
                 ('photo', models.ForeignKey(editable=False, on_delete=django.db.models.deletion.CASCADE, related_name='identification_tasks', to='reports.photo')),
                 ('reviewed_by', models.ForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='identification_tasks_reviewed', to=settings.AUTH_USER_MODEL)),
                 ('taxon', models.ForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.PROTECT, to='taxa.taxon')),
@@ -113,6 +112,11 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='expertreportannotation',
             constraint=models.CheckConstraint(check=models.Q(('sex', 'male'), ('is_gravid', True), _negated=True), name='expertreportannotation_gravid_only_if_female'),
+        ),
+        migrations.AddField(
+            model_name='identificationtask',
+            name='assignees',
+            field=models.ManyToManyField(through='identification_tasks.ExpertReportAnnotation', to=settings.AUTH_USER_MODEL),
         ),
         migrations.CreateModel(
             name='PhotoPrediction',

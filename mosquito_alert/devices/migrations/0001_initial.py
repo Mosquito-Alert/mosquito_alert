@@ -19,6 +19,23 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='MobileApp',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('package_name', models.CharField(max_length=128)),
+                ('package_version', semantic_version.django_fields.VersionField(coerce=False, max_length=32, partial=False, validators=[django.core.validators.RegexValidator(code='invalid_version', regex=re.compile('^(\\d+)\\.(\\d+)\\.(\\d+)(?:-([0-9a-zA-Z.-]+))?(?:\\+([0-9a-zA-Z.-]+))?$'))])),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+            ],
+            options={
+                'db_table': 'tigaserver_app_mobileapp',
+            },
+        ),
+        migrations.AddConstraint(
+            model_name='mobileapp',
+            constraint=models.UniqueConstraint(fields=('package_name', 'package_version'), name='unique_name_version'),
+        ),
+        migrations.CreateModel(
             name='Device',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -94,22 +111,5 @@ class Migration(migrations.Migration):
                 'get_latest_by': ('history_date', 'history_id'),
             },
             bases=(simple_history.models.HistoricalChanges, models.Model),
-        ),
-        migrations.CreateModel(
-            name='MobileApp',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('package_name', models.CharField(max_length=128)),
-                ('package_version', semantic_version.django_fields.VersionField(coerce=False, max_length=32, partial=False, validators=[django.core.validators.RegexValidator(code='invalid_version', regex=re.compile('^(\\d+)\\.(\\d+)\\.(\\d+)(?:-([0-9a-zA-Z.-]+))?(?:\\+([0-9a-zA-Z.-]+))?$'))])),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-            ],
-            options={
-                'db_table': 'tigaserver_app_mobileapp',
-            },
-        ),
-        migrations.AddConstraint(
-            model_name='mobileapp',
-            constraint=models.UniqueConstraint(fields=('package_name', 'package_version'), name='unique_name_version'),
         ),
     ]
