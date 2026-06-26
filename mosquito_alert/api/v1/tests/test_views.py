@@ -39,13 +39,15 @@ from mosquito_alert.notifications.models import (
     UserSubscription,
     NotificationRecipient,
 )
-from mosquito_alert.reports.models import Report, Photo
+from mosquito_alert.reports.models import Report
 from mosquito_alert.reports.tests.factories import (
     ObservationReportFactory,
     BiteReportFactory,
     BreedingSiteReportFactory,
+    PhotoFactory,
 )
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.users.tests.factories import TigaUserFactory
 from mosquito_alert.workspaces.models import WorkspaceMembership
 from mosquito_alert.workspaces.tests.factories import (
     WorkspaceFactory,
@@ -195,7 +197,7 @@ class BaseReportTest:
         if is_owner:
             report_object.user = app_user
         else:
-            another_app_user = TigaUser.objects.create()
+            another_app_user = TigaUserFactory()
             report_object.user = another_app_user
             report_object.published_at = report_object.server_upload_time
         report_object.save()
@@ -969,7 +971,7 @@ class TestTokenAPI:
     def test_device_is_set_to_not_logged_in_if_login_with_duplicated_device_id(
         self, app_user, user_password, client
     ):
-        dummy_user = TigaUser.objects.create()
+        dummy_user = TigaUserFactory()
         device = Device.objects.create(
             user=dummy_user,
             device_id="unique_id_for_device",
@@ -1036,7 +1038,7 @@ class TestDeviceAPI:
     def test_device_is_set_to_inactive_if_new_duplicated_device_is_created(
         self, app_api_client
     ):
-        dummy_user = TigaUser.objects.create()
+        dummy_user = TigaUserFactory()
         device = Device.objects.create(
             device_id="unique_id",
             registration_id="fcm_unique_token",
@@ -1687,7 +1689,6 @@ class TestIdentificationTaskReviewApi:
         user_with_role_reviewer_in_country,
         identification_task,
         taxon_root,
-        dummy_image,
     ):
         assert (
             ExpertReportAnnotation.objects.filter(
@@ -1697,10 +1698,7 @@ class TestIdentificationTaskReviewApi:
             == 0
         )
 
-        another_photo = Photo.objects.create(
-            photo=dummy_image,
-            report=identification_task.report,
-        )
+        another_photo = PhotoFactory(report=identification_task.report)
 
         response = api_client.post(
             endpoint,
@@ -1814,7 +1812,6 @@ class TestIdentificationTaskReviewApi:
         endpoint,
         user_with_role_reviewer_in_country,
         identification_task,
-        dummy_image,
         taxon,
         sex,
         is_blood_fed,
@@ -1829,10 +1826,7 @@ class TestIdentificationTaskReviewApi:
             == 0
         )
 
-        another_photo = Photo.objects.create(
-            photo=dummy_image,
-            report=identification_task.report,
-        )
+        another_photo = PhotoFactory(report=identification_task.report)
 
         post_data = {
             "action": "overwrite",
@@ -1873,7 +1867,6 @@ class TestIdentificationTaskReviewApi:
         api_client,
         endpoint,
         user_with_role_reviewer_in_country,
-        dummy_image,
         identification_task,
         taxon_root,
     ):
@@ -1889,10 +1882,7 @@ class TestIdentificationTaskReviewApi:
             is_blood_fed=True,
             is_gravid=True,
         )
-        another_photo = Photo.objects.create(
-            photo=dummy_image,
-            report=identification_task.report,
-        )
+        another_photo = PhotoFactory(report=identification_task.report)
 
         post_data = {
             "action": "overwrite",

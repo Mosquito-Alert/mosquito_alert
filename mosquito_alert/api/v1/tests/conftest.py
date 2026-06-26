@@ -1,12 +1,9 @@
-import io
 from pathlib import Path
-from PIL import Image
 import pytest
 import random
 
 from rest_framework.authtoken.models import Token
 
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Polygon, MultiPolygon
@@ -67,25 +64,6 @@ def jwt_token_user(user):
         .get_token(user=user)
         .access_token
     )
-
-
-# TODO: replace to factory_boy (faker) to generate random data
-@pytest.fixture
-def dummy_image():
-    # Prepare a fake image file
-    # Create a simple image using Pillow
-    img = Image.new(
-        "RGB", (100, 100), color=(73, 109, 137)
-    )  # Create a 100x100 image with a specific color
-    img_byte_arr = io.BytesIO()
-    img.save(img_byte_arr, format="JPEG")  # Save the image in JPEG format
-    img_byte_arr.seek(0)  # Move to the beginning of the BytesIO buffer
-
-    test_image = SimpleUploadedFile(
-        "test_image.jpg", img_byte_arr.read(), content_type="image/jpeg"
-    )
-
-    return test_image
 
 
 @pytest.fixture

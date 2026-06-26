@@ -1,7 +1,4 @@
 import pytest
-import uuid
-
-from django.contrib.auth.models import User
 
 from mosquito_alert.notifications.models import (
     Notification,
@@ -9,6 +6,7 @@ from mosquito_alert.notifications.models import (
     NotificationContent,
     NotificationRecipient,
 )
+from mosquito_alert.users.tests.factories import UserFactory
 
 
 # NOTE: needed for token with perms fixture
@@ -42,7 +40,7 @@ def seen_user_message(user_message, app_user):
 
 @pytest.fixture
 def user_message_sent_by_other_user(app_user):
-    another_user = User.objects.create(username=str(uuid.uuid4()))
+    another_user = UserFactory()
     notification = Notification.objects.create(
         expert=another_user,
         notification_content=NotificationContent.objects.create(
