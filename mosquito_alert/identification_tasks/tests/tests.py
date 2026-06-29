@@ -172,6 +172,33 @@ class TestExpertReportAnnotationModel:
         )
         assert obj.is_simplified == expected_is_simplified
 
+    def test_decision_final_remove_any_not_completed_assignation(
+        self, identification_task
+    ):
+        # Create assignation
+        ExpertReportAnnotationFactory(
+            identification_task=identification_task, is_finished=False
+        )
+        assert (
+            ExpertReportAnnotation.objects.filter(
+                identification_task=identification_task, is_finished=False
+            ).count()
+            == 1
+        )
+
+        # Create final decision
+        ExpertReportAnnotationFactory(
+            identification_task=identification_task,
+            decision_level=ExpertReportAnnotation.DecisionLevel.FINAL,
+        )
+
+        assert (
+            ExpertReportAnnotation.objects.filter(
+                identification_task=identification_task, is_finished=False
+            ).count()
+            == 0
+        )
+
 
 @pytest.mark.django_db
 class TestIdentificationTaskModel:
