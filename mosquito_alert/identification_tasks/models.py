@@ -970,6 +970,11 @@ class ExpertReportAnnotation(models.Model):
 
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
 
+        if self.decision_level == self.DecisionLevel.FINAL:
+            ExpertReportAnnotation.objects.filter(
+                identification_task=self.identification_task, is_finished=False
+            ).delete()
+
         self.identification_task.refresh()
 
     def delete(self, *args, **kwargs):
