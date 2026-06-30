@@ -1452,13 +1452,6 @@ class AnnotateCoarseTestCase(APITestCase):
             "Number of responses should be 2, is {0}".format(n_responses),
         )
         self.assertEqual(r_site.type, Report.TYPE_SITE)
-        self.assertTrue(r_site.flipped, "Report should be marked as flipped")
-        self.assertTrue(
-            r_site.flipped_to == "site#site",
-            "Report should be marked as flipped from site to site, field has value of {0}".format(
-                r_site.flipped_to
-            ),
-        )
         self.assertEqual(r_site.breeding_site_type, Report.BreedingSiteType.STORM_DRAIN)
         self.assertTrue(r_site.breeding_site_has_water)
 
@@ -1499,13 +1492,6 @@ class AnnotateCoarseTestCase(APITestCase):
             "Number of responses should be 2, is {0}".format(n_responses),
         )
         self.assertEqual(adult_reloaded.type, Report.TYPE_SITE)
-        self.assertTrue(adult_reloaded.flipped, "Report should be marked as flipped")
-        self.assertTrue(
-            adult_reloaded.flipped_to == "adult#site",
-            "Report should be marked as flipped from adult to site, field has value of {0}".format(
-                adult_reloaded.flipped_to
-            ),
-        )
         try:
             _ = ReportResponse.objects.get(
                 report=adult_reloaded, question_id="12", answer_id="121"
@@ -1540,14 +1526,6 @@ class AnnotateCoarseTestCase(APITestCase):
             "Number of responses should be 0, is {0}".format(n_responses),
         )
         self.assertEqual(site_reloaded.type, Report.TYPE_ADULT)
-        self.assertTrue(site_reloaded.flipped, "Report should be marked as flipped")
-        self.assertTrue(
-            site_reloaded.flipped_to == "site#adult",
-            "Report should be marked as flipped from site to adult, field has value of {0}".format(
-                adult_reloaded.flipped_to
-            ),
-        )
-        # print(site_reloaded.flipped_on)
         self.assertEqual(IdentificationTask.objects.filter(report=r_site).count(), 1)
 
     def test_hide(self):

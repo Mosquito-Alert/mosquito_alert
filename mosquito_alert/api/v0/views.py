@@ -625,10 +625,7 @@ def flip_report(request):
                 question_id=10,
                 answer_id=102,
             )
-            report.flipped = True
-            report.flipped_on = timezone.now()
             if flip_to_type == Report.TYPE_SITE:
-                report.flipped_to = report.type + "#site"
                 report.type = Report.TYPE_SITE
                 try:
                     identification_task = report.identification_task
@@ -653,7 +650,6 @@ def flip_report(request):
                     rr_yes_water.save()
                     message = "Report changed to Site - Other, Water"
             elif flip_to_type == Report.TYPE_ADULT:
-                report.flipped_to = report.type + "#adult"
                 report.type = Report.TYPE_ADULT
                 report.save()
                 IdentificationTask.get_or_create_for_report(report=report)
