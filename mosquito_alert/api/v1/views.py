@@ -1371,5 +1371,4 @@ class MyWorkspaceCollaboratoratorViewSet(WorkspaceCollaboratoratorViewSet):
                 models.Q(workspaces__members=self.request.user)
                 | models.Q(reviewers=self.request.user)
             )
-            .distinct()
         )
