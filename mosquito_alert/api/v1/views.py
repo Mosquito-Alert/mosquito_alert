@@ -584,7 +584,7 @@ class BiteViewSet(BaseReportViewSet):
     serializer_class = BiteSerializer
     filterset_class = BiteFilter
 
-    queryset = BaseReportWithPhotosViewSet.queryset.filter(type=Report.TYPE_BITE)
+    queryset = BaseReportViewSet.queryset.filter(type=Report.TYPE_BITE)
 
     filename_csv = "bites.csv"
 
