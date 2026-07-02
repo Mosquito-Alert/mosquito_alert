@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import path, include
 
 from rest_framework_simplejwt.views import (
@@ -9,6 +10,7 @@ from rest_framework_simplejwt.views import (
 from drf_spectacular.settings import spectacular_settings
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from drf_spectacular.views import (
+    SpectacularSwaggerView,
     SpectacularRedocView,
     SpectacularAPIView,
     SpectacularJSONAPIView,
@@ -188,3 +190,12 @@ urlpatterns = [
         name="schema-json",
     ),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path(
+            "swagger/",
+            SpectacularSwaggerView.as_view(url_name="schema"),
+            name="swagger",
+        ),
+    ]
