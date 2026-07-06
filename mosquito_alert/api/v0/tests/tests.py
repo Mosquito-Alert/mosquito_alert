@@ -18,7 +18,6 @@ from mosquito_alert.notifications.models import (
     Notification,
     NotificationContent,
     NotificationTopic,
-    UserSubscription,
 )
 from mosquito_alert.reports.models import Report, ReportResponse
 from mosquito_alert.reports.tests.factories import (
@@ -1116,10 +1115,6 @@ class NotificationTestCase(APITestCase):
         n = Notification(expert=self.reritja_user, notification_content=nc)
         n.save()
 
-        UserSubscription.objects.get_or_create(
-            user=self.regular_user, topic=self.global_topic
-        )
-
         # send notif to global topic
         n.send_to_topic(topic=self.global_topic)
 
@@ -1223,15 +1218,6 @@ class NotificationTestCase(APITestCase):
 
         # send notif to user
         n1.send_to_user(user=some_user)
-
-        # Ensure user is subscribed to global topic
-        UserSubscription.objects.get_or_create(user=some_user, topic=self.global_topic)
-
-        # GLOBAL notification
-        n3 = Notification(expert=self.reritja_user, notification_content=nc1)
-        n3.save()
-        # send notif to global topic
-        n3.send_to_topic(topic=self.global_topic)
 
         # SECOND direct  NOTIFICATION
         n2 = Notification(expert=self.reritja_user, notification_content=nc2)
@@ -1672,18 +1658,6 @@ class ApiUsersViewTest(APITransactionTestCase):
         user = TigaUser.objects.get(pk=str(new_user_uuid))
 
         self.assertTrue(user.check_password("DEFAULT_PASSWORD_FOR_TESTS"))
-
-        # Check if the user is subscribed to the global topic
-        self.assertTrue(
-            UserSubscription.objects.filter(user=user, topic=self.global_topic).exists()
-        )
-
-        # Check if the user is subscribed to the language topic ('en')
-        self.assertTrue(
-            UserSubscription.objects.filter(
-                user=user, topic=self.language_topic
-            ).exists()
-        )
 
     def test_POST_new_user_without_providing_uuid_should_return_400(self):
         self.client.force_authenticate(user=self.mobile_user)

@@ -37,7 +37,6 @@ from mosquito_alert.geo.tests.factories import CountryFactory
 from mosquito_alert.geo.tests.fuzzy import FuzzyGriddedPolygon
 from mosquito_alert.notifications.models import (
     Notification,
-    UserSubscription,
     NotificationRecipient,
 )
 from mosquito_alert.reports.models import Report
@@ -2417,36 +2416,3 @@ class TestMessagesApi:
 
             mock_send.assert_called_once_with()
 
-    def test_send_message_to_topic(self, app_user, api_client, permitted_user, topic):
-        UserSubscription.objects.get_or_create(
-            user=app_user,
-            topic=topic,
-        )
-
-        response = api_client.post(
-            self.endpoint + f"topics/{topic.topic_code}/send/",
-            data={
-                "content": {
-                    "title": {
-                        "en": "Test Notification",
-                    },
-                    "body": {
-                        "en": "This is a test notification.",
-                    },
-                },
-            },
-            format="json",
-        )
-        assert response.status_code == status.HTTP_201_CREATED
-        notification = Notification.objects.get(pk=response.data["id"])
-
-        assert notification.expert == permitted_user
-        notification_content = notification.notification_content
-        assert notification_content.title_en == "Test Notification"
-        assert notification_content.body_html_en == "This is a test notification."
-
-        recipient = NotificationRecipient.objects.filter(
-            notification=notification, user=app_user
-        ).first()
-        assert recipient is not None
-        assert recipient.through_topics.filter(pk=topic.pk).exists()

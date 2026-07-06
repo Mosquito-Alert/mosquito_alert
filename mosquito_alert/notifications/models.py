@@ -123,12 +123,8 @@ class Notification(models.Model):
         return Message(
             data={"id": str(self.pk)},
             notification=FirebaseNotification(
-                title=self.notification_content.get_title(
-                    language_code=language_code
-                ),
-                body=self.notification_content.get_body(
-                    language_code=language_code
-                ),
+                title=self.notification_content.get_title(language_code=language_code),
+                body=self.notification_content.get_body(language_code=language_code),
                 image=self.notification_content.get_body_image(
                     language_code=language_code
                 ),
@@ -156,9 +152,14 @@ class Notification(models.Model):
 
         recipients_qs = TigaUser.objects.filter(**self.audience)
         # NOTE: groupby requires the queryset to be ordered by the key function, so we order by locale.
-        for locale, user_group in groupby(recipients_qs.order_by("locale").iterator(), key=lambda x: x.locale):
+        for locale, user_group in groupby(
+            recipients_qs.order_by("locale").iterator(), key=lambda x: x.locale
+        ):
             NotificationRecipient.objects.bulk_create(
-                [NotificationRecipient(notification=self, user=user) for user in user_group],
+                [
+                    NotificationRecipient(notification=self, user=user)
+                    for user in user_group
+                ],
                 batch_size=2000,
                 ignore_conflicts=True,
             )
@@ -287,48 +288,3 @@ class NotificationTopic(models.Model):
 
     class Meta:
         db_table = "tigaserver_app_notificationtopic"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
-
-
-class UserSubscription(models.Model):
-    user = models.ForeignKey(
-        TigaUser,
-        related_name="user_subscriptions",
-        help_text="User which is subscribed to the topic",
-        on_delete=models.CASCADE,
-    )
-    topic = models.ForeignKey(
-        NotificationTopic,
-        related_name="topic_users",
-        help_text="Topics to which the user is subscribed",
-        on_delete=models.CASCADE,
-    )
-
-    def save(self, *args, **kwargs):
-        if self._state.adding:
-            try:
-                self.user.devices.all().handle_topic_subscription(
-                    should_subscribe=True,  # Subscribe
-                    topic=self.topic.topic_code,
-                )
-            except ValueError as e:
-                logger_notification.exception(str(e))
-
-        return super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        try:
-            self.user.devices.all().handle_topic_subscription(
-                should_subscribe=False,  # Unsubscribe
-                topic=self.topic.topic_code,
-            )
-        except ValueError as e:
-            logger_notification.exception(str(e))
-
-        return super().delete(*args, **kwargs)
-
-    class Meta:
-        db_table = "tigaserver_app_usersubscription"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
-        unique_together = (
-            "user",
-            "topic",
-        )

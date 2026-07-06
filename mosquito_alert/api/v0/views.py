@@ -12,7 +12,6 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
-from django.db.utils import IntegrityError
 from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.template.loader import get_template
@@ -25,8 +24,6 @@ from mosquito_alert.identification_tasks.models import (
 )
 from mosquito_alert.notifications.models import (
     NotificationRecipient,
-    NotificationTopic,
-    UserSubscription,
 )
 from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, ReportResponse, Photo
@@ -42,7 +39,6 @@ from .serializers import (
     SessionSerializer,
     OWCampaignsSerializer,
     OrganizationPinsSerializer,
-    UserSubscriptionSerializer,
     CoarseReportSerializer,
 )
 
@@ -296,77 +292,20 @@ def mark_notif_as_ack(request):
 
 @api_view(["POST"])
 def unsub_from_topic(request):
-    code = request.query_params.get("code", "-1")
-    user = request.query_params.get("user", "-1")
-    if user == "-1":
-        raise ParseError(detail="user param is mandatory")
-    if code == "-1":
-        raise ParseError(detail="code param is mandatory")
-    if code == "global":
-        raise ParseError(detail="unsubscription from global not allowed")
-    n = None
-    usr = None
-    try:
-        n = NotificationTopic.objects.get(topic_code=code)
-    except NotificationTopic.DoesNotExist:
-        raise ParseError(detail="topic with this code does not exist")
-    try:
-        usr = TigaUser.objects.get(pk=user)
-    except TigaUser.DoesNotExist:
-        raise ParseError(detail="no user with id")
-
-    try:
-        sub = UserSubscription.objects.get(user=usr, topic=n)
-        sub.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    except UserSubscription.DoesNotExist:
-        raise ParseError(detail="this user is not subscribed to this topic")
+    # Return 204 since notification topic is no longer used. keep for legacy reasons.
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
 def subscribe_to_topic(request):
-    code = request.query_params.get("code", "-1")
-    user = request.query_params.get("user", "-1")
-    if user == "-1":
-        raise ParseError(detail="user param is mandatory")
-    if code == "-1":
-        raise ParseError(detail="code param is mandatory")
-    if code == "global":
-        raise ParseError(detail="subscription to global not allowed")
-    n = None
-    usr = None
-    try:
-        n = NotificationTopic.objects.get(topic_code=code)
-    except NotificationTopic.DoesNotExist:
-        n = NotificationTopic(topic_code=code)
-        n.save()
-    try:
-        usr = TigaUser.objects.get(pk=user)
-    except TigaUser.DoesNotExist:
-        raise ParseError(detail="no user with id")
-
-    try:
-        with transaction.atomic():
-            sub = UserSubscription(user=usr, topic=n)
-            sub.save()
-            serializer = UserSubscriptionSerializer(sub)
-            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
-    except IntegrityError:
-        raise ParseError(detail="Subscription already exists")
+    # Return 201 always since notification topic is no longer used. keep for legacy reasons.
+    return Response(status=status.HTTP_201_CREATED)
 
 
 @api_view(["GET"])
 def topics_subscribed(request):
-    user = request.query_params.get("user", "-1")
-    if user == "-1":
-        raise ParseError(detail="user param is mandatory")
-    try:
-        user = TigaUser.objects.get(pk=user)
-    except TigaUser.DoesNotExist:
-        raise ParseError(detail="no user with this id")
-    subs = UserSubscription.objects.filter(user=user).select_related("topic")
-    serializer = UserSubscriptionSerializer(subs, many=True)
-    return Response(data=serializer.data, status=status.HTTP_200_OK)
+    # Return 200 always since notification topic is no longer used. keep for legacy reasons.
+    return Response(data=[], status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
