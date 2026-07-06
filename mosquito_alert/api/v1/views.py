@@ -91,6 +91,9 @@ from .serializers import (
     BiteGeoJsonModelSerializer,
     BreedingSiteGeoModelSerializer,
     BreedingSiteGeoJsonModelSerializer,
+    CreateMessageSerializer,
+    MessageSerializer,
+    MessageTargetingSerializer,
     ObservationGeoModelSerializer,
     ObservationGeoJsonModelSerializer,
     PartnerSerializer,
@@ -101,6 +104,9 @@ from .serializers import (
     PhotoSerializer,
     ObservationSerializer,
     BiteSerializer,
+    CreateTopicMessageSerializer,
+    CreateUserMessageSerializer,
+    CreateAudienceMessageSerializer,
     BreedingSiteSerializer,
     DeviceSerializer,
     DeviceUpdateSerializer,
@@ -119,12 +125,7 @@ from .serializers import (
     MessageTopicSerializer,
     WorkspaceSerializer,
     WorkspaceCollaborationGroupSerializer,
-)
-from .serializers import (
-    MessageSerializer,
     MessageRecipientSerializer,
-    CreateTopicMessageSerializer,
-    CreateUserMessageSerializer,
 )
 from .permissions import (
     UserPermissions,
@@ -231,6 +232,27 @@ class MyNotificationViewSet(NotificationViewSet, ListModelMixin):
     permission_classes = (MyNotificationPermissions,)
 
 
+@extend_schema_view(
+    create=extend_schema(
+        request=PolymorphicProxySerializer(
+            component_name="MetaCreateMessage",
+            serializers={
+                list(CreateUserMessageSerializer().fields["target"].choices.values())[
+                    0
+                ]: CreateUserMessageSerializer,
+                list(
+                    CreateAudienceMessageSerializer().fields["target"].choices.values()
+                )[0]: CreateAudienceMessageSerializer,
+            },
+            resource_type_field_name="target",
+        ),
+        responses={
+            201: OpenApiResponse(
+                response=MessageSerializer
+            )
+        },
+    )
+)
 class MessageViewSet(
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, GenericViewSet
 ):
@@ -264,7 +286,15 @@ class MessageViewSet(
 
     def get_serializer_class(self):
         if self.action == "create":
-            return CreateUserMessageSerializer
+            target = self.request.data.get("target")
+            user_target_value = list(CreateUserMessageSerializer().fields["target"].choices.values())[0]
+            audience_target_value = list(CreateAudienceMessageSerializer().fields["target"].choices.values())[0]
+            if target == user_target_value:
+                return CreateUserMessageSerializer
+            elif target == audience_target_value:
+                return CreateAudienceMessageSerializer
+            return CreateMessageSerializer
+
         return super().get_serializer_class()
 
     def get_serializer(self, *args, **kwargs):
@@ -286,6 +316,18 @@ class MessageViewSet(
             notification=notification
         ).select_related("user")
         serializer = self.get_serializer(recipients, many=True)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        serializer_class=MessageTargetingSerializer,
+        filterset_class=(),
+    )
+    def targeting(self, request, *args, **kwargs):
+        notification = self.get_object()
+
+        serializer = self.get_serializer(notification)
         return Response(serializer.data)
 
 
