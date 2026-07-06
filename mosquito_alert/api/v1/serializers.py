@@ -37,7 +37,6 @@ from mosquito_alert.identification_tasks.models import (
 from mosquito_alert.notifications.models import (
     Notification,
     NotificationContent,
-    NotificationTopic,
     NotificationRecipient,
 )
 from mosquito_alert.partners.models import OrganizationPin
@@ -420,8 +419,12 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class AudienceFilterSerializer(serializers.Serializer):
-    last_login_before = serializers.DateTimeField(required=False, source='last_login__lt')
-    last_login_after = serializers.DateTimeField(required=False, source='last_login__gte')
+    last_login_before = serializers.DateTimeField(
+        required=False, source="last_login__lt"
+    )
+    last_login_after = serializers.DateTimeField(
+        required=False, source="last_login__gte"
+    )
     in_area = GeometryField(
         required=False,
         source="last_location__within",
@@ -543,55 +546,6 @@ class MessageTargetingSerializer(serializers.ModelSerializer):
         fields = ("target", "audience")
 
 
-class CreateTopicMessageSerializer(MessageSerializer):
-    class CreateTopicMessageContentSerializer(serializers.ModelSerializer):
-        class LocalizedTopicMessageTitleSerializer(
-            LocalizedModelSerializerMixin, serializers.ModelSerializer
-        ):
-            class Meta:
-                model = NotificationContent
-
-        class LocalizedTopicMessageBodySerializer(
-            LocalizedModelSerializerMixin, serializers.ModelSerializer
-        ):
-            class Meta:
-                model = NotificationContent
-
-        title = LocalizedTopicMessageTitleSerializer(
-            source="*.title",
-            required_languages=[
-                "en"
-            ],  # For topic messages, english is required as fallback if user locale is not supported.
-            max_length=255,
-            help_text="Provide the message's title in all supported languages for this topic",
-        )
-        body = LocalizedTopicMessageBodySerializer(
-            source="*.body_html",
-            required_languages=[
-                "en"
-            ],  # For topic messages, english is required as fallback if user locale is not supported.
-            help_text="Provide the message's body in all supported languages for this topic",
-        )
-
-        class Meta:
-            model = NotificationContent
-            fields = ("title", "body")
-
-    content = CreateTopicMessageContentSerializer(
-        source="notification_content",
-        required=True,
-        help_text="The content of the message for the topic",
-    )
-
-    def create(self, validated_data) -> Notification:
-        topic = self.context.get("topic")
-
-        notification = super().create(validated_data)
-        notification.send_to_topic(topic=topic)
-
-        return notification
-
-
 class MessageRecipientSerializer(serializers.ModelSerializer):
     user = MinimalUserSerializer(read_only=True)
     has_read = serializers.BooleanField(source="is_read", read_only=True)
@@ -599,16 +553,6 @@ class MessageRecipientSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationRecipient
         fields = ("user", "has_read")
-
-
-class MessageTopicSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NotificationTopic
-        fields = ("code", "description")
-        extra_kwargs = {
-            "code": {"source": "topic_code"},
-            "description": {"source": "topic_description"},
-        }
 
 
 #### END MESSAGE SERIALIZERS ####

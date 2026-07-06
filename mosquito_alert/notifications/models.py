@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-from collections import Counter
 from itertools import groupby
 
 from firebase_admin.exceptions import FirebaseError
@@ -9,7 +8,6 @@ from firebase_admin.messaging import (
     AndroidConfig,
     AndroidNotification,
     SendResponse,
-    BatchResponse,
 )
 import logging
 from typing import Optional, Union
@@ -139,9 +137,6 @@ class Notification(models.Model):
             ),
         )
 
-    def send_to_topic(self, topic: "NotificationTopic") -> None:
-        topic.send_notification(notification=self)
-
     # TODO: Should this be async (celery task)
     def send_to_user(self, user: TigaUser) -> None:
         NotificationRecipient.objects.get_or_create(user=user, notification=self)
@@ -188,8 +183,6 @@ class NotificationRecipient(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     user = models.ForeignKey(TigaUser, on_delete=models.CASCADE)
 
-    through_topics = models.ManyToManyField("NotificationTopic", blank=True)
-
     is_read = models.BooleanField(default=False)
 
     # TODO: Make it async (celery task)
@@ -227,64 +220,3 @@ class NotificationRecipient(models.Model):
                 name="unique_notification_recipient",
             )
         ]
-
-
-TOPIC_GROUPS = (
-    (0, "General"),
-    (1, "Language topics"),
-    (2, "Country topics"),
-    (3, "Country nuts3"),
-    (4, "Country nuts2"),
-    (5, "Special"),
-)
-
-
-class NotificationTopic(models.Model):
-    topic_code = models.CharField(
-        max_length=100, unique=True, help_text="Code for the topic."
-    )
-    topic_description = models.TextField(
-        help_text="Description for the topic, in english."
-    )
-    topic_group = models.IntegerField(
-        "Group of topics",
-        choices=TOPIC_GROUPS,
-        default=0,
-        help_text="Your degree of belief that at least one photo shows a tiger mosquito breeding site",
-    )
-
-    def send_notification(
-        self, notification: Notification
-    ) -> Union[BatchResponse, None]:
-        bulk_recipients = []
-        users = []
-        users_qs = TigaUser.objects.filter(user_subscriptions__topic=self)
-        for user in users_qs.iterator():
-            users.append(user)
-            bulk_recipients.append(
-                NotificationRecipient(notification=notification, user=user)
-            )
-
-        if len(users) == 0:
-            return
-
-        _ = NotificationRecipient.objects.bulk_create(
-            bulk_recipients, batch_size=1000, ignore_conflicts=True
-        )
-        # NOTE: ignore_conflicts make returned object not having its pk set.
-        for recipient in NotificationRecipient.objects.filter(
-            user__in=users
-        ).iterator():
-            recipient.through_topics.add(self)
-
-        if settings.DISABLE_PUSH:
-            return
-
-        majority_locale = Counter(u.locale for u in users).most_common(1)[0][0]
-        return Device.send_topic_message(
-            message=notification.get_fcm_message(language_code=majority_locale),
-            topic_name=self.topic_code,
-        )
-
-    class Meta:
-        db_table = "tigaserver_app_notificationtopic"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.

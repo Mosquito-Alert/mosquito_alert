@@ -4,7 +4,7 @@ from django.core.exceptions import MultipleObjectsReturned
 from rest_framework import permissions
 
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
-from mosquito_alert.notifications.models import Notification, NotificationRecipient
+from mosquito_alert.notifications.models import NotificationRecipient
 from mosquito_alert.users.models import TigaUser
 
 from .utils import get_fk_fieldnames
@@ -142,25 +142,6 @@ class MessagePermissions(FullDjangoObjectPermissions):
 
 class MyMessagePermissions(MessagePermissions):
     pass
-
-
-class MessageTopicPermissions(FullDjangoObjectPermissions):
-    def has_permission(self, request, view):
-        if isinstance(request.user, TigaUser):
-            return False
-
-        can_send_messages = False
-        if view.action == "send":
-            if request.user.is_authenticated:
-                can_send_messages = request.user.has_perm(
-                    "%(app_label)s.add_%(model_name)s"
-                    % {
-                        "app_label": Notification._meta.app_label,
-                        "model_name": Notification._meta.model_name,
-                    }
-                )
-
-        return super().has_permission(request, view) | can_send_messages
 
 
 class ReportPermissions(UserObjectPermissions):

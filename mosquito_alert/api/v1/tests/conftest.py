@@ -20,7 +20,6 @@ from mosquito_alert.geo.tests.factories import CountryFactory
 from mosquito_alert.identification_tasks.models import IdentificationTask
 from mosquito_alert.notifications.models import (
     Notification,
-    NotificationTopic,
     NotificationContent,
 )
 from mosquito_alert.reports.tests.factories import ObservationReportFactory
@@ -333,13 +332,6 @@ def use_test_cache_backend(settings):
             "LOCATION": "unique-test-cache",
         }
     }
-
-
-@pytest.fixture
-def topic():
-    return NotificationTopic.objects.create(
-        topic_code="test", topic_description="test description"
-    )
 
 
 @pytest.fixture
