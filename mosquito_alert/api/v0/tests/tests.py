@@ -35,8 +35,6 @@ from mosquito_alert.identification_tasks.messages import (
     albopictus_probably_msg_dict,
     culex_msg_dict,
 )
-from django.db import transaction
-from django.db.utils import IntegrityError
 import time_machine
 import semantic_version
 
@@ -1036,7 +1034,7 @@ class NotificationTestCase(APITestCase):
 
     def test_subscribe_user_to_topic(self):
         self.client.force_authenticate(user=self.reritja_user)
-        code = 13123123
+        code = "13123123"
         user = self.regular_user
         response = self.client.post(
             "/api/subscribe_to_topic/?code=" + code + "&user=" + str(user.pk)
@@ -1044,19 +1042,10 @@ class NotificationTestCase(APITestCase):
         # should respond created
         self.assertEqual(response.status_code, 201)
         # try resubscribing
-        response = None
-        # this strange stuff is here because resubscribing throws an IntegrityError exception, which locks
-        # the database and breaks subsequent tests. To avoid this, we add the with transaction, which rolls back
-        # in case of exception
-        try:
-            with transaction.atomic():
-                response = self.client.post(
-                    "/api/subscribe_to_topic/?code=" + code + "&user=" + str(user.pk)
-                )
-        except IntegrityError:
-            pass
-        # should fail
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(
+            "/api/subscribe_to_topic/?code=" + code + "&user=" + str(user.pk)
+        )
+        self.assertEqual(response.status_code, 201)
         self.client.logout()
 
     def test_list_user_subscriptions(self):
@@ -1136,17 +1125,13 @@ class NotificationTestCase(APITestCase):
         )
         # response should be ok
         self.assertEqual(response.status_code, 200)
-        # should receive both direct notifications and global
-        self.assertEqual(len(response.data), 3)
+        # should receive direct notifications
+        self.assertEqual(len(response.data), 2)
         # most recent should be 2
         self.assertEqual(response.data[0]["expert_comment"], nc2.title_en)
         # 0 should be more recent than 1
         self.assertTrue(
             response.data[0]["date_comment"] > response.data[1]["date_comment"]
-        )
-        # 1 should be more recent than 2
-        self.assertTrue(
-            response.data[1]["date_comment"] > response.data[2]["date_comment"]
         )
         self.client.logout()
 

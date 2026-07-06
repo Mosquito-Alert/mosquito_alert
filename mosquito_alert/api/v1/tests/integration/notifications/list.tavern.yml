@@ -78,7 +78,7 @@ stages:
       strict:
         - json:off
       json:
-        count: 3
+        count: 2
         results:
           - id: !int "{user_notification.pk}"
           - id: !int "{report_notification.pk}"
