@@ -55,12 +55,23 @@ def can_add_annotation(
             WorkspaceMembership.Role.SUPERVISOR,
         )(user=user) or is_workspace_reviewer(user=user)
 
-    if identification_task.status in IdentificationTask.CLOSED_STATUS:
-        return False
-
     workspaces = identification_task.workspaces
     if not workspaces.exists():
         return False
+
+    if identification_task.status in IdentificationTask.CLOSED_STATUS:
+        _result_is_ai = (
+            identification_task.result_source == IdentificationTask.ResultSource.AI
+        )
+        _status_is_done = identification_task.status == IdentificationTask.Status.DONE
+        return (
+            _result_is_ai
+            and _status_is_done
+            and has_workspace_role(
+                WorkspaceMembership.Role.SUPERVISOR,
+            )(user=user, workspaces=workspaces)
+            or is_workspace_reviewer(user=user, workspaces=workspaces)
+        )
 
     return (
         has_workspace_role(

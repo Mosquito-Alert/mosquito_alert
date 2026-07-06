@@ -3,7 +3,7 @@ from mosquito_alert.taxa.models import Taxon
 from mosquito_alert.reports.models import Photo
 
 
-def create_photo_prediction(photo: Photo) -> PhotoPrediction:
+def create_photo_prediction(photo: Photo, is_decisive: bool = False) -> PhotoPrediction:
     # Needs to be sure that exists a taxon for the predicted_class
     predicted_class = PhotoPrediction.CLASS_FIELDNAMES_CHOICES[0][0]
 
@@ -40,4 +40,5 @@ def create_photo_prediction(photo: Photo) -> PhotoPrediction:
         x_br=0.5,
         y_tl=0,
         y_br=0.5,
+        is_decisive=is_decisive,
     )
