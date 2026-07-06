@@ -49,13 +49,31 @@ marks:
     - jwt_token_user_can_add
 
 stages:
-  - name: Create user message using auth user with permissions
+  - name: Create message targeting users using auth user with permissions
     request:
       url: "{api_live_url}/{endpoint}/"
       json:
         target: "users"
         user_uuids:
           - "{app_user.pk}"
+        content:
+          title:
+            en: "english title"
+          body:
+            en: "english body"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_add:s}"
+      method: "POST"
+    response:
+      status_code: 201
+      json: !force_original_structure "{response_data_validation}"
+  - name: Create message targeting audience using auth user with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        target: "audience"
+        audience:
+          last_login_after: "2024-01-01T00:00:00Z"
         content:
           title:
             en: "english title"

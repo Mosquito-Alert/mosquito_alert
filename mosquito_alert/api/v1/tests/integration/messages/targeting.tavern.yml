@@ -1,0 +1,133 @@
+---
+
+test_name: Retrieve targeting message method is not allowed for non auth user.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - user_message
+    - app_user_token
+    - jwt_token_user
+
+stages:
+  - name: Anonymous user can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/targeting/"
+      method: "GET"
+    response:
+      status_code: 401
+  - name: Mobile users can not list
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/targeting/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "GET"
+    response:
+      status_code: 403
+  - name: User without perm can not retrieve
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message.pk}/targeting/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 403
+
+---
+
+test_name: Retrieve targeting message method is allowed for auth user with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - seen_user_message
+    - user_message_sent_by_other_user
+    - jwt_token_user_can_view
+
+stages:
+  - name: User with perm can retrieve targeting message
+    request:
+      url: "{api_live_url}/{endpoint}/{seen_user_message.pk}/targeting/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      json:
+          target: !anystr
+          audience: !anything
+  - name: User with perm can retrieve targeting message even they have not send the message
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message_sent_by_other_user.pk}/targeting/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      json:
+          target: !anystr
+          audience: !anything
+
+
+---
+
+test_name: Retrieve targeting message method for unseen messages allowed for auth user with permissions.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - unseen_user_message
+    - jwt_token_user_can_view
+
+stages:
+  - name: User with perm can retrieve targeting message
+    request:
+      url: "{api_live_url}/{endpoint}/{unseen_user_message.pk}/targeting/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      json:
+          target: !anystr
+          audience: !anything
+
+
+---
+
+test_name: Collaboration reviewer can retrieve targeting message even they have not send the message
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - user_with_role_reviewer_in_country
+    - user_message_sent_by_other_user
+    - jwt_token_user
+
+stages:
+  - name: Reviewer user can retrieve targeting message even they have not send the message
+    request:
+      url: "{api_live_url}/{endpoint}/{user_message_sent_by_other_user.pk}/targeting/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+    response:
+      status_code: 200
+      json:
+          target: !anystr
+          audience: !anything
