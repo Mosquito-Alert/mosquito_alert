@@ -2303,6 +2303,7 @@ class TestMessagesApi:
         response = api_client.post(
             self.endpoint,
             data={
+                "target": "users",
                 "user_uuids": [str(app_user.pk)],
                 "content": {
                     "title": {
@@ -2336,6 +2337,7 @@ class TestMessagesApi:
             response = api_client.post(
                 self.endpoint,
                 data={
+                    "target": "users",
                     "user_uuids": [str(app_user.pk)],
                     "content": {
                         "title": {

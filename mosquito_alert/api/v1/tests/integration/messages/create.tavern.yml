@@ -53,6 +53,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/"
       json:
+        target: "users"
         user_uuids:
           - "{app_user.pk}"
         content:
@@ -70,6 +71,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/"
       json:
+        target: "users"
         user_uuids:
           - "{app_user.pk}"
         content:
@@ -147,6 +149,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/"
       json:
+        target: "users"
         user_uuids:
           - "{app_user.pk}"
         content:
