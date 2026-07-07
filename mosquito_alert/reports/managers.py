@@ -90,7 +90,10 @@ class ReportQuerySet(models.QuerySet):
         return (
             self.non_deleted()
             .filter(hide=False, location_is_masked=False)
-            .filter(published_at__isnull=True)
+            .filter(
+                models.Q(published_at__isnull=True)
+                | models.Q(published_at__gt=timezone.now())
+            )
             .filter(
                 models.Q(
                     models.Q(type=Report.TYPE_ADULT)

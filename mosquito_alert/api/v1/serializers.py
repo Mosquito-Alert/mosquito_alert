@@ -843,8 +843,7 @@ class BaseSimplifiedReportSerializer(serializers.ModelSerializer):
 
     uuid = BaseReportSerializer().fields["uuid"]
     short_id = BaseReportSerializer().fields["short_id"]
-    # NOTE: user_uuid is used by AIMA for knowing who to send notifications.
-    user_uuid = BaseReportSerializer().fields["user_uuid"]
+    user = MinimalUserSerializer(read_only=True)
     created_at = BaseReportSerializer().fields["created_at"]
     created_at_local = BaseReportSerializer().fields["created_at_local"]
     received_at = BaseReportSerializer().fields["received_at"]
@@ -861,7 +860,7 @@ class BaseSimplifiedReportSerializer(serializers.ModelSerializer):
         fields = (
             "uuid",
             "short_id",
-            "user_uuid",
+            "user",
             "created_at",
             "created_at_local",
             "received_at",
@@ -1270,21 +1269,11 @@ class BaseAssignmentSerializer(serializers.ModelSerializer):
 
 
 class AssignmentSerializer(BaseAssignmentSerializer):
-    class AssignedObservationSerializer(SimplifiedObservationWithPhotosSerializer):
-        user = MinimalUserSerializer(read_only=True)
-
-        class Meta(SimplifiedObservationWithPhotosSerializer.Meta):
-            fields = tuple(
-                fname
-                for fname in SimplifiedObservationWithPhotosSerializer.Meta.fields
-                if fname != "user_uuid"
-            ) + ("user",)
-
     observation = serializers.SerializerMethodField()
 
-    @extend_schema_field(AssignedObservationSerializer)
+    @extend_schema_field(SimplifiedObservationWithPhotosSerializer)
     def get_observation(self, obj: ExpertReportAnnotation) -> dict:
-        serializer = type(self).AssignedObservationSerializer(
+        serializer = SimplifiedObservationWithPhotosSerializer(
             obj.identification_task.report,
             context={
                 **self.context,

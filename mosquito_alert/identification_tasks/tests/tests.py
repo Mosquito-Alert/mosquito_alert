@@ -2355,3 +2355,27 @@ class TestIdentificationTaskFlow:
             assert notification.notification_content.title == _(
                 "your_picture_has_been_validated_by_an_expert"
             )
+
+    def test_unassign_users_if_closed(self, identification_task):
+        assert identification_task.status == IdentificationTask.Status.OPEN
+
+        ExpertReportAnnotationFactory(
+            identification_task=identification_task, is_finished=False
+        )
+        ExpertReportAnnotationFactory(
+            identification_task=identification_task, is_finished=True
+        )
+
+        assert identification_task.expert_report_annotations.filter(
+            is_finished=False
+        ).exists()
+
+        assert identification_task.total_annotations == 2
+
+        identification_task.status = IdentificationTask.Status.DONE
+        identification_task.save()
+
+        assert not identification_task.expert_report_annotations.filter(
+            is_finished=False
+        ).exists()
+        assert identification_task.total_annotations == 1

@@ -15,7 +15,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from taggit.managers import TaggableManager
 
-from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, AFTER_CREATE
+from django_lifecycle import LifecycleModel, hook, AFTER_SAVE, AFTER_CREATE, BEFORE_SAVE
 from django_lifecycle.conditions import WhenFieldValueChangesTo, WhenFieldHasChanged
 
 from mosquito_alert.geo.models import Country
@@ -722,6 +722,16 @@ class IdentificationTask(LifecycleModel):
             self.report.published_at = new_value
             self.report.save()
 
+    @hook(BEFORE_SAVE, condition=WhenFieldHasChanged("status", has_changed=True))
+    def _unassign_users_if_closed(self) -> None:
+        if self.status in self.CLOSED_STATUS:
+            count, _ = self.expert_report_annotations.filter(is_finished=False).delete()
+
+            if count:
+                self.total_annotations = self.expert_report_annotations.exclude(
+                    decision_level=ExpertReportAnnotation.DecisionLevel.FINAL
+                ).count()
+
     def save(self, *args, **kwargs):
         if self.is_reviewed:
             self.status = self.Status.DONE
@@ -969,11 +979,6 @@ class ExpertReportAnnotation(models.Model):
             self.message_for_user = None
 
         super(ExpertReportAnnotation, self).save(*args, **kwargs)
-
-        if self.decision_level == self.DecisionLevel.FINAL:
-            ExpertReportAnnotation.objects.filter(
-                identification_task=self.identification_task, is_finished=False
-            ).delete()
 
         self.identification_task.refresh()
 

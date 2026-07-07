@@ -1629,6 +1629,40 @@ class TestIdentificationTaskAnnotationsApi:
             else status.HTTP_403_FORBIDDEN
         )
 
+    @pytest.mark.parametrize(
+        "role, expected_status_code",
+        [
+            (WorkspaceMembership.Role.SUPERVISOR, status.HTTP_201_CREATED),
+            (WorkspaceMembership.Role.ANNOTATOR, status.HTTP_403_FORBIDDEN),
+            (WorkspaceMembership.Role.MEMBER, status.HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_annotate_on_closed_tasks_by_photo_prediction(
+        self,
+        api_client,
+        user,
+        common_post_data,
+        role: WorkspaceMembership.Role,
+        expected_status_code,
+    ):
+        workspace = WorkspaceFactory()
+        identification_task = IdentificationTaskFactory(
+            report__point=workspace.country.geom.point_on_surface
+        )
+        WorkspaceMembership.objects.create(
+            user=user,
+            workspace=workspace,
+            role=role,
+        )
+
+        photo = identification_task.photo
+        _ = create_photo_prediction(photo=photo, is_decisive=True)
+
+        response = api_client.post(
+            self.build_url(identification_task), data=common_post_data, format="json"
+        )
+        assert response.status_code == expected_status_code
+
 
 @pytest.mark.django_db
 @pytest.mark.usefixtures("taxa")

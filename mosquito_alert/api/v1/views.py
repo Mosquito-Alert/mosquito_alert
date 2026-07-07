@@ -906,6 +906,7 @@ class IdentificationTaskViewSet(
             "taxon",
             "photo",
             "report",
+            "report__user",
             "report__country",
             # NOTE: needed for get_display_name
             "report__nuts_2_fk",
