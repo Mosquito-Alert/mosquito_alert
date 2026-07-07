@@ -293,18 +293,21 @@ def mark_notif_as_ack(request):
 @api_view(["POST"])
 def unsub_from_topic(request):
     # Return 204 since notification topic is no longer used. keep for legacy reasons.
+    # See: https://github.com/Mosquito-Alert/mosquito_alert_mobile_app/blob/f85eb92c8ee0c424d011143bf261bfbd4332a550/lib/api/api.dart#L701
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
 def subscribe_to_topic(request):
     # Return 201 always since notification topic is no longer used. keep for legacy reasons.
+    # See: https://github.com/Mosquito-Alert/mosquito_alert_mobile_app/blob/f85eb92c8ee0c424d011143bf261bfbd4332a550/lib/api/api.dart#L672
     return Response(status=status.HTTP_201_CREATED)
 
 
 @api_view(["GET"])
 def topics_subscribed(request):
     # Return 200 always since notification topic is no longer used. keep for legacy reasons.
+    # See: https://github.com/Mosquito-Alert/mosquito_alert_mobile_app/blob/f85eb92c8ee0c424d011143bf261bfbd4332a550/lib/api/api.dart#L727
     return Response(data=[], status=status.HTTP_200_OK)
 
 
