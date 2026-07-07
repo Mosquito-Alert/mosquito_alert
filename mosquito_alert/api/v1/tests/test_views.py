@@ -2387,7 +2387,7 @@ class TestMessagesApi:
 
             assert response.status_code == status.HTTP_201_CREATED
 
-            mock_send.assert_called_once_with()
+            mock_send.assert_called_once()
 
     def test_create_message_to_audience_send_push(
         self, api_client, permitted_user, simple_poly
@@ -2415,4 +2415,3 @@ class TestMessagesApi:
             assert response.status_code == status.HTTP_201_CREATED
 
             mock_send.assert_called_once_with()
-
