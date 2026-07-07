@@ -432,9 +432,16 @@ class AudienceFilterSerializer(serializers.Serializer):
             "Filter users whose last known location is within the specified area. The area should be provided as a GeoJSON geometry object."
         ),
     )
+    # NOTE: this is kept for legacy reasons. See migration: 0013_notification_audiencew
+    locale = serializers.ChoiceField(
+        choices=[x[0] for x in TigaUser.AVAILABLE_LANGUAGES],
+        required=False,
+        read_only=True,
+        allow_null=True,
+    )
 
     class Meta:
-        fields = ("last_login_before", "last_login_after", "in_area")
+        fields = ("last_login_before", "last_login_after", "in_area", "locale")
 
 
 class CreateMessageSerializer(MessageSerializer):
