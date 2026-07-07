@@ -6,7 +6,6 @@ from mosquito_alert.fixes.models import Fix
 from mosquito_alert.geo.models import Country
 from mosquito_alert.notifications.models import (
     NotificationRecipient,
-    UserSubscription,
 )
 from mosquito_alert.reports.models import Report, ReportResponse, Photo
 from mosquito_alert.partners.models import OrganizationPin
@@ -349,17 +348,6 @@ class NotificationSerializer(serializers.ModelSerializer):
             "id": {"source": "notification_id", "read_only": True},
             "acknowledged": {"source": "is_read", "read_only": True},
         }
-
-
-class UserSubscriptionSerializer(serializers.ModelSerializer):
-    topic_code = serializers.SerializerMethodField()
-
-    def get_topic_code(self, obj):
-        return obj.topic.topic_code
-
-    class Meta:
-        model = UserSubscription
-        fields = ("id", "user", "topic", "topic_code")
 
 
 class CountrySimpleSerializer(serializers.ModelSerializer):

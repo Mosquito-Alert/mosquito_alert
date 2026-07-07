@@ -2,7 +2,6 @@ import pytest
 
 from mosquito_alert.notifications.models import (
     Notification,
-    UserSubscription,
     NotificationContent,
     NotificationRecipient,
 )
@@ -76,15 +75,3 @@ def message_audience_last_login_after(user):
     )
 
 
-@pytest.fixture
-def topic_message(app_user, topic):
-    _ = UserSubscription.objects.create(user=app_user, topic=topic)
-
-    notification = Notification.objects.create(
-        notification_content=NotificationContent.objects.create(
-            title_en="Test title", body_html_en="Test body"
-        )
-    )
-    notification.send_to_topic(topic=topic)
-
-    return notification

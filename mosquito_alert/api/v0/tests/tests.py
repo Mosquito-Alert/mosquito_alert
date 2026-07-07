@@ -17,8 +17,6 @@ from mosquito_alert.identification_tasks.tests.factories import (
 from mosquito_alert.notifications.models import (
     Notification,
     NotificationContent,
-    NotificationTopic,
-    UserSubscription,
 )
 from mosquito_alert.reports.models import Report, ReportResponse
 from mosquito_alert.reports.tests.factories import (
@@ -37,8 +35,6 @@ from mosquito_alert.identification_tasks.messages import (
     albopictus_probably_msg_dict,
     culex_msg_dict,
 )
-from django.db import transaction
-from django.db.utils import IntegrityError
 import time_machine
 import semantic_version
 
@@ -961,18 +957,6 @@ class NotificationTestCase(APITestCase):
         self.regular_user = t
         self.reritja_user = User.objects.get(pk=25)
 
-        t1 = NotificationTopic(
-            topic_code="global", topic_description="This is the global topic"
-        )
-        t1.save()
-        self.global_topic = t1
-
-        t2 = NotificationTopic(
-            topic_code="some_topic", topic_description="This is a topic, not the global"
-        )
-        t2.save()
-        self.some_topic = t2
-
     def test_auto_notification_report_is_issued_and_readable_via_api(self):
         identification_task = IdentificationTaskFactory()
 
@@ -1050,7 +1034,7 @@ class NotificationTestCase(APITestCase):
 
     def test_subscribe_user_to_topic(self):
         self.client.force_authenticate(user=self.reritja_user)
-        code = self.some_topic.topic_code
+        code = "13123123"
         user = self.regular_user
         response = self.client.post(
             "/api/subscribe_to_topic/?code=" + code + "&user=" + str(user.pk)
@@ -1058,97 +1042,20 @@ class NotificationTestCase(APITestCase):
         # should respond created
         self.assertEqual(response.status_code, 201)
         # try resubscribing
-        response = None
-        # this strange stuff is here because resubscribing throws an IntegrityError exception, which locks
-        # the database and breaks subsequent tests. To avoid this, we add the with transaction, which rolls back
-        # in case of exception
-        try:
-            with transaction.atomic():
-                response = self.client.post(
-                    "/api/subscribe_to_topic/?code=" + code + "&user=" + str(user.pk)
-                )
-        except IntegrityError:
-            pass
-        # should fail
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(
+            "/api/subscribe_to_topic/?code=" + code + "&user=" + str(user.pk)
+        )
+        self.assertEqual(response.status_code, 201)
         self.client.logout()
 
     def test_list_user_subscriptions(self):
         self.client.force_authenticate(user=self.reritja_user)
         user = self.regular_user
-        # we make up some topics
-        n1 = NotificationTopic(
-            topic_code="ru", topic_description="This is a test topic"
-        )
-        n1.save()
-        n2 = NotificationTopic(
-            topic_code="es", topic_description="This is a test topic"
-        )
-        n2.save()
-        n3 = NotificationTopic(
-            topic_code="en", topic_description="This is a test topic"
-        )
-        n3.save()
-        topics = [n1, n2, n3]
-        for t in topics:
-            response = self.client.post(
-                "/api/subscribe_to_topic/?code="
-                + t.topic_code
-                + "&user="
-                + str(user.pk)
-            )
-            # should respond created
-            self.assertEqual(response.status_code, 201)
 
         response = self.client.get("/api/topics_subscribed/?user=" + str(user.pk))
         # response should be ok
         self.assertEqual(response.status_code, 200)
-        # should be subscribed to t, n1, n2 and n3
-        self.assertEqual(len(response.data), 3)
-        self.client.logout()
-
-    def test_user_sees_notifications_sent_to_global_topic(self):
-        nc = NotificationContent(
-            body_html="<p>Notification Body</p>",
-            title="Notification title",
-        )
-        nc.save()
-        n = Notification(expert=self.reritja_user, notification_content=nc)
-        n.save()
-
-        UserSubscription.objects.get_or_create(
-            user=self.regular_user, topic=self.global_topic
-        )
-
-        # send notif to global topic
-        n.send_to_topic(topic=self.global_topic)
-
-        # the regular user should see this notification
-        some_user = self.regular_user
-        self.client.force_authenticate(user=self.reritja_user)
-        response = self.client.get(
-            "/api/user_notifications/?user_id=" + str(some_user.pk)
-        )
-        # response should be ok
-        self.assertEqual(response.status_code, 200)
-        # should only receive the notification from the global topic
-        self.assertEqual(len(response.data), 1)
-        # acknowledge the notification
-        response = self.client.delete(
-            "/api/mark_notif_as_ack/?user={}&notif=".format(some_user.pk) + str(n.id)
-        )
-        # should respond no content
-        self.assertEqual(response.status_code, 204)
-        # now the notification should be acknowledged
-        response = self.client.get(
-            "/api/user_notifications/?user_id=" + str(some_user.pk)
-        )
-        # response should be ok
-        self.assertEqual(response.status_code, 200)
-        # should only receive the notification from the global topic
-        self.assertEqual(len(response.data), 1)
-        # AND it should be ack=True
-        self.assertEqual(response.data[0]["acknowledged"], True)
+        self.assertEqual(len(response.data), 0)
         self.client.logout()
 
     def test_subscription_and_unsubscription(self):
@@ -1162,45 +1069,26 @@ class NotificationTestCase(APITestCase):
 
         self.client.force_authenticate(user=self.reritja_user)
         # subscribe user to regular topic
+        random_topic = "123123"
         response = self.client.post(
             "/api/subscribe_to_topic/?code="
-            + self.some_topic.topic_code
+            + random_topic  # NOTE: random, does not exists
             + "&user="
             + str(self.regular_user.pk)
         )
         # should respond created
         self.assertEqual(response.status_code, 201)
 
-        # send notif to regular topic
-        n.send_to_topic(topic=self.some_topic)
-
-        # list notifications for regular user again
-        response = self.client.get(
-            "/api/user_notifications/?user_id=" + str(self.regular_user.pk)
-        )
-        # response should be ok
-        self.assertEqual(response.status_code, 200)
-        # only the topic notification should be available
-        self.assertEqual(len(response.data), 1)
-
         # now, unsubscribe!
         response = self.client.post(
             "/api/unsub_from_topic/?code="
-            + self.some_topic.topic_code
+            + random_topic
             + "&user="
             + str(self.regular_user.pk)
         )
         # response should be no content
         self.assertEqual(response.status_code, 204)
 
-        # list notifications for regular user again!
-        response = self.client.get(
-            "/api/user_notifications/?user_id=" + str(self.regular_user.pk)
-        )
-        # response should be ok
-        self.assertEqual(response.status_code, 200)
-        # notifications are still available
-        self.assertEqual(len(response.data), 1)
         self.client.logout()
 
     def test_direct_notifs_and_topic_sort_okay(self):
@@ -1224,15 +1112,6 @@ class NotificationTestCase(APITestCase):
         # send notif to user
         n1.send_to_user(user=some_user)
 
-        # Ensure user is subscribed to global topic
-        UserSubscription.objects.get_or_create(user=some_user, topic=self.global_topic)
-
-        # GLOBAL notification
-        n3 = Notification(expert=self.reritja_user, notification_content=nc1)
-        n3.save()
-        # send notif to global topic
-        n3.send_to_topic(topic=self.global_topic)
-
         # SECOND direct  NOTIFICATION
         n2 = Notification(expert=self.reritja_user, notification_content=nc2)
         n2.save()
@@ -1246,17 +1125,13 @@ class NotificationTestCase(APITestCase):
         )
         # response should be ok
         self.assertEqual(response.status_code, 200)
-        # should receive both direct notifications and global
-        self.assertEqual(len(response.data), 3)
+        # should receive direct notifications
+        self.assertEqual(len(response.data), 2)
         # most recent should be 2
         self.assertEqual(response.data[0]["expert_comment"], nc2.title_en)
         # 0 should be more recent than 1
         self.assertTrue(
             response.data[0]["date_comment"] > response.data[1]["date_comment"]
-        )
-        # 1 should be more recent than 2
-        self.assertTrue(
-            response.data[1]["date_comment"] > response.data[2]["date_comment"]
         )
         self.client.logout()
 
@@ -1644,9 +1519,6 @@ class ApiUsersViewTest(APITransactionTestCase):
 
     def setUp(self):
         self.mobile_user = User.objects.create_user(username="mobile_test")
-        # Needed to test user subscription does not raise.
-        self.global_topic = NotificationTopic.objects.create(topic_code="global")
-        self.language_topic = NotificationTopic.objects.create(topic_code="en")
 
     @override_settings(DEFAULT_TIGAUSER_PASSWORD="DEFAULT_PASSWORD_FOR_TESTS")
     def test_POST_new_user(self):
@@ -1672,18 +1544,6 @@ class ApiUsersViewTest(APITransactionTestCase):
         user = TigaUser.objects.get(pk=str(new_user_uuid))
 
         self.assertTrue(user.check_password("DEFAULT_PASSWORD_FOR_TESTS"))
-
-        # Check if the user is subscribed to the global topic
-        self.assertTrue(
-            UserSubscription.objects.filter(user=user, topic=self.global_topic).exists()
-        )
-
-        # Check if the user is subscribed to the language topic ('en')
-        self.assertTrue(
-            UserSubscription.objects.filter(
-                user=user, topic=self.language_topic
-            ).exists()
-        )
 
     def test_POST_new_user_without_providing_uuid_should_return_400(self):
         self.client.force_authenticate(user=self.mobile_user)

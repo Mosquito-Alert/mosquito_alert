@@ -3,7 +3,6 @@ import pytest
 from mosquito_alert.notifications.models import (
     Notification,
     NotificationContent,
-    UserSubscription,
     NotificationRecipient,
 )
 
@@ -57,19 +56,5 @@ def report_notification(adult_report):
     )
 
     notification.send_to_user(user=adult_report.user)
-
-    return notification
-
-
-@pytest.fixture
-def topic_notification(app_user, topic):
-    _ = UserSubscription.objects.create(user=app_user, topic=topic)
-
-    notification = Notification.objects.create(
-        notification_content=NotificationContent.objects.create(
-            title_en="Test title", body_html_en="Test body"
-        )
-    )
-    notification.send_to_topic(topic=topic)
 
     return notification

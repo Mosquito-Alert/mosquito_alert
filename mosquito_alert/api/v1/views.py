@@ -27,7 +27,6 @@ from rest_framework.decorators import (
     authentication_classes,
 )
 from rest_framework.exceptions import ValidationError
-from rest_framework.generics import get_object_or_404
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -62,7 +61,6 @@ from mosquito_alert.identification_tasks.models import (
 )
 from mosquito_alert.notifications.models import (
     Notification,
-    NotificationTopic,
     NotificationRecipient,
 )
 from mosquito_alert.partners.models import OrganizationPin
@@ -104,7 +102,6 @@ from .serializers import (
     PhotoSerializer,
     ObservationSerializer,
     BiteSerializer,
-    CreateTopicMessageSerializer,
     CreateUserMessageSerializer,
     CreateAudienceMessageSerializer,
     BreedingSiteSerializer,
@@ -122,7 +119,6 @@ from .serializers import (
     CreateOverwriteReviewSerializer,
     TemporaryBoundarySerializer,
     NotificationSerializer,
-    MessageTopicSerializer,
     WorkspaceSerializer,
     WorkspaceCollaborationGroupSerializer,
     MessageRecipientSerializer,
@@ -144,7 +140,6 @@ from .permissions import (
     CountriesPermissions,
     MessagePermissions,
     MyMessagePermissions,
-    MessageTopicPermissions,
     DjangoRegularUserModelPermissions,
     FullDjangoObjectPermissions,
 )
@@ -246,11 +241,7 @@ class MyNotificationViewSet(NotificationViewSet, ListModelMixin):
             },
             resource_type_field_name="target",
         ),
-        responses={
-            201: OpenApiResponse(
-                response=MessageSerializer
-            )
-        },
+        responses={201: OpenApiResponse(response=MessageSerializer)},
     )
 )
 class MessageViewSet(
@@ -287,8 +278,12 @@ class MessageViewSet(
     def get_serializer_class(self):
         if self.action == "create":
             target = self.request.data.get("target")
-            user_target_value = list(CreateUserMessageSerializer().fields["target"].choices.values())[0]
-            audience_target_value = list(CreateAudienceMessageSerializer().fields["target"].choices.values())[0]
+            user_target_value = list(
+                CreateUserMessageSerializer().fields["target"].choices.values()
+            )[0]
+            audience_target_value = list(
+                CreateAudienceMessageSerializer().fields["target"].choices.values()
+            )[0]
             if target == user_target_value:
                 return CreateUserMessageSerializer
             elif target == audience_target_value:
@@ -329,39 +324,6 @@ class MessageViewSet(
 
         serializer = self.get_serializer(notification)
         return Response(serializer.data)
-
-
-class MessageTopicViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
-    queryset = NotificationTopic.objects.all()
-    serializer_class = MessageTopicSerializer
-    permission_classes = (MessageTopicPermissions,)
-
-    filter_backends = (DjangoFilterBackend, SearchFilter)
-    search_fields = ("topic_code", "topic_description")
-    lookup_url_kwarg = "code"
-    lookup_field = "topic_code"
-
-    @extend_schema(
-        operation_id="messages_topics_send",
-        description="Send a message to a specific topic",
-    )
-    @action(
-        detail=True,
-        methods=["POST"],
-        serializer_class=CreateTopicMessageSerializer,
-    )
-    def send(self, request, code=None):
-        filter_kwargs = {self.lookup_field: code}
-        topic = get_object_or_404(self.get_queryset(), **filter_kwargs)
-
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.context["topic"] = topic
-        serializer.save()
-        headers = CreateModelMixin().get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
 
 
 @extend_schema_view(

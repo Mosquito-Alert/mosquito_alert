@@ -5,7 +5,7 @@ from mosquito_alert.users.models import User, TigaUser
 from mosquito_alert.utils.rules import has_global_permission
 from mosquito_alert.workspaces.rules import is_workspace_reviewer
 
-from .models import Notification, NotificationTopic
+from .models import Notification
 
 
 @rules.predicate
@@ -39,16 +39,6 @@ def can_view_message(
     return False
 
 
-@rules.predicate
-def can_view_message_topic(
-    user: Union[User, TigaUser], topic: Optional[NotificationTopic] = None
-):
-    if isinstance(user, TigaUser):
-        return False
-
-    return can_view_message(user=user)
-
-
 rules.add_perm(
     "%(app_label)s.add_%(model_name)s"
     % {
@@ -65,13 +55,4 @@ rules.add_perm(
         "model_name": Notification._meta.model_name,
     },
     can_view_message | has_global_permission(Notification, type="view"),
-)
-
-rules.add_perm(
-    "%(app_label)s.view_%(model_name)s"
-    % {
-        "app_label": NotificationTopic._meta.app_label,
-        "model_name": NotificationTopic._meta.model_name,
-    },
-    can_view_message_topic | has_global_permission(NotificationTopic, type="view"),
 )
