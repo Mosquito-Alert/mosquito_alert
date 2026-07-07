@@ -75,6 +75,46 @@ stages:
           target: !anystr
           audience: !anything
 
+---
+
+test_name: Retrieve targeting message method returns a valid audience with a geometry
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - message_audience_geom
+    - simple_poly
+    - jwt_token_user_can_view
+
+stages:
+  - name: User with perm can retrieve targeting message and the audience is valid for a message with a geometry
+    request:
+      url: "{api_live_url}/{endpoint}/{message_audience_geom.pk}/targeting/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      json:
+          target: 'audience'
+          audience:
+            in_area:
+              type: 'Polygon'
+              coordinates:
+                - - - 0.0
+                    - 0.0
+                  - - 0.0
+                    - 1.0
+                  - - 1.0
+                    - 1.0
+                  - - 1.0
+                    - 0.0
+                  - - 0.0
+                    - 0.0
 
 ---
 

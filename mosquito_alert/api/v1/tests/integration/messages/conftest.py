@@ -1,3 +1,4 @@
+from django.contrib.gis.geos import Polygon
 import pytest
 
 from mosquito_alert.notifications.models import (
@@ -46,6 +47,34 @@ def user_message_sent_by_other_user(app_user):
         notification_content=NotificationContent.objects.create(
             title_en="Test title", body_html_en="Test body"
         ),
+    )
+    notification.send_to_user(user=app_user)
+
+    return notification
+
+
+@pytest.fixture
+def simple_poly():
+    return Polygon(
+        (
+            (0.0, 0.0),
+            (0.0, 1.0),
+            (1.0, 1.0),
+            (1.0, 0.0),
+            (0.0, 0.0),
+        )
+    )
+
+
+@pytest.fixture
+def message_audience_geom(app_user, user, simple_poly):
+    notification = Notification.objects.create(
+        expert=user,
+        notification_content=NotificationContent.objects.create(
+            title_en="Test title",
+            body_html_en="Test body",
+        ),
+        audience={"last_location__within": simple_poly},
     )
     notification.send_to_user(user=app_user)
 
