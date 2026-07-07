@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from datetime import timedelta
+import json
 import jwt
 import pytest
 import time_machine
@@ -2299,7 +2300,7 @@ class TestMessagesApi:
         grant_permission_to_user(type="add", model_class=Notification, user=user)
         return user
 
-    def test_create_message(self, app_user, api_client, permitted_user):
+    def test_create_message_to_users(self, app_user, api_client, permitted_user):
         response = api_client.post(
             self.endpoint,
             data={
@@ -2330,7 +2331,41 @@ class TestMessagesApi:
         assert recipient is not None
         assert not recipient.is_read
 
-    def test_create_message_send_push(self, app_user, api_client, permitted_user):
+    def test_create_message_to_audience(self, api_client, permitted_user, simple_poly):
+        # Create a user within the area of the simple_poly to ensure they receive the notification
+        tigauser = TigaUserFactory(last_location=simple_poly.point_on_surface)
+
+        response = api_client.post(
+            self.endpoint,
+            data={
+                "target": "audience",
+                "audience": {"in_area": json.loads(simple_poly.geojson)},
+                "content": {
+                    "title": {
+                        "en": "Test Notification",
+                    },
+                    "body": {
+                        "en": "This is a test notification.",
+                    },
+                },
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        notification = Notification.objects.get(pk=response.data["id"])
+
+        assert notification.expert == permitted_user
+        notification_content = notification.notification_content
+        assert notification_content.title_en == "Test Notification"
+        assert notification_content.body_html_en == "This is a test notification."
+
+        recipients_qs = NotificationRecipient.objects.filter(notification=notification)
+        assert recipients_qs.count() == 1
+        assert recipients_qs.filter(user=tigauser, is_read=False).exists()
+
+    def test_create_message_to_users_send_push(
+        self, app_user, api_client, permitted_user
+    ):
         with patch(
             "mosquito_alert.notifications.models.Notification.send_to_user"
         ) as mock_send:
@@ -2353,7 +2388,34 @@ class TestMessagesApi:
 
             assert response.status_code == status.HTTP_201_CREATED
 
-            mock_send.assert_called_once()
+            mock_send.assert_called_once_with()
+
+    def test_create_message_to_audience_send_push(
+        self, api_client, permitted_user, simple_poly
+    ):
+        with patch(
+            "mosquito_alert.notifications.models.Notification._send_to_audience"
+        ) as mock_send:
+            response = api_client.post(
+                self.endpoint,
+                data={
+                    "target": "audience",
+                    "audience": {"in_area": json.loads(simple_poly.geojson)},
+                    "content": {
+                        "title": {
+                            "en": "Test Notification",
+                        },
+                        "body": {
+                            "en": "This is a test notification.",
+                        },
+                    },
+                },
+                format="json",
+            )
+
+            assert response.status_code == status.HTTP_201_CREATED
+
+            mock_send.assert_called_once_with()
 
     def test_send_message_to_topic(self, app_user, api_client, permitted_user, topic):
         UserSubscription.objects.get_or_create(

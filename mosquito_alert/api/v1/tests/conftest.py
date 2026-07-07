@@ -353,3 +353,17 @@ def user_notification(app_user, user):
     notification.send_to_user(user=app_user)
 
     return notification
+
+
+@pytest.fixture
+def simple_poly():
+    return Polygon(
+        (
+            (0.0, 0.0),
+            (0.0, 1.0),
+            (1.0, 1.0),
+            (1.0, 0.0),
+            (0.0, 0.0),
+        ),
+        srid=4326,
+    )

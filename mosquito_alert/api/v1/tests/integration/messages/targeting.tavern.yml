@@ -118,6 +118,35 @@ stages:
 
 ---
 
+test_name: Retrieve targeting message method returns a valid last login after
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - message_audience_last_login_after
+    - simple_poly
+    - jwt_token_user_can_view
+
+stages:
+  - name: User with perm can retrieve targeting message and the audience is valid for a message with a last login after
+    request:
+      url: "{api_live_url}/{endpoint}/{message_audience_last_login_after.pk}/targeting/"
+      method: "GET"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view:s}"
+    response:
+      status_code: 200
+      json:
+          target: 'audience'
+          audience:
+            last_login_after: "2023-01-01T00:00:00Z"
+
+---
+
 test_name: Retrieve targeting message method for unseen messages allowed for auth user with permissions.
 
 includes:
