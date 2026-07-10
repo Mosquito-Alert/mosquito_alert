@@ -3,6 +3,16 @@
 .DEFAULT_GOAL	:= help
 SHELL			:= /bin/bash
 
+APP_NAME 		:= 'mosquito_alert'
+REGISTRY_SERVER	:= ghcr.io
+REPOSITORY 		:= '$(REGISTRY_SERVER)/mosquito-alert/mosquito_alert'
+TAG				:= $(shell git describe --tags)
+RELEASE_TAG		?= latest
+
+DOCKER_USER		?= ''
+
+ENVIRONMENT		:= 'production'
+
 DOCKER_COMPOSE_DEV=docker-compose-local.yml
 DOCKER_COMPOSE_DEV_SSL=docker-compose-local-ssl.yml
 
@@ -67,3 +77,24 @@ clean_data:  ## Remove any data
 clean_docker:  ## Remove all container and images.
 	docker rm $(docker ps -a -q)
 	docker rmi $(docker image ls -q)
+
+# ===================================================
+# Docker images commands
+# ===================================================
+
+login: ## Login to container registry server.
+	docker login -u $(DOCKER_USER) $(REGISTRY_SERVER)
+
+build: ## Build the current image version for this app.
+	docker build --tag $(APP_NAME)_$(ENVIRONMENT):$(TAG) --build-arg BUILD_ENVIRONMENT=$(ENVIRONMENT) .
+	docker tag $(APP_NAME)_$(ENVIRONMENT):$(TAG) $(REPOSITORY):$(TAG)
+
+push: login ## Push the latest image to the repository.
+	docker push $(REPOSITORY):$(TAG)
+
+deploy: build login push  ## Build and push a new image version to the reposistory.
+
+release: login  ## Make current docker tag to be retagged as 'latest'.
+	docker pull $(REPOSITORY):$(TAG)
+	docker tag  $(REPOSITORY):$(TAG) $(REPOSITORY):$(RELEASE_TAG)
+	docker push $(REPOSITORY):$(RELEASE_TAG)
