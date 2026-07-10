@@ -747,7 +747,8 @@ class IdentificationTask(LifecycleModel):
         super().save(*args, **kwargs)
 
     class Meta:
-        db_table = "tigacrafting_identificationtask"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigacrafting_identificationtask"
         permissions = [
             ("view_archived_identificationtasks", "Can view archived records"),
             ("add_review", "Can review"),
@@ -889,7 +890,8 @@ class ExpertReportAnnotation(models.Model):
     objects = ExpertReportAnnotationManager()
 
     class Meta:
-        db_table = "tigacrafting_expertreportannotation"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigacrafting_expertreportannotation"
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "identification_task"], name="unique_assignation"
@@ -1150,9 +1152,11 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
                 )
 
     def save(self, *args, **kwargs):
-        self.taxon = Taxon.objects.filter(
-            pk=self.PREDICTED_CLASS_TO_TAXON[self.predicted_class]
-        ).first()
+        self.taxon = (
+            self.scores.order_by("-score").first().taxon
+            if self.scores.exists()
+            else None
+        )
 
         self.clean()
 
@@ -1177,7 +1181,8 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
         return result
 
     class Meta:
-        db_table = "tigacrafting_photoprediction"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigacrafting_photoprediction"
         constraints = [
             # Ensure x_tl is less than or equal to x_br
             models.CheckConstraint(
@@ -1217,5 +1222,32 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
             models.UniqueConstraint(
                 fields=["photo", "identification_task"],
                 name="unique_photo_identification_task",
+            ),
+        ]
+
+
+class PhotoPredictionScore(models.Model):
+    photo_prediction = models.ForeignKey(
+        PhotoPrediction,
+        related_name="scores",
+        on_delete=models.CASCADE,
+    )
+    taxon = models.ForeignKey(
+        Taxon,
+        null=True,
+        blank=True,
+        editable=True,
+        on_delete=models.PROTECT,
+    )
+    score = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text="Score value for the predicted class",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["photo_prediction", "taxon"],
+                name="unique_photo_prediction_taxon",
             ),
         ]
