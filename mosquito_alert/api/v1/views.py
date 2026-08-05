@@ -381,7 +381,7 @@ class BaseReportViewSet(
         .prefetch_related(
             # NOTE: might be solved when start using native django-taggitg class in the model.
             # See bug https://github.com/jazzband/django-taggit/issues/255
-            #'tags',
+            # 'tags',
             models.Prefetch("photos", queryset=Photo.objects.visible())
         )
         .annotate(

@@ -1,595 +1,50 @@
+# TODO: Move the Identification Task related serializers to the identification_tasks.py file. Problem: Circular imports.
 from datetime import datetime
 from typing import Literal, Optional
-from uuid import UUID
 
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
-from django.db import transaction, models
+from django.db import transaction
 from django.utils import timezone
 
 from drf_spectacular.utils import extend_schema_field
-from drf_spectacular.helpers import lazy_serializer
 
 from rest_framework import serializers
 
-from drf_extra_fields.geo_fields import PointField
-import minify_html
 from rest_framework_csv.renderers import CSVStreamingRenderer
-from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 import rules
 from taggit.serializers import TaggitSerializer, TagListSerializerField
 
-from mosquito_alert.campaigns.models import OWCampaigns
-from mosquito_alert.devices.models import Device, MobileApp
-from mosquito_alert.fixes.models import Fix
+from mosquito_alert.api.v1.serializers.photos import SimplePhotoSerializer
+from mosquito_alert.api.v1.serializers.taxa import SimpleTaxonSerializer
+from mosquito_alert.api.v1.serializers.users import (
+    SimpleUserSerializer,
+    MinimalUserSerializer,
+)
+
+from .countries import CountrySerializer
 from mosquito_alert.geo.models import (
-    Country,
     LauEurope,
     NutsEurope,
-    TemporaryBoundary,
 )
 from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
     ExpertReportAnnotation,
-    PhotoPrediction,
 )
-from mosquito_alert.notifications.models import (
-    Notification,
-    NotificationContent,
-    NotificationRecipient,
-)
-from mosquito_alert.partners.models import OrganizationPin
 from mosquito_alert.reports.models import Report, Photo
-from mosquito_alert.taxa.models import Taxon
-from mosquito_alert.users.models import UserStat, TigaUser
-from mosquito_alert.workspaces.models import (
-    Workspace,
-    WorkspaceMembership,
-    WorkspaceCollaborationGroup,
-)
+from mosquito_alert.users.models import UserStat
 
-from .base_serializers import LocalizedModelSerializerMixin
-from .fields import (
+
+from ..fields import (
     TimezoneAwareDateTimeField,
     WritableSerializerMethodField,
     IntegerDefaultField,
     TimeZoneSerializerChoiceField,
-    HTMLCharField,
 )
-from .mixins import ReportGeoJsonModelSerializerMixin
+from ..mixins import ReportGeoJsonModelSerializerMixin
 
 User = get_user_model()
-
-
-class CampaignSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OWCampaigns
-        fields = ("id", "country_id", "posting_address", "start_date", "end_date")
-        extra_kwargs = {
-            "start_date": {"source": "campaign_start_date"},
-            "end_date": {"source": "campaign_end_date"},
-        }
-
-
-class CountrySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Country
-        fields = ("id", "name_en", "iso3_code")
-        extra_kwargs = {"name_en": {"source": "name_engl"}}
-
-
-class FixLocationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Fix
-        fields = ("latitude", "longitude")
-        extra_kwargs = {
-            "latitude": {"source": "masked_lat"},
-            "longitude": {"source": "masked_lon"},
-        }
-
-
-class FixSerializer(serializers.ModelSerializer):
-    created_at = TimezoneAwareDateTimeField(required=True, source="fix_time")
-    sent_at = TimezoneAwareDateTimeField(required=True, source="phone_upload_time")
-
-    coverage_uuid = serializers.UUIDField(source="user_coverage_uuid")
-    point = FixLocationSerializer(source="*", required=True)
-
-    def save(self, *args, **kwargs):
-        instance = super().save(*args, **kwargs)
-
-        request = self.context.get("request")
-        user = request.user
-        if request and user and user.is_authenticated:
-            if isinstance(user, TigaUser):
-                if (
-                    user.last_location_update is None
-                    or instance.fix_time >= user.last_location_update
-                ):
-                    user.last_location = instance.point
-                    user.last_location_update = instance.fix_time
-                    user.save()
-
-        return instance
-
-    class Meta:
-        model = Fix
-        fields = (
-            "coverage_uuid",
-            "created_at",
-            "sent_at",
-            "received_at",
-            "point",
-            "power",
-        )
-        read_only_fields = ("received_at",)
-        extra_kwargs = {
-            "received_at": {"source": "server_upload_time"},
-        }
-
-
-class BaseCRUDPermissionSerializer(serializers.Serializer):
-    add = serializers.BooleanField()
-    change = serializers.BooleanField()
-    view = serializers.BooleanField()
-    delete = serializers.BooleanField()
-
-    model = None
-
-    def to_representation(self, instance):
-        user = self.context["request"].user
-
-        return {
-            action: user.has_perm(
-                "%(app_label)s.%(action)s_%(model_name)s"
-                % {
-                    "app_label": self.model._meta.app_label,
-                    "model_name": self.model._meta.model_name,
-                    "action": action,
-                }
-            )
-            for action in ("add", "change", "view", "delete")
-        }
-
-
-class PermissionsSerializer(serializers.Serializer):
-    class AnnotationPermissionSerializer(BaseCRUDPermissionSerializer):
-        model = ExpertReportAnnotation
-
-    class IdentificationTaskPermissionSerializer(BaseCRUDPermissionSerializer):
-        model = IdentificationTask
-
-    class ReviewPermissionSerializer(BaseCRUDPermissionSerializer):
-        def to_representation(self, instance):
-            user = self.context["request"].user
-
-            has_add_review_perm = user.has_perm(
-                f"{IdentificationTask._meta.app_label}.add_review"
-            )
-
-            return {
-                "add": has_add_review_perm,
-                "change": has_add_review_perm,
-                "view": has_add_review_perm,
-                "delete": False,
-            }
-
-    class MessagePermissionSerializer(BaseCRUDPermissionSerializer):
-        model = Notification
-
-    annotation = AnnotationPermissionSerializer(source="*")
-    identification_task = IdentificationTaskPermissionSerializer(source="*")
-    review = ReviewPermissionSerializer(source="*")
-    message = MessagePermissionSerializer(source="*")
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class UserScoreSerializer(serializers.ModelSerializer):
-        value = serializers.IntegerField(source="score_v2", min_value=0, read_only=True)
-        updated_at = serializers.DateTimeField(
-            source="last_score_update", read_only=True, allow_null=True
-        )
-
-        class Meta:
-            model = TigaUser
-            fields = ("value", "updated_at")
-
-    uuid = serializers.UUIDField(source="user_UUID", read_only=True)
-    language_iso = serializers.SerializerMethodField(
-        help_text="ISO 639-1 code", default="en"
-    )
-    username = serializers.SerializerMethodField()
-    first_name = serializers.SerializerMethodField()
-    last_name = serializers.SerializerMethodField()
-    full_name = serializers.SerializerMethodField()
-    is_guest = serializers.SerializerMethodField()
-    score = UserScoreSerializer(source="*", read_only=True)
-
-    def get_is_guest(self, obj) -> bool:
-        return True
-
-    def get_username(self, obj) -> str:
-        return obj.get_username()
-
-    def get_first_name(self, obj) -> str:
-        if isinstance(obj, User):
-            return obj.first_name
-        return "Anonymous"
-
-    def get_last_name(self, obj) -> str:
-        if isinstance(obj, User):
-            return obj.last_name
-        return "User"
-
-    def get_full_name(self, obj) -> str:
-        if isinstance(obj, User):
-            return obj.get_full_name()
-        return "Anonymous User"
-
-    def get_language_iso(self, obj) -> str:
-        return obj.language_iso2
-
-    def to_representation(self, instance):
-        if isinstance(instance, User):
-            # NOTE: this must be the same structure as defined.
-            data = {}
-            data["uuid"] = UUID(int=instance.pk)
-            data["username"] = instance.get_username()
-            data["first_name"] = self.get_first_name(obj=instance)
-            data["last_name"] = self.get_last_name(obj=instance)
-            data["full_name"] = self.get_full_name(obj=instance)
-            data["registration_time"] = instance.date_joined
-            data["locale"] = "en"
-            data["language_iso"] = "en"
-            data["is_guest"] = False
-            data["score"] = {"value": 0, "updated_at": None}
-            return {k: v for k, v in data.items() if k in self.fields.keys()}
-
-        return super().to_representation(instance)
-
-    class Meta:
-        model = TigaUser
-        fields = (
-            "uuid",
-            "username",
-            "first_name",
-            "last_name",
-            "full_name",
-            "registration_time",
-            "locale",
-            "language_iso",
-            "is_guest",
-            "score",
-        )
-        read_only_fields = (
-            "registration_time",
-            "score",
-        )
-        extra_kwargs = {
-            "locale": {"default": "en"},
-        }
-
-
-class SimpleUserSerializer(UserSerializer):
-    uuid = serializers.SerializerMethodField()
-
-    def get_uuid(self, obj) -> UUID:
-        return UUID(int=obj.pk)
-
-    class Meta(UserSerializer.Meta):
-        model = User
-        fields = ("uuid", "username", "first_name", "last_name", "full_name")
-
-
-class MinimalUserSerializer(UserSerializer):
-    class Meta(UserSerializer.Meta):
-        fields = ("uuid", "locale")
-
-
-#### START NOTIFICATION SERIALIZERS ####
-class NotificationSerializer(serializers.ModelSerializer):
-    class NotificationMessageSerializer(serializers.ModelSerializer):
-        # Localized results
-        title = serializers.SerializerMethodField()
-        body = serializers.SerializerMethodField()
-
-        def get_title(self, obj: NotificationContent) -> str:
-            language_code = "en"
-            user = self.context.get("request").user
-            if user and isinstance(user, TigaUser):
-                language_code = user.locale
-
-            return obj.get_title(language_code=language_code)
-
-        @extend_schema_field(HTMLCharField)
-        def get_body(self, obj: NotificationContent) -> str:
-            language_code = "en"
-            user = self.context.get("request").user
-            if user and isinstance(user, TigaUser):
-                language_code = user.locale
-
-            body_html = obj.get_body_html(language_code=language_code)
-
-            return minify_html.minify(
-                body_html or "",
-                keep_closing_tags=True,
-            )
-
-        class Meta:
-            model = NotificationContent
-            fields = ("title", "body")
-
-    message = NotificationMessageSerializer(
-        source="notification.notification_content", read_only=True
-    )
-    created_at = serializers.DateTimeField(
-        source="notification.date_comment", read_only=True
-    )
-    is_read = serializers.BooleanField(required=True)
-
-    class Meta:
-        model = NotificationRecipient
-        fields = ("id", "message", "is_read", "created_at")
-        read_only_fields = ("created_at",)
-        extra_kwargs = {
-            "id": {"source": "notification_id", "read_only": True},
-        }
-
-
-#### END NOTIFICATION SERIALIZERS ####
-
-
-#### START MESSAGE SERIALIZERS ####
-class MessageSerializer(serializers.ModelSerializer):
-    class MessageContentSerializer(serializers.ModelSerializer):
-        class LocalizedMessageTitleSerializer(
-            LocalizedModelSerializerMixin, serializers.ModelSerializer
-        ):
-            class Meta:
-                model = NotificationContent
-
-        class LocalizedMessageBodySerializer(
-            LocalizedModelSerializerMixin, serializers.ModelSerializer
-        ):
-            class Meta:
-                model = NotificationContent
-
-        title = LocalizedMessageTitleSerializer(
-            source="*.title",
-            max_length=255,
-            help_text="Provide the message's title in all supported languages",
-        )
-        body = LocalizedMessageBodySerializer(
-            source="*.body_html",
-            is_html=True,
-            help_text="Provide the message's body in all supported languages",
-        )
-
-        def validate_title(self, data):
-            if data is None or data == {}:
-                raise serializers.ValidationError("Title cannot be empty.")
-
-            return data
-
-        def validate_body(self, data):
-            if data is None or data == {}:
-                raise serializers.ValidationError("Body cannot be empty.")
-            return data
-
-        class Meta:
-            model = NotificationContent
-            fields = ("title", "body")
-
-    created_at = serializers.DateTimeField(source="date_comment", read_only=True)
-
-    sender_user_hidden_obj = serializers.HiddenField(
-        source="expert", default=serializers.CurrentUserDefault()
-    )
-    sender_user = SimpleUserSerializer(source="expert", read_only=True)
-
-    content = MessageContentSerializer(
-        source="notification_content",
-        required=True,
-        help_text="The content of the message",
-    )
-
-    target = serializers.SerializerMethodField()
-
-    def get_target(self, obj: Notification) -> Notification.Target:
-        return obj.target
-
-    @transaction.atomic
-    def create(self, validated_data) -> Notification:
-        validated_data["notification_content"] = NotificationContent.objects.create(
-            **validated_data.pop("notification_content")
-        )
-        return super().create(validated_data)
-
-    class Meta:
-        model = Notification
-        fields = (
-            "id",
-            "sender_user",
-            "sender_user_hidden_obj",
-            "content",
-            "target",
-            "created_at",
-        )
-
-
-class AudienceFilterSerializer(serializers.Serializer):
-    last_login_before = serializers.DateTimeField(
-        required=False, source="last_login__lt"
-    )
-    last_login_after = serializers.DateTimeField(
-        required=False, source="last_login__gte"
-    )
-    in_area = GeometryField(
-        required=False,
-        source="last_location__within",
-        help_text=(
-            "Filter users whose last known location is within the specified area. The area should be provided as a GeoJSON geometry object."
-        ),
-    )
-    # NOTE: this is kept for legacy reasons. See migration: 0013_notification_audience
-    locale = serializers.ChoiceField(
-        choices=[x[0] for x in TigaUser.AVAILABLE_LANGUAGES],
-        required=False,
-    )
-
-    class Meta:
-        fields = ("last_login_before", "last_login_after", "in_area", "locale")
-
-
-class CreateMessageSerializer(MessageSerializer):
-    # The "target" field is a hidden field that is automatically populated with the value of "target" from the request context. This allows the serializer to determine the target audience for the message without requiring the client to explicitly provide it in the request data.
-    target = serializers.HiddenField(
-        default=lambda field: field.context["request"].target, source="*"
-    )
-
-    def validate_target(self, value):
-        return {}
-
-    class Meta(MessageSerializer.Meta):
-        pass
-
-
-class CreateUserMessageSerializer(CreateMessageSerializer):
-    target = serializers.ChoiceField(
-        source="*", choices=[Notification.Target.USERS.value]
-    )
-    user_uuids = serializers.ListField(
-        child=serializers.UUIDField(),
-        required=True,
-        allow_empty=False,
-        min_length=1,
-        write_only=True,
-    )
-
-    def validate(self, data):
-        user_uuids = data.pop("user_uuids")
-        users = TigaUser.objects.filter(pk__in=user_uuids)
-        if users.count() != len(user_uuids):
-            raise serializers.ValidationError("Some users were not found.")
-        data["users"] = users
-        return data
-
-    def create(self, validated_data) -> Notification:
-        users = validated_data.pop("users")
-        notification = super().create(validated_data)
-        for user in users:
-            notification.send_to_user(user=user)
-
-        return notification
-
-    class Meta(CreateMessageSerializer.Meta):
-        fields = CreateMessageSerializer.Meta.fields + ("user_uuids",)
-
-
-class CreateAudienceMessageSerializer(CreateMessageSerializer):
-    class CreateAudienceMessageContentSerializer(serializers.ModelSerializer):
-        class LocalizedAudienceMessageTitleSerializer(
-            LocalizedModelSerializerMixin, serializers.ModelSerializer
-        ):
-            class Meta:
-                model = NotificationContent
-
-        class LocalizedAudienceMessageBodySerializer(
-            LocalizedModelSerializerMixin, serializers.ModelSerializer
-        ):
-            class Meta:
-                model = NotificationContent
-
-        title = LocalizedAudienceMessageTitleSerializer(
-            source="*.title",
-            required_languages=[
-                "en"
-            ],  # For audience messages, english is required as fallback if user locale is not supported.
-            max_length=255,
-            help_text="Provide the message's title in all supported languages for this audience",
-        )
-        body = LocalizedAudienceMessageBodySerializer(
-            source="*.body_html",
-            required_languages=[
-                "en"
-            ],  # For audience messages, english is required as fallback if user locale is not supported.
-            help_text="Provide the message's body in all supported languages for this audience",
-        )
-
-        class Meta:
-            model = NotificationContent
-            fields = ("title", "body")
-
-    target = serializers.ChoiceField(
-        source="*", choices=[Notification.Target.AUDIENCE.value]
-    )
-
-    content = CreateAudienceMessageContentSerializer(
-        source="notification_content",
-        required=True,
-        help_text="The content of the message for the audience",
-    )
-
-    audience = AudienceFilterSerializer(
-        required=True, help_text="The audience filter for the message"
-    )
-
-    class Meta(CreateMessageSerializer.Meta):
-        fields = CreateMessageSerializer.Meta.fields + ("audience",)
-
-
-class MessageTargetingSerializer(serializers.ModelSerializer):
-    target = MessageSerializer().fields["target"]
-    audience = AudienceFilterSerializer(required=False, allow_null=True)
-
-    def get_target(self, obj: Notification) -> Notification.Target:
-        return obj.target
-
-    class Meta:
-        model = Notification
-        fields = ("target", "audience")
-
-
-class MessageRecipientSerializer(serializers.ModelSerializer):
-    user = MinimalUserSerializer(read_only=True)
-    has_read = serializers.BooleanField(source="is_read", read_only=True)
-
-    class Meta:
-        model = NotificationRecipient
-        fields = ("user", "has_read")
-
-
-#### END MESSAGE SERIALIZERS ####
-
-
-class PartnerSerializer(serializers.ModelSerializer):
-    point = PointField(required=True)
-
-    class Meta:
-        model = OrganizationPin
-        fields = ("id", "point", "description", "url")
-        extra_kwargs = {
-            "description": {"source": "textual_description"},
-            "url": {"source": "page_url"},
-        }
-
-
-#### START REPORT SERIALIZERS ####
-
-
-class SimplePhotoSerializer(serializers.ModelSerializer):
-    url = serializers.ImageField(
-        source="photo",
-        use_url=True,
-        read_only=True,
-        help_text="URL of the photo associated with the item. Note: This URL may change over time. Do not rely on it for permanent storage.",
-    )
-
-    class Meta:
-        model = Photo
-        fields = ("uuid", "url")
-        read_only_fields = ("uuid",)
 
 
 class BaseReportSerializer(TaggitSerializer, serializers.ModelSerializer):
@@ -925,56 +380,6 @@ class BaseSimplifiedReportSerializerWithPhoto(BaseSimplifiedReportSerializer):
         )
 
 
-class SimpleTaxonSerializer(serializers.ModelSerializer):
-    rank = serializers.ChoiceField(
-        choices=[x.lower() for x in Taxon.TaxonomicRank.names]
-    )
-
-    italicize = serializers.SerializerMethodField(
-        help_text="Display the name in italics when rendering."
-    )
-
-    def get_italicize(self, obj) -> bool:
-        return obj.italicize
-
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        ret["rank"] = [
-            x.name.lower() for x in Taxon.TaxonomicRank if x.value == instance.rank
-        ][0]
-        return ret
-
-    class Meta:
-        model = Taxon
-        fields = ("id", "name", "common_name", "rank", "italicize")
-        extra_kwargs = {"id": {"read_only": True}}
-
-
-class TaxonSerializer(SimpleTaxonSerializer):
-    class Meta(SimpleTaxonSerializer.Meta):
-        fields = SimpleTaxonSerializer.Meta.fields + ("is_relevant",)
-        extra_kwargs = {"is_relevant": {"required": True}}
-
-
-class TaxonTreeNodeSerializer(TaxonSerializer):
-    children = serializers.SerializerMethodField()
-
-    @extend_schema_field(
-        lazy_serializer("mosquito_alert.api.v1.serializers.TaxonTreeNodeSerializer")(
-            many=True
-        )
-    )
-    def get_children(self, obj: Taxon):
-        if obj.get_children_count():
-            # TODO: get_children() -> can be improved to reduce the number of queries.
-            return TaxonTreeNodeSerializer(obj.get_children(), many=True).data
-        else:
-            return []
-
-    class Meta(TaxonSerializer.Meta):
-        fields = TaxonSerializer.Meta.fields + ("children",)
-
-
 class SimplifiedObservationSerializer(BaseSimplifiedReportSerializer):
     class Meta(BaseSimplifiedReportSerializer.Meta):
         pass
@@ -987,6 +392,7 @@ class SimplifiedObservationWithPhotosSerializer(
         pass
 
 
+# Identification Task serializer
 class SimpleAnnotatorUserSerializer(SimpleUserSerializer):
     def to_representation(self, instance):
         # Get the request user
@@ -1007,6 +413,7 @@ class SimpleAnnotatorUserSerializer(SimpleUserSerializer):
         return super().to_representation(new_instance)
 
 
+# Identification Task serializer
 class SpeciesIdentificationSerializer(serializers.ModelSerializer):
     class SpeciesClassificationSerializer(serializers.ModelSerializer):
         taxon = SimpleTaxonSerializer(read_only=True)
@@ -1124,6 +531,7 @@ class SpeciesIdentificationSerializer(serializers.ModelSerializer):
         fields = ("classification", "characteristics")
 
 
+# Identification Task serializer
 class AnnotationSerializer(SpeciesIdentificationSerializer):
     class AnnotationFeedbackSerializer(serializers.ModelSerializer):
         class Meta:
@@ -1257,6 +665,7 @@ class AnnotationSerializer(SpeciesIdentificationSerializer):
         }
 
 
+# Identification Task serializer
 class BaseAssignmentSerializer(serializers.ModelSerializer):
     annotation_type = serializers.SerializerMethodField()
 
@@ -1268,6 +677,7 @@ class BaseAssignmentSerializer(serializers.ModelSerializer):
         fields = ("annotation_type",)
 
 
+# Identification Task serializer
 class AssignmentSerializer(BaseAssignmentSerializer):
     observation = serializers.SerializerMethodField()
 
@@ -1286,6 +696,7 @@ class AssignmentSerializer(BaseAssignmentSerializer):
         fields = ("observation",) + BaseAssignmentSerializer.Meta.fields
 
 
+# Identification Task serializer
 class IdentificationTaskSerializer(serializers.ModelSerializer):
     class IdentificationTaskCapabilitiesSerializer(serializers.ModelSerializer):
         review = serializers.SerializerMethodField()
@@ -1448,6 +859,7 @@ class IdentificationTaskSerializer(serializers.ModelSerializer):
         }
 
 
+# Identification Task serializer
 class CreateReviewSerializer(serializers.Serializer):
     action = serializers.HiddenField(
         default=lambda field: field.context["request"].review_type, source="*"
@@ -1470,6 +882,7 @@ class CreateReviewSerializer(serializers.Serializer):
         )
 
 
+# Identification Task serializer
 class CreateAgreeReviewSerializer(CreateReviewSerializer):
     action = serializers.ChoiceField(
         source="*", choices=[IdentificationTask.Review.AGREE.value]
@@ -1497,6 +910,7 @@ class CreateAgreeReviewSerializer(CreateReviewSerializer):
         pass
 
 
+# Identification Task serializer
 class CreateOverwriteReviewSerializer(
     CreateReviewSerializer, SpeciesIdentificationSerializer
 ):
@@ -1812,300 +1226,3 @@ class BreedingSiteGeoJsonModelSerializer(
 ):
     class Meta(BreedingSiteGeoModelSerializer.Meta):
         geo_field = "point"
-
-
-#### END REPORT SERIALIZERS ####
-
-
-class PhotoSerializer(serializers.ModelSerializer):
-    image_path = serializers.SerializerMethodField(
-        help_text="Internal server path of the image."
-    )
-
-    def get_image_path(self, obj) -> str:
-        return obj.photo.path
-
-    class Meta:
-        model = Photo
-        fields = ("uuid", "image_url", "image_path")
-        extra_kwargs = {
-            "uuid": {"required": True},
-            "image_url": {"source": "photo"},
-        }
-
-
-class DeviceSerializer(serializers.ModelSerializer):
-    class MobileAppSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = MobileApp
-            fields = ("package_name", "package_version")
-            validators = []  # disable auto UniqueTogetherValidator (will manage get_or_create in the parent serializer)
-
-    class DeviceOsSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Device
-            fields = (
-                "name",
-                "version",
-                "locale",
-            )
-            extra_kwargs = {
-                "name": {"source": "os_name", "required": True, "allow_null": False},
-                "version": {
-                    "source": "os_version",
-                    "required": True,
-                    "allow_null": False,
-                },
-                "locale": {"source": "os_locale"},
-            }
-
-    mobile_app = MobileAppSerializer(required=False)
-    os = DeviceOsSerializer(source="*")
-    user_uuid = serializers.UUIDField(
-        source="user_id", allow_null=False, read_only=True
-    )
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
-    @transaction.atomic
-    def create(self, validated_data):
-        # Extract the user and model from the data
-        user = validated_data.get("user")
-        model = validated_data.get("model")
-        device_id = validated_data.get("device_id")
-
-        # Extract mobile app data.
-        mobile_app_data = validated_data.pop("mobile_app", None)
-        if mobile_app_data:
-            validated_data["mobile_app"], _ = MobileApp.objects.get_or_create(
-                **mobile_app_data
-            )
-
-        # Check if there is a device with the same user, model, and device_id=None
-        # That is for the users that are migrating from the legacy API to this.
-        devices_to_deduplicate_qs = Device.objects.filter(
-            models.Q(model=model)
-            | models.Q(registration_id=validated_data.get("registration_id"))
-        ).filter(user=user, device_id=None)
-
-        if device := devices_to_deduplicate_qs.order_by("date_created").first():
-            devices_to_delete = devices_to_deduplicate_qs.exclude(
-                pk=device.pk
-            ) | Device.objects.filter(user=user, model=model, device_id=device_id)
-            Report.objects.filter(device__in=devices_to_delete).update(device=device)
-            devices_to_delete.delete()
-            # If device exists, update it
-            for attr, value in validated_data.items():
-                setattr(device, attr, value)
-            device.save()
-            return device
-
-        # If no matching device was found, create a new device
-        return super().create(validated_data)
-
-    @transaction.atomic
-    def update(self, instance, validated_data):
-        # Extract mobile app data.
-        mobile_app_data = validated_data.pop("mobile_app", None)
-        if mobile_app_data:
-            validated_data["mobile_app"], _ = MobileApp.objects.get_or_create(
-                **mobile_app_data
-            )
-
-        return super().update(instance, validated_data)
-
-    class Meta:
-        model = Device
-        fields = (
-            "device_id",
-            "name",
-            "fcm_token",
-            "type",
-            "manufacturer",
-            "model",
-            "os",
-            "mobile_app",
-            "user_uuid",
-            "last_login",
-            "user",
-            "created_at",
-            "updated_at",
-        )
-        read_only_fields = (
-            "created_at",
-            "updated_at",
-            "last_login",
-        )
-        extra_kwargs = {
-            "device_id": {
-                "required": True,
-                "allow_null": False,
-                "allow_blank": False,
-                "default": serializers.empty,
-            },
-            "fcm_token": {
-                "source": "registration_id",
-                "write_only": True,
-                "required": True,
-                "allow_null": False,
-            },
-            "created_at": {"source": "date_created", "allow_null": False},
-            "type": {"required": True, "allow_null": False},
-            "model": {"required": True, "allow_null": False},
-            "last_login": {"allow_null": True},
-        }
-
-
-class DeviceUpdateSerializer(DeviceSerializer):
-    class Meta(DeviceSerializer.Meta):
-        read_only_fields = DeviceSerializer.Meta.read_only_fields + (
-            "device_id",
-            "type",
-            "manufacturer",
-            "model",
-        )
-        extra_kwargs = {
-            **DeviceSerializer.Meta.extra_kwargs,
-            "manufacturer": {"allow_null": True},
-        }
-
-
-class PhotoPredictionSerializer(serializers.ModelSerializer):
-    class BoundingBoxSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = PhotoPrediction
-            fields = (
-                "x_min",
-                "y_min",
-                "x_max",
-                "y_max",
-            )
-            extra_kwargs = {
-                "x_min": {"source": "x_tl"},
-                "y_min": {"source": "y_tl"},
-                "x_max": {"source": "x_br"},
-                "y_max": {"source": "y_br"},
-            }
-
-    class PredictionScoreSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = PhotoPrediction
-            fields = [
-                fname.replace(PhotoPrediction.CLASS_FIELD_SUFFIX, "")
-                for fname in PhotoPrediction.get_score_fieldnames()
-            ]
-            extra_kwargs = {
-                fname.replace(PhotoPrediction.CLASS_FIELD_SUFFIX, ""): {"source": fname}
-                for fname in PhotoPrediction.get_score_fieldnames()
-            }
-
-    photo = SimplePhotoSerializer(read_only=True)
-    bbox = BoundingBoxSerializer(source="*")
-    scores = PredictionScoreSerializer(source="*")
-    taxon = SimpleTaxonSerializer(allow_null=True, read_only=True)
-
-    class Meta:
-        model = PhotoPrediction
-        fields = (
-            "photo",
-            "bbox",
-            "insect_confidence",
-            "predicted_class",
-            "taxon",
-            "threshold_deviation",
-            "is_decisive",
-            "scores",
-            "classifier_version",
-            "created_at",
-            "updated_at",
-        )
-        extra_kwargs = {"predicted_class": {"required": True}}
-
-
-class CreatePhotoPredictionSerializer(PhotoPredictionSerializer):
-    photo_uuid = serializers.UUIDField(
-        source="photo__uuid", required=True, write_only=True
-    )
-
-    def validate(self, data):
-        data["identification_task_id"] = self.context.get("observation_uuid")
-        photo__uuid = data.pop("photo__uuid")
-
-        try:
-            data["photo"] = Photo.objects.get(
-                uuid=photo__uuid, report_id=data["identification_task_id"]
-            )
-        except Photo.DoesNotExist:
-            raise serializers.ValidationError(
-                "The selected photo does not belong to this identification task or does not exist."
-            )
-
-        return data
-
-    class Meta(PhotoPredictionSerializer.Meta):
-        fields = ("photo_uuid",) + PhotoPredictionSerializer.Meta.fields
-
-
-class TemporaryBoundarySerializer(serializers.Serializer):
-    uuid = serializers.UUIDField(read_only=True)
-    expires_in = serializers.IntegerField(
-        read_only=True, help_text="Time in seconds until this cached boundary expires."
-    )
-    geojson = GeometryField(write_only=True)
-
-    def create(self, validated_data):
-        try:
-            boundary = TemporaryBoundary(geometry=validated_data["geojson"])
-        except ValueError:
-            raise serializers.ValidationError("Invalid geometry")
-
-        boundary.save()
-        return {"uuid": boundary.uuid, "expires_in": boundary.expires_in}
-
-
-class WorkspaceSerializer(serializers.ModelSerializer):
-    class WorkspaceMembershipSerializer(serializers.ModelSerializer):
-        user = SimpleUserSerializer(read_only=True)
-
-        class Meta:
-            model = WorkspaceMembership
-            fields = ("user", "role", "created_at")
-            extra_kwargs = {
-                "created_at": {"read_only": True},
-            }
-
-    memberships = WorkspaceMembershipSerializer(many=True, read_only=True)
-    country = CountrySerializer(allow_null=True, read_only=True)
-
-    class Meta:
-        model = Workspace
-        fields = (
-            "id",
-            "name",
-            "country",
-            "memberships",
-            "is_public",
-            "supervisor_exclusivity_days",
-            "updated_at",
-        )
-        extra_kwargs = {
-            "updated_at": {"read_only": True},
-        }
-
-
-class SimpleWorkspaceSerializer(WorkspaceSerializer):
-    class Meta:
-        model = Workspace
-        fields = ("id", "name", "country")
-
-
-class WorkspaceCollaborationGroupSerializer(serializers.ModelSerializer):
-    reviewers = SimpleUserSerializer(many=True, read_only=True)
-    workspaces = SimpleWorkspaceSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = WorkspaceCollaborationGroup
-        fields = ("id", "name", "workspaces", "reviewers", "created_at", "updated_at")
-        extra_kwargs = {
-            "created_at": {"read_only": True},
-            "updated_at": {"read_only": True},
-        }
