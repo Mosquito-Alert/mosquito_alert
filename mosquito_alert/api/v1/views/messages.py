@@ -19,7 +19,7 @@ from mosquito_alert.api.v1.serializers.messages import (
     MessageSerializer,
     MessageTargetingSerializer,
 )
-from mosquito_alert.api.v1.viewsets import GenericViewSet
+from mosquito_alert.api.v1.views.viewsets import GenericViewSet
 from mosquito_alert.notifications.models import Notification, NotificationRecipient
 
 

@@ -13,7 +13,7 @@ from rest_framework.viewsets import GenericViewSet as DRFGenericViewSet
 from rest_framework_simplejwt.settings import api_settings
 
 from mosquito_alert.api.v1.auth.authentication import JWTAuthentication
-from mosquito_alert.api.v1.viewsets import (
+from mosquito_alert.api.v1.views.viewsets import (
     GenericViewSet,
     GenericMobileOnlyViewSet,
     GenericNoMobileViewSet,

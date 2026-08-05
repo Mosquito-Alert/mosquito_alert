@@ -9,7 +9,7 @@ from mosquito_alert.api.v0.serializers import PhotoSerializer
 from mosquito_alert.api.v1.serializers.identification_tasks import (
     PhotoPredictionSerializer,
 )
-from mosquito_alert.api.v1.viewsets import GenericNoMobileViewSet
+from mosquito_alert.api.v1.views.viewsets import GenericNoMobileViewSet
 from mosquito_alert.identification_tasks.models import PhotoPrediction
 from mosquito_alert.reports.models import Photo
 

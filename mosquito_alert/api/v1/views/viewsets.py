@@ -8,12 +8,12 @@ from rest_framework_nested.viewsets import (
     _force_mutable,
 )
 
-from .auth.authentication import (
+from ..auth.authentication import (
     AppUserJWTAuthentication,
     NonAppUserSessionAuthentication,
 )
-from .parsers import MultiPartJsonNestedParser
-from .permissions import (
+from ..parsers import MultiPartJsonNestedParser
+from ..permissions import (
     UserObjectPermissions,
     IsMobileUser,
     DjangoRegularUserModelPermissions,

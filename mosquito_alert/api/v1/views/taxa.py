@@ -11,7 +11,7 @@ from mosquito_alert.api.v1.serializers.taxa import (
     TaxonSerializer,
     TaxonTreeNodeSerializer,
 )
-from mosquito_alert.api.v1.viewsets import GenericViewSet
+from mosquito_alert.api.v1.views.viewsets import GenericViewSet
 from mosquito_alert.taxa.models import Taxon
 
 

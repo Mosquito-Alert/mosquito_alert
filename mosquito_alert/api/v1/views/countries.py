@@ -5,7 +5,7 @@ from mosquito_alert.api.v1.permissions import CountriesPermissions
 from mosquito_alert.api.v1.serializers.countries import CountrySerializer
 from mosquito_alert.geo.models import Country
 
-from mosquito_alert.api.v1.viewsets import GenericViewSet
+from mosquito_alert.api.v1.views.viewsets import GenericViewSet
 
 
 @method_decorator(cache_page(12 * 60 * 60), name="list")  # cache for 12 hours

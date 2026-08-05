@@ -4,7 +4,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.permissions import AllowAny
 
 from mosquito_alert.api.v1.serializers.boundaries import TemporaryBoundarySerializer
-from mosquito_alert.api.v1.viewsets import GenericViewSet
+from mosquito_alert.api.v1.views.viewsets import GenericViewSet
 
 
 @extend_schema_view(

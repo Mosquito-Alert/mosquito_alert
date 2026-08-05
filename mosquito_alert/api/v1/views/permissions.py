@@ -3,7 +3,7 @@ from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
 
 from mosquito_alert.api.v1.serializers.permissions import PermissionsSerializer
-from mosquito_alert.api.v1.viewsets import GenericViewSet
+from mosquito_alert.api.v1.views.viewsets import GenericViewSet
 
 
 @extend_schema_view(

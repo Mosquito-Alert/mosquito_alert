@@ -8,7 +8,7 @@ from mosquito_alert.api.v1.permissions import (
     NotificationObjectPermissions,
 )
 from mosquito_alert.api.v1.serializers.notifications import NotificationSerializer
-from mosquito_alert.api.v1.viewsets import GenericMobileOnlyViewSet
+from mosquito_alert.api.v1.views.viewsets import GenericMobileOnlyViewSet
 from mosquito_alert.notifications.models import NotificationRecipient
 from mosquito_alert.users.models import TigaUser
 

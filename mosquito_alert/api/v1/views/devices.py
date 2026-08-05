@@ -4,7 +4,7 @@ from mosquito_alert.api.v1.serializers.devices import (
     DeviceSerializer,
     DeviceUpdateSerializer,
 )
-from mosquito_alert.api.v1.viewsets import GenericMobileOnlyViewSet
+from mosquito_alert.api.v1.views.viewsets import GenericMobileOnlyViewSet
 from mosquito_alert.devices.models import Device
 
 

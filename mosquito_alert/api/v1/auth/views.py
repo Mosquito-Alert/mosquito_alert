@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 from drf_spectacular.utils import extend_schema_view, extend_schema
 
-from ..viewsets import GenericMobileOnlyViewSet
+from ..views.viewsets import GenericMobileOnlyViewSet
 
 from .serializers import GuestRegistrationSerializer, PasswordChangeSerializer
 

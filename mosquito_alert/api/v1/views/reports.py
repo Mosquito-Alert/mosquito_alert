@@ -58,7 +58,10 @@ from mosquito_alert.api.v1.serializers.reports import (
     ObservationSerializer,
 )
 from mosquito_alert.api.v1.utils import get_serializer_field_paths_for_csv
-from mosquito_alert.api.v1.viewsets import GenericMobileOnlyViewSet, GenericViewSet
+from mosquito_alert.api.v1.views.viewsets import (
+    GenericMobileOnlyViewSet,
+    GenericViewSet,
+)
 from mosquito_alert.devices.models import Device
 from mosquito_alert.reports.models import Report, Photo
 from mosquito_alert.users.models import TigaUser

@@ -9,7 +9,7 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateMode
 
 from mosquito_alert.api.v1.permissions import UserPermissions
 from mosquito_alert.api.v1.serializers.users import UserSerializer
-from mosquito_alert.api.v1.viewsets import GenericViewSet
+from mosquito_alert.api.v1.views.viewsets import GenericViewSet
 from mosquito_alert.users.models import TigaUser
 
 
