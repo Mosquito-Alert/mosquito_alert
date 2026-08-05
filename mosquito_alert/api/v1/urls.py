@@ -30,8 +30,8 @@ from .views import (
     NotificationViewSet,
     MyNotificationViewSet,
     PhotoViewSet,
-    ObservationViewSest,
-    MyObservationViewSest,
+    ObservationViewSet,
+    MyObservationViewSet,
     BiteViewSet,
     MyBiteViewSet,
     BreedingSiteViewSet,
@@ -86,7 +86,7 @@ identification_task_router.register(
 
 router.register(r"messages", MessageViewSet, basename="messages")
 router.register(r"notifications", NotificationViewSet)
-router.register(r"observations", ObservationViewSest, basename="observations")
+router.register(r"observations", ObservationViewSet, basename="observations")
 router.register(r"partners", PartnersViewSet)
 router.register(r"photos", PhotoViewSet)
 router.register(r"taxa", TaxaViewSet)
@@ -140,7 +140,7 @@ api_urlpatterns += [
     ),
     path(
         "me/observations/",
-        MyObservationViewSest.as_view({"get": "list"}),
+        MyObservationViewSet.as_view({"get": "list"}),
         name="my-observations",
     ),
     path("me/bites/", MyBiteViewSet.as_view({"get": "list"}), name="my-bites"),
