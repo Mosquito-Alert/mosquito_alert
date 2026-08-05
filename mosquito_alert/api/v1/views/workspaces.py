@@ -9,12 +9,12 @@ from rest_framework.viewsets import GenericViewSet
 from mosquito_alert.api.v1.permissions import (
     DjangoRegularUserModelPermissions,
     FullDjangoObjectPermissions,
-    has_global_permission,
 )
 from mosquito_alert.api.v1.serializers.workspaces import (
     WorkspaceCollaborationGroupSerializer,
     WorkspaceSerializer,
 )
+from mosquito_alert.utils.rules import has_global_permission
 from mosquito_alert.workspaces.models import Workspace, WorkspaceCollaborationGroup
 
 

@@ -59,7 +59,7 @@ from mosquito_alert.api.v1.permissions import (
     MyAnnotationPermissions,
     PhotoPredictionPermissions,
 )
-from mosquito_alert.api.v1.viewsets import (
+from mosquito_alert.api.v1.views.viewsets import (
     GenericNoMobileViewSet,
     NestedViewSetMixin,
 )
