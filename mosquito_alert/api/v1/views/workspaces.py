@@ -4,7 +4,6 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
-from rest_framework.viewsets import GenericViewSet
 
 from mosquito_alert.api.v1.permissions import (
     DjangoRegularUserModelPermissions,
@@ -14,6 +13,7 @@ from mosquito_alert.api.v1.serializers.workspaces import (
     WorkspaceCollaborationGroupSerializer,
     WorkspaceSerializer,
 )
+from mosquito_alert.api.v1.views.viewsets import GenericViewSet
 from mosquito_alert.utils.rules import has_global_permission
 from mosquito_alert.workspaces.models import Workspace, WorkspaceCollaborationGroup
 

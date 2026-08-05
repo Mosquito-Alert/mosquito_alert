@@ -3,13 +3,13 @@ from rest_framework.decorators import action
 from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
-from rest_framework.viewsets import GenericViewSet
 
-from mosquito_alert.api.v0.serializers import PhotoSerializer
 from mosquito_alert.api.v1.serializers.identification_tasks import (
     PhotoPredictionSerializer,
 )
-from mosquito_alert.api.v1.views.viewsets import GenericNoMobileViewSet
+
+from mosquito_alert.api.v1.serializers.photos import PhotoSerializer
+from mosquito_alert.api.v1.views.viewsets import GenericViewSet, GenericNoMobileViewSet
 from mosquito_alert.identification_tasks.models import PhotoPrediction
 from mosquito_alert.reports.models import Photo
 
