@@ -1,0 +1,223 @@
+---
+
+test_name: Make sure users can not list users by audience.
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - jwt_token_user
+
+stages:
+  - name: Anonymous users can not list users by audience
+    request:
+      url: "{api_live_url}/{endpoint}/audience/"
+      method: "POST"
+    response:
+      status_code: 401
+  - name: Auth users can not list users by audience without view perms
+    request:
+      url: "{api_live_url}/{endpoint}/audience/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user:s}"
+    response:
+      status_code: 403
+  - name: List users by audience must fail for mobile auth users
+    request:
+      url: "{api_live_url}/{endpoint}/audience/"
+      headers:
+        Authorization: "Bearer {app_user_token}"
+      method: "POST"
+    response:
+      status_code: 403
+
+---
+
+test_name: Only users with perms can list users by audience
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - jwt_token_user_can_view
+
+stages:
+  - name: Auth users can not list users by audience without view perms
+    request:
+      url: "{api_live_url}/{endpoint}/audience/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view}"
+    response:
+      status_code: 200
+
+
+---
+
+test_name: List users by audience (by last login)
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - jwt_token_user_can_view
+
+stages:
+  - name: Auth users can list users by audience with view perms. Last login doesn't match the criteria
+    request:
+      url: "{api_live_url}/{endpoint}/audience/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view}"
+      json:
+        last_login_after: "2080-01-01T00:00:00Z"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0
+        results: []
+
+  - name: Auth users can list users by audience with view perms. Last login matches the criteria
+    request:
+      url: "{api_live_url}/{endpoint}/audience/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view}"
+      json:
+        last_login_after: "2024-01-01T00:00:00Z"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - uuid: "{app_user.pk}"
+            locale: "{app_user.locale}"
+
+
+---
+
+test_name: List users by audience (by locale)
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - jwt_token_user_can_view
+
+stages:
+  - name: Auth users can list users by audience with view perms. Locale doesn't match the criteria
+    request:
+      url: "{api_live_url}/{endpoint}/audience/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view}"
+      json:
+        locale: "es"
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0
+        results: []
+
+  - name: Auth users can list users by audience with view perms. Locale matches the criteria
+    request:
+      url: "{api_live_url}/{endpoint}/audience/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view}"
+      json:
+        locale: "en"
+
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - uuid: "{app_user.pk}"
+            locale: "{app_user.locale}"
+
+
+---
+
+test_name: List users by audience (by in_area)
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - jwt_token_user_can_view
+
+stages:
+  - name: Auth users can list users by audience with view perms. In area doesn't match the criteria
+    request:
+      url: "{api_live_url}/{endpoint}/audience/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view}"
+      json:
+        in_area:
+          type: "Polygon"
+          coordinates:
+            -
+              - [2.30, 48.80]
+              - [2.40, 48.80]
+              - [2.40, 48.90]
+              - [2.30, 48.90]
+              - [2.30, 48.80]
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 0
+        results: []
+
+  - name: Auth users can list users by audience with view perms. In area matches the criteria
+    request:
+      url: "{api_live_url}/{endpoint}/audience/"
+      method: "POST"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_view}"
+      json:
+        in_area:
+          type: "Polygon"
+          coordinates:
+            -
+              - [-3.80, 40.35]
+              - [-3.60, 40.35]
+              - [-3.60, 40.50]
+              - [-3.80, 40.50]
+              - [-3.80, 40.35]
+
+    response:
+      status_code: 200
+      strict:
+        - json:off
+      json:
+        count: 1
+        results:
+          - uuid: "{app_user.pk}"
+            locale: "{app_user.locale}"

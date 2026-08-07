@@ -104,6 +104,16 @@ class UserPermissions(FullDjangoModelPermissions):
         if view.action == "list":
             return super().has_permission(request, view)
 
+        if view.action == "audience":
+            # Although the audience endpoint method is POST, it is a read-only endpoint, so we require the view permission.
+            return request.user.has_perm(
+                "%(app_label)s.view_%(model_name)s"
+                % {
+                    "app_label": TigaUser._meta.app_label,
+                    "model_name": TigaUser._meta.model_name,
+                }
+            )
+
         return True
 
     def has_object_permission(self, request, view, obj):
