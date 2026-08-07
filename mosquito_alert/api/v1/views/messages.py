@@ -56,8 +56,8 @@ class MessageViewSet(
     def pagination_class(self):
         if self.request.method == "POST":
             return None
-        if self.action == "recipients":
-            return None
+        # if self.action == "recipients":
+        #     return None
         return super().pagination_class
 
     def create(self, request, *args, **kwargs):
@@ -106,6 +106,12 @@ class MessageViewSet(
         recipients = NotificationRecipient.objects.filter(
             notification=notification
         ).select_related("user")
+
+        page = self.paginate_queryset(recipients)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(recipients, many=True)
         return Response(serializer.data)
 
