@@ -56,8 +56,6 @@ class MessageViewSet(
     def pagination_class(self):
         if self.request.method == "POST":
             return None
-        # if self.action == "recipients":
-        #     return None
         return super().pagination_class
 
     def create(self, request, *args, **kwargs):

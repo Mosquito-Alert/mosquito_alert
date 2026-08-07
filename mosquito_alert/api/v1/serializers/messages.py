@@ -1,9 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework_gis.fields import GeometryField
 
 from .base_serializers import LocalizedModelSerializerMixin
-from .users import MinimalUserSerializer, SimpleUserSerializer
+from .users import AudienceFilterSerializer, MinimalUserSerializer, SimpleUserSerializer
 from mosquito_alert.notifications.models import (
     Notification,
     NotificationContent,
@@ -87,30 +86,6 @@ class MessageSerializer(serializers.ModelSerializer):
             "target",
             "created_at",
         )
-
-
-class AudienceFilterSerializer(serializers.Serializer):
-    last_login_before = serializers.DateTimeField(
-        required=False, source="last_login__lt"
-    )
-    last_login_after = serializers.DateTimeField(
-        required=False, source="last_login__gte"
-    )
-    in_area = GeometryField(
-        required=False,
-        source="last_location__within",
-        help_text=(
-            "Filter users whose last known location is within the specified area. The area should be provided as a GeoJSON geometry object."
-        ),
-    )
-    # NOTE: this is kept for legacy reasons. See migration: 0013_notification_audience
-    locale = serializers.ChoiceField(
-        choices=[x[0] for x in TigaUser.AVAILABLE_LANGUAGES],
-        required=False,
-    )
-
-    class Meta:
-        fields = ("last_login_before", "last_login_after", "in_area", "locale")
 
 
 # * ############### CREATE SERIALIZERS ###############

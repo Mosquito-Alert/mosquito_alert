@@ -4,11 +4,16 @@ from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.response import Response
 
 from mosquito_alert.api.v1.permissions import UserPermissions
-from mosquito_alert.api.v1.serializers.users import UserSerializer
+from mosquito_alert.api.v1.serializers.users import (
+    AudienceFilterSerializer,
+    UserSerializer,
+)
 from mosquito_alert.api.v1.views.viewsets import GenericViewSet
 from mosquito_alert.users.models import TigaUser
 
@@ -29,6 +34,12 @@ USER_UUID_PATH_PARAM = OpenApiParameter(
     destroy=extend_schema(parameters=[USER_UUID_PATH_PARAM]),
     update=extend_schema(parameters=[USER_UUID_PATH_PARAM]),
     partial_update=extend_schema(parameters=[USER_UUID_PATH_PARAM]),
+    audience=extend_schema(
+        operation_id="users_audience_filter",
+        description="Returns the users matching the provided audience criteria.",
+        request=AudienceFilterSerializer,
+        responses={200: UserSerializer(many=True)},
+    ),
 )
 class UserViewSet(UpdateModelMixin, RetrieveModelMixin, ListModelMixin, GenericViewSet):
     queryset = TigaUser.objects.all()
@@ -57,6 +68,28 @@ class UserViewSet(UpdateModelMixin, RetrieveModelMixin, ListModelMixin, GenericV
         if isinstance(self.get_object(), User):
             self.permission_denied(request)
         return super().update(request, *args, **kwargs)
+
+    @action(
+        detail=False,
+        methods=["POST"],
+        filter_backends=(),
+    )
+    def audience(self, request, *args, **kwargs):
+        serializer = AudienceFilterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        queryset = self.filter_queryset(
+            self.get_queryset().filter(**serializer.validated_data)
+        )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            response_serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(response_serializer.data)
+
+        response_serializer = self.get_serializer(queryset, many=True)
+
+        return Response(response_serializer.data)
 
 
 @extend_schema_view(

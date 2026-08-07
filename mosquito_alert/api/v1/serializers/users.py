@@ -2,6 +2,7 @@ from uuid import UUID
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework_gis.fields import GeometryField
 
 from mosquito_alert.users.models import TigaUser
 
@@ -110,3 +111,27 @@ class SimpleUserSerializer(UserSerializer):
 class MinimalUserSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
         fields = ("uuid", "locale")
+
+
+class AudienceFilterSerializer(serializers.Serializer):
+    last_login_before = serializers.DateTimeField(
+        required=False, source="last_login__lt"
+    )
+    last_login_after = serializers.DateTimeField(
+        required=False, source="last_login__gte"
+    )
+    in_area = GeometryField(
+        required=False,
+        source="last_location__within",
+        help_text=(
+            "Filter users whose last known location is within the specified area. The area should be provided as a GeoJSON geometry object."
+        ),
+    )
+    # NOTE: this is kept for legacy reasons. See migration: 0013_notification_audience
+    locale = serializers.ChoiceField(
+        choices=[x[0] for x in TigaUser.AVAILABLE_LANGUAGES],
+        required=False,
+    )
+
+    class Meta:
+        fields = ("last_login_before", "last_login_after", "in_area", "locale")

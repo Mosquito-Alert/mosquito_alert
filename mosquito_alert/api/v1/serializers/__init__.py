@@ -11,7 +11,6 @@ from .identification_tasks import (
     PhotoPredictionSerializer,
 )
 from .messages import (
-    AudienceFilterSerializer,
     CreateMessageSerializer,
     CreateAudienceMessageSerializer,
     CreateUserMessageSerializer,
@@ -58,6 +57,7 @@ from .users import (
     UserSerializer,
     SimpleUserSerializer,
     MinimalUserSerializer,
+    AudienceFilterSerializer,
 )
 from .workspaces import (
     WorkspaceSerializer,
