@@ -68,7 +68,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - app_user
+    - app_user_with_custom_last_login
     - jwt_token_user_can_view
 
 stages:
@@ -103,8 +103,8 @@ stages:
       json:
         count: 1
         results:
-          - uuid: "{app_user.pk}"
-            locale: "{app_user.locale}"
+          - uuid: "{app_user_with_custom_last_login.pk}"
+            locale: "{app_user_with_custom_last_login.locale}"
 
 
 ---

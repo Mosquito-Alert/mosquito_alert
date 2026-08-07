@@ -48,6 +48,11 @@ def app_user(user_password):
 
 
 @pytest.fixture
+def app_user_with_custom_last_login(user_password):
+    return TigaUserFactory(password=user_password, last_login="2026-01-01T12:00:00Z")
+
+
+@pytest.fixture
 def app_user_token(app_user):
     return str(
         import_string(simplejwt_settings.TOKEN_OBTAIN_SERIALIZER)
