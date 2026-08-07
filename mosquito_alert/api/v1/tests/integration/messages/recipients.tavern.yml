@@ -61,10 +61,14 @@ stages:
     response:
       status_code: 200
       json:
-        - user:
-            uuid: "{app_user.pk}"
-            locale: "{app_user.locale}"
-          has_read: true
+        count: 1
+        next: null
+        previous: null
+        results:
+          - user:
+              uuid: "{app_user.pk}"
+              locale: "{app_user.locale}"
+            has_read: true
   - name: User with perm can retrieve recipients even they have not send the message
     request:
       url: "{api_live_url}/{endpoint}/{user_message_sent_by_other_user.pk}/recipients/"
@@ -74,10 +78,14 @@ stages:
     response:
       status_code: 200
       json:
-        - user:
-            uuid: "{app_user.pk}"
-            locale: "{app_user.locale}"
-          has_read: false
+        count: 1
+        next: null
+        previous: null
+        results:
+          - user:
+              uuid: "{app_user.pk}"
+              locale: "{app_user.locale}"
+            has_read: false
 
 
 ---
@@ -104,10 +112,14 @@ stages:
     response:
       status_code: 200
       json:
-        - user:
-            uuid: "{app_user.pk}"
-            locale: "{app_user.locale}"
-          has_read: false
+        count: 1
+        next: null
+        previous: null
+        results:
+          - user:
+              uuid: "{app_user.pk}"
+              locale: "{app_user.locale}"
+            has_read: false
 
 ---
 
@@ -134,7 +146,11 @@ stages:
     response:
       status_code: 200
       json:
-        - user:
-            uuid: "{app_user.pk}"
-            locale: "{app_user.locale}"
-          has_read: false
+        count: 1
+        next: null
+        previous: null
+        results:
+          - user:
+              uuid: "{app_user.pk}"
+              locale: "{app_user.locale}"
+            has_read: false
