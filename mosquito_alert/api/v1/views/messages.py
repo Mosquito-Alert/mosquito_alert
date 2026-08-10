@@ -15,6 +15,7 @@ from mosquito_alert.api.v1.serializers.messages import (
     CreateAudienceMessageSerializer,
     CreateMessageSerializer,
     CreateUserMessageSerializer,
+    MessageListSerializer,
     MessageRecipientSerializer,
     MessageSerializer,
     MessageTargetingSerializer,
@@ -71,6 +72,8 @@ class MessageViewSet(
         )
 
     def get_serializer_class(self):
+        if self.action == "list":
+            return MessageListSerializer
         if self.action == "create":
             target = self.request.data.get("target")
             user_target_value = list(

@@ -1,6 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from mosquito_alert.notifications.utils import truncate_html_to_words
+
 from .base_serializers import LocalizedModelSerializerMixin
 from .users import AudienceFilterSerializer, MinimalUserSerializer, SimpleUserSerializer
 from mosquito_alert.notifications.models import (
@@ -11,46 +13,50 @@ from mosquito_alert.notifications.models import (
 from mosquito_alert.users.models import TigaUser
 
 
+# * ############### DETAIL SERIALIZERS ###############
+class LocalizedMessageTitleSerializer(
+    LocalizedModelSerializerMixin, serializers.ModelSerializer
+):
+    class Meta:
+        model = NotificationContent
+
+
+class LocalizedMessageBodySerializer(
+    LocalizedModelSerializerMixin, serializers.ModelSerializer
+):
+    class Meta:
+        model = NotificationContent
+
+
+class MessageContentSerializer(serializers.ModelSerializer):
+    title = LocalizedMessageTitleSerializer(
+        source="*.title",
+        max_length=255,
+        help_text="Provide the message's title in all supported languages",
+    )
+    body = LocalizedMessageBodySerializer(
+        source="*.body_html",
+        is_html=True,
+        help_text="Provide the message's body in all supported languages",
+    )
+
+    def validate_title(self, data):
+        if data is None or data == {}:
+            raise serializers.ValidationError("Title cannot be empty.")
+
+        return data
+
+    def validate_body(self, data):
+        if data is None or data == {}:
+            raise serializers.ValidationError("Body cannot be empty.")
+        return data
+
+    class Meta:
+        model = NotificationContent
+        fields = ("title", "body")
+
+
 class MessageSerializer(serializers.ModelSerializer):
-    class MessageContentSerializer(serializers.ModelSerializer):
-        class LocalizedMessageTitleSerializer(
-            LocalizedModelSerializerMixin, serializers.ModelSerializer
-        ):
-            class Meta:
-                model = NotificationContent
-
-        class LocalizedMessageBodySerializer(
-            LocalizedModelSerializerMixin, serializers.ModelSerializer
-        ):
-            class Meta:
-                model = NotificationContent
-
-        title = LocalizedMessageTitleSerializer(
-            source="*.title",
-            max_length=255,
-            help_text="Provide the message's title in all supported languages",
-        )
-        body = LocalizedMessageBodySerializer(
-            source="*.body_html",
-            is_html=True,
-            help_text="Provide the message's body in all supported languages",
-        )
-
-        def validate_title(self, data):
-            if data is None or data == {}:
-                raise serializers.ValidationError("Title cannot be empty.")
-
-            return data
-
-        def validate_body(self, data):
-            if data is None or data == {}:
-                raise serializers.ValidationError("Body cannot be empty.")
-            return data
-
-        class Meta:
-            model = NotificationContent
-            fields = ("title", "body")
-
     created_at = serializers.DateTimeField(source="date_comment", read_only=True)
 
     sender_user_hidden_obj = serializers.HiddenField(
@@ -88,7 +94,35 @@ class MessageSerializer(serializers.ModelSerializer):
         )
 
 
+# * ############### LIST SERIALIZERS ###############
+class LocalizedMessageBodyPreviewSerializer(LocalizedMessageBodySerializer):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        return {
+            language: truncate_html_to_words(value, 100) if value else value
+            for language, value in data.items()
+        }
+
+
+class MessageListContentSerializer(MessageContentSerializer):
+    body = LocalizedMessageBodyPreviewSerializer(
+        source="*.body_html",
+        is_html=True,
+        help_text="Provide the message's body in all supported languages",
+    )
+
+
+class MessageListSerializer(MessageSerializer):
+    content = MessageListContentSerializer(
+        source="notification_content",
+        read_only=True,
+    )
+
+
 # * ############### CREATE SERIALIZERS ###############
+
+
 class CreateMessageSerializer(MessageSerializer):
     # The "target" field is a hidden field that is automatically populated with the value of "target" from the request context. This allows the serializer to determine the target audience for the message without requiring the client to explicitly provide it in the request data.
     target = serializers.HiddenField(
