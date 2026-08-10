@@ -19,6 +19,7 @@ from mosquito_alert.api.v1.serializers.messages import (
     MessageSerializer,
     MessageTargetingSerializer,
 )
+from mosquito_alert.api.v1.serializers.messages import MessageRecipientStatsSerializer
 from mosquito_alert.api.v1.views.viewsets import GenericViewSet
 from mosquito_alert.notifications.models import Notification, NotificationRecipient
 
@@ -111,6 +112,21 @@ class MessageViewSet(
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(recipients, many=True)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["GET"],
+        serializer_class=MessageRecipientStatsSerializer,
+        url_path="recipients/stats",
+    )
+    def recipients_stats(self, request, *args, **kwargs):
+        notification = self.get_object()
+
+        stats = NotificationRecipient.objects.filter(notification=notification).stats()
+
+        serializer = self.get_serializer(stats)
+
         return Response(serializer.data)
 
     @action(

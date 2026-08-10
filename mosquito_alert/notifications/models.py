@@ -18,6 +18,7 @@ from django.db import models
 from django.utils import translation
 
 from mosquito_alert.devices.models import Device
+from mosquito_alert.notifications.managers import NotificationRecipientManager
 from mosquito_alert.reports.models import Report
 from mosquito_alert.users.models import TigaUser
 from mosquito_alert.utils.json import DjangoGEOJSONDecoder, DjangoGEOJSONEncoder
@@ -184,6 +185,8 @@ class NotificationRecipient(models.Model):
     user = models.ForeignKey(TigaUser, on_delete=models.CASCADE)
 
     is_read = models.BooleanField(default=False)
+
+    objects = NotificationRecipientManager()
 
     # TODO: Make it async (celery task)
     def send_push(self) -> Union[SendResponse, None]:

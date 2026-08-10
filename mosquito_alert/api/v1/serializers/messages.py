@@ -205,3 +205,9 @@ class MessageRecipientSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationRecipient
         fields = ("user", "has_read")
+
+
+class MessageRecipientStatsSerializer(serializers.Serializer):
+    total = serializers.IntegerField()
+    read = serializers.IntegerField()
+    unread = serializers.IntegerField()
