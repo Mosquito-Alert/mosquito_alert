@@ -26,6 +26,9 @@ from mosquito_alert.notifications.models import Notification, NotificationRecipi
 
 
 @extend_schema_view(
+    list=extend_schema(
+        description="Get all messages sent by the current user. The content of the message is truncated to 100 words and the body is returned as plain text, without images or HTML tags. To retrieve the full content of a message, use the GET /messages/{id}/ endpoint.",
+    ),
     create=extend_schema(
         request=PolymorphicProxySerializer(
             component_name="MetaCreateMessage",
@@ -40,7 +43,7 @@ from mosquito_alert.notifications.models import Notification, NotificationRecipi
             resource_type_field_name="target",
         ),
         responses={201: OpenApiResponse(response=MessageSerializer)},
-    )
+    ),
 )
 class MessageViewSet(
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, GenericViewSet
