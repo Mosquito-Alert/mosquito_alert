@@ -9,7 +9,7 @@ import uuid
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.contrib.gis.geos import Point, MultiPolygon
+from django.contrib.gis.geos import Point, MultiPolygon, Polygon
 from django.db import connection
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -2333,6 +2333,15 @@ class TestMessagesApi:
         grant_permission_to_user(type="add", model_class=Notification, user=user)
         return user
 
+    @staticmethod
+    def _grant_audience_geometry_scope_to_user(user, geometry):
+        geometry_multipolygon = MultiPolygon(geometry, srid=geometry.srid)
+        workspace = WorkspaceFactory(
+            country=CountryFactory(geom=geometry_multipolygon),
+            geom=geometry_multipolygon,
+        )
+        WorkspaceCollaborationGroupFactory(workspaces=[workspace], reviewers=[user])
+
     def test_create_message_to_users(self, app_user, api_client, permitted_user):
         response = api_client.post(
             self.endpoint,
@@ -2365,6 +2374,11 @@ class TestMessagesApi:
         assert not recipient.is_read
 
     def test_create_message_to_audience(self, api_client, permitted_user, simple_poly):
+        self._grant_audience_geometry_scope_to_user(
+            user=permitted_user,
+            geometry=simple_poly,
+        )
+
         # Create a user within the area of the simple_poly to ensure they receive the notification
         tigauser = TigaUserFactory(last_location=simple_poly.point_on_surface)
 
@@ -2426,6 +2440,11 @@ class TestMessagesApi:
     def test_create_message_to_audience_send_push(
         self, api_client, permitted_user, simple_poly
     ):
+        self._grant_audience_geometry_scope_to_user(
+            user=permitted_user,
+            geometry=simple_poly,
+        )
+
         with patch(
             "mosquito_alert.notifications.models.Notification._send_to_audience"
         ) as mock_send:
@@ -2449,3 +2468,42 @@ class TestMessagesApi:
             assert response.status_code == status.HTTP_201_CREATED
 
             mock_send.assert_called_once_with()
+
+    def test_create_message_to_audience_outside_collaboration_scope_is_rejected(
+        self, api_client, permitted_user, simple_poly
+    ):
+        outside_poly = Polygon(
+            (
+                (-70.8, -33.6),
+                (-70.3, -33.6),
+                (-70.3, -33.2),
+                (-70.8, -33.2),
+                (-70.8, -33.6),
+            ),
+            srid=4326,
+        )
+        self._grant_audience_geometry_scope_to_user(
+            user=permitted_user,
+            geometry=outside_poly,
+        )
+
+        response = api_client.post(
+            self.endpoint,
+            data={
+                "target": "audience",
+                "audience": {"in_area": json.loads(simple_poly.geojson)},
+                "content": {
+                    "title": {
+                        "en": "Test Notification",
+                    },
+                    "body": {
+                        "en": "This is a test notification.",
+                    },
+                },
+            },
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "errors" in response.data
+        assert any(error.get("attr") == "audience" for error in response.data["errors"])
