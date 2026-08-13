@@ -2320,6 +2320,7 @@ class TestFixesApi:
 @pytest.mark.django_db
 class TestMessagesApi:
     endpoint = "/api/v1/messages/"
+    bypass_audience_scope_permission = "bypass_audience_scope"
 
     @pytest.fixture
     def api_client(self, user):
@@ -2331,6 +2332,17 @@ class TestMessagesApi:
     @pytest.fixture
     def permitted_user(self, user):
         grant_permission_to_user(type="add", model_class=Notification, user=user)
+        return user
+
+    @pytest.fixture
+    def notifier_user(self, user):
+        grant_permission_to_user(type="add", model_class=Notification, user=user)
+        grant_permission_to_user(type="view", model_class=Notification, user=user)
+        grant_permission_to_user(
+            model_class=Notification,
+            user=user,
+            codename=self.bypass_audience_scope_permission,
+        )
         return user
 
     @staticmethod
@@ -2507,3 +2519,33 @@ class TestMessagesApi:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "errors" in response.data
         assert any(error.get("attr") == "audience" for error in response.data["errors"])
+
+    def test_create_message_to_audience_outside_collaboration_scope_is_allowed_with_bypass_permission(
+        self, api_client, notifier_user, simple_poly
+    ):
+        tigauser = TigaUserFactory(last_location=simple_poly.point_on_surface)
+
+        response = api_client.post(
+            self.endpoint,
+            data={
+                "target": "audience",
+                "audience": {"in_area": json.loads(simple_poly.geojson)},
+                "content": {
+                    "title": {
+                        "en": "Test Notification",
+                    },
+                    "body": {
+                        "en": "This is a test notification.",
+                    },
+                },
+            },
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        notification = Notification.objects.get(pk=response.data["id"])
+        assert notification.expert == notifier_user
+
+        recipients_qs = NotificationRecipient.objects.filter(notification=notification)
+        assert recipients_qs.count() == 1
+        assert recipients_qs.filter(user=tigauser, is_read=False).exists()

@@ -217,6 +217,10 @@ class CreateAudienceMessageSerializer(CreateMessageSerializer):
         required=True, help_text="The audience filter for the message"
     )
 
+    # User with bypass_audience_scope permission can send audience messages outside their workspace collaboration groups.
+    def _user_can_bypass_audience_scope(self, user) -> bool:
+        return user.has_perm(f"{Notification._meta.app_label}.bypass_audience_scope")
+
     def _get_workspace_coverage_geometry(self, workspace: Workspace):
         if workspace.geom is not None:
             return workspace.geom
@@ -226,6 +230,7 @@ class CreateAudienceMessageSerializer(CreateMessageSerializer):
 
         return None
 
+    # Check if the audience geometry is within the scope of the user's workspace collaboration groups.
     def _is_audience_geometry_allowed_for_user(
         self, *, user, audience_geometry
     ) -> bool:
@@ -258,7 +263,7 @@ class CreateAudienceMessageSerializer(CreateMessageSerializer):
         return False
 
     def validate_audience(self, value):
-        print("value", value)
+        # The value is last_location__within and not in_area because the audience filter is already validated by the AudienceFilterSerializer.
         audience_geometry = value.get("last_location__within")
         if audience_geometry is None:
             return value
@@ -269,6 +274,9 @@ class CreateAudienceMessageSerializer(CreateMessageSerializer):
             raise serializers.ValidationError(
                 "Authenticated user is required to validate audience geometry."
             )
+
+        if self._user_can_bypass_audience_scope(user=user):
+            return value
 
         if not self._is_audience_geometry_allowed_for_user(
             user=user,

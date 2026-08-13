@@ -178,6 +178,12 @@ class Notification(models.Model):
     class Meta:
         # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
         db_table = "tigaserver_app_notification"
+        permissions = [
+            (
+                "bypass_audience_scope",
+                "Can bypass audience scope",
+            ),
+        ]
 
 
 class NotificationRecipient(models.Model):

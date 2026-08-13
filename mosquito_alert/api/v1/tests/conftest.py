@@ -225,6 +225,20 @@ def perm_user_can_delete(user, model_class):
 
 
 @pytest.fixture
+def perm_user_can_bypass_audience_scope(user, model_class):
+    return grant_permission_to_user(
+        model_class=model_class, user=user, codename="bypass_audience_scope"
+    )
+
+
+@pytest.fixture
+def jwt_token_user_can_bypass_audience_scope(
+    jwt_token_user, perm_user_can_bypass_audience_scope
+):
+    return jwt_token_user
+
+
+@pytest.fixture
 def token_user_can_delete(token_instance_user, perm_user_can_delete):
     return token_instance_user.key
 
