@@ -15,6 +15,7 @@ variables:
     locale: !anything
     is_guest: !anybool
     language_iso: !anything
+    notification_topics: !anything
     score:
       value: !anyint
       updated_at: null
