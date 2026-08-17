@@ -136,6 +136,18 @@ class AudienceFilterSerializer(serializers.Serializer):
         choices=[x[0] for x in TigaUser.AVAILABLE_LANGUAGES],
         required=False,
     )
+    notification_topics = TagListSerializerField(
+        required=False,
+        allow_empty=True,
+        source="notification_topics__name__in",
+        help_text="Filter users subscribed to any of the provided notification topics.",
+    )
 
     class Meta:
-        fields = ("last_login_before", "last_login_after", "in_area", "locale")
+        fields = (
+            "last_login_before",
+            "last_login_after",
+            "in_area",
+            "locale",
+            "notification_topics",
+        )

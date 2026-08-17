@@ -2474,6 +2474,39 @@ class TestMessagesApi:
         assert recipients_qs.count() == 1
         assert recipients_qs.filter(user=tigauser, is_read=False).exists()
 
+    def test_create_message_to_audience_by_notification_topics(
+        self, api_client, permitted_user
+    ):
+        matching_user = TigaUserFactory()
+        matching_user.notification_topics.add("risk")
+
+        non_matching_user = TigaUserFactory()
+        non_matching_user.notification_topics.add("other")
+
+        response = api_client.post(
+            self.endpoint,
+            data={
+                "target": "audience",
+                "audience": {"notification_topics": ["risk"]},
+                "content": {
+                    "title": {
+                        "en": "Test Notification",
+                    },
+                    "body": {
+                        "en": "This is a test notification.",
+                    },
+                },
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        notification = Notification.objects.get(pk=response.data["id"])
+
+        recipients_qs = NotificationRecipient.objects.filter(notification=notification)
+        assert recipients_qs.count() == 1
+        assert recipients_qs.filter(user=matching_user, is_read=False).exists()
+        assert not recipients_qs.filter(user=non_matching_user).exists()
+
     def test_create_message_to_users_send_push(
         self, app_user, api_client, permitted_user
     ):
