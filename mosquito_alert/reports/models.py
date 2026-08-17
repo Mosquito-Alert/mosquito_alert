@@ -780,6 +780,8 @@ class Report(TimeZoneModelMixin, models.Model):
                     self.tags.set(
                         set(list(self.tags.values_list("name", flat=True)) + _note_tags)
                     )
+                    # Add the tags to the user topics as well, if not already present
+                    self.user.notification_topics.add(*_note_tags)
 
             # NOTE: setting it here and not setting the field.default
             # in order to avoid publishing on bulk_create
