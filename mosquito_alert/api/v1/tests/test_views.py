@@ -1032,6 +1032,58 @@ class TestTokenAPI:
 
 
 @pytest.mark.django_db
+class TestMyUserAPI:
+    endpoint = "/api/v1/me/"
+
+    def test_me_includes_notification_topics(self, app_api_client, app_user):
+        app_user.notification_topics.add("tag2", "tag1")
+
+        response = app_api_client.get(self.endpoint)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert sorted(response.data["notification_topics"]) == sorted(["tag1", "tag2"])
+
+
+@pytest.mark.django_db
+class TestUsersAPI:
+    @pytest.fixture
+    def endpoint(self, app_user):
+        return f"/api/v1/users/{app_user.pk}/"
+
+    def test_me_updates_notification_topics(self, app_api_client, app_user, endpoint):
+        app_user.notification_topics.add("old-topic")
+        response = app_api_client.patch(
+            endpoint,
+            data={"notification_topics": ["tag2", "tag1"]},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert sorted(response.data["notification_topics"]) == sorted(["tag1", "tag2"])
+
+        app_user.refresh_from_db()
+        assert set(app_user.notification_topics.values_list("name", flat=True)) == {
+            "tag1",
+            "tag2",
+        }
+
+    def test_me_clears_notification_topics(self, app_api_client, app_user, endpoint):
+        app_user.notification_topics.add("tag2", "tag1")
+
+        response = app_api_client.patch(
+            endpoint,
+            data={"notification_topics": []},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["notification_topics"] == []
+
+        app_user.refresh_from_db()
+        assert app_user.notification_topics.count() == 0
+
+
+@pytest.mark.django_db
 class TestDeviceAPI:
     endpoint = "/api/v1/devices/"
 
