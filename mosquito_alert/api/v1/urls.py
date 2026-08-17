@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.urls import path, include
 
 from rest_framework_simplejwt.views import (
@@ -9,6 +10,7 @@ from rest_framework_simplejwt.views import (
 from drf_spectacular.settings import spectacular_settings
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from drf_spectacular.views import (
+    SpectacularSwaggerView,
     SpectacularRedocView,
     SpectacularAPIView,
     SpectacularJSONAPIView,
@@ -28,8 +30,8 @@ from .views import (
     NotificationViewSet,
     MyNotificationViewSet,
     PhotoViewSet,
-    ObservationViewSest,
-    MyObservationViewSest,
+    ObservationViewSet,
+    MyObservationViewSet,
     BiteViewSet,
     MyBiteViewSet,
     BreedingSiteViewSet,
@@ -42,7 +44,6 @@ from .views import (
     BoundaryViewSet,
     MessageViewSet,
     MySentMessageViewSet,
-    MessageTopicViewSet,
     WorkspaceViewSet,
     MyWorkspaceViewSet,
     WorkspaceCollaboratoratorViewSet,
@@ -83,10 +84,9 @@ identification_task_router.register(
     r"predictions", IdentificationTaskViewSet.PhotoPredictionViewSet
 )
 
-router.register(r"messages/topics", MessageTopicViewSet, basename="messages-topics")
 router.register(r"messages", MessageViewSet, basename="messages")
 router.register(r"notifications", NotificationViewSet)
-router.register(r"observations", ObservationViewSest, basename="observations")
+router.register(r"observations", ObservationViewSet, basename="observations")
 router.register(r"partners", PartnersViewSet)
 router.register(r"photos", PhotoViewSet)
 router.register(r"taxa", TaxaViewSet)
@@ -140,7 +140,7 @@ api_urlpatterns += [
     ),
     path(
         "me/observations/",
-        MyObservationViewSest.as_view({"get": "list"}),
+        MyObservationViewSet.as_view({"get": "list"}),
         name="my-observations",
     ),
     path("me/bites/", MyBiteViewSet.as_view({"get": "list"}), name="my-bites"),
@@ -188,3 +188,12 @@ urlpatterns = [
         name="schema-json",
     ),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path(
+            "swagger/",
+            SpectacularSwaggerView.as_view(url_name="schema"),
+            name="swagger",
+        ),
+    ]

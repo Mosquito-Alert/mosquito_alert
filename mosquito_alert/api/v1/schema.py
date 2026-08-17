@@ -24,7 +24,9 @@ class PointFieldExtension(OpenApiSerializerFieldExtension):
 
 
 class FieldPolymorphicSerializerExtension(PolymorphicSerializerExtension):
-    target_class = "mosquito_alert.api.v1.base_serializers.FieldPolymorphicSerializer"
+    target_class = (
+        "mosquito_alert.api.v1.serializers.base_serializers.FieldPolymorphicSerializer"
+    )
 
     # NOTE: even if the implementation in PolymorphicSerializerExtension works pretty well,
     # it causes errors on openapi-generator.

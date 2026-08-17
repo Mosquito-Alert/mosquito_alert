@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from datetime import timedelta
+import json
 import jwt
 import pytest
 import time_machine
@@ -8,7 +9,7 @@ import uuid
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.contrib.gis.geos import Point, MultiPolygon
+from django.contrib.gis.geos import Point, MultiPolygon, Polygon
 from django.db import connection
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -36,7 +37,6 @@ from mosquito_alert.geo.tests.factories import CountryFactory
 from mosquito_alert.geo.tests.fuzzy import FuzzyGriddedPolygon
 from mosquito_alert.notifications.models import (
     Notification,
-    UserSubscription,
     NotificationRecipient,
 )
 from mosquito_alert.reports.models import Report
@@ -2320,6 +2320,7 @@ class TestFixesApi:
 @pytest.mark.django_db
 class TestMessagesApi:
     endpoint = "/api/v1/messages/"
+    bypass_audience_scope_permission = "bypass_audience_scope"
 
     @pytest.fixture
     def api_client(self, user):
@@ -2333,10 +2334,31 @@ class TestMessagesApi:
         grant_permission_to_user(type="add", model_class=Notification, user=user)
         return user
 
-    def test_create_message(self, app_user, api_client, permitted_user):
+    @pytest.fixture
+    def notifier_user(self, user):
+        grant_permission_to_user(type="add", model_class=Notification, user=user)
+        grant_permission_to_user(type="view", model_class=Notification, user=user)
+        grant_permission_to_user(
+            model_class=Notification,
+            user=user,
+            codename=self.bypass_audience_scope_permission,
+        )
+        return user
+
+    @staticmethod
+    def _grant_audience_geometry_scope_to_user(user, geometry):
+        geometry_multipolygon = MultiPolygon(geometry, srid=geometry.srid)
+        workspace = WorkspaceFactory(
+            country=CountryFactory(geom=geometry_multipolygon),
+            geom=geometry_multipolygon,
+        )
+        WorkspaceCollaborationGroupFactory(workspaces=[workspace], reviewers=[user])
+
+    def test_create_message_to_users(self, app_user, api_client, permitted_user):
         response = api_client.post(
             self.endpoint,
             data={
+                "target": "users",
                 "user_uuids": [str(app_user.pk)],
                 "content": {
                     "title": {
@@ -2363,39 +2385,20 @@ class TestMessagesApi:
         assert recipient is not None
         assert not recipient.is_read
 
-    def test_create_message_send_push(self, app_user, api_client, permitted_user):
-        with patch(
-            "mosquito_alert.notifications.models.Notification.send_to_user"
-        ) as mock_send:
-            response = api_client.post(
-                self.endpoint,
-                data={
-                    "user_uuids": [str(app_user.pk)],
-                    "content": {
-                        "title": {
-                            "en": "Test Notification",
-                        },
-                        "body": {
-                            "en": "This is a test notification.",
-                        },
-                    },
-                },
-                format="json",
-            )
-
-            assert response.status_code == status.HTTP_201_CREATED
-
-            mock_send.assert_called_once()
-
-    def test_send_message_to_topic(self, app_user, api_client, permitted_user, topic):
-        UserSubscription.objects.get_or_create(
-            user=app_user,
-            topic=topic,
+    def test_create_message_to_audience(self, api_client, permitted_user, simple_poly):
+        self._grant_audience_geometry_scope_to_user(
+            user=permitted_user,
+            geometry=simple_poly,
         )
 
+        # Create a user within the area of the simple_poly to ensure they receive the notification
+        tigauser = TigaUserFactory(last_location=simple_poly.point_on_surface)
+
         response = api_client.post(
-            self.endpoint + f"topics/{topic.topic_code}/send/",
+            self.endpoint,
             data={
+                "target": "audience",
+                "audience": {"in_area": json.loads(simple_poly.geojson)},
                 "content": {
                     "title": {
                         "en": "Test Notification",
@@ -2415,8 +2418,134 @@ class TestMessagesApi:
         assert notification_content.title_en == "Test Notification"
         assert notification_content.body_html_en == "This is a test notification."
 
-        recipient = NotificationRecipient.objects.filter(
-            notification=notification, user=app_user
-        ).first()
-        assert recipient is not None
-        assert recipient.through_topics.filter(pk=topic.pk).exists()
+        recipients_qs = NotificationRecipient.objects.filter(notification=notification)
+        assert recipients_qs.count() == 1
+        assert recipients_qs.filter(user=tigauser, is_read=False).exists()
+
+    def test_create_message_to_users_send_push(
+        self, app_user, api_client, permitted_user
+    ):
+        with patch(
+            "mosquito_alert.notifications.models.Notification.send_to_user"
+        ) as mock_send:
+            response = api_client.post(
+                self.endpoint,
+                data={
+                    "target": "users",
+                    "user_uuids": [str(app_user.pk)],
+                    "content": {
+                        "title": {
+                            "en": "Test Notification",
+                        },
+                        "body": {
+                            "en": "This is a test notification.",
+                        },
+                    },
+                },
+                format="json",
+            )
+
+            assert response.status_code == status.HTTP_201_CREATED
+
+            mock_send.assert_called_once()
+
+    def test_create_message_to_audience_send_push(
+        self, api_client, permitted_user, simple_poly
+    ):
+        self._grant_audience_geometry_scope_to_user(
+            user=permitted_user,
+            geometry=simple_poly,
+        )
+
+        with patch(
+            "mosquito_alert.notifications.models.Notification._send_to_audience"
+        ) as mock_send:
+            response = api_client.post(
+                self.endpoint,
+                data={
+                    "target": "audience",
+                    "audience": {"in_area": json.loads(simple_poly.geojson)},
+                    "content": {
+                        "title": {
+                            "en": "Test Notification",
+                        },
+                        "body": {
+                            "en": "This is a test notification.",
+                        },
+                    },
+                },
+                format="json",
+            )
+
+            assert response.status_code == status.HTTP_201_CREATED
+
+            mock_send.assert_called_once_with()
+
+    def test_create_message_to_audience_outside_collaboration_scope_is_rejected(
+        self, api_client, permitted_user, simple_poly
+    ):
+        outside_poly = Polygon(
+            (
+                (-70.8, -33.6),
+                (-70.3, -33.6),
+                (-70.3, -33.2),
+                (-70.8, -33.2),
+                (-70.8, -33.6),
+            ),
+            srid=4326,
+        )
+        self._grant_audience_geometry_scope_to_user(
+            user=permitted_user,
+            geometry=outside_poly,
+        )
+
+        response = api_client.post(
+            self.endpoint,
+            data={
+                "target": "audience",
+                "audience": {"in_area": json.loads(simple_poly.geojson)},
+                "content": {
+                    "title": {
+                        "en": "Test Notification",
+                    },
+                    "body": {
+                        "en": "This is a test notification.",
+                    },
+                },
+            },
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "errors" in response.data
+        assert any(error.get("attr") == "audience" for error in response.data["errors"])
+
+    def test_create_message_to_audience_outside_collaboration_scope_is_allowed_with_bypass_permission(
+        self, api_client, notifier_user, simple_poly
+    ):
+        tigauser = TigaUserFactory(last_location=simple_poly.point_on_surface)
+
+        response = api_client.post(
+            self.endpoint,
+            data={
+                "target": "audience",
+                "audience": {"in_area": json.loads(simple_poly.geojson)},
+                "content": {
+                    "title": {
+                        "en": "Test Notification",
+                    },
+                    "body": {
+                        "en": "This is a test notification.",
+                    },
+                },
+            },
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        notification = Notification.objects.get(pk=response.data["id"])
+        assert notification.expert == notifier_user
+
+        recipients_qs = NotificationRecipient.objects.filter(notification=notification)
+        assert recipients_qs.count() == 1
+        assert recipients_qs.filter(user=tigauser, is_read=False).exists()

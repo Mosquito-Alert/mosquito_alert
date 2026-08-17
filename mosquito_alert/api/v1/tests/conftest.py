@@ -20,7 +20,6 @@ from mosquito_alert.geo.tests.factories import CountryFactory
 from mosquito_alert.identification_tasks.models import IdentificationTask
 from mosquito_alert.notifications.models import (
     Notification,
-    NotificationTopic,
     NotificationContent,
 )
 from mosquito_alert.reports.tests.factories import ObservationReportFactory
@@ -46,6 +45,11 @@ def user_password():
 @pytest.fixture
 def app_user(user_password):
     return TigaUserFactory(password=user_password)
+
+
+@pytest.fixture
+def app_user_with_custom_last_login(user_password):
+    return TigaUserFactory(password=user_password, last_login="2026-01-01T12:00:00Z")
 
 
 @pytest.fixture
@@ -221,6 +225,20 @@ def perm_user_can_delete(user, model_class):
 
 
 @pytest.fixture
+def perm_user_can_bypass_audience_scope(user, model_class):
+    return grant_permission_to_user(
+        model_class=model_class, user=user, codename="bypass_audience_scope"
+    )
+
+
+@pytest.fixture
+def jwt_token_user_can_bypass_audience_scope(
+    jwt_token_user, perm_user_can_bypass_audience_scope
+):
+    return jwt_token_user
+
+
+@pytest.fixture
 def token_user_can_delete(token_instance_user, perm_user_can_delete):
     return token_instance_user.key
 
@@ -336,13 +354,6 @@ def use_test_cache_backend(settings):
 
 
 @pytest.fixture
-def topic():
-    return NotificationTopic.objects.create(
-        topic_code="test", topic_description="test description"
-    )
-
-
-@pytest.fixture
 def user_notification(app_user, user):
     notification = Notification.objects.create(
         expert=user,
@@ -353,3 +364,17 @@ def user_notification(app_user, user):
     notification.send_to_user(user=app_user)
 
     return notification
+
+
+@pytest.fixture
+def simple_poly():
+    return Polygon(
+        (
+            (-3.80, 40.35),
+            (-3.60, 40.35),
+            (-3.60, 40.50),
+            (-3.80, 40.50),
+            (-3.80, 40.35),
+        ),
+        srid=4326,
+    )

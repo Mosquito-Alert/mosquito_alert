@@ -274,30 +274,7 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
                 or "en"
             )
 
-        result = super().save(*args, **kwargs)
-
-        # Make sure user is subscribed to global topic
-        from mosquito_alert.notifications.models import (
-            NotificationTopic,
-            UserSubscription,
-        )
-
-        try:
-            global_topic = NotificationTopic.objects.get(topic_code="global")
-        except NotificationTopic.DoesNotExist:
-            pass
-        else:
-            UserSubscription.objects.get_or_create(user=self, topic=global_topic)
-
-        # Subscribe user to the language selected.
-        try:
-            language_topic = NotificationTopic.objects.get(topic_code=self.locale)
-        except NotificationTopic.DoesNotExist:
-            pass
-        else:
-            UserSubscription.objects.get_or_create(user=self, topic=language_topic)
-
-        return result
+        return super().save(*args, **kwargs)
 
     class Meta:
         db_table = "tigaserver_app_tigauser"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.

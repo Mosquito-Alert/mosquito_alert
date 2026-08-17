@@ -4,7 +4,7 @@ from django.core.exceptions import MultipleObjectsReturned
 from rest_framework import permissions
 
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
-from mosquito_alert.notifications.models import Notification, NotificationRecipient
+from mosquito_alert.notifications.models import NotificationRecipient
 from mosquito_alert.users.models import TigaUser
 
 from .utils import get_fk_fieldnames
@@ -104,6 +104,16 @@ class UserPermissions(FullDjangoModelPermissions):
         if view.action == "list":
             return super().has_permission(request, view)
 
+        if view.action == "audience":
+            # Although the audience endpoint method is POST, it is a read-only endpoint, so we require the view permission.
+            return request.user.has_perm(
+                "%(app_label)s.view_%(model_name)s"
+                % {
+                    "app_label": TigaUser._meta.app_label,
+                    "model_name": TigaUser._meta.model_name,
+                }
+            )
+
         return True
 
     def has_object_permission(self, request, view, obj):
@@ -142,25 +152,6 @@ class MessagePermissions(FullDjangoObjectPermissions):
 
 class MyMessagePermissions(MessagePermissions):
     pass
-
-
-class MessageTopicPermissions(FullDjangoObjectPermissions):
-    def has_permission(self, request, view):
-        if isinstance(request.user, TigaUser):
-            return False
-
-        can_send_messages = False
-        if view.action == "send":
-            if request.user.is_authenticated:
-                can_send_messages = request.user.has_perm(
-                    "%(app_label)s.add_%(model_name)s"
-                    % {
-                        "app_label": Notification._meta.app_label,
-                        "model_name": Notification._meta.model_name,
-                    }
-                )
-
-        return super().has_permission(request, view) | can_send_messages
 
 
 class ReportPermissions(UserObjectPermissions):

@@ -26,3 +26,10 @@ CELERY_TASK_EAGER_PROPAGATES = True
 # -------------------------------------------------------------------------------
 # NOTE: Important to be set to True when running tests.
 DISABLE_PUSH = True
+
+
+# drf-spectacular
+# -------------------------------------------------------------------------------
+SPECTACULAR_SETTINGS["SERVERS"] = [
+    {"url": "http://localhost:8000/api/v1", "description": "Local development server"}
+]

@@ -8,7 +8,7 @@ from rest_framework.fields import empty
 
 from modeltranslation.translator import translator
 
-from .fields import HTMLCharField
+from ..fields import HTMLCharField
 
 
 class FieldPolymorphicSerializer(serializers.Serializer):

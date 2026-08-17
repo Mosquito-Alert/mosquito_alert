@@ -63,18 +63,6 @@ paths:
                   type: array
                   items:
                     properties:
-                      id:
-                        type: integer
-                        description: The id of the subscription
-                      user:
-                        type: string
-                        description: UUID of the subscribed user
-                      topic:
-                        type: integer
-                        description: Id of the subscribed topic
-                      topic_code:
-                        type: string
-                        description: String with the topic code
             description: 'Subscription correctly performed'
           '400':
             description: 'In any of the following cases: user indicated by user id param does not exist, or if the user is already subscribed'
@@ -128,19 +116,6 @@ paths:
                 type: array
                 items:
                   properties:
-                    id:
-                      type: integer
-                      readOnly: true
-                      description: 'Subscription id'
-                    user:
-                      type: string
-                      description: 'User uuid of the user'
-                    topic:
-                      type: integer
-                      description: 'topic id'
-                    topic_code:
-                      type: string
-                      description: 'Topic code'
           description: 'Success and returns a list of the subscriptions'
         '400':
           description: 'Either the user param was not supplied or the user associated with it does not exist'

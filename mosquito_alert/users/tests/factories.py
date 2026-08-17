@@ -1,3 +1,5 @@
+from django.contrib.gis.geos import Point
+from django.utils.dateparse import parse_datetime
 from factory import Faker, post_generation
 from factory.django import DjangoModelFactory
 from typing import Sequence, Any
@@ -38,7 +40,18 @@ class TigaUserFactory(DjangoModelFactory):
     class Meta:
         model = TigaUser
 
+    locale = "en"
+    # longitude, latitude (SRID 4326)
+    last_location = Point(-3.7038, 40.4168, srid=4326)
+
     @post_generation
     def password(self, create: bool, extracted: Sequence[Any], **kwargs):
         if extracted:
             self.set_password(extracted)
+
+    @post_generation
+    def last_login(self, create: bool, extracted, **kwargs):
+        if extracted:
+            self.last_login = parse_datetime(extracted)
+            if create:
+                self.save(update_fields=["last_login"])

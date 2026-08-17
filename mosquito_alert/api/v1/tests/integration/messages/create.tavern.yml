@@ -37,7 +37,7 @@ stages:
 
 ---
 
-test_name: Create user message
+test_name: Create user message bypass permission should fail if user does not have specific permission
 
 includes:
   - !include schema.yml
@@ -49,10 +49,52 @@ marks:
     - jwt_token_user_can_add
 
 stages:
-  - name: Create user message using auth user with permissions
+  - name: Create audience message with geometry but without bypass permission should fail
     request:
       url: "{api_live_url}/{endpoint}/"
       json:
+        target: "audience"
+        audience:
+          in_area:
+            type: "Polygon"
+            coordinates:
+              -
+                - [-3.80, 40.35]
+                - [-3.60, 40.35]
+                - [-3.60, 40.50]
+                - [-3.80, 40.50]
+                - [-3.80, 40.35]
+        content:
+          title:
+            en: "english title"
+          body:
+            en: "english body"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_add:s}"
+      method: "POST"
+    response:
+      status_code: 400
+
+---
+
+test_name: Create user message
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user
+    - jwt_token_user_can_add
+    - jwt_token_user_can_bypass_audience_scope
+
+stages:
+  - name: Create message targeting users using auth user with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        target: "users"
         user_uuids:
           - "{app_user.pk}"
         content:
@@ -66,10 +108,55 @@ stages:
     response:
       status_code: 201
       json: !force_original_structure "{response_data_validation}"
+  - name: Create message targeting audience using auth user with permissions
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        target: "audience"
+        audience:
+          last_login_after: "2024-01-01T00:00:00Z"
+        content:
+          title:
+            en: "english title"
+          body:
+            en: "english body"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_add:s}"
+      method: "POST"
+    response:
+      status_code: 201
+      json: !force_original_structure "{response_data_validation}"
+  - name: Create audience message with geometry using bypass permission should succeed
+    request:
+      url: "{api_live_url}/{endpoint}/"
+      json:
+        target: "audience"
+        audience:
+          in_area:
+            type: "Polygon"
+            coordinates:
+              -
+                - [-3.80, 40.35]
+                - [-3.60, 40.35]
+                - [-3.60, 40.50]
+                - [-3.80, 40.50]
+                - [-3.80, 40.35]
+        content:
+          title:
+            en: "english title"
+          body:
+            en: "english body"
+      headers:
+        Authorization: "Bearer {jwt_token_user_can_bypass_audience_scope:s}"
+      method: "POST"
+    response:
+      status_code: 201
+      json: !force_original_structure "{response_data_validation}"
   - name: Create message without empty title or body should return 400
     request:
       url: "{api_live_url}/{endpoint}/"
       json:
+        target: "users"
         user_uuids:
           - "{app_user.pk}"
         content:
@@ -147,6 +234,7 @@ stages:
     request:
       url: "{api_live_url}/{endpoint}/"
       json:
+        target: "users"
         user_uuids:
           - "{app_user.pk}"
         content:

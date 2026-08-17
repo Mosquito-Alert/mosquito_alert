@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
-from collections import Counter
+from itertools import groupby
+
 from firebase_admin.exceptions import FirebaseError
 from firebase_admin.messaging import (
     Message,
@@ -7,7 +8,6 @@ from firebase_admin.messaging import (
     AndroidConfig,
     AndroidNotification,
     SendResponse,
-    BatchResponse,
 )
 import logging
 from typing import Optional, Union
@@ -18,8 +18,10 @@ from django.db import models
 from django.utils import translation
 
 from mosquito_alert.devices.models import Device
+from mosquito_alert.notifications.managers import NotificationRecipientManager
 from mosquito_alert.reports.models import Report
 from mosquito_alert.users.models import TigaUser
+from mosquito_alert.utils.json import DjangoGEOJSONDecoder, DjangoGEOJSONEncoder
 
 User = get_user_model()
 
@@ -63,10 +65,15 @@ class NotificationContent(models.Model):
         return None
 
     class Meta:
-        db_table = "tigaserver_app_notificationcontent"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_notificationcontent"
 
 
 class Notification(models.Model):
+    class Target(models.TextChoices):
+        USERS = "users", "Users"
+        AUDIENCE = "audience", "Audience"
+
     report = models.ForeignKey(
         Report,
         null=True,
@@ -86,6 +93,13 @@ class Notification(models.Model):
         help_text="Expert sending the notification",
         on_delete=models.SET_NULL,
     )
+    audience = models.JSONField(
+        null=True,
+        blank=True,
+        encoder=DjangoGEOJSONEncoder,
+        decoder=DjangoGEOJSONDecoder,
+        help_text="Criteria used to select recipients. It is the audience filter for the notification, in django ORM filter format",
+    )
     date_comment = models.DateTimeField(auto_now_add=True)
     # blank is True to avoid problems in the migration, this should be removed!!
     notification_content = models.ForeignKey(
@@ -95,18 +109,21 @@ class Notification(models.Model):
         on_delete=models.PROTECT,
     )
 
+    @property
+    def target(self) -> Target.choices:
+        if self.audience is not None:
+            return self.Target.AUDIENCE
+        else:
+            return self.Target.USERS
+
     def get_fcm_message(self, language_code: str) -> Message:
         # See: https://firebase.google.com/docs/reference/admin/python/firebase_admin.messaging
         # See: https://firebaseopensource.com/projects/flutter/plugins/packages/firebase_messaging/readme/
         return Message(
             data={"id": str(self.pk)},
             notification=FirebaseNotification(
-                title=self.notification_content.get_title(
-                    language_code=language_code
-                ),
-                body=self.notification_content.get_body(
-                    language_code=language_code
-                ),
+                title=self.notification_content.get_title(language_code=language_code),
+                body=self.notification_content.get_body(language_code=language_code),
                 image=self.notification_content.get_body_image(
                     language_code=language_code
                 ),
@@ -121,23 +138,61 @@ class Notification(models.Model):
             ),
         )
 
-    def send_to_topic(self, topic: "NotificationTopic") -> None:
-        topic.send_notification(notification=self)
-
+    # TODO: Should this be async (celery task)
     def send_to_user(self, user: TigaUser) -> None:
         NotificationRecipient.objects.get_or_create(user=user, notification=self)
 
+    def _send_to_audience(self) -> None:
+        if self.audience is None:
+            return
+
+        recipients_qs = TigaUser.objects.filter(**self.audience)
+        # NOTE: groupby requires the queryset to be ordered by the key function, so we order by locale.
+        for locale, user_group in groupby(
+            recipients_qs.order_by("locale").iterator(), key=lambda x: x.locale
+        ):
+            NotificationRecipient.objects.bulk_create(
+                [
+                    NotificationRecipient(notification=self, user=user)
+                    for user in user_group
+                ],
+                batch_size=2000,
+                ignore_conflicts=True,
+            )
+            Device.objects.filter(user__in=user_group).send_message(
+                message=self.get_fcm_message(language_code=locale)
+            )
+
+    def save(self, *args, **kwargs):
+        is_adding = self._state.adding
+
+        super().save(*args, **kwargs)
+
+        if is_adding:
+            try:
+                # TODO: If there is a geometry filter, check that the geometry is valid
+                self._send_to_audience()
+            except Exception:
+                pass
+
     class Meta:
-        db_table = "tigaserver_app_notification"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_notification"
+        permissions = [
+            (
+                "bypass_audience_scope",
+                "Can bypass audience scope",
+            ),
+        ]
 
 
 class NotificationRecipient(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE)
     user = models.ForeignKey(TigaUser, on_delete=models.CASCADE)
 
-    through_topics = models.ManyToManyField("NotificationTopic", blank=True)
-
     is_read = models.BooleanField(default=False)
+
+    objects = NotificationRecipientManager()
 
     # TODO: Make it async (celery task)
     def send_push(self) -> Union[SendResponse, None]:
@@ -174,109 +229,3 @@ class NotificationRecipient(models.Model):
                 name="unique_notification_recipient",
             )
         ]
-
-
-TOPIC_GROUPS = (
-    (0, "General"),
-    (1, "Language topics"),
-    (2, "Country topics"),
-    (3, "Country nuts3"),
-    (4, "Country nuts2"),
-    (5, "Special"),
-)
-
-
-class NotificationTopic(models.Model):
-    topic_code = models.CharField(
-        max_length=100, unique=True, help_text="Code for the topic."
-    )
-    topic_description = models.TextField(
-        help_text="Description for the topic, in english."
-    )
-    topic_group = models.IntegerField(
-        "Group of topics",
-        choices=TOPIC_GROUPS,
-        default=0,
-        help_text="Your degree of belief that at least one photo shows a tiger mosquito breeding site",
-    )
-
-    def send_notification(
-        self, notification: Notification
-    ) -> Union[BatchResponse, None]:
-        bulk_recipients = []
-        users = []
-        users_qs = TigaUser.objects.filter(user_subscriptions__topic=self)
-        for user in users_qs.iterator():
-            users.append(user)
-            bulk_recipients.append(
-                NotificationRecipient(notification=notification, user=user)
-            )
-
-        if len(users) == 0:
-            return
-
-        _ = NotificationRecipient.objects.bulk_create(
-            bulk_recipients, batch_size=1000, ignore_conflicts=True
-        )
-        # NOTE: ignore_conflicts make returned object not having its pk set.
-        for recipient in NotificationRecipient.objects.filter(
-            user__in=users
-        ).iterator():
-            recipient.through_topics.add(self)
-
-        if settings.DISABLE_PUSH:
-            return
-
-        majority_locale = Counter(u.locale for u in users).most_common(1)[0][0]
-        return Device.send_topic_message(
-            message=notification.get_fcm_message(language_code=majority_locale),
-            topic_name=self.topic_code,
-        )
-
-    class Meta:
-        db_table = "tigaserver_app_notificationtopic"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
-
-
-class UserSubscription(models.Model):
-    user = models.ForeignKey(
-        TigaUser,
-        related_name="user_subscriptions",
-        help_text="User which is subscribed to the topic",
-        on_delete=models.CASCADE,
-    )
-    topic = models.ForeignKey(
-        NotificationTopic,
-        related_name="topic_users",
-        help_text="Topics to which the user is subscribed",
-        on_delete=models.CASCADE,
-    )
-
-    def save(self, *args, **kwargs):
-        if self._state.adding:
-            try:
-                self.user.devices.all().handle_topic_subscription(
-                    should_subscribe=True,  # Subscribe
-                    topic=self.topic.topic_code,
-                )
-            except ValueError as e:
-                logger_notification.exception(str(e))
-
-        return super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        try:
-            self.user.devices.all().handle_topic_subscription(
-                should_subscribe=False,  # Unsubscribe
-                topic=self.topic.topic_code,
-            )
-        except ValueError as e:
-            logger_notification.exception(str(e))
-
-        return super().delete(*args, **kwargs)
-
-    class Meta:
-        db_table = "tigaserver_app_usersubscription"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
-        unique_together = (
-            "user",
-            "topic",
-        )

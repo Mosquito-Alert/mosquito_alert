@@ -253,6 +253,18 @@ class MessageFilter(filters.FilterSet):
         field_name="notificationrecipient__user",
         queryset=TigaUser.objects.all(),
     )
+    target = filters.ChoiceFilter(
+        method="filter_by_target",
+        choices=Notification.Target.choices,
+        help_text="Filter messages by target audience. Use 'users' to filter messages sent to specific users, and 'audience' to filter messages sent to a broader audience.",
+    )
+
+    def filter_by_target(self, queryset, name, value):
+        if value == Notification.Target.USERS:
+            return queryset.filter(audience__isnull=True)
+        elif value == Notification.Target.AUDIENCE:
+            return queryset.filter(audience__isnull=False)
+        return queryset
 
     class Meta:
         model = Notification
