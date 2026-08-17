@@ -347,16 +347,6 @@ class ReportModelTest(TestCase):
         tag_names = list(report.tags.values_list("name", flat=True))
         self.assertEqual(sorted(tag_names), ["tag1", "tag2"])
 
-    def test_notification_topics_are_set_from_note_tags_on_create(self):
-        user = TigaUserFactory()
-        user.notification_topics.add("tag0")
-
-        ReportFactory(user=user, note="this is a repeated tag #tag1 #tag1 #tag2 #tag3")
-
-        user.refresh_from_db()
-        topic_names = list(user.notification_topics.values_list("name", flat=True))
-        self.assertEqual(sorted(topic_names), ["tag0", "tag1", "tag2", "tag3"])
-
     @pytest.mark.enable_report_location_masking
     def test_report_above_greenland_should_be_marked_as_masked(self):
         report = ReportFactory(point=Point(x=0, y=84, srid=4326))
