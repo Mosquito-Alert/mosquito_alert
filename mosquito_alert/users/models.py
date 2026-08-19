@@ -174,6 +174,7 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
     notification_topics = TaggableManager(
         through=UUIDTaggedItem,
         blank=True,
+        verbose_name="Notification Topics",
         help_text=_(
             "A comma-separated list of topics for which the user has opted to receive notifications. Each topic is represented as a string, and the list can be empty if the user has not subscribed to any topics."
         ),
