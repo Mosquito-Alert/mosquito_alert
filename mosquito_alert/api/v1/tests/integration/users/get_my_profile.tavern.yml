@@ -62,6 +62,7 @@ stages:
         last_name: "User"
         full_name: "Anonymous User"
         is_guest: true
+        notification_topics: []
   - name: Check schema for mobile user get their profile
     request:
       url: "{api_live_url}/me/"

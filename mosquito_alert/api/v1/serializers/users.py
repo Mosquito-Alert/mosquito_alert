@@ -3,6 +3,7 @@ from uuid import UUID
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_gis.fields import GeometryField
+from taggit.serializers import TaggitSerializer, TagListSerializerField
 
 from mosquito_alert.users.models import TigaUser
 
@@ -10,7 +11,7 @@ from mosquito_alert.users.models import TigaUser
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(TaggitSerializer, serializers.ModelSerializer):
     class UserScoreSerializer(serializers.ModelSerializer):
         value = serializers.IntegerField(source="score_v2", min_value=0, read_only=True)
         updated_at = serializers.DateTimeField(
@@ -31,6 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     is_guest = serializers.SerializerMethodField()
     score = UserScoreSerializer(source="*", read_only=True)
+    notification_topics = TagListSerializerField(required=False, allow_empty=True)
 
     def get_is_guest(self, obj) -> bool:
         return True
@@ -70,6 +72,7 @@ class UserSerializer(serializers.ModelSerializer):
             data["language_iso"] = "en"
             data["is_guest"] = False
             data["score"] = {"value": 0, "updated_at": None}
+            data["notification_topics"] = []
             return {k: v for k, v in data.items() if k in self.fields.keys()}
 
         return super().to_representation(instance)
@@ -87,6 +90,7 @@ class UserSerializer(serializers.ModelSerializer):
             "language_iso",
             "is_guest",
             "score",
+            "notification_topics",
         )
         read_only_fields = (
             "registration_time",
@@ -132,6 +136,18 @@ class AudienceFilterSerializer(serializers.Serializer):
         choices=[x[0] for x in TigaUser.AVAILABLE_LANGUAGES],
         required=False,
     )
+    notification_topics = TagListSerializerField(
+        required=False,
+        allow_empty=True,
+        source="notification_topics__name__in",
+        help_text="Filter users subscribed to any of the provided notification topics.",
+    )
 
     class Meta:
-        fields = ("last_login_before", "last_login_after", "in_area", "locale")
+        fields = (
+            "last_login_before",
+            "last_login_after",
+            "in_area",
+            "locale",
+            "notification_topics",
+        )

@@ -20,8 +20,10 @@ from langcodes import (
 )
 from numpyencoder import NumpyEncoder
 import pydenticon
+from taggit.managers import TaggableManager
 
 from mosquito_alert.geo.models import Country, NutsEurope
+from mosquito_alert.utils.models import UUIDTaggedItem
 
 if TYPE_CHECKING:
     from mosquito_alert.devices.models import Device
@@ -90,7 +92,8 @@ class UserStat(models.Model):
             UserStat.objects.create(user=instance)
 
     class Meta:
-        db_table = "tigacrafting_userstat"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigacrafting_userstat"
 
     def __str__(self):
         return self.user.username
@@ -166,6 +169,15 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
         default="en",
         validators=[language_tag_is_valid],
         help_text="The locale code representing the language preference selected by the user for displaying the interface text. Enter the locale following the BCP 47 standard in 'language' or 'language-region' format (e.g., 'en' for English, 'en-US' for English (United States), 'fr' for French). The language is a two-letter ISO 639-1 code, and the region is an optional two-letter ISO 3166-1 alpha-2 code.",
+    )
+
+    notification_topics = TaggableManager(
+        through=UUIDTaggedItem,
+        blank=True,
+        verbose_name="Notification Topics",
+        help_text=_(
+            "A comma-separated list of topics for which the user has opted to receive notifications. Each topic is represented as a string, and the list can be empty if the user has not subscribed to any topics."
+        ),
     )
 
     @property
@@ -277,7 +289,8 @@ class TigaUser(AbstractBaseUser, AnonymousUser):
         return super().save(*args, **kwargs)
 
     class Meta:
-        db_table = "tigaserver_app_tigauser"  # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigacrafting, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_tigauser"
 
 
 class Session(models.Model):
@@ -305,7 +318,8 @@ class Session(models.Model):
     )
 
     class Meta:
-        db_table = "tigaserver_app_session"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_session"
         unique_together = (
             "session_ID",
             "user",

@@ -122,8 +122,6 @@ class MessageListSerializer(MessageSerializer):
 
 
 # * ############### CREATE SERIALIZERS ###############
-
-
 class CreateMessageSerializer(MessageSerializer):
     # The "target" field is a hidden field that is automatically populated with the value of "target" from the request context. This allows the serializer to determine the target audience for the message without requiring the client to explicitly provide it in the request data.
     target = serializers.HiddenField(

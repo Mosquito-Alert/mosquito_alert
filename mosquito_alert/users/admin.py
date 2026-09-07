@@ -32,6 +32,7 @@ class TigaUserAdmin(admin.ModelAdmin):
         "locale",
         ("score_v2", "last_score_update"),
         ("last_location", "last_location_update"),
+        "notification_topics",
     )
     readonly_fields = (
         "user_UUID",
@@ -42,7 +43,7 @@ class TigaUserAdmin(admin.ModelAdmin):
         "last_location_update",
     )
     search_fields = ("user_UUID",)
-    ordering = ("registration_time",)
+    ordering = ("-registration_time",)
     inlines = [ReportInline, DeviceInline]
 
     def has_add_permission(self, request):
