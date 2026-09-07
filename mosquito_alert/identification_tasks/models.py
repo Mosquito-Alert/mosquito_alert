@@ -1035,6 +1035,7 @@ class PhotoPrediction(models.Model, metaclass=PhotoClassifierScoresMeta):
         ("v2025.2", "v2025.2"),
         ("v2025.3", "v2025.3"),
         ("v2025.4", "v2025.4"),
+        ("v2026.1", "v2026.1"),
     ]
 
     PREDICTED_CLASS_TO_TAXON = {
