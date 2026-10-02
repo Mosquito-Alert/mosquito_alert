@@ -195,7 +195,8 @@ class ReportQuerySet(models.QuerySet):
             qs.values(*values_fields).annotate(count=Count("version_UUID")).order_by()
         )
 
-        if rows_qs.count() > STATS_MAX_ROWS:
+        # ? Maybe this check is overkill?
+        if len(list(rows_qs)) > STATS_MAX_ROWS:
             raise ValidationError(
                 "This query would return too many rows. Narrow the date range, "
                 "coarsen the interval, or scope to a smaller area."
