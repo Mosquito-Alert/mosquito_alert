@@ -24,6 +24,7 @@ from .reports import (
     ObservationViewSet,
     MyObservationViewSet,
 )
+from .stats import ReportStatsViewSet
 from .taxa import TaxaViewSet
 from .users import UserViewSet, MyUserViewSet
 from .workspaces import (
@@ -34,6 +35,7 @@ from .workspaces import (
 )
 
 __all__ = [
+    ReportStatsViewSet,
     ping,
     UserViewSet,
     MyUserViewSet,
