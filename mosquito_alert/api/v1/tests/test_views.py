@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point, MultiPolygon, Polygon
+from django.core.cache import cache
 from django.db import connection
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -41,6 +42,7 @@ from mosquito_alert.notifications.models import (
 )
 from mosquito_alert.reports.models import Report
 from mosquito_alert.reports.tests.factories import (
+    ReportFactory,
     ObservationReportFactory,
     BiteReportFactory,
     BreedingSiteReportFactory,
@@ -426,6 +428,45 @@ class TestObservationAPI(BaseReportTest):
         first_chunk = next(response.streaming_content)
         # Ensure 'photos' is not in the header
         assert b"photos" not in first_chunk.lower()
+
+
+@pytest.mark.django_db
+class TestReportStatsView:
+    endpoint = "/api/v1/stats/"
+
+    def test_list_aggregates_reports_and_caches_normalized_queries(
+        self, app_api_client, use_test_cache_backend
+    ):
+        cache.clear()
+        adult_reports = [
+            ReportFactory(type=Report.TYPE_ADULT),
+            ReportFactory(type=Report.TYPE_ADULT),
+        ]
+        ReportFactory(type=Report.TYPE_BITE)
+        ReportFactory(type=Report.TYPE_ADULT, hide=True)
+        unpublished_report = ReportFactory(type=Report.TYPE_ADULT)
+        Report.objects.filter(pk=unpublished_report.pk).update(published_at=None)
+
+        response = app_api_client.get(self.endpoint + "?type=adult,bite&group_by=type")
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data == {
+            "meta": {"group_by": ["type"], "area": None},
+            "data": [
+                {"type": "adult", "count": 2},
+                {"type": "bite", "count": 1},
+            ],
+        }
+
+        Report.objects.filter(pk=adult_reports[0].pk).update(
+            hide=True, published_at=None
+        )
+        cached_response = app_api_client.get(
+            self.endpoint + "?group_by=type&type=bite&type=adult"
+        )
+
+        assert cached_response.status_code == status.HTTP_200_OK
+        assert cached_response.data == response.data
 
 
 @pytest.mark.django_db
