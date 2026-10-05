@@ -1,0 +1,201 @@
+---
+
+test_name: Report statistics
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - app_user_token
+    - report_stats_data
+
+stages:
+  - name: Aggregate published reports by type
+    request:
+      url: "{api_live_url}/{endpoint}/?group_by=type"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 200
+      json:
+        meta:
+          group_by: [type]
+          area: null
+        data:
+          - type: adult
+            count: 2
+          - type: bite
+            count: 1
+
+  - name: Accept comma-separated type filters
+    request:
+      url: "{api_live_url}/{endpoint}/?type=adult,bite&group_by=type"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 200
+      json:
+        meta:
+          group_by: [type]
+          area: null
+        data:
+          - type: adult
+            count: 2
+          - type: bite
+            count: 1
+
+  - name: Accept repeated type filters
+    request:
+      url: "{api_live_url}/{endpoint}/?type=adult&type=bite&group_by=type"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 200
+      json:
+        meta:
+          group_by: [type]
+          area: null
+        data:
+          - type: adult
+            count: 2
+          - type: bite
+            count: 1
+
+  - name: Filter reports by type
+    request:
+      url: "{api_live_url}/{endpoint}/?type=adult&group_by=type"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 200
+      json:
+        meta:
+          group_by: [type]
+          area: null
+        data:
+          - type: adult
+            count: 2
+
+  - name: Group by date with zero-filled buckets
+    request:
+      url: "{api_live_url}/{endpoint}/?group_by=date,type&interval=day&date_from=2024-01-01&date_to=2024-01-04&cumulative=false"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 200
+      json:
+        meta:
+          group_by: [date, type]
+          area: null
+          interval: day
+          cumulative: false
+        data:
+          - date: "2024-01-01"
+            type: adult
+            count: 1
+          - date: "2024-01-01"
+            type: bite
+            count: 0
+          - date: "2024-01-02"
+            type: adult
+            count: 0
+          - date: "2024-01-02"
+            type: bite
+            count: 0
+          - date: "2024-01-03"
+            type: adult
+            count: 1
+          - date: "2024-01-03"
+            type: bite
+            count: 1
+          - date: "2024-01-04"
+            type: adult
+            count: 0
+          - date: "2024-01-04"
+            type: bite
+            count: 0
+
+  - name: Return cumulative date counts
+    request:
+      url: "{api_live_url}/{endpoint}/?group_by=date&interval=day&date_from=2024-01-01&date_to=2024-01-04&cumulative=true"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 200
+      json:
+        meta:
+          group_by: [date]
+          area: null
+          interval: day
+          cumulative: true
+        data:
+          - date: "2024-01-01"
+            count: 1
+          - date: "2024-01-02"
+            count: 1
+          - date: "2024-01-03"
+            count: 3
+          - date: "2024-01-04"
+            count: 3
+
+  - name: Require area when grouping by region
+    request:
+      url: "{api_live_url}/{endpoint}/?group_by=region"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 400
+
+  - name: Filter by NUTS 2 area and group at NUTS 3
+    request:
+      url: "{api_live_url}/{endpoint}/?area=nuts2:{report_stats_data.area.pk}&group_by=region&level=3"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 200
+      json:
+        meta:
+          group_by: [region]
+          area:
+            level: nuts2
+            id: "{report_stats_data.area.pk}"
+            code: "{report_stats_data.area.fid}"
+            name: "{report_stats_data.area.name}"
+          level: 3
+        data:
+          - region_id: !int "{report_stats_data.adult_region.pk}"
+            region_code: "{report_stats_data.adult_region.fid}"
+            region_name: "{report_stats_data.adult_region.name_latn}"
+            count: 2
+          - region_id: !int "{report_stats_data.bite_region.pk}"
+            region_code: "{report_stats_data.bite_region.fid}"
+            region_name: "{report_stats_data.bite_region.name_latn}"
+            count: 1
+
+  - name: Require a finer level than the NUTS 2 area
+    request:
+      url: "{api_live_url}/{endpoint}/?area=nuts2:{report_stats_data.area.pk}&group_by=region&level=2"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 400
+
+  - name: Reject reversed date ranges
+    request:
+      url: "{api_live_url}/{endpoint}/?group_by=date&date_from=2024-01-04&date_to=2024-01-01"
+      method: GET
+      headers:
+        Authorization: "Bearer {app_user_token}"
+    response:
+      status_code: 400
