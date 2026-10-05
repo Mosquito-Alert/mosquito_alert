@@ -1,3 +1,7 @@
+import json
+import hashlib
+from django.core.cache import cache
+from django.utils.encoding import force_bytes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework.response import Response
 
@@ -17,6 +21,29 @@ from mosquito_alert.stats.enums import (
 # Query params that may legitimately be comma-separated single values
 # (e.g. ?type=bite,adult) rather than repeated (?type=bite&type=adult).
 CSV_PARAMS = ("type", "group_by")
+
+STATS_CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours cache
+
+# Generates a cache key for report stats based on the given query parameters.
+
+
+def _stats_cache_key(params: dict) -> str:
+    # Build from validated_data, not raw query string, so equivalent requests
+    # (different param order, ?type=bite,adult vs bite&adult) hit the same cache entry.
+    normalized = {
+        "area": params["area"]["id"] if params["area"] else None,
+        "area_level": params["area"]["level"] if params["area"] else None,
+        "type": sorted(params.get("type") or []),
+        "date_from": str(params.get("date_from") or ""),
+        "date_to": str(params.get("date_to") or ""),
+        "group_by": sorted(params["group_by"]),
+        "interval": params["interval"],
+        "cumulative": params["cumulative"],
+        "level": params["level"],
+    }
+    raw = json.dumps(normalized, sort_keys=True)
+    digest = hashlib.sha256(force_bytes(raw)).hexdigest()
+    return f"report-stats:{digest}"
 
 
 @extend_schema_view(
@@ -96,6 +123,11 @@ class ReportStatsViewSet(GenericViewSet):
         query_serializer.is_valid(raise_exception=True)
         params = query_serializer.validated_data
 
+        cache_key = _stats_cache_key(params)
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
+
         data = Report.objects.stats(
             area=params["area"],
             type=params.get("type"),
@@ -122,7 +154,10 @@ class ReportStatsViewSet(GenericViewSet):
         response_serializer = ReportStatsResponseSerializer(
             {"meta": meta, "data": data}
         )
-        return Response(response_serializer.data)
+        payload = response_serializer.data
+
+        cache.set(cache_key, payload, STATS_CACHE_TIMEOUT)
+        return Response(payload)
 
     @staticmethod
     def _normalize_query_params(request):
