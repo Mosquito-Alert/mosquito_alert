@@ -5,6 +5,7 @@ from rest_framework import permissions
 
 from mosquito_alert.identification_tasks.models import ExpertReportAnnotation
 from mosquito_alert.notifications.models import NotificationRecipient
+from mosquito_alert.stats.rules import VIEW_REPORT_STATS_PERM
 from mosquito_alert.users.models import TigaUser
 
 from .utils import get_fk_fieldnames
@@ -223,3 +224,13 @@ class IdentificationTaskCapabilitiesPermissions(FullDjangoModelPermissions):
 
 class CountriesPermissions(UserObjectPermissions):
     perms_map = permissions.DjangoModelPermissions.perms_map
+
+
+class ReportStatsPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        # obj: a Country or NutsEurope instance for the requested `area`,
+        # or None for an unscoped (global) stats request.
+        return request.user.has_perm(VIEW_REPORT_STATS_PERM, obj)

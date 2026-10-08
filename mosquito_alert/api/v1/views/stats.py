@@ -5,6 +5,7 @@ from django.utils.encoding import force_bytes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework.response import Response
 
+from mosquito_alert.api.v1.permissions import ReportStatsPermission
 from mosquito_alert.api.v1.serializers.stats import (
     REPORT_STATS_TYPE_CHOICES,
     ReportStatsQuerySerializer,
@@ -115,13 +116,20 @@ def _stats_cache_key(params: dict) -> str:
 )
 class ReportStatsViewSet(GenericViewSet):
     queryset = Report.objects.none()
+    permission_classes = (ReportStatsPermission,)
 
     def list(self, request, *args, **kwargs):
         query_serializer = ReportStatsQuerySerializer(
-            data=self._normalize_query_params(request)
+            data=self._normalize_query_params(request),
+            context={"request": request},
         )
         query_serializer.is_valid(raise_exception=True)
         params = query_serializer.validated_data
+
+        # Check object-level permissions for the specified area.
+        area = params.get("area")
+        area_obj = area["obj"] if area else None
+        self.check_object_permissions(request, area_obj)
 
         cache_key = _stats_cache_key(params)
         cached = cache.get(cache_key)
