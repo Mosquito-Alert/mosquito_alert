@@ -34,7 +34,7 @@ from mosquito_alert.identification_tasks.tests.factories import (
     IdentificationTaskFactory,
     ExpertReportAnnotationFactory,
 )
-from mosquito_alert.geo.tests.factories import CountryFactory
+from mosquito_alert.geo.tests.factories import CountryFactory, NutsEuropeFactory
 from mosquito_alert.geo.tests.fuzzy import FuzzyGriddedPolygon
 from mosquito_alert.notifications.models import (
     Notification,
@@ -432,11 +432,81 @@ class TestObservationAPI(BaseReportTest):
 
 @pytest.mark.django_db
 class TestReportStatsView:
-    endpoint = "/api/v1/stats/"
+    endpoint = "/api/v1/stats/?group_by=type"
+
+    def test_anonymous_user_cannot_access_stats(self):
+        response = APIClient().get(self.endpoint)
+
+        assert response.status_code in (401, 403)
+
+    def test_authenticated_user_without_area_access_is_denied(self, user, es_country):
+        client = APIClient()
+        client.force_login(user)
+
+        response = client.get(self.endpoint + "&area=country:ES")
+
+        assert response.status_code == 403
+
+    def test_workspace_member_can_access_country_but_not_global_stats(
+        self, user, es_country
+    ):
+        workspace = es_country.workspaces.filter(geom__isnull=True).first()
+        if workspace is None:
+            workspace = WorkspaceFactory(country=es_country)
+        workspace.members.add(user)
+        client = APIClient()
+        client.force_login(user)
+
+        global_response = client.get(self.endpoint)
+        scoped_response = client.get(self.endpoint + "&area=country:ES")
+
+        assert global_response.status_code == 403
+        assert scoped_response.status_code == 200
+
+    def test_superuser_can_access_global_stats(self, user):
+        user.is_superuser = True
+        user.save()
+        client = APIClient()
+        client.force_login(user)
+
+        response = client.get(self.endpoint)
+
+        assert response.status_code == 200
+
+    def test_workspace_member_cannot_access_other_country(
+        self, user, es_country, it_country
+    ):
+        workspace = es_country.workspaces.filter(geom__isnull=True).first()
+        if workspace is None:
+            workspace = WorkspaceFactory(country=es_country)
+        workspace.members.add(user)
+        client = APIClient()
+        client.force_login(user)
+
+        response = client.get(self.endpoint + f"&area=country:{it_country.iso2_code}")
+
+        assert response.status_code == 403
+
+    def test_workspace_member_can_access_subdivision(self, user, es_country):
+        workspace = es_country.workspaces.filter(geom__isnull=True).first()
+        if workspace is None:
+            workspace = WorkspaceFactory(country=es_country)
+        workspace.members.add(user)
+        client = APIClient()
+        client.force_login(user)
+
+        subregion = NutsEuropeFactory(levl_code=2, europecountry=es_country)
+        response = client.get(self.endpoint + f"&area=nuts2:{subregion.gid}")
+
+        assert response.status_code == 200
 
     def test_list_aggregates_reports_and_caches_normalized_queries(
-        self, app_api_client, use_test_cache_backend
+        self, user, use_test_cache_backend
     ):
+        user.is_superuser = True
+        user.save()
+        api_client = APIClient()
+        api_client.force_login(user)
         cache.clear()
         adult_reports = [
             ReportFactory(type=Report.TYPE_ADULT),
@@ -447,7 +517,7 @@ class TestReportStatsView:
         unpublished_report = ReportFactory(type=Report.TYPE_ADULT)
         Report.objects.filter(pk=unpublished_report.pk).update(published_at=None)
 
-        response = app_api_client.get(self.endpoint + "?type=adult,bite&group_by=type")
+        response = api_client.get(self.endpoint + "&type=adult,bite")
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data == {
@@ -461,9 +531,7 @@ class TestReportStatsView:
         Report.objects.filter(pk=adult_reports[0].pk).update(
             hide=True, published_at=None
         )
-        cached_response = app_api_client.get(
-            self.endpoint + "?group_by=type&type=bite&type=adult"
-        )
+        cached_response = api_client.get(self.endpoint + "&type=bite&type=adult")
 
         assert cached_response.status_code == status.HTTP_200_OK
         assert cached_response.data == response.data

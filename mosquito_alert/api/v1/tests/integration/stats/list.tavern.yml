@@ -8,7 +8,7 @@ includes:
 marks:
   - usefixtures:
     - api_live_url
-    - app_user_token
+    - stats_admin_token
     - report_stats_data
 
 stages:
@@ -17,7 +17,7 @@ stages:
       url: "{api_live_url}/{endpoint}/?group_by=type"
       method: GET
       headers:
-        Authorization: "Bearer {app_user_token}"
+        Authorization: "Bearer {stats_admin_token}"
     response:
       status_code: 200
       json:
@@ -35,7 +35,7 @@ stages:
       url: "{api_live_url}/{endpoint}/?type=adult,bite&group_by=type"
       method: GET
       headers:
-        Authorization: "Bearer {app_user_token}"
+        Authorization: "Bearer {stats_admin_token}"
     response:
       status_code: 200
       json:
@@ -53,7 +53,7 @@ stages:
       url: "{api_live_url}/{endpoint}/?type=adult&type=bite&group_by=type"
       method: GET
       headers:
-        Authorization: "Bearer {app_user_token}"
+        Authorization: "Bearer {stats_admin_token}"
     response:
       status_code: 200
       json:
@@ -71,7 +71,7 @@ stages:
       url: "{api_live_url}/{endpoint}/?type=adult&group_by=type"
       method: GET
       headers:
-        Authorization: "Bearer {app_user_token}"
+        Authorization: "Bearer {stats_admin_token}"
     response:
       status_code: 200
       json:
@@ -87,7 +87,7 @@ stages:
       url: "{api_live_url}/{endpoint}/?group_by=date,type&interval=day&date_from=2024-01-01&date_to=2024-01-04&cumulative=false"
       method: GET
       headers:
-        Authorization: "Bearer {app_user_token}"
+        Authorization: "Bearer {stats_admin_token}"
     response:
       status_code: 200
       json:
@@ -127,7 +127,7 @@ stages:
       url: "{api_live_url}/{endpoint}/?group_by=date&interval=day&date_from=2024-01-01&date_to=2024-01-04&cumulative=true"
       method: GET
       headers:
-        Authorization: "Bearer {app_user_token}"
+        Authorization: "Bearer {stats_admin_token}"
     response:
       status_code: 200
       json:
@@ -151,7 +151,7 @@ stages:
       url: "{api_live_url}/{endpoint}/?group_by=region"
       method: GET
       headers:
-        Authorization: "Bearer {app_user_token}"
+        Authorization: "Bearer {stats_admin_token}"
     response:
       status_code: 400
 
@@ -160,7 +160,7 @@ stages:
       url: "{api_live_url}/{endpoint}/?area=nuts2:{report_stats_data.area.pk}&group_by=region&level=3"
       method: GET
       headers:
-        Authorization: "Bearer {app_user_token}"
+        Authorization: "Bearer {stats_admin_token}"
     response:
       status_code: 200
       json:
@@ -187,7 +187,7 @@ stages:
       url: "{api_live_url}/{endpoint}/?area=nuts2:{report_stats_data.area.pk}&group_by=region&level=2"
       method: GET
       headers:
-        Authorization: "Bearer {app_user_token}"
+        Authorization: "Bearer {stats_admin_token}"
     response:
       status_code: 400
 
@@ -196,6 +196,6 @@ stages:
       url: "{api_live_url}/{endpoint}/?group_by=date&date_from=2024-01-04&date_to=2024-01-01"
       method: GET
       headers:
-        Authorization: "Bearer {app_user_token}"
+        Authorization: "Bearer {stats_admin_token}"
     response:
       status_code: 400

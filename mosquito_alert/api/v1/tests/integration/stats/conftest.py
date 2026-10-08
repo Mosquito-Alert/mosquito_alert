@@ -3,10 +3,20 @@ from types import SimpleNamespace
 
 import pytest
 from django.core.cache import cache
+from django.utils.module_loading import import_string
+from rest_framework_simplejwt.settings import api_settings
 
 from mosquito_alert.geo.tests.factories import NutsEuropeFactory
 from mosquito_alert.reports.models import Report
 from mosquito_alert.reports.tests.factories import ReportFactory
+
+
+@pytest.fixture
+def stats_admin_token(user):
+    user.is_superuser = True
+    user.save()
+    token_class = import_string(api_settings.TOKEN_OBTAIN_SERIALIZER).token_class
+    return str(token_class.for_user(user).access_token)
 
 
 @pytest.fixture
