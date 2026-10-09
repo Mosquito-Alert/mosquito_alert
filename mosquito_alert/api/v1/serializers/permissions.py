@@ -5,6 +5,7 @@ from mosquito_alert.identification_tasks.models import (
     IdentificationTask,
 )
 from mosquito_alert.notifications.models import Notification
+from mosquito_alert.stats.rules import VIEW_STATS_PERM
 
 
 class BaseCRUDPermissionSerializer(serializers.Serializer):
@@ -56,7 +57,14 @@ class PermissionsSerializer(serializers.Serializer):
     class MessagePermissionSerializer(BaseCRUDPermissionSerializer):
         model = Notification
 
+    class StatisticsPermissionSerializer(BaseCRUDPermissionSerializer):
+        def to_representation(self, instance):
+            user = self.context["request"].user
+            can_view = user.has_perm(VIEW_STATS_PERM)
+            return {"add": False, "change": False, "view": can_view, "delete": False}
+
     annotation = AnnotationPermissionSerializer(source="*")
     identification_task = IdentificationTaskPermissionSerializer(source="*")
     review = ReviewPermissionSerializer(source="*")
     message = MessagePermissionSerializer(source="*")
+    statistics = StatisticsPermissionSerializer(source="*")
