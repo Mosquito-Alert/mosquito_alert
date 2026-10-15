@@ -16,10 +16,19 @@ class BaseCRUDPermissionSerializer(serializers.Serializer):
 
     model = None
 
+    @staticmethod
+    def permission_response(add, change, view, delete):
+        return {
+            "add": add,
+            "change": change,
+            "view": view,
+            "delete": delete,
+        }
+
     def to_representation(self, instance):
         user = self.context["request"].user
 
-        return {
+        permissions = {
             action: user.has_perm(
                 "%(app_label)s.%(action)s_%(model_name)s"
                 % {
@@ -30,6 +39,7 @@ class BaseCRUDPermissionSerializer(serializers.Serializer):
             )
             for action in ("add", "change", "view", "delete")
         }
+        return self.permission_response(**permissions)
 
 
 class PermissionsSerializer(serializers.Serializer):
@@ -47,12 +57,12 @@ class PermissionsSerializer(serializers.Serializer):
                 f"{IdentificationTask._meta.app_label}.add_review"
             )
 
-            return {
-                "add": has_add_review_perm,
-                "change": has_add_review_perm,
-                "view": has_add_review_perm,
-                "delete": False,
-            }
+            return self.permission_response(
+                add=has_add_review_perm,
+                change=has_add_review_perm,
+                view=has_add_review_perm,
+                delete=False,
+            )
 
     class MessagePermissionSerializer(BaseCRUDPermissionSerializer):
         model = Notification
@@ -61,7 +71,9 @@ class PermissionsSerializer(serializers.Serializer):
         def to_representation(self, instance):
             user = self.context["request"].user
             can_view = user.has_perm(VIEW_STATS_PERM)
-            return {"add": False, "change": False, "view": can_view, "delete": False}
+            return self.permission_response(
+                add=False, change=False, view=can_view, delete=False
+            )
 
     annotation = AnnotationPermissionSerializer(source="*")
     identification_task = IdentificationTaskPermissionSerializer(source="*")

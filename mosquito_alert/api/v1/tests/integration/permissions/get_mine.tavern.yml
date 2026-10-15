@@ -39,27 +39,7 @@ stages:
         Authorization: 'Bearer {app_user_token}'
     response:
       status_code: 200
-      json:
-        annotation:
-          add: false
-          change: false
-          view: false
-          delete: false
-        identification_task:
-          add: false
-          change: false
-          view: false
-          delete: false
-        review:
-          add: false
-          change: false
-          view: false
-          delete: false
-        message:
-          add: false
-          change: false
-          view: false
-          delete: false
+      json: !force_format_include "{permissions_without_grants}"
 
 ---
 
@@ -83,24 +63,4 @@ stages:
         Authorization: 'Bearer {jwt_token_user}'
     response:
       status_code: 200
-      json:
-        annotation:
-          add: false
-          change: false
-          view: false
-          delete: false
-        identification_task:
-          add: false
-          change: false
-          view: false
-          delete: false
-        review:
-          add: false
-          change: false
-          view: false
-          delete: false
-        message:
-          add: false
-          change: false
-          view: false
-          delete: false
+      json: !force_format_include "{permissions_without_grants}"
