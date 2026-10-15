@@ -1085,16 +1085,40 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 0
 
-    def test_backlog_returns_all_for_user_with_view_perm(
-        self, identification_task, user
+    @pytest.mark.parametrize(
+        "can_view_tasks, can_add_annotations, expected",
+        [
+            (False, False, False),
+            (True, False, False),
+            (False, True, False),
+            (True, True, True),
+        ],
+    )
+    def test_backlog_global_access_requires_both_view_and_add_permissions(
+        self,
+        identification_task,
+        user,
+        can_view_tasks: bool,
+        can_add_annotations: bool,
+        expected: bool,
     ):
-        """backlog() should return all tasks for users with view permission."""
-        grant_permission_to_user(type="view", model_class=IdentificationTask, user=user)
+        unrelated_task = IdentificationTaskFactory()
+
+        if can_view_tasks:
+            grant_permission_to_user(
+                type="view", model_class=IdentificationTask, user=user
+            )
+        if can_add_annotations:
+            grant_permission_to_user(
+                type="add", model_class=ExpertReportAnnotation, user=user
+            )
 
         result = IdentificationTask.objects.backlog(user=user)
 
-        assert result.count() == 1
-        assert result.first() == identification_task
+        expected_task_ids = (
+            {identification_task.pk, unrelated_task.pk} if expected else set()
+        )
+        assert set(result.values_list("pk", flat=True)) == expected_task_ids
 
     def test_backlog_returns_none_for_non_user_types(self, identification_task):
         """backlog() should return empty queryset for TigaUser."""
@@ -1102,10 +1126,10 @@ class TestIdentificationTaskManager:
 
         assert result.count() == 0
 
-    def test_backlog_user_without_workspace_annotation_role_returns(
+    def test_backlog_member_without_annotation_role_does_not_return(
         self, identification_task, user
     ):
-        """backlog() should return nothing for users without workspace memberships."""
+        """backlog() should exclude members who cannot annotate the task."""
         WorkspaceMembership.objects.create(
             workspace=identification_task.report.country.workspaces.first(),
             user=user,
@@ -1114,7 +1138,7 @@ class TestIdentificationTaskManager:
 
         result = IdentificationTask.objects.backlog(user=user)
 
-        assert result.count() == 1
+        assert not result.exists()
 
     @pytest.mark.parametrize("workspace_is_subregion", [True, False])
     def test_backlog_prioritizes_user_workspace(self, workspace_is_subregion, user):
@@ -1132,7 +1156,7 @@ class TestIdentificationTaskManager:
         WorkspaceMembership.objects.create(
             workspace=workspace,
             user=user,
-            role=WorkspaceMembership.Role.MEMBER,
+            role=WorkspaceMembership.Role.ANNOTATOR,
         )
 
         identification_task = IdentificationTaskFactory(
@@ -1308,6 +1332,30 @@ class TestIdentificationTaskManager:
         if collaboration_exists:
             assert result.first().priority == 1
 
+    @pytest.mark.parametrize(
+        "role, expected",
+        [
+            (WorkspaceMembership.Role.ANNOTATOR, True),
+            (WorkspaceMembership.Role.SUPERVISOR, True),
+            (WorkspaceMembership.Role.MEMBER, False),
+        ],
+    )
+    def test_backlog_collaboration_requires_annotation_role(
+        self, role: WorkspaceMembership.Role, expected: bool
+    ):
+        user = UserFactory()
+        user_workspace = WorkspaceFactory()
+        WorkspaceMembership.objects.create(
+            workspace=user_workspace, user=user, role=role
+        )
+        task_workspace = WorkspaceFactory()
+        IdentificationTaskFactory(
+            report__point=task_workspace.country.geom.point_on_surface
+        )
+        WorkspaceCollaborationGroupFactory(workspaces=[user_workspace, task_workspace])
+
+        assert IdentificationTask.objects.backlog(user=user).exists() is expected
+
     @pytest.mark.parametrize("task_in_exclusivity_period", [False, True])
     def test_backlog_reviewer_user_sees_collaboration_workspace(
         self, task_in_exclusivity_period
@@ -1345,6 +1393,24 @@ class TestIdentificationTaskManager:
 
             # Reviewer can only see if not in exclusivity period.
             assert result.exists() == (not task_in_exclusivity_period)
+
+    def test_backlog_reviewer_does_not_receive_task_outside_collaboration_group(self):
+        user = UserFactory()
+        european_workspace = WorkspaceFactory()
+        unrelated_workspace = WorkspaceFactory()
+        WorkspaceCollaborationGroupFactory(
+            workspaces=[european_workspace],
+            reviewers=[user],
+        )
+        task = IdentificationTaskFactory(
+            report__point=unrelated_workspace.country.geom.point_on_surface
+        )
+
+        assert (
+            not IdentificationTask.objects.backlog(user=user)
+            .filter(pk=task.pk)
+            .exists()
+        )
 
     def test_backlog_user_prioritizes_nuts2(self):
         """backlog() should prioritize tasks from user's NUTS2 region."""

@@ -1,5 +1,5 @@
 import rules
-from typing import Optional
+from typing import Callable, Optional
 
 from django.contrib.auth.backends import ModelBackend
 
@@ -10,7 +10,7 @@ model_backend = ModelBackend()
 
 def has_global_permission(
     klass, type: Optional[str] = None, name: Optional[str] = None
-) -> bool:
+) -> Callable[..., bool]:
     perm = "%(app_label)s.%(name)s" % {
         "app_label": klass._meta.app_label,
         "name": name or f"{type}_{klass._meta.model_name}",
