@@ -5,35 +5,29 @@ description: Login information for test server
 
 variables:
   endpoint: "permissions"
-  response_data_validation:
-    general:
-      permissions: &retrieve_validation
-        annotation:
-          add: !anybool
-          change: !anybool
-          view: !anybool
-          delete: !anybool
-          mark_as_executive: !anybool
-        identification_task:
-          add: !anybool
-          change: !anybool
-          view: !anybool
-          delete: !anybool
-        review:
-          add: !anybool
-          change: !anybool
-          view: !anybool
-          delete: !anybool
-        notification:
-          add: !anybool
-          change: !anybool
-          view: !anybool
-          delete: !anybool
-    countries:
-      country:
-        id: !anyint
-        name_en: !anystr
-        iso3_code: !anystr
-      role: !anystr
-      permissions:
-        <<: *retrieve_validation
+  permissions_without_grants:
+    annotation:
+      add: false
+      change: false
+      view: false
+      delete: false
+    identification_task:
+      add: false
+      change: false
+      view: false
+      delete: false
+    review:
+      add: false
+      change: false
+      view: false
+      delete: false
+    message:
+      add: false
+      change: false
+      view: false
+      delete: false
+    statistics:
+      add: false
+      change: false
+      view: false
+      delete: false

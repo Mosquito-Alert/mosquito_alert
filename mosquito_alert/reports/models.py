@@ -471,7 +471,8 @@ class Report(TimeZoneModelMixin, models.Model):
     objects = ReportManager()
 
     history = HistoricalRecords(
-        table_name="tigaserver_app_historicalreport",  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        table_name="tigaserver_app_historicalreport",
         # Exclude field the user can not modify or that are not relevant.
         excluded_fields=[
             "user",
@@ -977,7 +978,8 @@ class Report(TimeZoneModelMixin, models.Model):
 
     # Meta and String
     class Meta:
-        db_table = "tigaserver_app_report"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_report"
         # NOTE: this ordering is prone to bugs, do not uncomment.
         # ordering = ['server_upload_time', ]
         constraints = [
@@ -1011,6 +1013,40 @@ class Report(TimeZoneModelMixin, models.Model):
                     hide=False,
                     location_is_masked=False,
                     point__isnull=False,
+                    published_at__isnull=False,
+                ),
+            ),
+            # Improve performance for statistics
+            # Supports stats filtering/grouping by country + type + date,
+            models.Index(
+                fields=["country", "type", "server_upload_time"],
+                name="report_stats_country_type_idx",
+                condition=Q(
+                    deleted_at__isnull=True,
+                    hide=False,
+                    location_is_masked=False,
+                    published_at__isnull=False,
+                ),
+            ),
+            # Supports stats filtering/grouping by NUTS-2 region.
+            models.Index(
+                fields=["nuts_2_fk", "type", "server_upload_time"],
+                name="report_stats_nuts2_type_idx",
+                condition=Q(
+                    deleted_at__isnull=True,
+                    hide=False,
+                    location_is_masked=False,
+                    published_at__isnull=False,
+                ),
+            ),
+            # Supports stats filtering/grouping by NUTS-3 region.
+            models.Index(
+                fields=["nuts_3_fk", "type", "server_upload_time"],
+                name="report_stats_nuts3_type_idx",
+                condition=Q(
+                    deleted_at__isnull=True,
+                    hide=False,
+                    location_is_masked=False,
                     published_at__isnull=False,
                 ),
             ),
@@ -1190,7 +1226,8 @@ class ReportResponse(models.Model):
         return str(self.id)
 
     class Meta:
-        db_table = "tigaserver_app_reportresponse"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_reportresponse"
 
 
 @deconstructible
@@ -1292,4 +1329,5 @@ class Photo(models.Model):
             self.report.save()
 
     class Meta:
-        db_table = "tigaserver_app_photo"  # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        # NOTE: migrate from old tigaserver_app, kept old name to avoid issues with custom third-party scripts that still uses the raw table name.
+        db_table = "tigaserver_app_photo"

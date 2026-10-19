@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_headers
@@ -16,6 +17,8 @@ from mosquito_alert.api.v1.serializers.workspaces import (
 from mosquito_alert.api.v1.views.viewsets import GenericViewSet
 from mosquito_alert.utils.rules import has_global_permission
 from mosquito_alert.workspaces.models import Workspace, WorkspaceCollaborationGroup
+
+User = get_user_model()
 
 
 @method_decorator(
@@ -71,15 +74,27 @@ class WorkspaceCollaboratoratorViewSet(
 
     def get_queryset(self):
         qs = super().get_queryset()
-
-        if has_global_permission(WorkspaceCollaborationGroup, type="view")(
-            user=self.request.user
-        ):
+        user = self.request.user
+        if has_global_permission(WorkspaceCollaborationGroup, type="view")(user=user):
             return qs
 
         return qs.filter(
-            models.Q(workspaces__members=self.request.user)
-            | models.Q(reviewers=self.request.user)
+            models.Q(
+                models.Exists(
+                    Workspace.objects.filter(
+                        collaboration_groups=models.OuterRef("pk"),
+                        members=user,
+                    )
+                )
+            )
+            | models.Q(
+                models.Exists(
+                    User.objects.filter(
+                        collaboration_groups_as_reviewer=models.OuterRef("pk"),
+                        pk=user.pk,
+                    )
+                )
+            )
         )
 
 

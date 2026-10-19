@@ -52,6 +52,7 @@ from .reports import (
     BreedingSiteGeoModelSerializer,
     BreedingSiteGeoJsonModelSerializer,
 )
+from .stats import ReportStatsQuerySerializer
 from .taxa import SimpleTaxonSerializer, TaxonSerializer, TaxonTreeNodeSerializer
 from .users import (
     UserSerializer,
@@ -124,4 +125,5 @@ __all__ = [
     "WorkspaceSerializer",
     "SimpleWorkspaceSerializer",
     "WorkspaceCollaborationGroupSerializer",
+    "ReportStatsQuerySerializer",
 ]
