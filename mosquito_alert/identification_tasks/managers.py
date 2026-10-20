@@ -63,20 +63,32 @@ class IdentificationTaskQuerySet(models.QuerySet):
 
     def backlog(self, user: User) -> QuerySet:
         """Awaiting assignment but part of the annotation cycle for this user."""
-        from .rules import has_global_identification_task_permission
+        from .rules import (
+            has_global_expert_report_annotation_permission,
+            has_global_identification_task_permission,
+        )
 
         qs = self._assignable()
 
         if not isinstance(user, User):
             return qs.none()
 
-        if has_global_identification_task_permission(type="view")(user=user):
-            # Has global view permission, can see all tasks.
-            return qs
-
+        # Never offer tasks the user is already assigned to / has annotated.
         qs = qs.exclude(assignees=user)
 
-        user_workspace_qs = Workspace.objects.filter(memberships__user=user)
+        if has_global_identification_task_permission(type="view")(
+            user=user
+        ) and has_global_expert_report_annotation_permission(type="add")(user=user):
+            # Both global permissions are required to bypass workspace eligibility.
+            return qs.order_by("-report__server_upload_time")
+
+        user_annotator_workspace_qs = Workspace.objects.filter(
+            memberships__user=user,
+            memberships__role__in=[
+                WorkspaceMembership.Role.ANNOTATOR,
+                WorkspaceMembership.Role.SUPERVISOR,
+            ],
+        )
 
         userstat: Optional[UserStat] = None
         try:
@@ -102,7 +114,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     output_field=models.BooleanField(),
                 ),
                 in_user_workspace=models.Exists(
-                    user_workspace_qs.filter(
+                    user_annotator_workspace_qs.filter(
                         pk__in=models.Subquery(self._workspace_id_subquery)
                     )
                 ),
@@ -117,7 +129,7 @@ class IdentificationTaskQuerySet(models.QuerySet):
                     WorkspaceCollaborationGroup.objects.filter(
                         workspaces__pk__in=models.Subquery(self._workspace_id_subquery)
                     ).filter(
-                        models.Q(workspaces__in=user_workspace_qs)
+                        models.Q(workspaces__in=user_annotator_workspace_qs)
                         | models.Q(
                             pk__in=user.collaboration_groups_as_reviewer.values("pk")
                         )

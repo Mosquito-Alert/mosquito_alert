@@ -1,5 +1,5 @@
 import rules
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 
 from mosquito_alert.users.models import User, TigaUser
 from mosquito_alert.utils.rules import has_global_permission
@@ -16,8 +16,14 @@ from .models import IdentificationTask, ExpertReportAnnotation, PhotoPrediction
 
 def has_global_identification_task_permission(
     type: Optional[str] = None, name: Optional[str] = None
-) -> bool:
+) -> Callable[..., bool]:
     return has_global_permission(IdentificationTask, type=type, name=name)
+
+
+def has_global_expert_report_annotation_permission(
+    type: Optional[str] = None, name: Optional[str] = None
+) -> Callable[..., bool]:
+    return has_global_permission(ExpertReportAnnotation, type=type, name=name)
 
 
 @rules.predicate
