@@ -109,6 +109,7 @@ THIRD_PARTY_APPS = [
     "leaflet",
     "taggit",
     "drf_spectacular",
+    "drf_spectacular_sidecar",
     "django_filters",
     "corsheaders",
     "simple_history",
@@ -392,6 +393,9 @@ SPECTACULAR_SETTINGS = {
             },
         },
     },
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
     "COMPONENT_SPLIT_REQUEST": True,
 }
 
