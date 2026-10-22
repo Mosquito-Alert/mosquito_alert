@@ -1,31 +1,22 @@
 import rules
-from django.db.models import Q
 from django.apps import apps
 
 from mosquito_alert.geo.models import Country, NutsEurope
-from mosquito_alert.workspaces.models import Workspace
+from mosquito_alert.reports.models import Report
+from mosquito_alert.stats.utils import GEOM_TOLERANCE, user_workspaces
 
 STATS_APP_LABEL = apps.get_app_config("stats").label
 
-# ~1 km in degrees (SRID 4326). Absorbs boundary mismatches between datasets.
-GEOM_TOLERANCE = 0.01
-
-
-def _user_workspaces(user):
-    return Workspace.objects.filter(
-        Q(memberships__user=user) | Q(collaboration_groups__reviewers=user)
-    ).distinct()
-
 
 @rules.predicate
-def is_superuser(user):
-    # The only hardcoded bypass — built into the User model, nothing to assign.
-    return user.is_superuser
+def has_unrestricted_stats_access(user):
+    """Predicate to check if the user has unrestricted access to report statistics."""
+    return user.is_superuser or user.has_perm(UNRESTRICTED_PERM)
 
 
 @rules.predicate
 def has_any_stats_access(user):
-    return _user_workspaces(user).exists()
+    return user_workspaces(user).exists()
 
 
 @rules.predicate
@@ -42,7 +33,7 @@ def can_view_report_stats_for_area(user, obj):
     if obj is None or obj.geom is None:
         return False
 
-    workspaces = _user_workspaces(user)
+    workspaces = user_workspaces(user)
 
     # Country that the requested area belongs to.
     if isinstance(obj, Country):
@@ -69,11 +60,12 @@ def can_view_report_stats_for_area(user, obj):
     return False
 
 
+UNRESTRICTED_PERM = f"{Report._meta.app_label}.view_report_stats_unrestricted"
 VIEW_STATS_PERM = f"{STATS_APP_LABEL}.view_stats"
 VIEW_REPORT_STATS_PERM = f"{STATS_APP_LABEL}.view_report_stats"
 
-rules.add_perm(VIEW_STATS_PERM, is_superuser | has_any_stats_access)
+rules.add_perm(VIEW_STATS_PERM, has_unrestricted_stats_access | has_any_stats_access)
 rules.add_perm(
     VIEW_REPORT_STATS_PERM,
-    is_superuser | can_view_report_stats_for_area,
+    has_unrestricted_stats_access | can_view_report_stats_for_area,
 )

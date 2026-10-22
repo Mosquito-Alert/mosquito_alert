@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from mosquito_alert.geo.models import Country, NutsEurope
@@ -128,8 +129,28 @@ class ReportStatsQuerySerializer(serializers.Serializer):
         return attrs
 
 
+class StatsAreaSerializer(serializers.Serializer):
+    key = serializers.CharField(help_text='Value to send as `?area=`, e.g. "nuts2:34".')
+    level = serializers.ChoiceField(choices=AreaLevel.choices)
+    id = serializers.CharField()
+    code = serializers.CharField()
+    name = serializers.CharField()
+    is_member = serializers.BooleanField(
+        help_text="True if the user is a direct member of a workspace anchored on this area."
+    )
+    children = serializers.SerializerMethodField()
+
+    @extend_schema_field(
+        {"type": "array", "items": {"$ref": "#/components/schemas/StatsArea"}}
+    )
+    def get_children(self, obj):
+        return StatsAreaSerializer(obj["children"], many=True).data
+
+
 # * #################### RESPONSE ####################
 # --- Meta response -------------------------------------------------
+
+
 class AreaMetaSerializer(serializers.Serializer):
     level = serializers.ChoiceField(choices=AreaLevel.choices)
     id = serializers.CharField()
