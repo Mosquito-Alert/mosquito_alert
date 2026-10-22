@@ -1,0 +1,63 @@
+---
+
+test_name: Areas available for statistics
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+    - jwt_token_user
+    - stats_areas_data
+
+stages:
+  - name: Return the current user's accessible area tree
+    request:
+      url: "{api_live_url}/{endpoint}/areas/"
+      method: GET
+      headers:
+        Authorization: "Bearer {jwt_token_user}"
+    response:
+      status_code: 200
+      json:
+        - key: country:ES
+          level: country
+          id: ES
+          code: ESP
+          name: Spain
+          is_member: true
+          children:
+            - key: "nuts2:{stats_areas_data.nuts2.pk}"
+              level: nuts2
+              id: "{stats_areas_data.nuts2.pk}"
+              code: ES51
+              name: Stats test area
+              is_member: false
+              children:
+                - key: "nuts3:{stats_areas_data.nuts3.pk}"
+                  level: nuts3
+                  id: "{stats_areas_data.nuts3.pk}"
+                  code: ES511
+                  name: Stats test subarea
+                  is_member: false
+                  children: []
+
+---
+
+test_name: Areas require authentication
+
+includes:
+  - !include schema.yml
+
+marks:
+  - usefixtures:
+    - api_live_url
+
+stages:
+  - name: Reject an unauthenticated request
+    request:
+      url: "{api_live_url}/{endpoint}/areas/"
+      method: GET
+    response:
+      status_code: 401

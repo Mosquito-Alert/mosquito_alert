@@ -9,6 +9,7 @@ from rest_framework_simplejwt.settings import api_settings
 from mosquito_alert.geo.tests.factories import NutsEuropeFactory
 from mosquito_alert.reports.models import Report
 from mosquito_alert.reports.tests.factories import ReportFactory
+from mosquito_alert.workspaces.tests.factories import WorkspaceFactory
 
 
 @pytest.fixture
@@ -59,3 +60,24 @@ def report_stats_data(db, es_country):
     return SimpleNamespace(
         area=area, adult_region=adult_region, bite_region=bite_region
     )
+
+
+@pytest.fixture
+def stats_areas_data(db, user, another_user, es_country, it_country):
+    WorkspaceFactory(country=es_country, members=[user])
+    WorkspaceFactory(country=it_country, members=[another_user])
+
+    nuts2 = NutsEuropeFactory(
+        levl_code=2,
+        fid="ES51",
+        europecountry=es_country,
+        name_latn="Stats test area",
+    )
+    nuts3 = NutsEuropeFactory(
+        levl_code=3,
+        fid="ES511",
+        europecountry=es_country,
+        name_latn="Stats test subarea",
+    )
+
+    return SimpleNamespace(nuts2=nuts2, nuts3=nuts3)
