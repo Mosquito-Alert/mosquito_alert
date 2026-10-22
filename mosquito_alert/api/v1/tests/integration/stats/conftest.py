@@ -64,8 +64,15 @@ def report_stats_data(db, es_country):
 
 @pytest.fixture
 def stats_areas_data(db, user, another_user, es_country, it_country):
-    WorkspaceFactory(country=es_country, members=[user])
-    WorkspaceFactory(country=it_country, members=[another_user])
+    spanish_workspace = es_country.workspaces.filter(geom__isnull=True).first()
+    if spanish_workspace is None:
+        spanish_workspace = WorkspaceFactory(country=es_country)
+    spanish_workspace.members.add(user)
+
+    italian_workspace = it_country.workspaces.filter(geom__isnull=True).first()
+    if italian_workspace is None:
+        italian_workspace = WorkspaceFactory(country=it_country)
+    italian_workspace.members.add(another_user)
 
     nuts2 = NutsEuropeFactory(
         levl_code=2,
