@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from datetime import timedelta
 import json
+from django.contrib.auth.models import Permission
 import jwt
 import pytest
 import time_machine
@@ -433,11 +434,97 @@ class TestObservationAPI(BaseReportTest):
 @pytest.mark.django_db
 class TestReportStatsView:
     endpoint = "/api/v1/stats/?group_by=type"
+    areas_endpoint = "/api/v1/stats/areas/"
 
     def test_anonymous_user_cannot_access_stats(self):
         response = APIClient().get(self.endpoint)
 
         assert response.status_code in (401, 403)
+
+    def test_anonymous_user_cannot_access_stats_areas(self):
+        response = APIClient().get(self.areas_endpoint)
+
+        assert response.status_code in (401, 403)
+
+    def test_authenticated_user_without_workspace_cannot_access_stats_areas(self, user):
+        client = APIClient()
+        client.force_login(user)
+
+        response = client.get(self.areas_endpoint)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_authenticated_user_without_workspace_but_with_perm_can_access_stats_areas(
+        self, user
+    ):
+        client = APIClient()
+        client.force_login(user)
+        user.user_permissions.add(
+            Permission.objects.get(codename="view_report_stats_unrestricted")
+        )
+
+        response = client.get(self.areas_endpoint)
+
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_workspace_member_receives_nested_accessible_stats_areas(self, user):
+        country = CountryFactory(
+            iso2_code="ZZ", iso3_code="ZZZ", name_engl="Stats test country"
+        )
+        workspace = country.workspaces.filter(geom__isnull=True).first()
+        if workspace is None:
+            workspace = WorkspaceFactory(country=country)
+        workspace.members.add(user)
+
+        nuts2 = NutsEuropeFactory(
+            levl_code=2,
+            fid="ZZ99",
+            europecountry=country,
+            name_latn="Stats test area",
+        )
+        nuts3 = NutsEuropeFactory(
+            levl_code=3,
+            fid="ZZ991",
+            europecountry=country,
+            name_latn="Stats test subarea",
+        )
+
+        client = APIClient()
+        client.force_login(user)
+        response = client.get(self.areas_endpoint)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data == [
+            {
+                "key": "country:ZZ",
+                "level": "country",
+                "id": "ZZ",
+                "code": "ZZZ",
+                "name": "Stats test country",
+                "is_member": True,
+                "children": [
+                    {
+                        "key": f"nuts2:{nuts2.pk}",
+                        "level": "nuts2",
+                        "id": str(nuts2.pk),
+                        "code": "ZZ99",
+                        "name": "Stats test area",
+                        "is_member": False,
+                        "children": [
+                            {
+                                "key": f"nuts3:{nuts3.pk}",
+                                "level": "nuts3",
+                                "id": str(nuts3.pk),
+                                "code": "ZZ991",
+                                "name": "Stats test subarea",
+                                "is_member": False,
+                                "children": [],
+                            }
+                        ],
+                    }
+                ],
+            }
+        ]
 
     def test_authenticated_user_without_area_access_is_denied(self, user, es_country):
         client = APIClient()

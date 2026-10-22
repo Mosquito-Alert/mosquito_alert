@@ -1051,6 +1051,12 @@ class Report(TimeZoneModelMixin, models.Model):
                 ),
             ),
         ]
+        permissions = [
+            (
+                "view_report_stats_unrestricted",
+                "Can view report statistics for every area",
+            ),
+        ]
 
     def __unicode__(self):
         return self.pk

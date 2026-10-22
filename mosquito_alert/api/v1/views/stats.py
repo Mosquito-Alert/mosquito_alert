@@ -3,6 +3,7 @@ import hashlib
 from django.core.cache import cache
 from django.utils.encoding import force_bytes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from mosquito_alert.api.v1.permissions import ReportStatsPermission
@@ -10,6 +11,7 @@ from mosquito_alert.api.v1.serializers.stats import (
     REPORT_STATS_TYPE_CHOICES,
     ReportStatsQuerySerializer,
     ReportStatsResponseSerializer,
+    StatsAreaSerializer,
 )
 from mosquito_alert.api.v1.views.viewsets import GenericViewSet
 from mosquito_alert.reports.models import Report
@@ -18,6 +20,7 @@ from mosquito_alert.stats.enums import (
     ReportStatsGroupBy,
     ReportStatsInterval,
 )
+from mosquito_alert.stats.utils import get_accessible_area_tree
 
 # Query params that may legitimately be comma-separated single values
 # (e.g. ?type=bite,adult) rather than repeated (?type=bite&type=adult).
@@ -112,7 +115,15 @@ def _stats_cache_key(params: dict) -> str:
             ),
         ],
         responses={200: ReportStatsResponseSerializer},
-    )
+    ),
+    areas=extend_schema(
+        operation_id="stats_areas_list",
+        description=(
+            "Tree of areas (and their subdivisions) the current user can request "
+            "statistics for. Each node's `key` is the value to send as `?area=`."
+        ),
+        responses={200: StatsAreaSerializer(many=True)},
+    ),
 )
 class ReportStatsViewSet(GenericViewSet):
     queryset = Report.objects.none()
@@ -166,6 +177,18 @@ class ReportStatsViewSet(GenericViewSet):
 
         cache.set(cache_key, payload, STATS_CACHE_TIMEOUT)
         return Response(payload)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="areas",
+        serializer_class=StatsAreaSerializer,
+        pagination_class=None,
+    )
+    def areas(self, request, *args, **kwargs):
+        return Response(
+            StatsAreaSerializer(get_accessible_area_tree(request.user), many=True).data
+        )
 
     @staticmethod
     def _normalize_query_params(request):
