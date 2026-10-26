@@ -1,3 +1,4 @@
+from drf_spectacular.helpers import lazy_serializer
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -141,7 +142,9 @@ class StatsAreaSerializer(serializers.Serializer):
     children = serializers.SerializerMethodField()
 
     @extend_schema_field(
-        {"type": "array", "items": {"$ref": "#/components/schemas/StatsArea"}}
+        lazy_serializer("mosquito_alert.api.v1.serializers.stats.StatsAreaSerializer")(
+            many=True
+        )
     )
     def get_children(self, obj):
         return StatsAreaSerializer(obj["children"], many=True).data

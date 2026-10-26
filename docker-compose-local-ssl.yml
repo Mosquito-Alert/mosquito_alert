@@ -47,6 +47,7 @@ services:
       - "traefik.http.routers.django.tls=true"
 
   postgres:
+    command: "-c log_statement=all"
     networks:
       - postgres-network
 
