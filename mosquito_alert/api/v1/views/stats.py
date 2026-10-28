@@ -3,7 +3,6 @@ import hashlib
 from django.core.cache import cache
 from django.utils.encoding import force_bytes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
-from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from mosquito_alert.api.v1.permissions import ReportStatsPermission
@@ -28,9 +27,8 @@ CSV_PARAMS = ("type", "group_by")
 
 STATS_CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours cache
 
+
 # Generates a cache key for report stats based on the given query parameters.
-
-
 def _stats_cache_key(params: dict) -> str:
     # Build from validated_data, not raw query string, so equivalent requests
     # (different param order, ?type=bite,adult vs bite&adult) hit the same cache entry.
@@ -48,6 +46,28 @@ def _stats_cache_key(params: dict) -> str:
     raw = json.dumps(normalized, sort_keys=True)
     digest = hashlib.sha256(force_bytes(raw)).hexdigest()
     return f"report-stats:{digest}"
+
+
+@extend_schema_view(
+    list=extend_schema(
+        operation_id="stats_areas_list",
+        description=(
+            "Tree of areas (and their subdivisions) the current user can request "
+            "statistics for. Each node's `key` is the value to send as `?area=` ."
+        ),
+        responses={200: StatsAreaSerializer(many=True)},
+    ),
+)
+class StatsAreaViewSet(GenericViewSet):
+    queryset = Report.objects.none()
+    permission_classes = (ReportStatsPermission,)
+    serializer_class = StatsAreaSerializer
+    pagination_class = None
+
+    def list(self, request, *args, **kwargs):
+        return Response(
+            StatsAreaSerializer(get_accessible_area_tree(request.user), many=True).data
+        )
 
 
 @extend_schema_view(
@@ -116,14 +136,14 @@ def _stats_cache_key(params: dict) -> str:
         ],
         responses={200: ReportStatsResponseSerializer},
     ),
-    areas=extend_schema(
-        operation_id="stats_areas_list",
-        description=(
-            "Tree of areas (and their subdivisions) the current user can request "
-            "statistics for. Each node's `key` is the value to send as `?area=`."
-        ),
-        responses={200: StatsAreaSerializer(many=True)},
-    ),
+    # areas=extend_schema(
+    #     operation_id="stats_areas_list",
+    #     description=(
+    #         "Tree of areas (and their subdivisions) the current user can request "
+    #         "statistics for. Each node's `key` is the value to send as `?area=`."
+    #     ),
+    #     responses={200: StatsAreaSerializer(many=True)},
+    # ),
 )
 class ReportStatsViewSet(GenericViewSet):
     queryset = Report.objects.none()
@@ -179,16 +199,16 @@ class ReportStatsViewSet(GenericViewSet):
         cache.set(cache_key, payload, STATS_CACHE_TIMEOUT)
         return Response(payload)
 
-    @action(
-        detail=False,
-        methods=["GET"],
-        url_path="areas",
-        serializer_class=StatsAreaSerializer,
-    )
-    def areas(self, request, *args, **kwargs):
-        return Response(
-            StatsAreaSerializer(get_accessible_area_tree(request.user), many=True).data
-        )
+    # @action(
+    #     detail=False,
+    #     methods=["GET"],
+    #     url_path="areas",
+    #     serializer_class=StatsAreaSerializer,
+    # )
+    # def areas(self, request, *args, **kwargs):
+    #     return Response(
+    #         StatsAreaSerializer(get_accessible_area_tree(request.user), many=True).data
+    #     )
 
     @staticmethod
     def _normalize_query_params(request):

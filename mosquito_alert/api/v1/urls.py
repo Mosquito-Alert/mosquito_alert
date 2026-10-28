@@ -16,8 +16,6 @@ from drf_spectacular.views import (
     SpectacularJSONAPIView,
 )
 
-from mosquito_alert.api.v1.views.stats import ReportStatsViewSet
-
 from .auth.views import GuestRegisterView, PasswordChangeView
 from .routers import NestedSimpleRouter, SimpleRouter
 from .views import (
@@ -50,6 +48,8 @@ from .views import (
     MyWorkspaceViewSet,
     WorkspaceCollaboratoratorViewSet,
     MyWorkspaceCollaboratoratorViewSet,
+    StatsAreaViewSet,
+    ReportStatsViewSet,
 )
 
 
@@ -91,10 +91,8 @@ router.register(r"notifications", NotificationViewSet)
 router.register(r"observations", ObservationViewSet, basename="observations")
 router.register(r"partners", PartnersViewSet)
 router.register(r"photos", PhotoViewSet)
-
-router.register(r"stats", ReportStatsViewSet, basename="stats")
-stats_router = NestedSimpleRouter(router, r"stats", lookup="stat")
-stats_router.register(r"reports", ReportStatsViewSet, basename="stats")
+router.register(r"stats/areas", StatsAreaViewSet, basename="stats-areas")
+router.register(r"stats/reports", ReportStatsViewSet, basename="stats-reports")
 router.register(r"taxa", TaxaViewSet)
 router.register(r"users", UserViewSet)
 router.register(

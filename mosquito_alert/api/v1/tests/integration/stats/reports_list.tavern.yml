@@ -14,7 +14,7 @@ marks:
 stages:
   - name: Aggregate published reports by type
     request:
-      url: "{api_live_url}/{endpoint}/?group_by=type"
+      url: "{api_live_url}/{endpoint}/reports/?group_by=type"
       method: GET
       headers:
         Authorization: "Bearer {stats_admin_token}"
@@ -32,7 +32,7 @@ stages:
 
   - name: Accept comma-separated type filters
     request:
-      url: "{api_live_url}/{endpoint}/?type=adult,bite&group_by=type"
+      url: "{api_live_url}/{endpoint}/reports/?type=adult,bite&group_by=type"
       method: GET
       headers:
         Authorization: "Bearer {stats_admin_token}"
@@ -50,7 +50,7 @@ stages:
 
   - name: Accept repeated type filters
     request:
-      url: "{api_live_url}/{endpoint}/?type=adult&type=bite&group_by=type"
+      url: "{api_live_url}/{endpoint}/reports/?type=adult&type=bite&group_by=type"
       method: GET
       headers:
         Authorization: "Bearer {stats_admin_token}"
@@ -68,7 +68,7 @@ stages:
 
   - name: Filter reports by type
     request:
-      url: "{api_live_url}/{endpoint}/?type=adult&group_by=type"
+      url: "{api_live_url}/{endpoint}/reports/?type=adult&group_by=type"
       method: GET
       headers:
         Authorization: "Bearer {stats_admin_token}"
@@ -84,7 +84,7 @@ stages:
 
   - name: Group by date with zero-filled buckets
     request:
-      url: "{api_live_url}/{endpoint}/?group_by=date,type&interval=day&date_from=2024-01-01&date_to=2024-01-04&cumulative=false"
+      url: "{api_live_url}/{endpoint}/reports/?group_by=date,type&interval=day&date_from=2024-01-01&date_to=2024-01-04&cumulative=false"
       method: GET
       headers:
         Authorization: "Bearer {stats_admin_token}"
@@ -124,7 +124,7 @@ stages:
 
   - name: Return cumulative date counts
     request:
-      url: "{api_live_url}/{endpoint}/?group_by=date&interval=day&date_from=2024-01-01&date_to=2024-01-04&cumulative=true"
+      url: "{api_live_url}/{endpoint}/reports/?group_by=date&interval=day&date_from=2024-01-01&date_to=2024-01-04&cumulative=true"
       method: GET
       headers:
         Authorization: "Bearer {stats_admin_token}"
@@ -148,7 +148,7 @@ stages:
 
   - name: Require area when grouping by region
     request:
-      url: "{api_live_url}/{endpoint}/?group_by=region"
+      url: "{api_live_url}/{endpoint}/reports/?group_by=region"
       method: GET
       headers:
         Authorization: "Bearer {stats_admin_token}"
@@ -157,7 +157,7 @@ stages:
 
   - name: Filter by NUTS 2 area and group at NUTS 3
     request:
-      url: "{api_live_url}/{endpoint}/?area=nuts2:{report_stats_data.area.pk}&group_by=region&level=3"
+      url: "{api_live_url}/{endpoint}/reports/?area=nuts2:{report_stats_data.area.pk}&group_by=region&level=3"
       method: GET
       headers:
         Authorization: "Bearer {stats_admin_token}"
@@ -184,7 +184,7 @@ stages:
 
   - name: Require a finer level than the NUTS 2 area
     request:
-      url: "{api_live_url}/{endpoint}/?area=nuts2:{report_stats_data.area.pk}&group_by=region&level=2"
+      url: "{api_live_url}/{endpoint}/reports/?area=nuts2:{report_stats_data.area.pk}&group_by=region&level=2"
       method: GET
       headers:
         Authorization: "Bearer {stats_admin_token}"
@@ -193,7 +193,7 @@ stages:
 
   - name: Reject reversed date ranges
     request:
-      url: "{api_live_url}/{endpoint}/?group_by=date&date_from=2024-01-04&date_to=2024-01-01"
+      url: "{api_live_url}/{endpoint}/reports/?group_by=date&date_from=2024-01-04&date_to=2024-01-01"
       method: GET
       headers:
         Authorization: "Bearer {stats_admin_token}"

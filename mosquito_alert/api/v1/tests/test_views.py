@@ -432,17 +432,11 @@ class TestObservationAPI(BaseReportTest):
 
 
 @pytest.mark.django_db
-class TestReportStatsView:
-    endpoint = "/api/v1/stats/?group_by=type"
-    areas_endpoint = "/api/v1/stats/areas/"
-
-    def test_anonymous_user_cannot_access_stats(self):
-        response = APIClient().get(self.endpoint)
-
-        assert response.status_code in (401, 403)
+class TestAreaStatsView:
+    endpoint = "/api/v1/stats/areas/"
 
     def test_anonymous_user_cannot_access_stats_areas(self):
-        response = APIClient().get(self.areas_endpoint)
+        response = APIClient().get(self.endpoint)
 
         assert response.status_code in (401, 403)
 
@@ -450,7 +444,7 @@ class TestReportStatsView:
         client = APIClient()
         client.force_login(user)
 
-        response = client.get(self.areas_endpoint)
+        response = client.get(self.endpoint)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -463,7 +457,7 @@ class TestReportStatsView:
             Permission.objects.get(codename="view_report_stats_unrestricted")
         )
 
-        response = client.get(self.areas_endpoint)
+        response = client.get(self.endpoint)
 
         assert response.status_code == status.HTTP_200_OK
 
@@ -491,7 +485,7 @@ class TestReportStatsView:
 
         client = APIClient()
         client.force_login(user)
-        response = client.get(self.areas_endpoint)
+        response = client.get(self.endpoint)
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data == [
@@ -525,6 +519,16 @@ class TestReportStatsView:
                 ],
             }
         ]
+
+
+@pytest.mark.django_db
+class TestReportStatsView:
+    endpoint = "/api/v1/stats/reports/?group_by=type"
+
+    def test_anonymous_user_cannot_access_stats(self):
+        response = APIClient().get(self.endpoint)
+
+        assert response.status_code in (401, 403)
 
     def test_authenticated_user_without_area_access_is_denied(self, user, es_country):
         client = APIClient()

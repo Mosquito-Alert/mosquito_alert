@@ -1,6 +1,7 @@
 # views/__init__.py
 
 from .boundaries import BoundaryViewSet
+from .stats import StatsAreaViewSet
 from .campaigns import CampaignsViewSet
 from .countries import CountriesViewSet
 from .devices import DeviceViewSet
@@ -36,6 +37,7 @@ from .workspaces import (
 
 __all__ = [
     ReportStatsViewSet,
+    StatsAreaViewSet,
     ping,
     UserViewSet,
     MyUserViewSet,
