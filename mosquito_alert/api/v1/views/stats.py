@@ -128,6 +128,7 @@ def _stats_cache_key(params: dict) -> str:
 class ReportStatsViewSet(GenericViewSet):
     queryset = Report.objects.none()
     permission_classes = (ReportStatsPermission,)
+    pagination_class = None
 
     def list(self, request, *args, **kwargs):
         query_serializer = ReportStatsQuerySerializer(
@@ -183,7 +184,6 @@ class ReportStatsViewSet(GenericViewSet):
         methods=["GET"],
         url_path="areas",
         serializer_class=StatsAreaSerializer,
-        pagination_class=None,
     )
     def areas(self, request, *args, **kwargs):
         return Response(
