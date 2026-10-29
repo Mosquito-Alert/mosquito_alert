@@ -6,6 +6,7 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema
 from rest_framework.response import Response
 
 from mosquito_alert.api.v1.permissions import ReportStatsPermission
+from mosquito_alert.api.v1.schema import SingleObjectListAutoSchema
 from mosquito_alert.api.v1.serializers.stats import (
     REPORT_STATS_TYPE_CHOICES,
     ReportStatsQuerySerializer,
@@ -72,6 +73,7 @@ class StatsAreaViewSet(GenericViewSet):
 
 @extend_schema_view(
     list=extend_schema(
+        operation_id="stats_reports_list",
         description="Aggregated report counts (for displaying data tables or charts, for example). "
         "The keys present on each row of `data` depend on `group_by` (always includes `count`, "
         "plus `date` if grouped by date, `region_id`/`region_code`/`region_name` "
@@ -135,17 +137,10 @@ class StatsAreaViewSet(GenericViewSet):
             ),
         ],
         responses={200: ReportStatsResponseSerializer},
-    ),
-    # areas=extend_schema(
-    #     operation_id="stats_areas_list",
-    #     description=(
-    #         "Tree of areas (and their subdivisions) the current user can request "
-    #         "statistics for. Each node's `key` is the value to send as `?area=`."
-    #     ),
-    #     responses={200: StatsAreaSerializer(many=True)},
-    # ),
+    )
 )
 class ReportStatsViewSet(GenericViewSet):
+    schema = SingleObjectListAutoSchema()
     queryset = Report.objects.none()
     permission_classes = (ReportStatsPermission,)
     pagination_class = None
@@ -198,17 +193,6 @@ class ReportStatsViewSet(GenericViewSet):
 
         cache.set(cache_key, payload, STATS_CACHE_TIMEOUT)
         return Response(payload)
-
-    # @action(
-    #     detail=False,
-    #     methods=["GET"],
-    #     url_path="areas",
-    #     serializer_class=StatsAreaSerializer,
-    # )
-    # def areas(self, request, *args, **kwargs):
-    #     return Response(
-    #         StatsAreaSerializer(get_accessible_area_tree(request.user), many=True).data
-    #     )
 
     @staticmethod
     def _normalize_query_params(request):

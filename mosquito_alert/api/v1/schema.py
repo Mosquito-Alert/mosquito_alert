@@ -1,3 +1,4 @@
+from drf_spectacular.openapi import AutoSchema
 from drf_spectacular.contrib.rest_polymorphic import PolymorphicSerializerExtension
 from drf_spectacular.drainage import warn
 from drf_spectacular.extensions import (
@@ -93,3 +94,12 @@ class WritableSerializerMethodField(OpenApiSerializerFieldExtension):
             direction=direction,
             bypass_extensions=True,
         )
+
+
+class SingleObjectListAutoSchema(AutoSchema):
+    """
+    For `list` actions that return a single object (not an array).
+    """
+
+    def _is_list_view(self, serializer=None):
+        return False
