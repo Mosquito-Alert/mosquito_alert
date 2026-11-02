@@ -118,7 +118,10 @@ class ReportStatsQuerySerializer(serializers.Serializer):
             )
 
         if ReportStatsGroupBy.REGION in group_by:
-            if attrs["level"] <= area["level_order"]:
+            if area is None:
+                # World request: break down by country (level is ignored).
+                pass
+            elif attrs["level"] <= area["level_order"]:
                 raise serializers.ValidationError(
                     {"level": "`level` must be strictly finer than the area's level."}
                 )
@@ -148,8 +151,6 @@ class StatsAreaSerializer(serializers.Serializer):
 
 # * #################### RESPONSE ####################
 # --- Meta response -------------------------------------------------
-
-
 class AreaMetaSerializer(serializers.Serializer):
     level = serializers.ChoiceField(choices=AreaLevel.choices)
     id = serializers.CharField()
