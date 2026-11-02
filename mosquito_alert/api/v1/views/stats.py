@@ -82,7 +82,7 @@ class StatsAreaViewSet(GenericViewSet):
             OpenApiParameter(
                 "area",
                 str,
-                description='"\<level\>:\<id\>", e.g. "country:ES" or "nuts2:34".',
+                description='"\<level\>:\<id\>", e.g. "country:ES" or "nuts2:34". If omitted, the request applies to the whole world.',
             ),
             OpenApiParameter(
                 name="type",
@@ -183,7 +183,7 @@ class ReportStatsViewSet(GenericViewSet):
         if ReportStatsGroupBy.DATE in params["group_by"]:
             meta["interval"] = params["interval"]
             meta["cumulative"] = params["cumulative"]
-        if ReportStatsGroupBy.REGION in params["group_by"]:
+        if ReportStatsGroupBy.REGION in params["group_by"] and params["area"]:
             meta["level"] = params["level"]
 
         response_serializer = ReportStatsResponseSerializer(

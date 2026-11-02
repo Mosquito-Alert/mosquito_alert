@@ -180,13 +180,22 @@ class ReportQuerySet(models.QuerySet):
 
         region_field = None
         if ReportStatsGroupBy.REGION in group_by:
-            region_field = NUTS_FK_FIELD[level]
-            qs = qs.filter(**{f"{region_field}__isnull": False})
-            values_fields += [
-                f"{region_field}__gid",
-                f"{region_field}__fid",
-                f"{region_field}__name_latn",
-            ]
+            if area is None:
+                region_field = AreaLevel.COUNTRY
+                qs = qs.filter(country__isnull=False)
+                values_fields += [
+                    "country__id",
+                    "country__iso2_code",
+                    "country__name_engl",
+                ]
+            else:
+                region_field = NUTS_FK_FIELD[level]
+                qs = qs.filter(**{f"{region_field}__isnull": False})
+                values_fields += [
+                    f"{region_field}__gid",
+                    f"{region_field}__fid",
+                    f"{region_field}__name_latn",
+                ]
 
         if ReportStatsGroupBy.TYPE in group_by:
             values_fields.append("type")
@@ -230,7 +239,11 @@ class ReportQuerySet(models.QuerySet):
             out = {}
             if ReportStatsGroupBy.DATE in group_by:
                 out["date"] = row["bucket"].date().isoformat()
-            if region_field:
+            if region_field == AreaLevel.COUNTRY:
+                out["region_id"] = row["country__id"]
+                out["region_code"] = row["country__iso2_code"]
+                out["region_name"] = row["country__name_engl"]
+            elif region_field:
                 out["region_id"] = row[f"{region_field}__gid"]
                 out["region_code"] = row[f"{region_field}__fid"]
                 out["region_name"] = row[f"{region_field}__name_latn"]  # .split("/")[0]

@@ -118,10 +118,6 @@ class ReportStatsQuerySerializer(serializers.Serializer):
             )
 
         if ReportStatsGroupBy.REGION in group_by:
-            if area is None:
-                raise serializers.ValidationError(
-                    {"area": "`area` is required when grouping by region."}
-                )
             if attrs["level"] <= area["level_order"]:
                 raise serializers.ValidationError(
                     {"level": "`level` must be strictly finer than the area's level."}

@@ -146,15 +146,6 @@ stages:
           - date: "2024-01-04"
             count: 3
 
-  - name: Require area when grouping by region
-    request:
-      url: "{api_live_url}/{endpoint}/reports/?group_by=region"
-      method: GET
-      headers:
-        Authorization: "Bearer {stats_admin_token}"
-    response:
-      status_code: 400
-
   - name: Filter by NUTS 2 area and group at NUTS 3
     request:
       url: "{api_live_url}/{endpoint}/reports/?area=nuts2:{report_stats_data.area.pk}&group_by=region&level=3"
