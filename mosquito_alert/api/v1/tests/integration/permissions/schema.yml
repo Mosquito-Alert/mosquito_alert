@@ -30,4 +30,5 @@ variables:
       add: false
       change: false
       view: false
+      view_world: false
       delete: false
