@@ -45,7 +45,7 @@ django-admin-numeric-filter==0.1.9
 git+https://github.com/encode/django-rest-framework.git@513ddb4ffbfaef9d0117b281121ffc7319106f2f
 djangorestframework-csv==3.0.2
 djangorestframework-gis==1.2.0
-djangorestframework-simplejwt==5.3.1
+djangorestframework-simplejwt==5.5.1
 drf-extra-fields==3.7.0
 drf-nested-routers==0.95.0
 drf-standardized-errors==0.14.1
